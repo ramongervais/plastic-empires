@@ -1,0 +1,1029 @@
+<title>Plastic Empires — a museum of vintage toys</title>
+<style>
+  :root {
+    --paper: #ffffff;
+    --paper-2: #f5f5f5;
+    --panel: #f1f1f1;
+    --ink: #131313;
+    --ink-2: #4d4d4d;
+    --ink-3: #8c8c8c;
+    --line: #e4e4e4;
+    --line-2: #efefef;
+    --accent: #131313;
+    --accent-ink: #ffffff;
+    --sw: #141414;      /* empire signature — greys, no hue */
+    --gb: #6b6b6b;
+    --jp: #a2a2a2;
+    --good: #131313;
+
+    /* Pure Swiss: everything in Helvetica Neue (a macOS/system grotesque, no Adobe kit needed — works live everywhere).
+       Roles kept as separate tokens but all resolve to the same face; hierarchy comes from size / weight / case / tracking. */
+    --display: "Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;   /* titles */
+    --body: "Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;      /* body */
+    --label: "Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;     /* labels */
+  }
+  /* Default is LIGHT for everyone, regardless of OS setting. Dark is available only via the Theme toggle. */
+  :root[data-theme="light"] {
+    --paper:#ffffff; --paper-2:#f5f5f5; --panel:#f1f1f1; --ink:#131313; --ink-2:#4d4d4d; --ink-3:#8c8c8c;
+    --line:#e4e4e4; --line-2:#efefef; --accent:#131313; --accent-ink:#ffffff; --sw:#141414; --gb:#6b6b6b; --jp:#a2a2a2; --good:#131313;
+  }
+  :root[data-theme="dark"] {
+    --paper:#0e0e0e; --paper-2:#151515; --panel:#191919; --ink:#f2f2f2; --ink-2:#b3b3b3; --ink-3:#7d7d7d;
+    --line:#2a2a2a; --line-2:#202020; --accent:#f2f2f2; --accent-ink:#0e0e0e; --sw:#ededed; --gb:#9a9a9a; --jp:#6e6e6e; --good:#f2f2f2;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; line-height:1.2; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width:100%; display:block; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+
+  /* labels / eyebrows */
+  .ey { font-family:var(--label); font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-3); }
+  .rule { height:1px; background:var(--line); border:0; margin:0; }
+
+  /* ---------- Masthead ---------- */
+  header.mast { position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .mast-in { max-width:1180px; margin:0 auto; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .brand { display:flex; align-items:baseline; gap:12px; cursor:pointer; }
+  .brand .mark { font-family:var(--display); font-weight:600; font-size:19px; letter-spacing:.14em; text-transform:uppercase; }
+  .brand .est { font-family:var(--label); font-size:10px; letter-spacing:.16em; color:var(--ink-3); text-transform:uppercase; }
+  nav.top { display:flex; align-items:center; gap:26px; }
+  nav.top a { font-family:var(--label); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
+  nav.top a:hover { color:var(--ink); }
+  .theme-btn { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); background:transparent; border:1px solid var(--line); border-radius:2px; padding:6px 9px; cursor:pointer; }
+  .theme-btn:hover { color:var(--ink); border-color:var(--ink-3); }
+  @media (max-width: 860px){ nav.top a.hide-sm { display:none; } }
+
+  .view[hidden] { display:none; }
+  .view { animation: fade .4s ease both; counter-reset: sec; }
+  @keyframes fade { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+
+  /* ---------- Hero ---------- */
+  .dateline { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:11px 0; border-top:2px solid var(--ink); border-bottom:1px solid var(--line); font-family:var(--label); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2); }
+  .dateline b { color:var(--ink); font-weight:600; }
+  @media (max-width:640px){ .dateline { font-size:9px; letter-spacing:.08em; } }
+  .hero { padding: 40px 0 64px; display:grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items:center; }
+  .hero-copy .ey { margin-bottom: 26px; }
+  .hero h1 { font-family:var(--display); font-weight:600; font-size: clamp(38px, 5.6vw, 68px); line-height:1.02; letter-spacing:-.02em; margin:0 0 26px; text-wrap:balance; max-width: 15ch; }
+  .hero p.lede { font-family:var(--body); font-weight:600; font-size: clamp(19px, 1.8vw, 22px); line-height:1.4; color:var(--ink); max-width: 46ch; margin:0 0 32px; }
+  .cta-row { display:flex; gap:14px; flex-wrap:wrap; }
+  .btn { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; padding:14px 22px; border-radius:2px; cursor:pointer; border:1px solid var(--ink); background:var(--ink); color:var(--paper); transition:transform .12s, background .12s, color .12s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ghost { background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn.ghost:hover { border-color:var(--ink); }
+  .btn.accent { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+
+  /* Vitrine (museum display placeholder) */
+  .vitrine { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:3px; aspect-ratio: 4/5; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .vitrine.wide { aspect-ratio: 4/3; }
+  .vitrine canvas.stars { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .vitrine .tick { position:absolute; width:9px; height:9px; border-color:var(--ink-3); opacity:.5; }
+  .vitrine .tick.tl { top:12px; left:12px; border-top:1px solid; border-left:1px solid; }
+  .vitrine .tick.tr { top:12px; right:12px; border-top:1px solid; border-right:1px solid; }
+  .vitrine .tick.bl { bottom:12px; left:12px; border-bottom:1px solid; border-left:1px solid; }
+  .vitrine .tick.br { bottom:12px; right:12px; border-bottom:1px solid; border-right:1px solid; }
+  .vitrine .vlabel { position:relative; text-align:center; z-index:2; padding:20px; }
+  .vitrine .vlabel .k { font-family:var(--label); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3); }
+  .vitrine .vlabel .n { font-family:var(--display); font-weight:600; font-size:26px; letter-spacing:-.01em; margin-top:10px; }
+  .vitrine .vlabel .y { font-family:var(--label); font-size:12px; letter-spacing:.14em; color:var(--ink-3); margin-top:8px; }
+  .vitrine .plinth { position:absolute; left:0; right:0; bottom:0; height:34%; background:linear-gradient(to top, color-mix(in srgb, var(--ink) 8%, transparent), transparent); pointer-events:none; }
+  .vcap { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-3); margin-top:12px; text-align:center; }
+
+  .hero-artifact { cursor:pointer; }
+  .hero-artifact .badge { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .hero-artifact .badge .lk { font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+
+  /* ---------- Section frame ---------- */
+  section.band { padding: 64px 0; border-top:1px solid var(--line); }
+  .band-head { display:grid; grid-template-columns:auto 1.5fr 1fr; gap:0 36px; align-items:end; margin-bottom:40px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .band-head::before { counter-increment:sec; content:counter(sec, decimal-leading-zero); font-family:var(--body); font-weight:700; font-size:clamp(36px,5vw,72px); line-height:.76; letter-spacing:-.03em; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .band-head > div { border-left:1px solid var(--line); padding-left:32px; }
+  .band-head p { border-left:1px solid var(--line); padding-left:32px; }
+  @media (max-width:760px){ .band-head { grid-template-columns:auto 1fr; gap:0 20px; } .band-head p { grid-column:1 / -1; border-left:0; padding-left:0; margin-top:16px; } }
+  .band-head h2 { font-family:var(--display); font-weight:600; font-size: clamp(26px, 3.4vw, 38px); letter-spacing:-.015em; margin:6px 0 0; }
+  .band-head p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:40ch; margin:0; }
+
+  /* Empires */
+  /* Filter + sort bar (publisher = empire) */
+  .collectionbar { display:flex; justify-content:space-between; align-items:center; gap:16px 24px; flex-wrap:wrap; margin:0 0 26px; }
+  .filterbar { display:flex; flex-wrap:wrap; gap:8px; }
+  .fchip { font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:100px; padding:8px 15px; cursor:pointer; transition:background .12s, color .12s, border-color .12s, transform .12s; }
+  .fchip:hover { color:var(--ink); border-color:var(--ink-3); }
+  .fchip.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .sortbar { display:flex; align-items:center; gap:10px; }
+  .sortbar .sortlabel { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .sbtn { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); background:transparent; border:0; padding:6px 2px; cursor:pointer; border-bottom:1px solid transparent; }
+  .sbtn:hover { color:var(--ink); }
+  .sbtn.on { color:var(--ink); border-bottom-color:var(--ink); }
+  .empires { display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; }
+  .empire { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:3px; padding:28px; display:flex; flex-direction:column; min-height:260px; cursor:pointer; transition:transform .14s, border-color .14s; overflow:hidden; }
+  .empire:hover { transform:translateY(-3px); border-color:var(--ink-3); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); background:color-mix(in srgb, var(--ink) 7%, transparent); border:1px solid var(--line); border-radius:100px; padding:4px 10px; line-height:1; }
+  .empire h3 { font-family:var(--display); font-weight:600; font-size:30px; letter-spacing:-.01em; margin:14px 0 4px; }
+  .empire .era { font-family:var(--label); font-size:12px; color:var(--ink-3); letter-spacing:.08em; }
+  .empire p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); margin:16px 0 0; max-width:34ch; }
+  .empire .enter { margin-top:auto; padding-top:22px; font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); display:inline-flex; gap:8px; align-items:center; }
+  .empire .enter .arw { transition:transform .14s; }
+  .empire:hover .enter .arw { transform:translateX(4px); }
+
+  /* Moat / three principles */
+  .moat { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .moat .cell { padding:30px; border-right:1px solid var(--line); }
+  .moat .cell:last-child { border-right:0; }
+  .moat .num { font-family:var(--label); font-size:11px; letter-spacing:.16em; color:var(--accent); }
+  .moat h4 { font-family:var(--display); font-weight:600; font-size:19px; margin:14px 0 8px; letter-spacing:-.01em; }
+  .moat p { font-family:var(--body); font-size:15px; color:var(--ink-2); margin:0; }
+
+  /* Collection grid */
+  .collection { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  .artifact-card { cursor:pointer; }
+  .artifact-card.disabled { cursor:default; opacity:.72; }
+  .label { margin-top:14px; }
+  .label .ln { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+  .label .nm { font-family:var(--display); font-weight:600; font-size:15px; letter-spacing:-.01em; }
+  .label .pr { font-family:var(--label); font-size:13px; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+  .label .meta { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:5px; }
+  .label .status { font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-top:8px; }
+
+  /* ---------- Artifact page ---------- */
+  .crumb { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:30px 0 0; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .crumb a { color:var(--ink-3); } .crumb a:hover { color:var(--ink); }
+  .crumb .sep { opacity:.5; }
+  .crumb .here { color:var(--ink); }
+  .art-top { display:grid; grid-template-columns: 1.05fr .95fr; gap:52px; padding:30px 0 60px; align-items:start; }
+  .art-media { position:sticky; top:84px; }
+  .thumbs { display:flex; gap:10px; margin-top:12px; }
+  .thumbs .th { flex:1; aspect-ratio:1; background:var(--panel); border:1px solid var(--line); border-radius:2px; }
+  .thumbs .th.active { border-color:var(--ink); }
+
+  .art-title { font-family:var(--display); font-weight:600; font-size: clamp(34px, 4.4vw, 52px); letter-spacing:-.02em; line-height:1.02; margin:6px 0 10px; }
+  .art-sub { font-family:var(--label); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--sw); }
+  .spec { border-top:1px solid var(--line); margin-top:26px; }
+  .spec .row { display:flex; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--line-2); font-size:14px; }
+  .spec .row .k { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .spec .row .v { font-family:var(--display); color:var(--ink); text-align:right; }
+  .spec .row .v.good { color:var(--good); }
+
+  .price-block { margin-top:30px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .price-block .pr { font-family:var(--body); font-weight:700; font-size:34px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .price-block .prnote { font-family:var(--label); font-size:11px; color:var(--ink-3); letter-spacing:.06em; }
+  .buy-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .buy-row .btn { flex:1; min-width:170px; text-align:center; }
+  .trust { font-family:var(--label); font-size:11px; color:var(--ink-3); letter-spacing:.04em; margin-top:16px; line-height:1.7; }
+  .trust b { color:var(--ink-2); font-weight:400; }
+
+  /* Story */
+  .story { max-width: 680px; margin: 0 auto; }
+  .story .ey { margin-bottom:18px; }
+  .story h2 { font-family:var(--display); font-weight:600; font-size:clamp(26px,3vw,34px); letter-spacing:-.015em; margin:0 0 24px; }
+  .story p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); margin:0 0 22px; }
+  .story p .drop { float:left; font-family:var(--display); font-weight:600; font-size:58px; line-height:.8; padding:6px 12px 0 0; color:var(--accent); }
+  .pullquote { font-family:var(--body); font-style:italic; font-size:26px; line-height:1.4; color:var(--ink); border-left:3px solid var(--accent); padding:6px 0 6px 26px; margin:34px 0; }
+
+  /* Archive footage */
+  .archive { margin-top:60px; }
+  .film { position:relative; aspect-ratio:16/9; background:#0c0b08; border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .film canvas.stars { position:absolute; inset:0; opacity:.5; }
+  .film .scan { position:absolute; inset:0; background:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0 2px, transparent 2px 4px); pointer-events:none; }
+  .film .play { position:relative; z-index:2; width:78px; height:78px; border-radius:50%; background:rgba(243,241,234,.1); border:1px solid rgba(243,241,234,.5); display:flex; align-items:center; justify-content:center; transition:transform .16s, background .16s; }
+  .film:hover .play { transform:scale(1.08); background:rgba(243,241,234,.16); border-color:rgba(243,241,234,.9); }
+  .film .play svg { width:26px; height:26px; margin-left:4px; fill:#f3f1ea; }
+  .film .corner { position:absolute; z-index:2; font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(243,241,234,.72); }
+  .film .corner.tl { top:16px; left:18px; } .film .corner.tr { top:16px; right:18px; color:rgba(243,241,234,.6); }
+  .film .corner.bl { bottom:16px; left:18px; }
+  .filmcap { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.05em; color:var(--ink-3); }
+
+  /* Empire link + related */
+  .empire-link { margin-top:60px; border:1px solid var(--line); border-radius:3px; padding:30px; display:flex; justify-content:space-between; align-items:center; gap:24px; background:var(--panel); position:relative; overflow:hidden; cursor:pointer; }
+  /* signature line removed */
+  .empire-link .l .eys { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .empire-link .l h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:8px 0 6px; letter-spacing:-.01em; }
+  .empire-link .l p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); margin:0; max-width:48ch; }
+
+  /* Reserve modal */
+  .modal-bg { position:fixed; inset:0; background:rgba(10,9,6,.55); backdrop-filter:blur(3px); z-index:80; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .modal-bg[hidden]{ display:none; }
+  .modal { background:var(--paper); border:1px solid var(--line); border-radius:4px; max-width:440px; width:100%; padding:34px; }
+  .modal .ey { margin-bottom:14px; }
+  .modal h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:0 0 12px; letter-spacing:-.01em; }
+  .modal p { font-family:var(--body); font-size:16px; color:var(--ink); margin:0 0 22px; line-height:1.8; }
+  .modal .close { margin-top:8px; }
+
+  /* ---------- Empire (maker) documentary page ---------- */
+  .empire-hero { padding: 56px 0 40px; }
+  .empire-hero .ey { margin-bottom:22px; }
+  .empire-title { font-family:var(--display); font-weight:600; font-size:clamp(56px, 12vw, 130px); line-height:.9; letter-spacing:-.03em; margin:0; }
+  .empire-dek { font-family:var(--label); font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-top:18px; }
+  .empire-lede { font-family:var(--body); font-size:clamp(20px,2vw,24px); line-height:1.6; color:var(--ink); max-width:58ch; margin:26px 0 0; }
+  .factbar { display:grid; grid-template-columns:repeat(4,1fr); margin-top:46px; border-top:1px solid var(--line); }
+  .factbar .fact { padding:22px 26px; border-right:1px solid var(--line); }
+  .factbar .fact:first-child { padding-left:0; }
+  .factbar .fact:last-child { border-right:0; }
+  .factbar .fn { font-family:var(--body); font-weight:700; font-size:clamp(26px,3.2vw,38px); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .factbar .fl { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:8px; }
+
+  .timeline { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+  .timeline li { display:grid; grid-template-columns:120px 1fr; gap:28px; padding:20px 0; border-bottom:1px solid var(--line-2); align-items:baseline; }
+  .timeline .ty { font-family:var(--body); font-weight:700; font-size:22px; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+  .timeline .td { font-family:var(--body); font-size:17px; color:var(--ink-2); }
+  .timeline .td b { color:var(--ink); font-weight:400; }
+
+  @media (max-width:900px){
+    .factbar { grid-template-columns:1fr 1fr; }
+    .factbar .fact:nth-child(2){ border-right:0; }
+    .timeline li { grid-template-columns:64px 1fr; gap:16px; }
+  }
+
+  /* Full-caps Helvetica titles. Helvetica wordmark + body. Italic pull-quote. Pure Swiss, one grotesque. */
+  .hero h1, .art-title, .empire-title, .band-head h2, .story h2, .empire h3, .empire-link .l h3,
+  .moat h4, .label .nm, .vitrine .vlabel .n, .modal h3 { text-transform:uppercase; letter-spacing:.1em; }
+  .empire-title { letter-spacing:.045em; }
+  /* Main page headline of each top view: heavy weight, tight leading, wide Swiss tracking */
+  .hero h1, .art-title, .empire-title { font-weight:800; line-height:1; letter-spacing:.2em; }
+  .brand .mark, .foot .mark { font-family:var(--label); font-weight:600; letter-spacing:.18em; }
+  .pullquote { font-family:var(--display); font-style:italic; }
+  nav.top a, .btn, .ey { letter-spacing:.16em; }
+
+  /* Hover: text turns italic inside a skewed (diagonal) diapositive block that hugs the text only. */
+  .empire h3 { align-self:flex-start; }          /* stop the title stretching to the full row */
+  .empire-link .l h3 { display:inline-block; }
+  .foot .col a { width:fit-content; }
+  nav.top a, .foot .col a, .crumb a,
+  .empire h3, .artifact-card .nm, .empire-link .l h3 { transition:transform .16s ease, background .14s ease, color .14s ease; }
+  nav.top a:hover, .foot .col a:hover, .crumb a:hover,
+  .empire:hover h3, .artifact-card:hover .nm, .empire-link:hover .l h3 {
+    font-style:italic; background:var(--ink); color:var(--paper);
+    box-shadow:0 0 0 .14em var(--ink); transform:skewX(-8deg);
+  }
+  .empire:hover .enter, .btn:hover { font-style:italic; }
+
+  /* Origins: two columns (story + photo carousel) */
+  .origins-grid, .scale-grid { display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:start; }
+  .origins-grid .story, .scale-grid .story { max-width:none; margin:0; }
+  .carousel { position:sticky; top:88px; }
+  .carousel-viewport { position:relative; overflow:hidden; border:1px solid var(--line); border-radius:3px; background:var(--panel); }
+  .carousel-track { display:flex; transition:transform .45s cubic-bezier(.4,0,.1,1); }
+  .slide { min-width:100%; margin:0; }
+  .slide-img { position:relative; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--panel-2), var(--panel)); overflow:hidden; }
+  .slide-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* Scale comparison visual */
+  .scale-visual { position:sticky; top:88px; }
+  .scale-photo { position:relative; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:var(--panel); min-height:140px; display:flex; align-items:center; justify-content:center; }
+  .scale-photo img { width:100%; height:auto; display:block; position:relative; }
+  .scale-photo .ph { position:absolute; font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .scale-svg { width:100%; height:auto; display:block; margin:0 auto; max-width:420px; }
+  .scale-svg .s-base { stroke:var(--ink-3); stroke-width:1; }
+  .scale-svg .s-dim { stroke:var(--ink-2); stroke-width:1; }
+  .scale-svg .s-dimlabel { fill:var(--ink); font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-anchor:middle; }
+  .scale-svg .s-fig { fill:var(--ink); }
+  .scale-svg .s-can rect, .scale-svg .s-can ellipse { fill:color-mix(in srgb, var(--ink) 7%, transparent); stroke:var(--ink-2); stroke-width:1.5; }
+  .scale-svg .s-tab { stroke:var(--ink-2); stroke-width:1.5; }
+  .scale-svg .s-cap { fill:var(--ink-2); font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+  .slide-img .ph { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .carousel-ui { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+  .carousel-arrow { font-family:var(--label); font-size:15px; line-height:1; background:transparent; border:1px solid var(--line); border-radius:100px; width:42px; height:42px; cursor:pointer; color:var(--ink-2); transition:color .12s, border-color .12s, transform .12s; }
+  .carousel-arrow:hover { color:var(--ink); border-color:var(--ink-3); transform:translateY(-1px); }
+  .carousel-dots { display:flex; gap:9px; }
+  .carousel-dots .cdot { width:8px; height:8px; padding:0; border-radius:50%; border:1px solid var(--ink-3); background:transparent; cursor:pointer; transition:background .12s, border-color .12s; }
+  .carousel-dots .cdot.on { background:var(--ink); border-color:var(--ink); }
+  @media (max-width:900px){ .origins-grid, .scale-grid { grid-template-columns:1fr; gap:36px; } .carousel, .scale-visual { position:static; } }
+
+  /* Video grid (YouTube archive) */
+  .vidgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px 16px; }
+  .vid { margin:0; }
+  .vid-thumb { position:relative; display:block; width:100%; aspect-ratio:16/9; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:var(--panel); cursor:pointer; padding:0; }
+  .vid-thumb img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .vid-ph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--label); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .vid-play { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:54px; height:54px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.75); display:flex; align-items:center; justify-content:center; transition:transform .15s, background .15s; }
+  .vid-thumb:hover .vid-play { transform:translate(-50%,-50%) scale(1.08); background:rgba(0,0,0,.78); }
+  .vid-play svg { width:20px; height:20px; fill:#fff; margin-left:3px; }
+  .vid-frame { position:relative; aspect-ratio:16/9; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .vid-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .vid figcaption { margin-top:10px; font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; }
+  .vid figcaption a { color:var(--ink-2); text-decoration:none; }
+  .vid figcaption a:hover { color:var(--ink); }
+  @media (max-width:900px){ .vidgrid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .vidgrid { grid-template-columns:1fr; } }
+
+  /* Footer */
+  footer.foot { border-top:1px solid var(--line); padding:48px 0 60px; margin-top:40px; }
+  .foot-in { display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap; }
+  .foot .mark { font-family:var(--display); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:15px; }
+  .foot .tl { font-family:var(--body); font-style:italic; color:var(--ink-2); margin-top:8px; font-size:15px; }
+  .foot .cols { display:flex; gap:56px; flex-wrap:wrap; }
+  .foot .col a, .foot .col span { display:block; font-family:var(--label); font-size:11.5px; letter-spacing:.08em; color:var(--ink-3); margin-bottom:9px; }
+  .foot .col a:hover { color:var(--ink); }
+  .foot .col .h { color:var(--ink); text-transform:uppercase; letter-spacing:.14em; margin-bottom:14px; }
+
+  @media (max-width: 900px){
+    .hero { grid-template-columns:1fr; gap:40px; }
+    .art-top { grid-template-columns:1fr; gap:34px; }
+    .art-media { position:static; }
+    .empires, .moat, .collection { grid-template-columns:1fr; }
+    .moat .cell { border-right:0; border-bottom:1px solid var(--line); }
+    .moat .cell:last-child { border-bottom:0; }
+    .collection { grid-template-columns:1fr 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; scroll-behavior:auto; } }
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <div class="brand" data-nav="home">
+      <span class="mark">Plastic Empires</span>
+      <span class="est">Est. 2026</span>
+    </div>
+    <nav class="top">
+      <a href="#empires" class="hide-sm" data-nav="home">The Empires</a>
+      <a href="#collection" class="hide-sm" data-nav="home">Collection</a>
+      <a href="#about" class="hide-sm">About</a>
+      <button class="theme-btn" id="themeBtn">Light / Dark</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================ HOME ============================ -->
+<main class="view" id="view-home">
+  <div class="wrap">
+    <div class="dateline">
+      <span>A museum of vintage toys</span>
+      <span><b>Est. MMXXVI</b></span>
+      <span>Cincinnati · Tokyo</span>
+    </div>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="ey">Vintage Kenner · Star Wars · Ghostbusters</div>
+        <h1>Every toy was the last page of a story.</h1>
+        <p class="lede">Plastic Empires is a museum of vintage toys that happens to be a shop. Each piece arrives with its history, the company that made it, and the commercial that first sold it. You can read it, watch it, then take it home.</p>
+        <div class="cta-row">
+          <a class="btn" href="#empires" data-nav="home">Enter the Empires</a>
+          <a class="btn ghost" href="#collection" data-nav="home">Browse the collection</a>
+        </div>
+      </div>
+      <div class="hero-artifact" data-nav="artifact">
+        <div class="badge">
+          <span class="ey">Featured artifact</span>
+          <span class="lk">View artifact →</span>
+        </div>
+        <div class="vitrine" data-stars="1">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <div class="vlabel">
+            <div class="k">Kenner · Star Wars</div>
+            <div class="n">Millennium Falcon</div>
+            <div class="y">1979</div>
+          </div>
+          <div class="plinth"></div>
+        </div>
+        <div class="vcap">Studio photography to be placed · this is the display frame</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="band" id="empires">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <div class="ey">The makers</div>
+          <h2>The Empires</h2>
+        </div>
+        <p>We organise the collection the way it was built: publisher first. The publisher is the empire; its toy lines live beneath it. Filter the lines by their maker, or sort them across the years.</p>
+      </div>
+      <div class="collectionbar">
+        <div class="filterbar" id="pubFilter" aria-label="Filter lines by publisher">
+          <button class="fchip on" data-pub="all">All</button>
+          <button class="fchip" data-pub="Kenner">Kenner</button>
+          <button class="fchip" data-pub="Bullmark">Bullmark</button>
+          <button class="fchip" data-pub="Marusan">Marusan</button>
+          <button class="fchip" data-pub="Popy">Popy</button>
+        </div>
+        <div class="sortbar" id="lineSort" aria-label="Sort lines">
+          <span class="sortlabel">Sort</span>
+          <button class="sbtn on" data-sort="era">Era</button>
+          <button class="sbtn" data-sort="az">A–Z</button>
+        </div>
+      </div>
+      <div class="empires" id="lineGrid">
+        <article class="empire" data-pub="Kenner" data-start="1977" data-name="Star Wars" style="--sig:var(--sw)" data-empire="kenner">
+          <div class="chips"><span class="chip">Kenner</span></div>
+          <h3>Star Wars</h3>
+          <div class="era">1977 – 1985</div>
+          <p>The line that invented the modern 3¾-inch action figure, and sold an empty box one Christmas to do it.</p>
+          <span class="enter">Enter the Empire <span class="arw">→</span></span>
+        </article>
+        <article class="empire" data-pub="Kenner" data-start="1986" data-name="The Real Ghostbusters" style="--sig:var(--gb)" data-empire="kenner">
+          <div class="chips"><span class="chip">Kenner</span></div>
+          <h3>The Real Ghostbusters</h3>
+          <div class="era">1986 – 1991</div>
+          <p>Proton packs, ecto-plasma and gross-out mutations. The strangest, most inventive toys on the shelf.</p>
+          <span class="enter">Enter the Empire <span class="arw">→</span></span>
+        </article>
+        <article class="empire" data-pub="Bullmark,Marusan,Popy" data-start="1966" data-name="Kaiju" style="--sig:var(--jp)" data-empire="kaiju">
+          <div class="chips"><span class="chip">Bullmark</span><span class="chip">Marusan</span><span class="chip">Popy</span></div>
+          <h3>Kaiju</h3>
+          <div class="era">1966 – 1984</div>
+          <p>Soft-vinyl monsters from Tokyo's tokusatsu boom. Godzilla, Ultraman and the beasts of late-night television, hand-poured and hand-painted.</p>
+          <span class="enter">Enter the Empire <span class="arw">→</span></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <div class="ey">Why we exist</div>
+          <h2>Not a grid of photos</h2>
+        </div>
+        <p>Anyone can list a toy. We give every piece the three things that turn an object back into a memory.</p>
+      </div>
+      <div class="moat">
+        <div class="cell">
+          <div class="num">— The Story</div>
+          <h4>Documented history</h4>
+          <p>Who designed it, when it shipped, why it mattered. Written beside every artifact, not buried in a description.</p>
+        </div>
+        <div class="cell">
+          <div class="num">— The Makers</div>
+          <h4>Documentary pages</h4>
+          <p>Each line gets a full page on its company and era. The toy links up to it, so one purchase opens a whole world.</p>
+        </div>
+        <div class="cell">
+          <div class="num">— The Archive</div>
+          <h4>The original commercial</h4>
+          <p>The television spot that sold it the first time, restored and watchable on the artifact's own page.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="collection">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <div class="ey">For sale</div>
+          <h2>In the collection</h2>
+        </div>
+        <p>A rotating selection. Reserve holds a piece for 48 hours while we talk condition and shipping.</p>
+      </div>
+      <div class="collection">
+        <article class="artifact-card" data-nav="artifact">
+          <div class="vitrine" style="aspect-ratio:1">
+            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+            <div class="vlabel"><div class="k">Kenner · 1979</div><div class="n" style="font-size:19px">Millennium Falcon</div></div>
+          </div>
+          <div class="label">
+            <div class="ln"><span class="nm">Millennium Falcon</span><span class="pr">€ 340</span></div>
+            <div class="meta">Star Wars · Kenner · 1979</div>
+            <div class="status">● Available · view artifact</div>
+          </div>
+        </article>
+        <article class="artifact-card disabled">
+          <div class="vitrine" style="aspect-ratio:1">
+            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+            <div class="vlabel"><div class="k">Kenner · 1978</div><div class="n" style="font-size:19px">X-Wing Fighter</div></div>
+          </div>
+          <div class="label">
+            <div class="ln"><span class="nm">X-Wing Fighter</span><span class="pr">€ 165</span></div>
+            <div class="meta">Star Wars · Kenner · 1978</div>
+            <div class="status" style="color:var(--ink-3)">○ Coming soon</div>
+          </div>
+        </article>
+        <article class="artifact-card disabled">
+          <div class="vitrine" style="aspect-ratio:1">
+            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+            <div class="vlabel"><div class="k">Bullmark · 1970s</div><div class="n" style="font-size:19px">Godzilla</div></div>
+          </div>
+          <div class="label">
+            <div class="ln"><span class="nm">Godzilla · sofubi</span><span class="pr">€ 420</span></div>
+            <div class="meta">Kaiju · Bullmark · 1970s</div>
+            <div class="status" style="color:var(--ink-3)">○ Coming soon</div>
+          </div>
+        </article>
+        <article class="artifact-card disabled">
+          <div class="vitrine" style="aspect-ratio:1">
+            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+            <div class="vlabel"><div class="k">Kenner · 1986</div><div class="n" style="font-size:19px">Ecto-1</div></div>
+          </div>
+          <div class="label">
+            <div class="ln"><span class="nm">Ecto-1</span><span class="pr">€ 190</span></div>
+            <div class="meta">Ghostbusters · Kenner · 1986</div>
+            <div class="status" style="color:var(--ink-3)">○ Coming soon</div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================ ARTIFACT ============================ -->
+<main class="view" id="view-artifact" hidden>
+  <div class="wrap">
+    <div class="crumb">
+      <a data-nav="home">The Empires</a><span class="sep">/</span>
+      <a data-empire="kenner" style="color:var(--sw)">Star Wars</a><span class="sep">/</span>
+      <span class="here">Millennium Falcon</span>
+    </div>
+
+    <div class="art-top">
+      <div class="art-media">
+        <div class="vitrine wide" data-stars="1">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <div class="vlabel">
+            <div class="k">Kenner · Star Wars</div>
+            <div class="n">Millennium Falcon</div>
+            <div class="y">1979</div>
+          </div>
+          <div class="plinth"></div>
+        </div>
+        <div class="thumbs">
+          <div class="th active"></div><div class="th"></div><div class="th"></div><div class="th"></div>
+        </div>
+        <div class="vcap" style="text-align:left">Four studio angles to be placed. Every piece is photographed in-house before listing.</div>
+      </div>
+
+      <div class="art-detail">
+        <div class="art-sub">Kenner · 1979 · Star Wars line</div>
+        <h1 class="art-title">Millennium Falcon</h1>
+        <p style="font-family:var(--body); font-size:19px; color:var(--ink); margin:0; max-width:46ch;">The ship that didn't make the first wave. When it finally landed in 1979, it was the biggest, most coveted toy Kenner had ever built.</p>
+
+        <div class="spec">
+          <div class="row"><span class="k">Reference</span><span class="v">PE · SW · 001</span></div>
+          <div class="row"><span class="k">Maker</span><span class="v"><a data-empire="kenner" style="text-decoration:underline; text-underline-offset:3px; cursor:pointer">Kenner, Cincinnati ↗</a></span></div>
+          <div class="row"><span class="k">Released</span><span class="v">1979</span></div>
+          <div class="row"><span class="k">Line</span><span class="v">Star Wars (1977 – 1985)</span></div>
+          <div class="row"><span class="k">Condition</span><span class="v good">Loose · near-complete</span></div>
+          <div class="row"><span class="k">Completeness</span><span class="v">Radar dish, cockpit, chess table present</span></div>
+        </div>
+
+        <div class="price-block">
+          <div>
+            <div class="pr">€ 340</div>
+            <div class="prnote">Example price · final on inspection</div>
+          </div>
+        </div>
+        <div class="buy-row">
+          <button class="btn accent" id="reserveBtn">Reserve · 48 hours</button>
+          <button class="btn ghost" id="enquireBtn">Enquire</button>
+        </div>
+        <div class="trust">
+          <b>Reserve</b> holds this piece for 48 hours, no payment yet. We then confirm condition, photos and shipping with you directly. Every artifact is hand-inspected and insured in transit.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule" />
+
+  <section class="band">
+    <div class="wrap">
+      <div class="story">
+        <div class="ey">The story</div>
+        <h2>Kenner sold an empty box, and started an empire.</h2>
+        <p><span class="drop">I</span>n 1977, Kenner had the kind of problem most companies only dream about. <em>Star Wars</em> had become the biggest film on Earth, every child wanted the toys, and Kenner had almost nothing on the shelf. There was no way to tool, mould and ship figures in time for Christmas.</p>
+        <p>So they sold a promise. The Early Bird Certificate Package was, essentially, an empty box with a cardboard diorama and a mail-away voucher. Post it back, and sometime in early 1978 four action figures would arrive: Luke, Leia, R2-D2 and Chewbacca. It should have been a disaster. Instead it sold in the millions.</p>
+        <div class="pullquote">They wrapped up an empty box for Christmas. Children unwrapped a promise, and waited for the post.</div>
+        <p>The figures that followed in 1978 invented a format the whole industry would copy: the 3¾-inch action figure, small enough that a child could own a galaxy. Vehicles came next. But the one everybody wanted, the flagship itself, was held back.</p>
+        <p>The Millennium Falcon did not arrive until 1979. When it did, it was enormous for its day: a light-up cockpit, a spinning radar dish, a training remote, and the little chess table from the film. It was the toy you asked for and rarely got. Forty-odd years on, a complete one is a small monument to how much a plastic ship could mean.</p>
+      </div>
+
+      <div class="story archive">
+        <div class="ey">The archive</div>
+        <div class="film" id="filmBtn" title="Watch the 1979 Kenner Millennium Falcon commercial">
+          <canvas class="stars"></canvas>
+          <div class="scan"></div>
+          <span class="corner tl">Kenner</span>
+          <span class="corner tr">● REC 1979</span>
+          <span class="corner bl">Original television spot</span>
+          <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        </div>
+        <div class="filmcap">
+          <span>The commercial that sold it, 1979.</span>
+          <span>Plays inline on plasticempires.com · opens on YouTube here</span>
+        </div>
+      </div>
+
+      <div class="story empire-link" data-empire="kenner">
+        <div class="l">
+          <div class="eys">From the Empire</div>
+          <h3>Star Wars, built by Kenner</h3>
+          <p>The full story of the line: the Early Bird gamble, the figures that changed the industry, and the eleven years that followed. Every artifact links back here.</p>
+        </div>
+        <span class="btn ghost">Read the Empire →</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================ EMPIRE: KENNER ============================ -->
+<main class="view" id="view-empire" hidden>
+  <div class="wrap">
+    <div class="crumb">
+      <a data-nav="home">The Empires</a><span class="sep">/</span>
+      <span class="here">Kenner</span>
+    </div>
+
+    <section class="empire-hero">
+      <div class="ey">The Empire · Maker</div>
+      <h1 class="empire-title">Kenner</h1>
+      <div class="empire-dek">Cincinnati, Ohio · 1947 – 2000</div>
+      <p class="empire-lede">The company that turned licences into legends. From a toy oven that actually baked to an empty box that launched Star Wars, Kenner spent five decades deciding what a generation would find under the tree.</p>
+      <div class="factbar">
+        <div class="fact"><div class="fn">1947</div><div class="fl">Founded, Cincinnati</div></div>
+        <div class="fact"><div class="fn">300M+</div><div class="fl">Star Wars figures sold, 1978–85</div></div>
+        <div class="fact"><div class="fn">3¾″</div><div class="fl">The figure size it set</div></div>
+        <div class="fact"><div class="fn">2000</div><div class="fl">The name retired</div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="origins-grid">
+        <div class="story">
+          <div class="ey">Origins</div>
+          <h2>Named after a street. Built to last.</h2>
+          <p><span class="drop">I</span>n 1947, three brothers, Albert, Philip and Joseph Steiner, started a toy company in Cincinnati, Ohio, and named it after Kenner Street, where their office stood. It was a small beginning for a firm that would end up shaping the shelves of nearly every toy shop in the Western world.</p>
+          <p>Their early hits were toys that actually did something: the Give-A-Show projector in 1959, and in 1963 the Easy-Bake Oven, a miniature oven that genuinely baked, sold by the million and never really gone. Spirograph followed in 1966, and by 1976 a rubbery strongman called Stretch Armstrong had joined them. Kenner had a knack for turning a clever idea into a phenomenon.</p>
+        </div>
+
+        <div class="carousel" id="kennerCarousel">
+          <div class="carousel-viewport">
+            <div class="carousel-track">
+              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 01</span><img src="Empires/Kenner/kenner-street-a.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
+              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 02</span><img src="Empires/Kenner/kenner-street-b.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
+              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 03</span><img src="Empires/Kenner/kenner-street-c.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
+            </div>
+          </div>
+          <div class="carousel-ui">
+            <button class="carousel-arrow" data-dir="-1" aria-label="Previous photo">&larr;</button>
+            <div class="carousel-dots" id="carouselDots"></div>
+            <button class="carousel-arrow" data-dir="1" aria-label="Next photo">&rarr;</button>
+          </div>
+          <div class="vcap" style="text-align:left">Kenner Street, Cincinnati. The street that gave the company its name.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="scale-grid">
+        <div class="story">
+          <div class="ey">The turning point</div>
+          <h2>1977: the gamble that changed everything.</h2>
+          <p>When Kenner won the <em>Star Wars</em> licence in 1977, there was no way to tool, mould and ship action figures in time for Christmas. So Kenner sold a promise instead. The Early Bird Certificate was, in effect, an empty box with a mail-away voucher. Post it back, and four figures would follow in early 1978. It should have failed. It sold in the millions.</p>
+          <div class="pullquote">Kenner didn't just sell toys. It invented the format the rest of the industry would spend forty years copying.</div>
+          <p>The 3¾-inch (9.5 cm) figures that arrived in 1978 set the template for action figures everywhere: small enough that a child could own a whole galaxy. Sales doubled to $200 million that year, and by 1983 more than 300 million Star Wars items had been sold. The Millennium Falcon landed in 1979, and for a while Kenner was less a toy company than a machine for manufacturing childhood.</p>
+        </div>
+
+        <div class="scale-visual">
+          <div class="ey" style="margin-bottom:18px">To scale</div>
+          <div class="scale-photo">
+            <span class="ph">3¾ in · 9.5 cm</span>
+            <img src="Empires/Kenner/size-334.png" alt="A 3¾-inch (9.5 cm) Kenner Han Solo figure beside a Diet Coke can, for scale" loading="lazy" onerror="this.remove()">
+          </div>
+          <div class="vcap" style="text-align:left">A whole galaxy you could fit in a coat pocket.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">The record</div><h2>Five decades, one shelf at a time</h2></div>
+        <p>The short version of a long history: how a Cincinnati start-up became the maker behind the toys people still hunt for today.</p>
+      </div>
+      <ol class="timeline">
+        <li><span class="ty">1947</span><span class="td"><b>Founded</b> on Kenner Street, Cincinnati, by the Steiner brothers.</span></li>
+        <li><span class="ty">1963</span><span class="td">The <b>Easy-Bake Oven</b> becomes a household name and a lasting bestseller.</span></li>
+        <li><span class="ty">1967</span><span class="td">Acquired by <b>General Mills</b> as it moves into the toy business.</span></li>
+        <li><span class="ty">1976</span><span class="td"><b>Stretch Armstrong</b> stretches onto shelves.</span></li>
+        <li><span class="ty">1977</span><span class="td">Wins the <b>Star Wars</b> licence and ships the Early Bird empty box for Christmas.</span></li>
+        <li><span class="ty">1978</span><span class="td">The first <b>3¾-inch figures</b> arrive and become an industry standard.</span></li>
+        <li><span class="ty">1979</span><span class="td">The <b>Millennium Falcon</b> lands, the most coveted toy of its day.</span></li>
+        <li><span class="ty">1984</span><span class="td"><b>Super Powers</b> brings DC's heroes to the 3¾-inch format.</span></li>
+        <li><span class="ty">1985</span><span class="td"><b>Kenner Parker Toys</b> is spun off from General Mills.</span></li>
+        <li><span class="ty">1986</span><span class="td"><b>The Real Ghostbusters</b> begins its strange, inventive run.</span></li>
+        <li><span class="ty">1987</span><span class="td">Kenner Parker is bought by <b>Tonka</b>.</span></li>
+        <li><span class="ty">1991</span><span class="td">Absorbed into <b>Hasbro</b> when Hasbro buys Tonka.</span></li>
+        <li><span class="ty">1993</span><span class="td"><b>Jurassic Park</b> roars onto shelves, a late-era hit.</span></li>
+        <li><span class="ty">2000</span><span class="td">Hasbro <b>retires the Kenner name</b>, ending 53 years.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Inside the empire</div><h2>The lines</h2></div>
+        <p>Kenner's licences read like a childhood. These are the ones represented in the collection.</p>
+      </div>
+      <div class="empires">
+        <article class="empire" style="--sig:var(--sw)" data-nav="artifact">
+          <div class="chips"><span class="chip">Kenner</span></div>
+          <h3>Star Wars</h3>
+          <div class="era">1977 – 1985</div>
+          <p>The line that started with an empty box and ended up on every shelf. The Falcon is in the collection now.</p>
+          <span class="enter">View the artifacts <span class="arw">→</span></span>
+        </article>
+        <article class="empire" style="--sig:var(--gb)" data-empire="soon">
+          <div class="chips"><span class="chip">Kenner</span></div>
+          <h3>The Real Ghostbusters</h3>
+          <div class="era">1986 – 1991</div>
+          <p>Proton packs, ecto-plasma and gloriously gross mutations. Pieces arriving soon.</p>
+          <span class="enter">Coming soon <span class="arw">→</span></span>
+        </article>
+        <article class="empire" style="--sig:var(--jp)" data-empire="soon">
+          <div class="chips"><span class="chip">Kenner</span></div>
+          <h3>And many more</h3>
+          <div class="era">1975 – 1999</div>
+          <p>Six Million Dollar Man, Strawberry Shortcake, Super Powers, Batman, Jurassic Park. A back catalogue of icons.</p>
+          <span class="enter">Coming soon <span class="arw">→</span></span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div>
+          <div class="ey">The archive</div>
+          <h2>The commercials</h2>
+        </div>
+        <p>The television spots that sold the toys the first time around. Six from the Kenner vault. They play inline here; the title opens the clip on YouTube.</p>
+      </div>
+      <div class="vidgrid">
+        <figure class="vid" data-yt="qX-C9bOYjHs">
+          <button class="vid-thumb" type="button" aria-label="Play: Kenner Star Wars TV spot">
+            <img src="https://i.ytimg.com/vi/qX-C9bOYjHs/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Kenner · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=qX-C9bOYjHs" target="_blank" rel="noopener noreferrer">Kenner Star Wars · TV spot &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="GVmwlCIPsgU">
+          <button class="vid-thumb" type="button" aria-label="Play: Millennium Falcon 1979 commercial">
+            <img src="https://i.ytimg.com/vi/GVmwlCIPsgU/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Kenner · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=GVmwlCIPsgU" target="_blank" rel="noopener noreferrer">Millennium Falcon · 1979 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="ntIinWf7yv4">
+          <button class="vid-thumb" type="button" aria-label="Play: 12-inch figures 1978 commercial">
+            <img src="https://i.ytimg.com/vi/ntIinWf7yv4/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Kenner · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=ntIinWf7yv4" target="_blank" rel="noopener noreferrer">12-inch figures · 1978 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="bilukm_4hIw">
+          <button class="vid-thumb" type="button" aria-label="Play: Kenner toy commercials 1977-1980">
+            <img src="https://i.ytimg.com/vi/bilukm_4hIw/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Kenner · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=bilukm_4hIw" target="_blank" rel="noopener noreferrer">The toy line · 1977&#8211;80 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="KjobuiXlggg">
+          <button class="vid-thumb" type="button" aria-label="Play: all Kenner Star Wars commercials 1977-1979">
+            <img src="https://i.ytimg.com/vi/KjobuiXlggg/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Kenner · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=KjobuiXlggg" target="_blank" rel="noopener noreferrer">All spots · 1977&#8211;79 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="mQcMW-gLXiQ">
+          <button class="vid-thumb" type="button" aria-label="Play: Empire Strikes Back commercials 1978-1982">
+            <img src="https://i.ytimg.com/vi/mQcMW-gLXiQ/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Kenner · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=mQcMW-gLXiQ" target="_blank" rel="noopener noreferrer">Empire Strikes Back · 1978&#8211;82 &#8599;</a></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Reserve modal -->
+<div class="modal-bg" id="modal" hidden>
+  <div class="modal">
+    <div class="ey" id="modalEy">Reserved</div>
+    <h3 id="modalTitle">The Falcon is held for you.</h3>
+    <p id="modalBody">On the live shop this reserves the piece for 48 hours and emails you to confirm condition, photos and shipping. This is a layout preview, so nothing has been charged.</p>
+    <button class="btn close" id="modalClose">Close</button>
+  </div>
+</div>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div>
+      <div class="mark">Plastic Empires</div>
+      <div class="tl">A museum that sells.</div>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <span class="h">Visit</span>
+        <a data-nav="home">The Empires</a>
+        <a data-nav="home">Collection</a>
+        <a data-nav="artifact">Featured artifact</a>
+      </div>
+      <div class="col">
+        <span class="h">Empires</span>
+        <a data-empire="kenner">Star Wars</a>
+        <a data-empire="kenner">The Real Ghostbusters</a>
+        <a data-empire="kaiju">Kaiju</a>
+      </div>
+      <div class="col">
+        <span class="h">Contact</span>
+        <span>plasticempires.com</span>
+        <span>Reserve · 48h hold</span>
+        <span>Worldwide, insured</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const COMMERCIAL = "https://www.youtube.com/watch?v=GVmwlCIPsgU";
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ----- Starfields (subtle, for Star Wars vitrines + the film) -----
+  function starfield(canvas, density, warm){
+    const box = canvas.getBoundingClientRect();
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = canvas.width = Math.max(2, box.width) * dpr;
+    const h = canvas.height = Math.max(2, box.height) * dpr;
+    const ctx = canvas.getContext("2d");
+    const n = Math.round((w * h) / (dpr*dpr) / density);
+    for (let i=0;i<n;i++){
+      const x = Math.random()*w, y = Math.random()*h;
+      const r = Math.random()*1.3*dpr + .2*dpr;
+      const a = Math.random()*0.5 + 0.15;
+      ctx.beginPath(); ctx.arc(x,y,r,0,7);
+      ctx.fillStyle = warm ? `rgba(240,240,240,${a})` : `rgba(150,150,150,${a})`;
+      ctx.fill();
+    }
+  }
+  function paintStars(){
+    document.querySelectorAll('.vitrine[data-stars] ').forEach(v => {
+      if (v.querySelector('canvas.stars')) return;
+      const c = document.createElement('canvas'); c.className='stars';
+      v.insertBefore(c, v.firstChild); starfield(c, 900, false);
+    });
+    document.querySelectorAll('.film canvas.stars').forEach(film => {
+      if (film.dataset.done) return;
+      const box = film.getBoundingClientRect();
+      if (box.width < 4) return;               // skip hidden views; repainted on show()
+      starfield(film, 700, true); film.dataset.done = "1";
+    });
+  }
+
+  // ----- View router -----
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire') };
+  function show(view){
+    const v = views[view] ? view : 'home';
+    Object.keys(views).forEach(k => views[k].hidden = k !== v);
+    const root = views[v];
+    root.querySelectorAll('.vitrine canvas.stars').forEach(c => c.remove());
+    root.querySelectorAll('.film canvas.stars').forEach(c => c.dataset.done = '');
+    window.scrollTo({ top:0, behavior: reduce ? 'auto':'smooth' });
+    requestAnimationFrame(paintStars);
+  }
+  document.addEventListener('click', e => {
+    const emp = e.target.closest('[data-empire]');
+    if (emp){
+      e.preventDefault();
+      if (emp.dataset.empire === 'kenner') show('empire');
+      else openModal('Coming soon', 'This empire is next.', 'This maker gets its own documentary page in a coming build. In this preview it is stubbed so you can see where the links lead.');
+      return;
+    }
+    const nav = e.target.closest('[data-nav]');
+    if (!nav) return;
+    const dest = nav.dataset.nav;
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire'){
+      // let in-page anchors on home still work
+      if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
+      e.preventDefault(); show(dest);
+    }
+  });
+
+  // ----- Film -> commercial -----
+  document.querySelectorAll('.film').forEach(f => f.addEventListener('click', () => window.open(COMMERCIAL, '_blank', 'noopener')));
+
+  // ----- Video grid: click a thumbnail to play the YouTube clip inline -----
+  document.querySelectorAll('.vid').forEach(v => {
+    const btn = v.querySelector('.vid-thumb');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const id = v.dataset.yt;
+      const frame = document.createElement('div');
+      frame.className = 'vid-frame';
+      const ifr = document.createElement('iframe');
+      ifr.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+      ifr.title = 'YouTube video player';
+      ifr.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      ifr.allowFullscreen = true;
+      frame.appendChild(ifr);
+      btn.replaceWith(frame);
+    });
+  });
+
+  // ----- Empire lines: filter by publisher + sort (era / A–Z) -----
+  (function(){
+    const grid = document.getElementById('lineGrid');
+    const filter = document.getElementById('pubFilter');
+    const sortEl = document.getElementById('lineSort');
+    if (!grid || !filter || !sortEl) return;
+    const cards = Array.from(grid.querySelectorAll('.empire'));
+    let pub = 'all', sort = 'era';
+    function apply(){
+      cards.forEach(c => {
+        const pubs = (c.dataset.pub || '').split(',');
+        c.style.display = (pub === 'all' || pubs.includes(pub)) ? '' : 'none';
+      });
+      cards.filter(c => c.style.display !== 'none')
+        .sort((a,b) => sort === 'az'
+          ? a.dataset.name.localeCompare(b.dataset.name)
+          : (+a.dataset.start) - (+b.dataset.start))
+        .forEach(c => grid.appendChild(c));
+    }
+    filter.addEventListener('click', e => {
+      const b = e.target.closest('.fchip'); if (!b) return;
+      pub = b.dataset.pub;
+      [...filter.children].forEach(x => x.classList.toggle('on', x === b));
+      apply();
+    });
+    sortEl.addEventListener('click', e => {
+      const b = e.target.closest('.sbtn'); if (!b) return;
+      sort = b.dataset.sort;
+      sortEl.querySelectorAll('.sbtn').forEach(x => x.classList.toggle('on', x === b));
+      apply();
+    });
+    apply();
+  })();
+
+  // ----- Kenner photo carousel -----
+  (function(){
+    const root = document.getElementById('kennerCarousel');
+    if (!root) return;
+    const track = root.querySelector('.carousel-track');
+    const slides = root.querySelectorAll('.slide');
+    const dotsWrap = document.getElementById('carouselDots');
+    let i = 0;
+    slides.forEach((_, n) => {
+      const d = document.createElement('button');
+      d.className = 'cdot' + (n === 0 ? ' on' : '');
+      d.setAttribute('aria-label', 'Photo ' + (n + 1));
+      d.addEventListener('click', () => go(n));
+      dotsWrap.appendChild(d);
+    });
+    const dots = dotsWrap.querySelectorAll('.cdot');
+    function go(n){
+      i = (n + slides.length) % slides.length;
+      track.style.transform = 'translateX(' + (-i * 100) + '%)';
+      dots.forEach((d, k) => d.classList.toggle('on', k === i));
+    }
+    root.querySelectorAll('.carousel-arrow').forEach(a =>
+      a.addEventListener('click', () => go(i + (+a.dataset.dir))));
+  })();
+
+  // ----- Reserve / Enquire modal -----
+  const modal = document.getElementById('modal');
+  function openModal(ey, title, body){
+    document.getElementById('modalEy').textContent = ey;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').textContent = body;
+    modal.hidden = false;
+  }
+  document.getElementById('reserveBtn').addEventListener('click', () =>
+    openModal('Reserved', 'The Falcon is held for you.', 'On the live shop this reserves the piece for 48 hours and emails you to confirm condition, photos and shipping. This is a layout preview, so nothing has been charged.'));
+  document.getElementById('enquireBtn').addEventListener('click', () =>
+    openModal('Enquiry', 'Ask us anything.', 'On the live shop this opens a short form to ask about condition, completeness or shipping, and we reply personally. This is a layout preview.'));
+  document.getElementById('modalClose').addEventListener('click', () => modal.hidden = true);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true; });
+
+  // ----- Theme -----
+  document.getElementById('themeBtn').addEventListener('click', () => {
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';  // default (no attr) = light
+    document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
+    document.querySelectorAll('.vitrine canvas.stars').forEach(c => c.remove());
+    document.querySelectorAll('.film canvas.stars').forEach(f => f.dataset.done = '');
+    requestAnimationFrame(paintStars);
+  });
+
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('.vitrine canvas.stars').forEach(c => c.remove());
+    requestAnimationFrame(paintStars);
+  });
+  paintStars();
+</script>
