@@ -1299,6 +1299,10 @@
   .acct-toggle .sw{ width:40px; height:22px; border-radius:100px; background:var(--line); position:relative; flex-shrink:0; }
   .acct-toggle .sw::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--paper); box-shadow:0 1px 2px rgba(0,0,0,.2); }
   .acct-pay, .acct-signout{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; padding:10px 14px; cursor:pointer; white-space:nowrap; }
+  .mship{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px 0; }
+  .mship-plan{ font-family:var(--body); font-weight:700; font-size:22px; letter-spacing:-.01em; }
+  .mship-tok{ font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:4px; }
+  .mship-r{ display:flex; gap:8px; flex-wrap:wrap; }
   .acct-signout{ background:none; color:var(--ink); border-color:var(--line); }
   .acct-toggle .sw{ cursor:pointer; transition:background .15s; }
   .acct-toggle .sw::after{ transition:left .15s; }
@@ -1688,7 +1692,9 @@
             injectDraftLots();
             openModal(pre ? 'Lot in preview' : 'Lot listed', (current.toy || 'Your toy') + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 September 2026.' : 'It now appears in the Shop.'));
           } catch (err) {
-            openModal('Could not list', 'Something went wrong.', String((err && err.message) || err));
+            const msg = String((err && err.message) || err);
+            if (/NO_TOKENS/.test(msg)) openModal('Out of tokens', 'No listing tokens left.', 'You need a token to list a lot. Open your account to buy a token pack, or upgrade to Premium for 50 tokens a month.');
+            else openModal('Could not list', 'Something went wrong.', msg);
           } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; }
           return;
         }
@@ -2001,7 +2007,7 @@
     const [myLotsRes, myBidsRes, prefRes, watchRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
-      SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending').eq('id', uid).single(),
+      SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending,plan,tokens').eq('id', uid).single(),
       SB.from('watchlist').select('lot_id').eq('user_id', uid)
     ]);
     const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
@@ -2035,6 +2041,12 @@
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(myBids.length, 'Bids placed') + stat(wins.length, 'Won') + '</div>' +
+      '<div class="acct-sec"><div class="h">Membership</div>' +
+        '<div class="mship"><div class="mship-l"><div class="mship-plan">' + (prefs.plan === 'premium' ? 'Premium' : 'Starter') + '</div><div class="mship-tok">' + (prefs.tokens != null ? prefs.tokens : 0) + ' listing token' + (prefs.tokens === 1 ? '' : 's') + ' left</div></div>' +
+          '<div class="mship-r">' + (prefs.plan === 'premium' ? '<button class="acct-signout" id="mManage" type="button">Manage subscription</button>' : '<button class="acct-pay" id="mUpgrade" type="button">Upgrade to Premium &middot; € 15/mo</button>') + '<button class="acct-signout" id="mBuy" type="button">Buy 25 tokens &middot; € 18</button></div>' +
+        '</div>' +
+        '<div class="acct-empty">1 token = 1 listing. Starter: 3 tokens/month. Premium: 50/month (rollover to 100) + lower commission. Early-bird € 15/mo.</div>' +
+      '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
@@ -2047,6 +2059,9 @@
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
+    const mUp = document.getElementById('mUpgrade'); if (mUp) mUp.addEventListener('click', () => goCheckout(SUBSCRIBE_URL));
+    const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
+    const mMan = document.getElementById('mManage'); if (mMan) mMan.addEventListener('click', () => goCheckout(PORTAL_URL));
     body.querySelectorAll('.acct-toggle[data-pref]').forEach(t => t.addEventListener('click', async () => {
       const sw = t.querySelector('.sw'); const on = !sw.classList.contains('on'); sw.classList.toggle('on', on);
       try { await SB.from('profiles').update({ [t.dataset.pref]: on }).eq('id', uid); } catch (e) {}
@@ -2058,6 +2073,17 @@
   const PAY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/checkout';
   const NOTIFY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/notify';
   const SHIP_URL = 'https://plasticempires-pay.ramongervais.workers.dev/notify-shipped';
+  const SUBSCRIBE_URL = 'https://plasticempires-pay.ramongervais.workers.dev/subscribe';
+  const TOKENS_URL = 'https://plasticempires-pay.ramongervais.workers.dev/buy-tokens';
+  const PORTAL_URL = 'https://plasticempires-pay.ramongervais.workers.dev/portal';
+  async function goCheckout(endpoint){
+    if (SB && !authUser){ openAuth(); return; }
+    try {
+      const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser ? authUser.id : '', email: authUser ? authUser.email : '', origin: location.origin }) });
+      const d = await r.json();
+      if (d && d.url) location.href = d.url; else openModal('Something went wrong', 'Could not start', (d && d.error) || 'Please try again.');
+    } catch (err){ openModal('Something went wrong', 'Could not start', err.message); }
+  }
   async function startCheckout(opts){
     opts = opts || {};
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -2411,9 +2437,15 @@
   // ----- Return from Stripe checkout -----
   (function(){
     const p = new URLSearchParams(location.search);
-    const paid = p.get('paid'), canceled = p.get('canceled'), lotParam = p.get('lot');
-    if (!paid && !canceled && !lotParam) return;
+    const paid = p.get('paid'), canceled = p.get('canceled'), lotParam = p.get('lot'), account = p.get('account');
+    if (!paid && !canceled && !lotParam && !account) return;
     history.replaceState(null, '', location.pathname);
+    if (account){
+      if (typeof renderAccount === 'function') setTimeout(() => renderAccount(), 200);
+      if (account === 'premium') openModal('Welcome to Premium', 'You are now a Premium seller.', 'Your monthly listing tokens and lower commission are active. Manage your subscription anytime from your account.');
+      else if (account === 'tokens') openModal('Tokens added', 'Your top-up is complete.', '25 listing tokens have been added to your account.');
+      return;
+    }
     if (lotParam && !paid && !canceled){ if (typeof openLot === 'function') setTimeout(() => openLot(lotParam), 300); return; }
     if (paid){
       openModal('Payment received', 'Thank you.', 'Your payment went through. We will confirm the details and arrange shipping by email. In the sandbox no real money moved.');
