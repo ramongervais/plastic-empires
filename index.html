@@ -52,8 +52,10 @@
   nav.top { display:flex; align-items:center; gap:26px; }
   nav.top a { font-family:var(--label); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
   nav.top a:hover { color:var(--ink); }
-  .theme-btn { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); background:transparent; border:1px solid var(--line); border-radius:2px; padding:6px 9px; cursor:pointer; }
-  .theme-btn:hover { color:var(--ink); border-color:var(--ink-3); }
+  .theme-btn { background:transparent; border:0; padding:6px; margin:0; cursor:pointer; display:inline-flex; align-items:center; }
+  .theme-icon { display:block; width:20px; height:20px; border-radius:50%; border:1px solid var(--ink-3); background:linear-gradient(90deg, var(--ink) 0 50%, var(--paper) 50% 100%); transition:transform .5s ease, border-color .2s ease; }
+  .theme-btn:hover .theme-icon { border-color:var(--ink); }
+  :root[data-theme="dark"] .theme-icon { transform:rotate(180deg); }
   @media (max-width: 860px){ nav.top a.hide-sm { display:none; } }
 
   .view[hidden] { display:none; }
@@ -405,6 +407,12 @@
   .t-list li::before { content:"—"; position:absolute; left:0; color:var(--ink-3); }
   .t-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:16px; line-height:1.6; }
   @media (max-width:700px){ .tiers { grid-template-columns:1fr; } }
+  .terms-draft { background:var(--ink); color:var(--paper); border-radius:3px; padding:16px 20px; font-size:13.5px; line-height:1.6; margin:0 0 28px; }
+  .terms-h { font-family:var(--label); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); margin:34px 0 0; }
+  .terms-h + p { margin-top:8px; }
+  .acceptbox { display:flex; align-items:flex-start; gap:10px; font-family:var(--body); font-size:13px; color:var(--ink-2); margin:16px 0 4px; cursor:pointer; line-height:1.5; }
+  .acceptbox input { margin:2px 0 0; width:16px; height:16px; flex-shrink:0; accent-color:var(--ink); cursor:pointer; }
+  .acceptbox a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
   .qstars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
   .qstars .base { color:var(--line-2); }
   .qstars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
@@ -468,7 +476,7 @@
       <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
       <a class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
       <a class="hide-sm" id="authLink" data-auth-label style="cursor:pointer">Sign in</a>
-      <button class="theme-btn" id="themeBtn">Light / Dark</button>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle light or dark"><span class="theme-icon"></span></button>
       <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </nav>
   </div>
@@ -1106,6 +1114,69 @@
   </section>
 </main>
 
+<!-- ============================ TERMS ============================ -->
+<main class="view" id="view-terms" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Terms</span></div>
+    <section class="empire-hero">
+      <div class="ey">Legal</div>
+      <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Terms &amp; Conditions</h1>
+      <div class="empire-dek">Draft v0.1 · pending legal review</div>
+    </section>
+  </div>
+  <section class="band">
+    <div class="wrap">
+      <div class="story" style="margin:0; max-width:72ch">
+        <div class="terms-draft"><b>DRAFT — not legal advice.</b> A working starting point, not yet reviewed by a lawyer. Under EU and Dutch consumer law some clauses below may not apply to consumers, who keep their statutory rights.</div>
+        <p><b>Operator:</b> [legal entity], [address], KvK [number], VAT [number]. Last updated [date].</p>
+
+        <div class="terms-h">1 · Acceptance</div>
+        <p>By creating an account, listing an item, bidding or buying, you agree to these Terms. If you do not agree, do not use the Platform. We may update these Terms; continued use means you accept the revised version.</p>
+
+        <div class="terms-h">2 · The platform's role</div>
+        <p>For consigned lots, Plastic Empires is an intermediary connecting Sellers and Buyers; the sale contract is between them, not with us. For lots we own and sell ourselves this is clearly marked. We do not take custody of or independently verify consigned items unless stated.</p>
+
+        <div class="terms-h">3 · Accounts</div>
+        <p>You register with a valid email and are responsible for activity on your account. One account per person or business. You must be 18 or older. We may suspend accounts that breach these Terms.</p>
+
+        <div class="terms-h">4 · Listings and AI curation</div>
+        <p>Listings are prepared with AI-assisted curation and this is not guaranteed to be accurate. The Seller is solely responsible for reviewing and confirming every listing (identification, variant, condition, completeness, authenticity) before it goes live. We may edit or remove any listing.</p>
+
+        <div class="terms-h">5 · Bidding and winning</div>
+        <p>A placed bid is a binding, irrevocable offer, subject to any hidden reserve. The highest valid bid at close, or acceptance of a Buy-now price, wins. We may extend, void or re-open an auction in case of a fault, error or suspected manipulation.</p>
+
+        <div class="terms-h">6 · Payments and commission</div>
+        <p>Payments are handled by our provider (Stripe); by transacting you accept their terms. The Platform deducts its commission and fees; the balance is paid to the Seller after the sale completes and, where applicable, after the Buyer receives the item. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
+
+        <div class="terms-h">7 · Shipping, loss and damage</div>
+        <p>The Seller is responsible for packing and dispatching promptly after payment. To the maximum extent permitted by law, Plastic Empires is not liable for items lost, delayed, damaged or misdelivered in transit, nor for a Seller's failure to ship. We recommend tracked, insured shipping.</p>
+
+        <div class="terms-h">8 · Authenticity and "as-is"</div>
+        <p>Vintage toys are second-hand collectables sold "as-is, with all faults". Descriptions and curation are opinions on a best-effort basis, not guarantees of authenticity, completeness, grade or value. Buyers should inspect photos and ask before bidding. Statutory consumer rights are not removed by this clause.</p>
+
+        <div class="terms-h">9 · Consumer rights</div>
+        <p>Where mandatory EU/Dutch consumer law applies, consumer Buyers keep their statutory rights, including any right of withdrawal and remedies for non-conforming goods. Goods bought at a genuine public auction may be exempt from the standard withdrawal right [to be confirmed with counsel].</p>
+
+        <div class="terms-h">10 · Availability and downtime</div>
+        <p>The Platform is provided "as available". We do not guarantee uninterrupted or error-free operation and may suspend or change it. To the maximum extent permitted by law, we are not liable for loss from downtime, delay, data loss, or missed or unregistered bids.</p>
+
+        <div class="terms-h">11 · Limitation of liability</div>
+        <p>To the maximum extent permitted by law, we are not liable for indirect or consequential loss, or loss of profit, data or goodwill. Our total liability for any claim is limited to the greater of the commission we earned on the relevant transaction or [€100]. Nothing here limits liability that cannot be limited by law (e.g. death or personal injury by negligence, fraud, or mandatory consumer-law liability).</p>
+
+        <div class="terms-h">12 · Prohibited conduct</div>
+        <p>No counterfeit, stolen, unsafe-recalled or illegally-exported items, misrepresentation, shill bidding, fee circumvention, or unlawful use. We may remove listings, void sales and close accounts for breaches. You indemnify us against claims arising from your listings, sales, shipments or breaches.</p>
+
+        <div class="terms-h">13 · Content, privacy, law</div>
+        <p>You keep ownership of your photos and text and grant us a licence to host and display them for the Platform. We process personal data per our Privacy Policy [link] and the GDPR. These Terms are governed by the laws of the Netherlands, subject to any mandatory consumer protections in your own country.</p>
+
+        <div class="terms-h">Contact</div>
+        <p>[legal entity] · [address] · plasticempires.com · [contact email]</p>
+        <p style="color:var(--ink-3); font-size:13px">Draft v0.1 for review. Complete the [bracketed] fields and have a qualified lawyer review before use.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
 <!-- Account modal -->
 <div class="modal-bg" id="authModal" hidden>
   <div class="modal" id="authBody"></div>
@@ -1152,8 +1223,8 @@
       <div class="col">
         <span class="h">Contact</span>
         <span>plasticempires.com</span>
-        <span>Reserve · 48h hold</span>
         <span>Worldwide, insured</span>
+        <a data-nav="terms">Terms &amp; Conditions</a>
       </div>
     </div>
   </div>
@@ -1195,7 +1266,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -1217,7 +1288,7 @@
     if (!nav) return;
     const dest = nav.dataset.nav;
     if (dest === 'seller'){ e.preventDefault(); renderSeller(nav.dataset.seller || 'cornerstone'); show('seller'); return; }
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell'){
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell' || dest === 'terms'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
@@ -1626,10 +1697,11 @@
       b.querySelector('#authOut').addEventListener('click', () => { try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
-      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><label class="acceptbox"><input type="checkbox" id="authAccept"><span>I have read and accept the <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a>.</span></label><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
       const go = () => {
         const v = b.querySelector('#authEmail').value.trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
+        if (!b.querySelector('#authAccept').checked) { b.querySelector('#authHint').textContent = 'Please accept the Terms & Conditions to continue.'; return; }
         try { localStorage.setItem('pe_user', v); } catch (e) {}
         refreshAuthUI();
         b.innerHTML = '<div class="ey">Check your inbox</div><h3>You are signed in.</h3><p>On the live site a magic link would be emailed to ' + escA(v) + '. In this preview you are signed in instantly. Your account and draft lots live in this browser until the backend is connected.</p><button class="btn accent" type="button" id="authX">Done</button>';
@@ -1637,6 +1709,7 @@
       };
       b.querySelector('#authGo').addEventListener('click', go);
       b.querySelector('#authEmail').addEventListener('keydown', ev => { if (ev.key === 'Enter') go(); });
+      b.querySelector('#authTermsL').addEventListener('click', () => { authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     }
     authModal.hidden = false;
