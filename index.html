@@ -384,10 +384,28 @@
   textarea.ei { resize:vertical; line-height:1.5; }
   .ef-row { display:flex; gap:12px; }
   .ef-row .ef { flex:1; min-width:0; }
-  .stars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
-  .stars .base { color:var(--line-2); }
-  .stars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
+  .qstars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
+  .qstars .base { color:var(--line-2); }
+  .qstars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
   .cond-word { color:var(--ink); }
+  /* ---------- Seller profile ---------- */
+  .seller-hero { display:flex; gap:28px; align-items:flex-start; padding-top:8px; }
+  .seller-mono { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; font-family:var(--body); font-weight:700; font-size:30px; }
+  .seller-name { font-family:var(--body); font-weight:800; text-transform:uppercase; letter-spacing:.06em; font-size:clamp(28px,5vw,50px); line-height:1; margin:10px 0 0; }
+  .seller-meta { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:12px; }
+  .seller-meta .verified { color:var(--ink); }
+  .seller-rating { display:flex; align-items:center; gap:8px; font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:12px; }
+  .seller-rating b { color:var(--ink); }
+  .seller-stats { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:40px; }
+  .seller-stats .stat { padding:22px 24px; border-right:1px solid var(--line-2); }
+  .seller-stats .stat:first-child { padding-left:0; }
+  .seller-stats .stat:last-child { border-right:0; }
+  .s-num { font-family:var(--body); font-weight:700; font-size:26px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .s-lab { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  .seller-bio { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:66ch; margin:28px 0 0; }
+  .seller-link { display:inline-block; font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); cursor:pointer; margin-top:8px; }
+  .seller-link:hover { color:var(--ink); }
+  @media (max-width:600px){ .seller-hero { flex-direction:column; gap:18px; } .seller-stats { grid-template-columns:1fr 1fr; } .seller-stats .stat:nth-child(2){ border-right:0; } }
 
   /* ---------- Mobile menu ---------- */
   .navtoggle { display:none; width:40px; height:38px; border:1px solid var(--line); border-radius:6px; background:transparent; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
@@ -429,6 +447,7 @@
       <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
       <a class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
       <a class="hide-sm" data-nav="about" style="cursor:pointer">About</a>
+      <a class="hide-sm" id="authLink" data-auth-label style="cursor:pointer">Sign in</a>
       <button class="theme-btn" id="themeBtn">Light / Dark</button>
       <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </nav>
@@ -438,6 +457,7 @@
     <a href="#collection" data-nav="home">Shop</a>
     <a data-nav="sell">Sell</a>
     <a data-nav="about">About</a>
+    <a id="authLinkM" data-auth-label>Sign in</a>
   </div>
 </header>
 
@@ -606,6 +626,7 @@
           <div class="label">
             <div class="ln"><span class="nm">Millennium Falcon</span></div>
             <div class="meta">Star Wars · Kenner · 1979</div>
+            <a class="seller-link" data-nav="seller" data-seller="cornerstone">Cornerstone Collectibles ↗</a>
             <div class="auc-card"><div><span class="amt">€ 340</span><span class="sub">7 bids</span></div><div class="cd" data-cd data-ends="53">—</div></div>
             <button class="card-bid" data-bid-btn data-name="Millennium Falcon" data-bid="340" data-bids="7">Place a bid</button>
           </div>
@@ -618,6 +639,7 @@
           <div class="label">
             <div class="ln"><span class="nm">X-Wing Fighter</span></div>
             <div class="meta">Star Wars · Kenner · 1978</div>
+            <a class="seller-link" data-nav="seller" data-seller="cornerstone">Cornerstone Collectibles ↗</a>
             <div class="auc-card"><div><span class="amt">€ 145</span><span class="sub">4 bids</span></div><div class="cd" data-cd data-ends="20">—</div></div>
             <button class="card-bid" data-bid-btn data-name="X-Wing Fighter" data-bid="145" data-bids="4">Place a bid</button>
           </div>
@@ -630,6 +652,7 @@
           <div class="label">
             <div class="ln"><span class="nm">Godzilla · sofubi</span></div>
             <div class="meta">Kaiju · Bullmark · 1970s</div>
+            <a class="seller-link" data-nav="seller" data-seller="tokyovinyl">Tokyo Vinyl ↗</a>
             <div class="auc-card"><div><span class="amt">€ 380</span><span class="sub">11 bids</span></div><div class="cd" data-cd data-ends="78">—</div></div>
             <button class="card-bid" data-bid-btn data-name="Godzilla · sofubi" data-bid="380" data-bids="11">Place a bid</button>
           </div>
@@ -642,6 +665,7 @@
           <div class="label">
             <div class="ln"><span class="nm">Ecto-1</span></div>
             <div class="meta">Ghostbusters · Kenner · 1986</div>
+            <a class="seller-link" data-nav="seller" data-seller="cornerstone">Cornerstone Collectibles ↗</a>
             <div class="auc-card"><div><span class="amt">€ 165</span><span class="sub">3 bids</span></div><div class="cd" data-cd data-ends="6">—</div></div>
             <button class="card-bid" data-bid-btn data-name="Ecto-1" data-bid="165" data-bids="3">Place a bid</button>
           </div>
@@ -1013,6 +1037,28 @@
   </section>
 </main>
 
+<!-- ============================ SELLER ============================ -->
+<main class="view" id="view-seller" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a data-nav="home" href="#collection">Shop</a><span class="sep">/</span><span class="here" id="sellerCrumb">Seller</span></div>
+    <div id="sellerHead"></div>
+  </div>
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Active lots</div><h2 id="sellerLotsTitle">On auction now</h2></div>
+        <p id="sellerLotsIntro">Live lots from this seller.</p>
+      </div>
+      <div class="collection" id="sellerLots"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Account modal -->
+<div class="modal-bg" id="authModal" hidden>
+  <div class="modal" id="authBody"></div>
+</div>
+
 <!-- Reserve modal -->
 <div class="modal-bg" id="modal" hidden>
   <div class="modal">
@@ -1096,7 +1142,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -1117,6 +1163,7 @@
     const nav = e.target.closest('[data-nav]');
     if (!nav) return;
     const dest = nav.dataset.nav;
+    if (dest === 'seller'){ e.preventDefault(); renderSeller(nav.dataset.seller || 'cornerstone'); show('seller'); return; }
     if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
@@ -1337,7 +1384,7 @@
     const STAR_PCT = { 'Mint': 100, 'Near mint': 90, 'Excellent': 80, 'Good': 60, 'Fair': 40, 'Poor': 20 };
     function stars(cond){
       const pct = STAR_PCT[cond] || 0;
-      return '<span class="stars" title="' + esc(cond || '') + '"><span class="base">★★★★★</span><span class="fill" style="width:' + pct + '%">★★★★★</span></span>';
+      return '<span class="qstars" title="' + esc(cond || '') + '"><span class="base">★★★★★</span><span class="fill" style="width:' + pct + '%">★★★★★</span></span>';
     }
     function viewMode(){
       const c = current;
@@ -1354,7 +1401,7 @@
         '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this lot</button></div>';
       setCard(html, false);
       document.getElementById('editLot').addEventListener('click', editMode);
-      document.getElementById('submitLot').addEventListener('click', () => openModal('Lot submitted', (current.toy || 'Your toy') + ' is on its way.', 'On the live site this creates a draft auction lot for review and payout setup. Layout preview, so nothing was submitted.'));
+      document.getElementById('submitLot').addEventListener('click', () => { saveDraftLot(current); openModal('Lot submitted', (current.toy || 'Your toy') + ' is now in your shop.', 'Added to the Shop as a draft lot, stored in this browser for the preview. On the live site this creates a real draft lot for review and payout setup.'); });
     }
 
     const CONDITIONS = ['Mint', 'Near mint', 'Excellent', 'Good', 'Fair', 'Poor'];
@@ -1394,6 +1441,140 @@
       document.getElementById('cancelLot').addEventListener('click', viewMode);
     }
   })();
+
+  // ----- Seller profiles -----
+  const SELLERS = {
+    cornerstone: {
+      name: 'Cornerstone Collectibles', handle: '@cornerstone', location: 'Hoofddorp, Netherlands',
+      since: '2019', type: 'Dealer', verified: true, rating: 4.8, reviews: 214, sold: 1320, active: 4, followers: 486,
+      bio: 'A vintage-toy dealer specialising in original Kenner Star Wars and The Real Ghostbusters. Twelve years on the show circuit before going online. Every piece is hand-inspected, photographed and shipped insured.',
+      lots: [
+        { name: 'Millennium Falcon', meta: 'Star Wars · Kenner · 1979', bid: 340, bids: 7, ends: 53, nav: 'artifact' },
+        { name: 'X-Wing Fighter', meta: 'Star Wars · Kenner · 1978', bid: 145, bids: 4, ends: 20 },
+        { name: 'Ecto-1', meta: 'Ghostbusters · Kenner · 1986', bid: 165, bids: 3, ends: 6 },
+        { name: 'Slimer', meta: 'Ghostbusters · Kenner · 1986', bid: 40, bids: 2, ends: 96 },
+      ],
+    },
+    tokyovinyl: {
+      name: 'Tokyo Vinyl', handle: '@tokyovinyl', location: 'Amsterdam, Netherlands',
+      since: '2021', type: 'Collector', verified: true, rating: 4.9, reviews: 63, sold: 210, active: 2, followers: 172,
+      bio: 'A private collector of Japanese sofubi: Bullmark, Marusan and Popy kaiju from the tokusatsu boom. Sells only doubles from the personal collection. Slow, careful, obsessive about paint.',
+      lots: [
+        { name: 'Godzilla · sofubi', meta: 'Kaiju · Bullmark · 1970s', bid: 380, bids: 11, ends: 78 },
+        { name: 'Ultraman · sofubi', meta: 'Kaiju · Marusan · 1966', bid: 260, bids: 5, ends: 40 },
+      ],
+    },
+  };
+  const nfmt = n => Number(n).toLocaleString('nl-NL');
+  const eur2 = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+  function qstarsPct(pct){ return '<span class="qstars"><span class="base">★★★★★</span><span class="fill" style="width:' + pct + '%">★★★★★</span></span>'; }
+  function fmtEnds(h){ const d = Math.floor(h / 24), r = Math.round(h % 24); return d > 0 ? d + 'd ' + r + 'h left' : r + 'h left'; }
+  function statBlock(n, lab){ return '<div class="stat"><div class="s-num">' + n + '</div><div class="s-lab">' + lab + '</div></div>'; }
+
+  function renderSeller(id){
+    const s = SELLERS[id] || SELLERS.cornerstone;
+    document.getElementById('sellerCrumb').textContent = s.name;
+    const mono = s.name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    document.getElementById('sellerHead').innerHTML =
+      '<section class="seller-hero">' +
+        '<div class="seller-mono">' + mono + '</div>' +
+        '<div class="seller-id">' +
+          '<div class="ey">Seller · ' + s.type + ' · ' + s.location + '</div>' +
+          '<h1 class="seller-name">' + s.name + '</h1>' +
+          '<div class="seller-meta">' + s.handle + ' · Member since ' + s.since + (s.verified ? ' · <span class="verified">✓ Verified</span>' : '') + '</div>' +
+          '<div class="seller-rating">' + qstarsPct(s.rating / 5 * 100) + ' <b>' + s.rating.toFixed(1) + '</b> · ' + s.reviews + ' reviews</div>' +
+          '<div class="buy-row" style="max-width:420px; margin-top:20px"><button class="btn accent" type="button" id="followBtn">Follow</button><button class="btn ghost" type="button" id="msgBtn">Message</button></div>' +
+        '</div>' +
+      '</section>' +
+      '<div class="seller-stats">' + statBlock(nfmt(s.sold), 'Lots sold') + statBlock(s.active, 'Active lots') + statBlock(s.rating.toFixed(1), 'Avg rating') + statBlock(nfmt(s.followers), 'Followers') + '</div>' +
+      '<p class="seller-bio">' + s.bio + '</p>';
+    document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + s.name + '.', 'On the live site you get notified when this seller lists a new lot. Layout preview.'));
+    document.getElementById('msgBtn').addEventListener('click', () => openModal('Message', 'Contact ' + s.name + '.', 'On the live site this opens a message thread with the seller. Layout preview.'));
+
+    document.getElementById('sellerLotsIntro').textContent = s.name + ' has ' + s.lots.length + ' lots live right now.';
+    const grid = document.getElementById('sellerLots');
+    grid.innerHTML = s.lots.map(l =>
+      '<article class="artifact-card">' +
+        '<div class="vitrine" style="aspect-ratio:1"' + (l.nav ? ' data-nav="' + l.nav + '"' : '') + '>' +
+          '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+          '<div class="vlabel"><div class="k">' + l.meta.split(' · ').slice(-2).join(' · ') + '</div><div class="n" style="font-size:19px">' + l.name + '</div></div>' +
+        '</div>' +
+        '<div class="label">' +
+          '<div class="ln"><span class="nm">' + l.name + '</span></div>' +
+          '<div class="meta">' + l.meta + '</div>' +
+          '<div class="auc-card"><div><span class="amt">' + eur2(l.bid) + '</span><span class="sub">' + l.bids + ' bids</span></div><div class="cd">' + fmtEnds(l.ends) + '</div></div>' +
+          '<button class="card-bid" type="button" data-name="' + l.name + '" data-bid="' + l.bid + '" data-bids="' + l.bids + '">Place a bid</button>' +
+        '</div>' +
+      '</article>'
+    ).join('');
+    grid.querySelectorAll('.card-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10), parseInt(b.dataset.bids, 10)); }));
+  }
+
+  // ----- Draft lots (browser-local persistence) -----
+  function loadDraftLots(){ try { return JSON.parse(localStorage.getItem('pe_lots_v1') || '[]'); } catch (e) { return []; } }
+  function saveDraftLot(c){
+    const lots = loadDraftLots();
+    lots.unshift({ name: c.toy || 'Untitled lot', maker: c.maker || '', line: c.line || '', year: c.year || '', condition: c.condition || '', bid: c.startingBid || 0, days: c.auctionDays || 7, ts: Date.now() });
+    try { localStorage.setItem('pe_lots_v1', JSON.stringify(lots.slice(0, 20))); } catch (e) {}
+    injectDraftLots();
+  }
+  function injectDraftLots(){
+    const grid = document.querySelector('#collection .collection');
+    if (!grid) return;
+    grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
+    const lots = loadDraftLots();
+    if (!lots.length) return;
+    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+    const html = lots.map(l =>
+      '<article class="artifact-card draft-lot">' +
+        '<div class="vitrine" style="aspect-ratio:1"><span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+          '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div></div>' +
+        '<div class="label"><div class="ln"><span class="nm">' + e(l.name) + '</span></div>' +
+          '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
+          '<span class="seller-link" style="cursor:default">Your draft</span>' +
+          '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">0 bids</span></div><div class="cd">' + (l.days || 7) + 'd left</div></div>' +
+          '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '">Place a bid</button>' +
+        '</div></article>'
+    ).join('');
+    grid.insertAdjacentHTML('afterbegin', html);
+    grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, 0); }); });
+  }
+
+  // ----- Account (email magic-link, preview) -----
+  const authModal = document.getElementById('authModal');
+  const escA = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+  function currentUser(){ try { return localStorage.getItem('pe_user') || ''; } catch (e) { return ''; } }
+  function refreshAuthUI(){ const u = currentUser(); document.querySelectorAll('[data-auth-label]').forEach(el => { el.textContent = u ? ('· ' + u.split('@')[0]) : 'Sign in'; }); }
+  function openAuth(){
+    const u = currentUser(), b = document.getElementById('authBody');
+    if (u){
+      b.innerHTML = '<div class="ey">Account</div><h3>Signed in</h3><p>Signed in as ' + escA(u) + '. In this preview your account and draft lots are stored in this browser.</p><div class="buy-row"><button class="btn accent" type="button" id="authOut">Sign out</button><button class="btn ghost" type="button" id="authX">Close</button></div>';
+      b.querySelector('#authOut').addEventListener('click', () => { try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
+      b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
+    } else {
+      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
+      const go = () => {
+        const v = b.querySelector('#authEmail').value.trim();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
+        try { localStorage.setItem('pe_user', v); } catch (e) {}
+        refreshAuthUI();
+        b.innerHTML = '<div class="ey">Check your inbox</div><h3>You are signed in.</h3><p>On the live site a magic link would be emailed to ' + escA(v) + '. In this preview you are signed in instantly. Your account and draft lots live in this browser until the backend is connected.</p><button class="btn accent" type="button" id="authX">Done</button>';
+        b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
+      };
+      b.querySelector('#authGo').addEventListener('click', go);
+      b.querySelector('#authEmail').addEventListener('keydown', ev => { if (ev.key === 'Enter') go(); });
+      b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
+    }
+    authModal.hidden = false;
+  }
+  if (authModal){
+    authModal.addEventListener('click', e => { if (e.target === authModal) authModal.hidden = true; });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') authModal.hidden = true; });
+    document.querySelectorAll('#authLink, #authLinkM').forEach(el => el.addEventListener('click', e => { e.preventDefault(); openAuth(); }));
+    refreshAuthUI();
+  }
+  injectDraftLots();
 
   // ----- Mobile menu -----
   (function(){
