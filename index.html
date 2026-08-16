@@ -1586,7 +1586,7 @@
             });
             if (error) throw error;
             injectDraftLots();
-            openModal('Lot listed', (current.toy || 'Your toy') + ' is live in the shop.', 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s) uploaded' : (upErr ? '. Photos could not upload: ' + upErr : ', no photos attached')) + '. It now appears in the Shop.');
+            openModal('Lot listed', (current.toy || 'Your toy') + ' is live in the shop.', 'Saved. Diagnostics — photos selected: ' + files.length + ' · uploaded: ' + urls.length + (upErr ? ' · error: ' + upErr : '') + '.');
           } catch (err) {
             openModal('Could not list', 'Something went wrong.', String((err && err.message) || err));
           } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; }
