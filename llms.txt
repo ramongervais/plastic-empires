@@ -1,0 +1,29 @@
+# Plastic Empires
+
+> An auction house for original vintage toys. Sellers upload photos; our AI identifies, dates, grades and validates each toy; buyers bid. Kenner Star Wars, The Real Ghostbusters, Japanese kaiju and more. Worldwide, insured.
+
+Plastic Empires is a curated, auction-first marketplace for genuine vintage collectible toys, based in the Netherlands. Every lot is identified, condition-graded and told: the toy, the maker, and the story behind it. Only genuine collectibles are accepted; prohibited or non-toy items are rejected automatically.
+
+## How it works
+- Sellers upload a few clear photos, including a close-up of the maker's stamp (moulded year, country and factory markings).
+- AI curation writes the listing, dates the year and line, grades condition, flags variants and proposes a fair starting bid.
+- Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely; sellers ship worldwide, insured. Buyers can review sellers after a purchase.
+
+## The Empires (makers)
+- Kenner (Cincinnati) — Star Wars, The Real Ghostbusters
+- Japanese kaiju makers — Bullmark, Marusan, Popy
+- Each maker has its own documentary page; each toy links back to its Empire.
+
+## Seller plans
+- Starter (free): 3 listing tokens per month, 15% commission on sold lots, AI curation and validation.
+- Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, featured placement. Early-bird pricing for the first six months.
+- One token = one listing. Extra token packs can be bought at any time.
+
+## Launch
+- The public auctions open on 1 September 2026. Before then, lots appear in Preview and early sign-ups are welcome.
+
+## Links
+- Site: https://plasticempires.com/
+
+## Contact
+- plasticempires.com
