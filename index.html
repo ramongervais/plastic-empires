@@ -1309,6 +1309,9 @@
   .artifact-card.draft-lot .vitrine.closed{ opacity:.66; }
   .card-badge{ position:absolute; top:12px; left:12px; z-index:2; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:2px; }
   .card-badge.sand{ background:rgba(181,138,63,.16); color:#8a6a2e; border:1px solid rgba(181,138,63,.5); backdrop-filter:blur(2px); }
+  .watch-btn{ position:absolute; top:10px; right:10px; z-index:3; width:32px; height:32px; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.92); color:#131313; font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:background .15s, color .15s, transform .1s; }
+  .watch-btn:hover{ background:#fff; transform:scale(1.08); }
+  .watch-btn.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
   .acct-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:8px 0 28px; }
   .acct-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-bottom:16px; }
   .acct-stat{ background:var(--paper); padding:20px; }
@@ -1402,6 +1405,8 @@
     requestAnimationFrame(paintStars);
   }
   document.addEventListener('click', e => {
+    const wb = e.target.closest('[data-watch]');
+    if (wb){ e.preventDefault(); e.stopPropagation(); toggleWatch(wb); return; }
     const emp = e.target.closest('[data-empire]');
     if (emp){
       e.preventDefault();
@@ -1884,6 +1889,26 @@
     injectDraftLots();
   }
   let injectGen = 0;
+
+  // ----- Watchlist -----
+  let watchedIds = new Set();
+  async function loadWatchlist(){
+    if (!SB || !authUser){ watchedIds = new Set(); return; }
+    try { const { data } = await SB.from('watchlist').select('lot_id').eq('user_id', authUser.id); watchedIds = new Set((data || []).map(r => r.lot_id)); } catch (e) { watchedIds = new Set(); }
+  }
+  async function toggleWatch(el){
+    const id = el.dataset.watch; if (!id) return;
+    if (SB && !authUser){ openAuth(); return; }
+    const on = !watchedIds.has(id);
+    if (on) watchedIds.add(id); else watchedIds.delete(id);
+    document.querySelectorAll('[data-watch="' + id + '"]').forEach(b => { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = on ? '★' : '☆'; });
+    try {
+      if (!SB) return;
+      if (on) await SB.from('watchlist').insert({ user_id: authUser.id, lot_id: id });
+      else await SB.from('watchlist').delete().eq('user_id', authUser.id).eq('lot_id', id);
+    } catch (e) {}
+  }
+
   // Shared shop/sold card. l.state = 'live' | 'ended' | 'sold' (undefined = live).
   function lotCardHtml(l){
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
@@ -1896,6 +1921,7 @@
     return '<article class="artifact-card draft-lot">' +
       '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '">' +
         (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : '')) +
+        (!isClosed && l.id ? '<button class="watch-btn' + (watchedIds.has(l.id) ? ' on' : '') + '" type="button" data-watch="' + e(l.id) + '" aria-label="Watch this lot" aria-pressed="' + (watchedIds.has(l.id) ? 'true' : 'false') + '">' + (watchedIds.has(l.id) ? '★' : '☆') + '</button>' : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
@@ -1974,20 +2000,23 @@
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
     const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at';
-    const [myLotsRes, myBidsRes, prefRes] = await Promise.all([
+    const [myLotsRes, myBidsRes, prefRes, watchRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
-      SB.from('profiles').select('notify_outbid,notify_won,notify_sold').eq('id', uid).single()
+      SB.from('profiles').select('notify_outbid,notify_won,notify_sold').eq('id', uid).single(),
+      SB.from('watchlist').select('lot_id').eq('user_id', uid)
     ]);
     const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
     const prefs = prefRes.data || {};
+    const watchIds = [...new Set((watchRes.data || []).map(w => w.lot_id))];
     const bidIds = [...new Set(myBids.map(b => b.lot_id))];
-    const allIds = [...new Set(lots.map(l => l.id).concat(bidIds))];
-    const [bidLotsRes, allBidsRes] = await Promise.all([
+    const allIds = [...new Set(lots.map(l => l.id).concat(bidIds).concat(watchIds))];
+    const [bidLotsRes, allBidsRes, watchLotsRes] = await Promise.all([
       bidIds.length ? SB.from('lots').select(sel).in('id', bidIds) : Promise.resolve({ data: [] }),
-      allIds.length ? SB.from('bids').select('lot_id,amount,bidder_id').in('lot_id', allIds) : Promise.resolve({ data: [] })
+      allIds.length ? SB.from('bids').select('lot_id,amount,bidder_id').in('lot_id', allIds) : Promise.resolve({ data: [] }),
+      watchIds.length ? SB.from('lots').select(sel).in('id', watchIds) : Promise.resolve({ data: [] })
     ]);
-    const bidLots = bidLotsRes.data || [];
+    const bidLots = bidLotsRes.data || [], watchLots = watchLotsRes.data || [];
     const topByLot = {};
     (allBidsRes.data || []).forEach(b => { const t = topByLot[b.lot_id]; if (!t || Number(b.amount) > t.amount) topByLot[b.lot_id] = { amount: Number(b.amount), bidder_id: b.bidder_id }; });
     const myTop = topByLot, bidTop = topByLot;
@@ -2004,10 +2033,12 @@
     const listingsHtml = lots.length ? lots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = bidTop[l.id] && bidTop[l.id].bidder_id === uid; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
+    const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(myBids.length, 'Bids placed') + stat(wins.length, 'Won') + '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
+      '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Notifications</div>' +
@@ -2326,8 +2357,8 @@
     const authB = document.getElementById('authLinkB'); if (authB) authB.addEventListener('click', e => { e.preventDefault(); if (currentUser()) renderAccount(); else openAuth(); });
     refreshAuthUI();
     if (SB) {
-      SB.auth.getSession().then(({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); });
-      SB.auth.onAuthStateChange((_e, session) => { authUser = session ? session.user : null; refreshAuthUI(); injectDraftLots(); });
+      SB.auth.getSession().then(async ({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); await loadWatchlist(); injectDraftLots(); });
+      SB.auth.onAuthStateChange(async (_e, session) => { authUser = session ? session.user : null; refreshAuthUI(); await loadWatchlist(); injectDraftLots(); });
     }
   }
   injectDraftLots();
