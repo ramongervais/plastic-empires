@@ -2001,7 +2001,7 @@
     const [myLotsRes, myBidsRes, prefRes, watchRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
-      SB.from('profiles').select('notify_outbid,notify_won,notify_sold').eq('id', uid).single(),
+      SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending').eq('id', uid).single(),
       SB.from('watchlist').select('lot_id').eq('user_id', uid)
     ]);
     const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
@@ -2041,6 +2041,7 @@
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Notifications</div>' +
         tog('notify_outbid', 'Email me when I\'m outbid', prefs.notify_outbid) +
+        tog('notify_ending', 'Email me when a lot I watch is ending soon', prefs.notify_ending) +
         tog('notify_won', 'Email me when I win a lot', prefs.notify_won) +
         tog('notify_sold', 'Email me when one of my items sells', prefs.notify_sold) +
       '</div>';
