@@ -374,6 +374,20 @@
   .rc-conf { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); line-height:1.6; text-align:right; }
   .rc-notes { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink); margin-top:16px; }
   @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
+  .rc-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .rc-editbtn { flex-shrink:0; font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid var(--line); border-radius:2px; padding:6px 12px; cursor:pointer; color:var(--ink-2); }
+  .rc-editbtn:hover { border-color:var(--ink); color:var(--ink); }
+  .ef { display:block; margin-bottom:12px; }
+  .ef > span { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px; }
+  .ei { width:100%; box-sizing:border-box; font-family:var(--body); font-size:14px; padding:9px 11px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); }
+  .ei:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+  textarea.ei { resize:vertical; line-height:1.5; }
+  .ef-row { display:flex; gap:12px; }
+  .ef-row .ef { flex:1; min-width:0; }
+  .stars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
+  .stars .base { color:var(--line-2); }
+  .stars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
+  .cond-word { color:var(--ink); }
 
   /* ---------- Mobile menu ---------- */
   .navtoggle { display:none; width:40px; height:38px; border:1px solid var(--line); border-radius:6px; background:transparent; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
@@ -1306,7 +1320,7 @@
         });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
-        renderCuration(data.curation);
+        showCuration(data.curation);
       } catch (err) {
         setCard('<div class="rc-empty">Could not curate. ' + esc(err.message || err) + '<br><br>The AI curation runs on the live site, not inside the claude.ai preview.</div>', true);
       } finally {
@@ -1314,20 +1328,70 @@
       }
     });
 
-    function renderCuration(c){
+    let current = null;
+    function showCuration(c){
       if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
+      current = c; if (current.auctionDays == null) current.auctionDays = 7; viewMode();
+    }
+
+    const STAR_PCT = { 'Mint': 100, 'Near mint': 90, 'Excellent': 80, 'Good': 60, 'Fair': 40, 'Poor': 20 };
+    function stars(cond){
+      const pct = STAR_PCT[cond] || 0;
+      return '<span class="stars" title="' + esc(cond || '') + '"><span class="base">★★★★★</span><span class="fill" style="width:' + pct + '%">★★★★★</span></span>';
+    }
+    function viewMode(){
+      const c = current;
       const est = (c.estimateLow && c.estimateHigh) ? 'Est. ' + eur(c.estimateLow) + ' – ' + eur(c.estimateHigh) : '';
+      const condRow = '<div class="row"><span class="k">Condition</span><span class="v"><span class="cond-word">' + esc(c.condition || '—') + '</span> ' + stars(c.condition) + '</span></div>';
       const html =
-        '<div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
-        '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="rc-spec">' + row('Condition', c.condition) + row('Completeness', c.completeness) + '</div>' +
+        '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
+        '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
+        '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
+        '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) + row('Auction length', (c.auctionDays || 7) + ' days') + '</div>' +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">Suggested starting bid</div><div class="amt">' + eur(c.startingBid) + '</div></div>' +
-        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + '</div></div>' +
+        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
-        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot">Submit this lot</button></div>';
+        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this lot</button></div>';
       setCard(html, false);
-      const sub = document.getElementById('submitLot');
-      if (sub) sub.addEventListener('click', () => openModal('Lot submitted', (c.toy || 'Your toy') + ' is on its way.', 'On the live site this creates a draft auction lot for review and payout setup. Layout preview, so nothing was submitted.'));
+      document.getElementById('editLot').addEventListener('click', editMode);
+      document.getElementById('submitLot').addEventListener('click', () => openModal('Lot submitted', (current.toy || 'Your toy') + ' is on its way.', 'On the live site this creates a draft auction lot for review and payout setup. Layout preview, so nothing was submitted.'));
+    }
+
+    const CONDITIONS = ['Mint', 'Near mint', 'Excellent', 'Good', 'Fair', 'Poor'];
+    const CONFS = ['high', 'medium', 'low'];
+    const DAYS = ['3', '5', '7', '10', '14'];
+    const ef = (label, id, val, type) => '<label class="ef"><span>' + label + '</span><input class="ei" id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '"></label>';
+    const efSel = (label, id, val, opts) => '<label class="ef"><span>' + label + '</span><select class="ei" id="' + id + '">' + opts.map(o => '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>';
+    const efArea = (label, id, val) => '<label class="ef"><span>' + label + '</span><textarea class="ei" id="' + id + '" rows="3">' + esc(val == null ? '' : val) + '</textarea></label>';
+
+    function editMode(){
+      const c = current;
+      const html =
+        '<div class="rc-sub" style="margin:0 0 16px">Edit curation</div>' +
+        ef('Toy', 'e_toy', c.toy) +
+        '<div class="ef-row">' + ef('Maker', 'e_maker', c.maker) + ef('Year', 'e_year', c.year) + '</div>' +
+        ef('Line', 'e_line', c.line) +
+        efSel('Condition', 'e_condition', c.condition, CONDITIONS) +
+        efArea('Completeness', 'e_completeness', c.completeness) +
+        '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number') + efSel('Confidence', 'e_confidence', c.confidence, CONFS) + '</div>' +
+        '<div class="ef-row">' + ef('Est. low €', 'e_lo', c.estimateLow, 'number') + ef('Est. high €', 'e_hi', c.estimateHigh, 'number') + '</div>' +
+        efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS) +
+        efArea('Notes', 'e_notes', c.notes) +
+        '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
+      setCard(html, false);
+      document.getElementById('saveLot').addEventListener('click', () => {
+        const g = id => document.getElementById(id).value.trim();
+        const num = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? undefined : v; };
+        current = { ...current,
+          toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
+          condition: g('e_condition'), completeness: g('e_completeness'),
+          startingBid: num('e_bid'), estimateLow: num('e_lo'), estimateHigh: num('e_hi'),
+          confidence: g('e_confidence'), notes: g('e_notes'),
+          auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
+        };
+        viewMode();
+      });
+      document.getElementById('cancelLot').addEventListener('click', viewMode);
     }
   })();
 
