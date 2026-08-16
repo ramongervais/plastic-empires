@@ -1194,6 +1194,23 @@
   </div>
 </main>
 
+<!-- ============================ SOLD ARCHIVE ============================ -->
+<main class="view" id="view-sold" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Sold archive</span></div>
+    <section class="empire-hero">
+      <div class="ey">Results</div>
+      <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Sold &amp; ended</h1>
+      <div class="empire-dek">Past results. What has changed hands, and for how much.</div>
+    </section>
+  </div>
+  <section class="band">
+    <div class="wrap">
+      <div class="collection" id="soldGrid"></div>
+    </div>
+  </section>
+</main>
+
 <!-- Account modal -->
 <div class="modal-bg" id="authModal" hidden>
   <div class="modal" id="authBody"></div>
@@ -1228,6 +1245,7 @@
         <span class="h">Visit</span>
         <a data-nav="home">The Empires</a>
         <a data-nav="home">Shop</a>
+        <a data-nav="sold">Sold archive</a>
         <a data-nav="artifact">Featured toy</a>
         <a data-nav="about">About</a>
       </div>
@@ -1278,6 +1296,8 @@
   .reserve-note{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin:-8px 0 18px; }
   .reserve-note.met{ color:var(--ink); }
   .reserve-note.met::before{ content:"\2713  "; }
+  .artifact-card.draft-lot .vitrine.closed{ opacity:.66; }
+  .card-badge{ position:absolute; top:12px; left:12px; z-index:2; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:2px; }
   .zoom-ov{ position:fixed; inset:0; z-index:1000; background:rgba(10,10,10,.95); }
   .zoom-stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
   .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
@@ -1331,7 +1351,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), lot: document.getElementById('view-lot') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -1354,6 +1374,7 @@
     const dest = nav.dataset.nav;
     if (dest === 'seller'){ e.preventDefault(); renderSeller(nav.dataset.seller || 'cornerstone'); show('seller'); return; }
     if (dest === 'lot'){ e.preventDefault(); openLot(nav.dataset.lot); return; }
+    if (dest === 'sold'){ e.preventDefault(); renderSold(); show('sold'); return; }
     if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell' || dest === 'terms'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
@@ -1775,6 +1796,27 @@
     injectDraftLots();
   }
   let injectGen = 0;
+  // Shared shop/sold card. l.state = 'live' | 'ended' | 'sold' (undefined = live).
+  function lotCardHtml(l){
+    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+    const closed = l.state && l.state !== 'live';
+    const ended = l.state === 'ended' || (!closed && l.ends_at && new Date(l.ends_at) <= Date.now());
+    const isClosed = closed || ended;
+    const badgeWord = l.state === 'sold' ? 'Sold' : 'Ended';
+    const endsTxt = isClosed ? badgeWord : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left');
+    return '<article class="artifact-card draft-lot">' +
+      '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '">' +
+        (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : '') +
+        '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+        (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
+      '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
+        '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (l.bids || 0) + ' bids') + '</span></div><div class="cd">' + endsTxt + '</div></div>' +
+        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>') +
+      '</div></article>';
+  }
+
   async function injectDraftLots(){
     const grid = document.querySelector('#collection .collection');
     if (!grid) return;
@@ -1783,40 +1825,53 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [];
     if (SB) {
-      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,image_urls,ends_at').eq('status', 'live').order('created_at', { ascending: false }).limit(24);
+      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at').neq('status', 'draft').order('created_at', { ascending: false }).limit(48);
       const rows = data || [];
+      const now = Date.now();
       const ids = rows.map(r => r.id);
       const agg = {};
       if (ids.length) {
         const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids);
         (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; });
       }
-      lots = rows.map(r => {
+      const mapped = rows.map(r => {
         const a = agg[r.id] || { max: 0, count: 0 };
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : r.starting_bid, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at };
+        const timeEnded = r.ends_at && new Date(r.ends_at) <= now;
+        const state = r.status === 'sold' ? 'sold' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live');
+        const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs };
       });
+      lots = mapped.filter(l => l.state === 'live').concat(mapped.filter(l => l.state !== 'live' && (now - l.closedMs) < 86400000));
     } else {
       lots = loadDraftLots();
     }
     if (gen !== injectGen) return;
     grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
     if (!lots.length) return;
-    const endsLabel = l => {
-      if (l.ends_at) { const ms = new Date(l.ends_at) - Date.now(); if (ms <= 0) return 'Ended'; const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; }
-      return (l.days || 7) + 'd left';
-    };
-    const html = lots.map(l =>
-      '<article class="artifact-card draft-lot">' +
-        '<div class="vitrine"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '"><span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
-          (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
-        '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
-          '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
-          '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (l.bids || 0) + ' bids</span></div><div class="cd">' + endsLabel(l) + '</div></div>' +
-          ((l.ends_at && new Date(l.ends_at) <= Date.now()) ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Auction ended · view result</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>') +
-        '</div></article>'
-    ).join('');
+    const html = lots.map(lotCardHtml).join('');
     grid.insertAdjacentHTML('afterbegin', html);
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
+  }
+
+  // ----- Sold archive page (all past results) -----
+  async function renderSold(){
+    const grid = document.getElementById('soldGrid');
+    if (!grid) return;
+    grid.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">Loading past results…</p>';
+    if (!SB){ grid.innerHTML = '<p style="font-family:var(--body);padding:24px 0">Past results are available on the live site.</p>'; return; }
+    const now = Date.now();
+    const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at').neq('status', 'draft').order('created_at', { ascending: false }).limit(120);
+    const rows = (data || []).filter(r => r.status === 'sold' || r.status === 'ended' || (r.ends_at && new Date(r.ends_at) <= now));
+    const ids = rows.map(r => r.id);
+    const agg = {};
+    if (ids.length){ const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids); (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; }); }
+    const mapped = rows.map(r => {
+      const a = agg[r.id] || { max: 0, count: 0 };
+      const state = r.status === 'sold' ? 'sold' : 'ended';
+      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) };
+    });
+    mapped.sort((a, b) => b.closedMs - a.closedMs);
+    grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">No past results yet.</p>';
   }
 
   // ----- Checkout (single flow: Buy-now + won-auction both land here) -----
@@ -1897,14 +1952,14 @@
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
-            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : 'Result') : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid')) + '</div><div class="auc-amount">' + (ended && !topBid ? '—' : money(cur)) + '</div></div>' +
+            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid')) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : '—')) : money(cur)) + '</div></div>' +
             '<div><div class="auc-label">' + (ended ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown">' + (ended ? 'Ended' : ends) + '</div></div>' +
           '</div>' +
           ((!ended && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
           (ended ?
             '<div class="won-box' + (iWon ? ' win' : '') + '">' +
               (iWon ? '<div class="won-h">You won this lot.</div><div class="won-sub">' + (isSold ? 'Payment received. Thank you.' : 'Complete your payment to confirm the purchase.') + '</div>' + (isSold ? '' : '<button class="btn accent" type="button" id="lotPay">Pay now &middot; ' + money(cur) + '</button>') :
-                (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>')) +
+                (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : (isSold ? '<div class="won-h">Sold.</div><div class="won-sub">This lot has been purchased' + (lot.buy_now ? ' for ' + money(lot.buy_now) : '') + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>'))) +
             '</div>' :
             '<div class="buy-row">' +
               '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
