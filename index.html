@@ -549,58 +549,6 @@
         <p>Live auctions on original vintage toys. Place a bid, or take it straight away with Buy now.</p>
       </div>
       <div class="collection">
-        <article class="artifact-card">
-          <div class="vitrine" style="aspect-ratio:1" data-nav="artifact">
-            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-            <div class="vlabel"><div class="k">Kenner · 1979</div><div class="n" style="font-size:19px">Millennium Falcon</div></div>
-          </div>
-          <div class="label">
-            <div class="ln"><span class="nm">Millennium Falcon</span></div>
-            <div class="meta">Star Wars · Kenner · 1979</div>
-            <a class="seller-link" data-nav="seller" data-seller="cornerstone">Cornerstone Collectibles ↗</a>
-            <div class="auc-card"><div><span class="amt">€ 340</span><span class="sub">7 bids</span></div><div class="cd" data-cd data-ends="53">—</div></div>
-            <button class="card-bid" data-bid-btn data-name="Millennium Falcon" data-bid="340" data-bids="7">Place a bid</button>
-          </div>
-        </article>
-        <article class="artifact-card">
-          <div class="vitrine" style="aspect-ratio:1">
-            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-            <div class="vlabel"><div class="k">Kenner · 1978</div><div class="n" style="font-size:19px">X-Wing Fighter</div></div>
-          </div>
-          <div class="label">
-            <div class="ln"><span class="nm">X-Wing Fighter</span></div>
-            <div class="meta">Star Wars · Kenner · 1978</div>
-            <a class="seller-link" data-nav="seller" data-seller="cornerstone">Cornerstone Collectibles ↗</a>
-            <div class="auc-card"><div><span class="amt">€ 145</span><span class="sub">4 bids</span></div><div class="cd" data-cd data-ends="20">—</div></div>
-            <button class="card-bid" data-bid-btn data-name="X-Wing Fighter" data-bid="145" data-bids="4">Place a bid</button>
-          </div>
-        </article>
-        <article class="artifact-card">
-          <div class="vitrine" style="aspect-ratio:1">
-            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-            <div class="vlabel"><div class="k">Bullmark · 1970s</div><div class="n" style="font-size:19px">Godzilla</div></div>
-          </div>
-          <div class="label">
-            <div class="ln"><span class="nm">Godzilla · sofubi</span></div>
-            <div class="meta">Kaiju · Bullmark · 1970s</div>
-            <a class="seller-link" data-nav="seller" data-seller="tokyovinyl">Tokyo Vinyl ↗</a>
-            <div class="auc-card"><div><span class="amt">€ 380</span><span class="sub">11 bids</span></div><div class="cd" data-cd data-ends="78">—</div></div>
-            <button class="card-bid" data-bid-btn data-name="Godzilla · sofubi" data-bid="380" data-bids="11">Place a bid</button>
-          </div>
-        </article>
-        <article class="artifact-card">
-          <div class="vitrine" style="aspect-ratio:1">
-            <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-            <div class="vlabel"><div class="k">Kenner · 1986</div><div class="n" style="font-size:19px">Ecto-1</div></div>
-          </div>
-          <div class="label">
-            <div class="ln"><span class="nm">Ecto-1</span></div>
-            <div class="meta">Ghostbusters · Kenner · 1986</div>
-            <a class="seller-link" data-nav="seller" data-seller="cornerstone">Cornerstone Collectibles ↗</a>
-            <div class="auc-card"><div><span class="amt">€ 165</span><span class="sub">3 bids</span></div><div class="cd" data-cd data-ends="6">—</div></div>
-            <button class="card-bid" data-bid-btn data-name="Ecto-1" data-bid="165" data-bids="3">Place a bid</button>
-          </div>
-        </article>
       </div>
     </div>
   </section>
@@ -1370,6 +1318,8 @@
   const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
   const SB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
   let authUser = null;
+  const LAUNCH_TS = Date.parse('2026-09-01T00:00:00+02:00'); // launch: 1 September 2026 (Amsterdam)
+  const preLaunch = () => Date.now() < LAUNCH_TS;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ----- Starfields (subtle, for Star Wars vitrines + the film) -----
@@ -1716,17 +1666,18 @@
                 if (up.error) { upErr = up.error.message; } else { urls.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl); }
               } catch (e) { upErr = String((e && e.message) || e); }
             }
-            const ends = new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
+            const pre = preLaunch();
+            const ends = pre ? null : new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
             const { error } = await SB.from('lots').insert({
               id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
               condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
               variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0, reserve: current.reserve || null, buy_now: current.buyNow || null,
               estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
-              auction_days: current.auctionDays || 7, status: 'live', ends_at: ends,
+              auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends,
             });
             if (error) throw error;
             injectDraftLots();
-            openModal('Lot listed', (current.toy || 'Your toy') + ' is live in the shop.', 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. It now appears in the Shop.');
+            openModal(pre ? 'Lot in preview' : 'Lot listed', (current.toy || 'Your toy') + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 September 2026.' : 'It now appears in the Shop.'));
           } catch (err) {
             openModal('Could not list', 'Something went wrong.', String((err && err.message) || err));
           } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; }
@@ -1929,21 +1880,22 @@
   function lotCardHtml(l){
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
-    const closed = l.state && l.state !== 'live';
-    const ended = l.state === 'ended' || (!closed && l.ends_at && new Date(l.ends_at) <= Date.now());
-    const isClosed = closed || ended;
-    const badgeWord = l.state === 'sold' ? 'Sold' : 'Ended';
-    const endsTxt = isClosed ? badgeWord : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left');
+    const isPreview = l.state === 'preview';
+    const isSold = l.state === 'sold';
+    const ended = l.state === 'ended' || (!isPreview && !isSold && l.ends_at && new Date(l.ends_at) <= Date.now());
+    const isClosed = isSold || ended;
+    const badgeWord = isSold ? 'Sold' : 'Ended';
+    const endsTxt = isPreview ? 'Opens 1 Sep' : (isClosed ? badgeWord : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left'));
     return '<article class="artifact-card draft-lot">' +
       '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '">' +
-        (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : '')) +
+        (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (isPreview ? '<span class="card-badge sand">Preview</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : ''))) +
         (!isClosed && l.id ? '<button class="watch-btn' + (watchedIds.has(l.id) ? ' on' : '') + '" type="button" data-watch="' + e(l.id) + '" aria-label="Watch this lot" aria-pressed="' + (watchedIds.has(l.id) ? 'true' : 'false') + '">' + watchStarSvg(watchedIds.has(l.id)) + '</button>' : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
         '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (l.bids || 0) + ' bids') + '</span></div><div class="cd' + (!isClosed && l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
-        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>') +
+        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (l.bids || 0) + ' bids')) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
+        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 September</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>')) +
       '</div></article>';
   }
 
@@ -1967,11 +1919,11 @@
       const mapped = rows.map(r => {
         const a = agg[r.id] || { max: 0, count: 0 };
         const timeEnded = r.ends_at && new Date(r.ends_at) <= now;
-        const state = r.status === 'sold' ? 'sold' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live');
+        const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended };
       });
-      lots = mapped.filter(l => l.state === 'live').concat(mapped.filter(l => l.state !== 'live' && (now - l.closedMs) < 86400000));
+      lots = mapped.filter(l => l.state === 'preview' || l.state === 'live').concat(mapped.filter(l => (l.state === 'ended' || l.state === 'sold') && (now - l.closedMs) < 86400000));
     } else {
       lots = loadDraftLots();
     }
@@ -2148,6 +2100,7 @@
     const reserveMet = !reserve || (topBid && cur >= reserve);
     const iWon = ended && topBid && reserveMet && authUser && topBid.bidder_id === authUser.id;
     const isSold = lot.status === 'sold';
+    const isPreview = lot.status === 'preview';
     const imgs = (lot.image_urls || []).filter(Boolean);
     document.getElementById('lotCrumb').textContent = lot.toy || 'Lot';
     let ends = '';
@@ -2188,20 +2141,22 @@
         '<div class="auction">' +
           '<div class="auction-row">' +
             '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid')) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : '—')) : money(cur)) + '</div></div>' +
-            '<div><div class="auc-label">' + (ended ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown' + (!ended && lot.extended ? ' ext' : '') + '">' + (ended ? 'Ended' : ends) + '</div></div>' +
+            '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : 'Ends in')) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Sep 2026' : (ended ? 'Ended' : ends)) + '</div></div>' +
           '</div>' +
-          ((!ended && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
-          ((!ended && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
+          ((!ended && !isPreview && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
+          ((!ended && !isPreview && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
           (ended ?
             '<div class="won-box' + (iWon ? ' win' : '') + '">' +
               (iWon ? '<div class="won-h">You won this lot.</div><div class="won-sub">' + (isSold ? 'Payment received. Thank you.' : 'Complete your payment to confirm the purchase.') + '</div>' + (isSold ? '' : '<button class="btn accent" type="button" id="lotPay">Pay now &middot; ' + money(cur) + '</button>') :
                 (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : (isSold ? '<div class="won-h">Sold.</div><div class="won-sub">This lot has been purchased' + (lot.buy_now ? ' for ' + money(lot.buy_now) : '') + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>'))) +
             '</div>' :
-            '<div class="buy-row">' +
-              '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
-              (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
-            '</div>') +
-          '<div class="trust">' + (ended ? 'Bidding on this lot is closed.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.') + '</div>' +
+            (isPreview ?
+              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">Bidding opens 1 September 2026. Watch this lot to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
+              '<div class="buy-row">' +
+                '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
+                (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
+              '</div>')) +
+          '<div class="trust">' + (isPreview ? 'This lot goes live on 1 September 2026.' : (ended ? 'Bidding on this lot is closed.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.')) + '</div>' +
           ownerHtml + shipHtml +
         '</div>' +
       '</div>';
@@ -2283,6 +2238,13 @@
     const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id));
     const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'buynow', amount: lot.buy_now, label: lot.toy }));
     const payBtn = document.getElementById('lotPay'); if (payBtn) payBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'win', amount: cur, label: lot.toy }));
+    const lwatch = document.getElementById('lotWatch'); if (lwatch) lwatch.addEventListener('click', async () => {
+      if (SB && !authUser){ openAuth(); return; }
+      const on = !watchedIds.has(lot.id); if (on) watchedIds.add(lot.id); else watchedIds.delete(lot.id);
+      lwatch.innerHTML = on ? 'Watching &check;' : 'Watch this lot';
+      document.querySelectorAll('[data-watch="' + lot.id + '"]').forEach(b => { b.classList.toggle('on', on); b.innerHTML = watchStarSvg(on); });
+      try { if (SB){ if (on) await SB.from('watchlist').insert({ user_id: authUser.id, lot_id: lot.id }); else await SB.from('watchlist').delete().eq('user_id', authUser.id).eq('lot_id', lot.id); } } catch (e) {}
+    });
     const rm = document.getElementById('lotRemove'); if (rm) rm.addEventListener('click', async () => {
       if (!window.confirm('Remove this lot? This cannot be undone.')) return;
       rm.disabled = true;
