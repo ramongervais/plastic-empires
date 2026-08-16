@@ -1230,8 +1230,13 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const COMMERCIAL = "https://www.youtube.com/watch?v=GVmwlCIPsgU";
+  const SUPA_URL = 'https://yazoeshmplhmxefnovjy.supabase.co';
+  const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
+  const SB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+  let authUser = null;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // ----- Starfields (subtle, for Star Wars vitrines + the film) -----
@@ -1545,7 +1550,42 @@
       setCard(html, false);
       document.getElementById('editLot').addEventListener('click', editMode);
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
-      document.getElementById('submitLot').addEventListener('click', () => { saveDraftLot(current); openModal('Lot submitted', (current.toy || 'Your toy') + ' is now in your shop.', 'Added to the Shop as a draft lot, stored in this browser for the preview. On the live site this creates a real draft lot for review and payout setup.'); });
+      document.getElementById('submitLot').addEventListener('click', async () => {
+        if (SB && !authUser) { openAuth(); return; }
+        if (SB && authUser) {
+          const btn = document.getElementById('submitLot'); btn.disabled = true; btn.textContent = 'Publishing…';
+          try {
+            const uid = authUser.id;
+            const lotId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+            const urls = [];
+            for (let i = 0; i < files.length; i++) {
+              try {
+                const blob = await (await fetch(files[i].dataUrl)).blob();
+                const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+                const path = uid + '/' + lotId + '/' + i + '.' + ext;
+                const up = await SB.storage.from('lots').upload(path, blob, { contentType: blob.type, upsert: true });
+                if (!up.error) urls.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl);
+              } catch (e) {}
+            }
+            const ends = new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
+            const { error } = await SB.from('lots').insert({
+              id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
+              condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
+              variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
+              estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
+              auction_days: current.auctionDays || 7, status: 'live', ends_at: ends,
+            });
+            if (error) throw error;
+            injectDraftLots();
+            openModal('Lot listed', (current.toy || 'Your toy') + ' is live in the shop.', 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s) uploaded' : '') + '. It now appears in the Shop.');
+          } catch (err) {
+            openModal('Could not list', 'Something went wrong.', String((err && err.message) || err));
+          } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; }
+          return;
+        }
+        saveDraftLot(current);
+        openModal('Lot submitted', (current.toy || 'Your toy') + ' is now in your shop.', 'Added to the Shop as a draft lot, stored in this browser for the preview.');
+      });
     }
 
     const CONDITIONS = ['Mint', 'Near mint', 'Excellent', 'Good', 'Fair', 'Poor'];
@@ -1662,22 +1702,31 @@
     try { localStorage.setItem('pe_lots_v1', JSON.stringify(lots.slice(0, 20))); } catch (e) {}
     injectDraftLots();
   }
-  function injectDraftLots(){
+  async function injectDraftLots(){
     const grid = document.querySelector('#collection .collection');
     if (!grid) return;
     grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
-    const lots = loadDraftLots();
-    if (!lots.length) return;
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+    let lots = [];
+    if (SB) {
+      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,image_urls,ends_at').eq('status', 'live').order('created_at', { ascending: false }).limit(24);
+      lots = (data || []).map(r => ({ name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: r.starting_bid, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at }));
+    } else {
+      lots = loadDraftLots();
+    }
+    if (!lots.length) return;
+    const endsLabel = l => {
+      if (l.ends_at) { const ms = new Date(l.ends_at) - Date.now(); if (ms <= 0) return 'Ended'; const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; }
+      return (l.days || 7) + 'd left';
+    };
     const html = lots.map(l =>
       '<article class="artifact-card draft-lot">' +
-        '<div class="vitrine" style="aspect-ratio:1"><span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
-          '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div></div>' +
+        '<div class="vitrine" style="aspect-ratio:1' + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '"><span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+          (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
         '<div class="label"><div class="ln"><span class="nm">' + e(l.name) + '</span></div>' +
           '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
-          '<span class="seller-link" style="cursor:default">Your draft</span>' +
-          '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">0 bids</span></div><div class="cd">' + (l.days || 7) + 'd left</div></div>' +
+          '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">0 bids</span></div><div class="cd">' + endsLabel(l) + '</div></div>' +
           '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '">Place a bid</button>' +
         '</div></article>'
     ).join('');
@@ -1688,23 +1737,31 @@
   // ----- Account (email magic-link, preview) -----
   const authModal = document.getElementById('authModal');
   const escA = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
-  function currentUser(){ try { return localStorage.getItem('pe_user') || ''; } catch (e) { return ''; } }
+  function currentUser(){ if (authUser) return authUser.email || ''; try { return localStorage.getItem('pe_user') || ''; } catch (e) { return ''; } }
   function refreshAuthUI(){ const u = currentUser(); document.querySelectorAll('[data-auth-label]').forEach(el => { el.textContent = u ? ('· ' + u.split('@')[0]) : 'Sign in'; }); }
   function openAuth(){
     const u = currentUser(), b = document.getElementById('authBody');
     if (u){
       b.innerHTML = '<div class="ey">Account</div><h3>Signed in</h3><p>Signed in as ' + escA(u) + '. In this preview your account and draft lots are stored in this browser.</p><div class="buy-row"><button class="btn accent" type="button" id="authOut">Sign out</button><button class="btn ghost" type="button" id="authX">Close</button></div>';
-      b.querySelector('#authOut').addEventListener('click', () => { try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
+      b.querySelector('#authOut').addEventListener('click', async () => { if (SB) { await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
       b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><label class="acceptbox"><input type="checkbox" id="authAccept"><span>I have read and accept the <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a>.</span></label><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
-      const go = () => {
+      const go = async () => {
         const v = b.querySelector('#authEmail').value.trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
         if (!b.querySelector('#authAccept').checked) { b.querySelector('#authHint').textContent = 'Please accept the Terms & Conditions to continue.'; return; }
+        if (SB) {
+          const btn = b.querySelector('#authGo'); btn.disabled = true; b.querySelector('#authHint').textContent = 'Sending…';
+          const { error } = await SB.auth.signInWithOtp({ email: v, options: { emailRedirectTo: location.origin + location.pathname } });
+          if (error) { b.querySelector('#authHint').textContent = error.message; btn.disabled = false; return; }
+          b.innerHTML = '<div class="ey">Check your inbox</div><h3>Magic link sent.</h3><p>We emailed a sign-in link to ' + escA(v) + '. Open it on this device to finish signing in.</p><button class="btn accent" type="button" id="authX">Done</button>';
+          b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
+          return;
+        }
         try { localStorage.setItem('pe_user', v); } catch (e) {}
         refreshAuthUI();
-        b.innerHTML = '<div class="ey">Check your inbox</div><h3>You are signed in.</h3><p>On the live site a magic link would be emailed to ' + escA(v) + '. In this preview you are signed in instantly. Your account and draft lots live in this browser until the backend is connected.</p><button class="btn accent" type="button" id="authX">Done</button>';
+        b.innerHTML = '<div class="ey">Check your inbox</div><h3>You are signed in.</h3><p>On the live site a magic link would be emailed to ' + escA(v) + '. In this preview you are signed in instantly.</p><button class="btn accent" type="button" id="authX">Done</button>';
         b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
       };
       b.querySelector('#authGo').addEventListener('click', go);
@@ -1719,6 +1776,10 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') authModal.hidden = true; });
     document.querySelectorAll('#authLink, #authLinkM').forEach(el => el.addEventListener('click', e => { e.preventDefault(); openAuth(); }));
     refreshAuthUI();
+    if (SB) {
+      SB.auth.getSession().then(({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); });
+      SB.auth.onAuthStateChange((_e, session) => { authUser = session ? session.user : null; refreshAuthUI(); injectDraftLots(); });
+    }
   }
   injectDraftLots();
 
