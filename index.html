@@ -391,6 +391,18 @@
   .v-opt { font-family:var(--label); font-size:11px; letter-spacing:.04em; padding:8px 12px; border:1px solid var(--line); border-radius:2px; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease; }
   .v-opt:hover { border-color:var(--ink-3); color:var(--ink); }
   .v-opt.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .tiers { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .tier { border:1px solid var(--line); border-radius:4px; padding:28px; position:relative; }
+  .tier.feat { border-color:var(--ink); }
+  .t-tag { position:absolute; top:0; right:0; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:0 4px 0 4px; }
+  .t-name { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .t-price { font-family:var(--body); font-weight:700; font-size:38px; letter-spacing:-.02em; margin-top:8px; line-height:1; }
+  .t-price span { font-family:var(--label); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
+  .t-list { list-style:none; padding:0; margin:20px 0 0; border-top:1px solid var(--line); }
+  .t-list li { font-family:var(--body); font-size:14px; line-height:1.5; padding:11px 0 11px 22px; border-bottom:1px solid var(--line-2); position:relative; }
+  .t-list li::before { content:"—"; position:absolute; left:0; color:var(--ink-3); }
+  .t-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:16px; line-height:1.6; }
+  @media (max-width:700px){ .tiers { grid-template-columns:1fr; } }
   .qstars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
   .qstars .base { color:var(--line-2); }
   .qstars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
@@ -1036,6 +1048,39 @@
           <div class="result-card empty" id="resultCard">
             <div class="rc-empty">Your AI curation will appear here.</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Selling plans</div><h2>What it costs to sell</h2></div>
+        <p>List for free. You only pay a commission when an item actually sells.</p>
+      </div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="t-name">Starter</div>
+          <div class="t-price">Free</div>
+          <ul class="t-list">
+            <li>5 listings per week</li>
+            <li>15% seller commission on sold lots</li>
+            <li>AI curation on every lot</li>
+            <li>Standard placement</li>
+          </ul>
+          <div class="t-note">No monthly fee. Unsold lots cost nothing.</div>
+        </div>
+        <div class="tier feat">
+          <div class="t-tag">For dealers</div>
+          <div class="t-name">Premium</div>
+          <div class="t-price">€19<span>/month</span></div>
+          <ul class="t-list">
+            <li>100+ listings per month</li>
+            <li>10% seller commission on sold lots</li>
+            <li>Featured placement</li>
+            <li>Bulk upload and faster payout</li>
+          </ul>
+          <div class="t-note">For high-volume sellers. The lower commission pays for the fee fast.</div>
         </div>
       </div>
     </div>
