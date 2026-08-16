@@ -1961,16 +1961,23 @@
     body.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:48px 0">Loading your account…</p>';
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
-    const topBids = async ids => { const m = {}; if (!ids.length) return m; const { data } = await SB.from('bids').select('lot_id,amount,bidder_id').in('lot_id', ids); (data || []).forEach(b => { const t = m[b.lot_id]; if (!t || Number(b.amount) > t.amount) m[b.lot_id] = { amount: Number(b.amount), bidder_id: b.bidder_id }; }); return m; };
+    try {
     const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at';
-    const { data: myLots } = await SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false });
-    const { data: myBidsRaw } = await SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false });
-    const lots = myLots || [], myBids = myBidsRaw || [];
+    const [myLotsRes, myBidsRes] = await Promise.all([
+      SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
+      SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false })
+    ]);
+    const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
     const bidIds = [...new Set(myBids.map(b => b.lot_id))];
-    let bidLots = [];
-    if (bidIds.length){ const { data } = await SB.from('lots').select(sel).in('id', bidIds); bidLots = data || []; }
-    const myTop = await topBids(lots.map(l => l.id));
-    const bidTop = await topBids(bidIds);
+    const allIds = [...new Set(lots.map(l => l.id).concat(bidIds))];
+    const [bidLotsRes, allBidsRes] = await Promise.all([
+      bidIds.length ? SB.from('lots').select(sel).in('id', bidIds) : Promise.resolve({ data: [] }),
+      allIds.length ? SB.from('bids').select('lot_id,amount,bidder_id').in('lot_id', allIds) : Promise.resolve({ data: [] })
+    ]);
+    const bidLots = bidLotsRes.data || [];
+    const topByLot = {};
+    (allBidsRes.data || []).forEach(b => { const t = topByLot[b.lot_id]; if (!t || Number(b.amount) > t.amount) topByLot[b.lot_id] = { amount: Number(b.amount), bidder_id: b.bidder_id }; });
+    const myTop = topByLot, bidTop = topByLot;
     const finalPrice = (l, top) => (top[l.id] && top[l.id].amount) || Number(l.buy_now) || Number(l.starting_bid) || 0;
     const soldLots = lots.filter(l => l.status === 'sold');
     const liveLots = lots.filter(l => !isEnded(l));
@@ -1997,6 +2004,7 @@
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
+    } catch (err){ body.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:40px 0">Could not load your account. Please refresh. ' + ((err && err.message) || '') + '</p>'; }
   }
 
   // ----- Checkout (single flow: Buy-now + won-auction both land here) -----
