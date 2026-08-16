@@ -44,6 +44,10 @@
   .rule { height:1px; background:var(--line); border:0; margin:0; }
 
   /* ---------- Masthead ---------- */
+  .promo-bar { display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; background:#0a0a0a; color:#fff; text-align:center; padding:8px 20px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  .promo-bar .promo-cta { color:#fff; text-decoration:underline; text-underline-offset:2px; cursor:pointer; white-space:nowrap; transition:opacity .15s ease; }
+  .promo-bar .promo-cta:hover { opacity:.65; }
+  @media (max-width:600px){ .promo-bar { font-size:10px; letter-spacing:.08em; gap:8px; padding:8px 16px; } }
   header.mast { position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
   .mast-in { max-width:1180px; margin:0 auto; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
   .brand { display:flex; align-items:baseline; gap:12px; cursor:pointer; }
@@ -464,6 +468,11 @@
 
   @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; scroll-behavior:auto; } }
 </style>
+
+<div class="promo-bar">
+  <span>Now in beta. Early sign-ups welcome. The auctions open soon.</span>
+  <a id="authLinkB" class="promo-cta">Reserve your account &#8594;</a>
+</div>
 
 <header class="mast">
   <div class="mast-in">
@@ -1259,6 +1268,16 @@
   .lot-owner{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--body); font-size:13px; color:var(--ink-3); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .lot-remove{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; background:none; border:1px solid var(--line); border-radius:3px; padding:8px 12px; color:var(--ink); cursor:pointer; transition:border-color .15s, color .15s; }
   .lot-remove:hover{ border-color:#c0392b; color:#c0392b; }
+  .won-box{ border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:20px; }
+  .won-box.win{ border-color:var(--ink); background:var(--panel); }
+  .won-h{ font-family:var(--label); font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); }
+  .won-sub{ font-family:var(--body); font-size:14px; color:var(--ink-2); margin:6px 0 0; }
+  .won-box .btn{ width:100%; margin-top:14px; }
+  .card-ended{ display:block; margin-top:12px; text-align:center; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:12px; border:1px solid var(--line); border-radius:2px; cursor:pointer; }
+  .card-ended:hover{ color:var(--ink); border-color:var(--ink-3); }
+  .reserve-note{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin:-8px 0 18px; }
+  .reserve-note.met{ color:var(--ink); }
+  .reserve-note.met::before{ content:"\2713  "; }
   .zoom-ov{ position:fixed; inset:0; z-index:1000; background:rgba(10,10,10,.95); }
   .zoom-stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
   .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
@@ -1592,7 +1611,7 @@
         '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
         '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
-        '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) + row('Auction length', (c.auctionDays || 7) + ' days') + '</div>' +
+        '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) + row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None') + row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None') + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">Suggested starting bid</div><div class="amt">' + eur(c.startingBid) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
@@ -1622,7 +1641,7 @@
             const { error } = await SB.from('lots').insert({
               id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
               condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
-              variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
+              variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0, reserve: current.reserve || null, buy_now: current.buyNow || null,
               estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
               auction_days: current.auctionDays || 7, status: 'live', ends_at: ends,
             });
@@ -1657,6 +1676,7 @@
         efArea('Completeness', 'e_completeness', c.completeness) +
         '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number') + efSel('Confidence', 'e_confidence', c.confidence, CONFS) + '</div>' +
         '<div class="ef-row">' + ef('Est. low €', 'e_lo', c.estimateLow, 'number') + ef('Est. high €', 'e_hi', c.estimateHigh, 'number') + '</div>' +
+        '<div class="ef-row">' + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number') + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number') + '</div>' +
         efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS) +
         efArea('Notes', 'e_notes', c.notes) +
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
@@ -1668,6 +1688,7 @@
           toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'), estimateLow: num('e_lo'), estimateHigh: num('e_hi'),
+          reserve: num('e_reserve'), buyNow: num('e_buynow'),
           confidence: g('e_confidence'), notes: g('e_notes'),
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
         };
@@ -1791,11 +1812,29 @@
         '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
           '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
           '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (l.bids || 0) + ' bids</span></div><div class="cd">' + endsLabel(l) + '</div></div>' +
-          '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>' +
+          ((l.ends_at && new Date(l.ends_at) <= Date.now()) ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Auction ended · view result</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>') +
         '</div></article>'
     ).join('');
     grid.insertAdjacentHTML('afterbegin', html);
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
+  }
+
+  // ----- Checkout (single flow: Buy-now + won-auction both land here) -----
+  const PAY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/checkout';
+  async function startCheckout(opts){
+    opts = opts || {};
+    const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+    if (SB && !authUser){ openAuth(); return; }
+    if (!PAY_URL){
+      openModal('Secure checkout', opts.label || 'Payment', (opts.kind === 'win' ? 'This will take you to a secure Stripe checkout to pay ' + money(opts.amount) + ' for the lot you won.' : 'This will take you to a secure Stripe checkout to buy this lot now for ' + money(opts.amount) + '.') + ' Payments are being wired up and go live shortly.');
+      return;
+    }
+    try {
+      const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '', origin: location.origin }) });
+      const d = await r.json();
+      if (d && d.url) location.href = d.url;
+      else openModal('Checkout error', 'Could not start payment', (d && d.error) || 'Please try again.');
+    } catch (err){ openModal('Checkout error', 'Could not start payment', err.message); }
   }
 
   // ----- Lot detail page (live, from DB) -----
@@ -1810,11 +1849,17 @@
     if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
     const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
     if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
-    const { data: bidRows } = await SB.from('bids').select('amount,created_at').eq('lot_id', id).order('amount', { ascending: false });
+    const { data: bidRows } = await SB.from('bids').select('amount,created_at,bidder_id').eq('lot_id', id).order('amount', { ascending: false });
     let seller = null;
     if (lot.seller_id){ const { data: sp } = await SB.from('profiles').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
     const bids = bidRows || [];
     const cur = bids.length ? Number(bids[0].amount) : Number(lot.starting_bid || 0);
+    const ended = lot.status === 'ended' || lot.status === 'sold' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
+    const topBid = bids.length ? bids[0] : null;
+    const reserve = Number(lot.reserve || 0);
+    const reserveMet = !reserve || (topBid && cur >= reserve);
+    const iWon = ended && topBid && reserveMet && authUser && topBid.bidder_id === authUser.id;
+    const isSold = lot.status === 'sold';
     const imgs = (lot.image_urls || []).filter(Boolean);
     document.getElementById('lotCrumb').textContent = lot.toy || 'Lot';
     let ends = '';
@@ -1852,15 +1897,20 @@
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
-            '<div><div class="auc-label">' + (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid') + '</div><div class="auc-amount">' + money(cur) + '</div></div>' +
-            '<div><div class="auc-label">' + (ends === 'Ended' ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown">' + ends + '</div></div>' +
+            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : 'Result') : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid')) + '</div><div class="auc-amount">' + (ended && !topBid ? '—' : money(cur)) + '</div></div>' +
+            '<div><div class="auc-label">' + (ended ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown">' + (ended ? 'Ended' : ends) + '</div></div>' +
           '</div>' +
-          (ends === 'Ended' ? '' :
+          ((!ended && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
+          (ended ?
+            '<div class="won-box' + (iWon ? ' win' : '') + '">' +
+              (iWon ? '<div class="won-h">You won this lot.</div><div class="won-sub">' + (isSold ? 'Payment received. Thank you.' : 'Complete your payment to confirm the purchase.') + '</div>' + (isSold ? '' : '<button class="btn accent" type="button" id="lotPay">Pay now &middot; ' + money(cur) + '</button>') :
+                (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>')) +
+            '</div>' :
             '<div class="buy-row">' +
               '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
-              (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now · ' + money(lot.buy_now) + '</button>' : '') +
+              (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
             '</div>') +
-          '<div class="trust">' + (ends === 'Ended' ? 'This auction has ended.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.') + '</div>' +
+          '<div class="trust">' + (ended ? 'Bidding on this lot is closed.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.') + '</div>' +
           ownerHtml +
         '</div>' +
       '</div>';
@@ -1940,7 +1990,8 @@
       lotMain.addEventListener('click', ev => { if (ev.target.closest('.lot-nav') || moved) return; openZoom(imgs, mainIdx); });
     }
     const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id));
-    const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => openModal('Buy now', lot.toy, 'Take it now for ' + money(lot.buy_now) + ' and skip the auction. On the live shop this goes to checkout. Layout preview.'));
+    const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'buynow', amount: lot.buy_now, label: lot.toy }));
+    const payBtn = document.getElementById('lotPay'); if (payBtn) payBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'win', amount: cur, label: lot.toy }));
     const rm = document.getElementById('lotRemove'); if (rm) rm.addEventListener('click', async () => {
       if (!window.confirm('Remove this lot? This cannot be undone.')) return;
       rm.disabled = true;
@@ -2043,7 +2094,7 @@
   if (authModal){
     authModal.addEventListener('click', e => { if (e.target === authModal) authModal.hidden = true; });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') authModal.hidden = true; });
-    document.querySelectorAll('#authLink, #authLinkM').forEach(el => el.addEventListener('click', e => { e.preventDefault(); openAuth(); }));
+    document.querySelectorAll('#authLink, #authLinkM, #authLinkB').forEach(el => el.addEventListener('click', e => { e.preventDefault(); openAuth(); }));
     refreshAuthUI();
     if (SB) {
       SB.auth.getSession().then(({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); });
@@ -2051,6 +2102,20 @@
     }
   }
   injectDraftLots();
+
+  // ----- Return from Stripe checkout -----
+  (function(){
+    const p = new URLSearchParams(location.search);
+    const paid = p.get('paid'), canceled = p.get('canceled');
+    if (!paid && !canceled) return;
+    history.replaceState(null, '', location.pathname);
+    if (paid){
+      openModal('Payment received', 'Thank you.', 'Your payment went through. We will confirm the details and arrange shipping by email. In the sandbox no real money moved.');
+      if (typeof openLot === 'function') setTimeout(() => openLot(paid), 400);
+    } else {
+      openModal('Checkout cancelled', 'No payment was taken.', 'You closed the checkout before paying. You can pay again from the lot page whenever you are ready.');
+    }
+  })();
 
   // ----- Mobile menu -----
   (function(){
