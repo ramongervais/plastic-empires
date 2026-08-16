@@ -1391,20 +1391,29 @@
     modal.hidden = false;
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
-  function openBid(name, bid, bids){
+  function openBid(name, bid, bids, lotId){
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
+    const live = !!(SB && lotId);
     openModal('Place a bid', name, 'Current bid ' + eur(bid) + ' · ' + bids + ' bids. Enter at least ' + eur(minNext) + '.');
     bidForm.hidden = false;
     const input = document.getElementById('bidInput');
     input.value = minNext; input.min = minNext;
-    document.getElementById('bidHint').textContent = 'Binding bid · a hidden reserve may apply · layout preview only.';
-    document.getElementById('bidConfirm').onclick = () => {
+    document.getElementById('bidHint').textContent = live ? 'Binding bid · a hidden reserve may apply.' : 'Binding bid · a hidden reserve may apply · layout preview only.';
+    document.getElementById('bidConfirm').onclick = async () => {
       const v = parseInt(input.value, 10);
       if (!v || v < minNext) { document.getElementById('bidHint').textContent = 'Enter at least ' + eur(minNext) + '.'; input.focus(); return; }
+      if (live) {
+        if (!authUser) { openAuth(); return; }
+        const btn = document.getElementById('bidConfirm'); btn.disabled = true;
+        const { error } = await SB.from('bids').insert({ lot_id: lotId, bidder_id: authUser.id, amount: v });
+        btn.disabled = false;
+        if (error) { document.getElementById('bidHint').textContent = /row-level|policy/i.test(error.message) ? 'You cannot bid on your own lot.' : error.message; return; }
+        injectDraftLots();
+      }
       bidForm.hidden = true;
       document.getElementById('modalEy').textContent = 'Bid placed';
       document.getElementById('modalTitle').textContent = 'You are the highest bidder.';
-      document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '. Layout preview, so no real bid was placed.';
+      document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '.' + (live ? ' Your bid is recorded.' : ' Layout preview, so no real bid was placed.');
     };
     setTimeout(() => input.focus(), 40);
   }
@@ -1711,7 +1720,17 @@
     let lots = [];
     if (SB) {
       const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,image_urls,ends_at').eq('status', 'live').order('created_at', { ascending: false }).limit(24);
-      lots = (data || []).map(r => ({ name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: r.starting_bid, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at }));
+      const rows = data || [];
+      const ids = rows.map(r => r.id);
+      const agg = {};
+      if (ids.length) {
+        const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids);
+        (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; });
+      }
+      lots = rows.map(r => {
+        const a = agg[r.id] || { max: 0, count: 0 };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : r.starting_bid, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at };
+      });
     } else {
       lots = loadDraftLots();
     }
@@ -1726,12 +1745,12 @@
           (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
         '<div class="label"><div class="ln"><span class="nm">' + e(l.name) + '</span></div>' +
           '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
-          '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">0 bids</span></div><div class="cd">' + endsLabel(l) + '</div></div>' +
-          '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '">Place a bid</button>' +
+          '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (l.bids || 0) + ' bids</span></div><div class="cd">' + endsLabel(l) + '</div></div>' +
+          '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>' +
         '</div></article>'
     ).join('');
     grid.insertAdjacentHTML('afterbegin', html);
-    grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, 0); }); });
+    grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
   }
 
   // ----- Account (email magic-link, preview) -----
