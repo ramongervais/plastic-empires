@@ -1300,7 +1300,8 @@
   .acct-toggle .sw::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--paper); box-shadow:0 1px 2px rgba(0,0,0,.2); }
   .acct-pay, .acct-signout{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; padding:10px 14px; cursor:pointer; white-space:nowrap; }
   .mship{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px 0; }
-  .mship-plan{ font-family:var(--body); font-weight:700; font-size:22px; letter-spacing:-.01em; }
+  .mship-plan{ font-family:var(--body); font-weight:700; font-size:22px; letter-spacing:-.01em; display:flex; align-items:center; gap:10px; }
+  .mship-badge{ font-family:var(--label); font-size:9px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:4px 8px; border-radius:2px; }
   .mship-tok{ font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:4px; }
   .mship-r{ display:flex; gap:8px; flex-wrap:wrap; }
   .acct-signout{ background:none; color:var(--ink); border-color:var(--line); }
@@ -2040,9 +2041,9 @@
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
-      '<div class="acct-stats">' + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(myBids.length, 'Bids placed') + stat(wins.length, 'Won') + '</div>' +
+      '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Tokens left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
       '<div class="acct-sec"><div class="h">Membership</div>' +
-        '<div class="mship"><div class="mship-l"><div class="mship-plan">' + (prefs.plan === 'premium' ? 'Premium' : 'Starter') + '</div><div class="mship-tok">' + (prefs.tokens != null ? prefs.tokens : 0) + ' listing token' + (prefs.tokens === 1 ? '' : 's') + ' left</div></div>' +
+        '<div class="mship"><div class="mship-l"><div class="mship-plan">' + (prefs.plan === 'premium' ? 'Premium' : 'Starter') + (prefs.plan === 'premium' ? '<span class="mship-badge">Active</span>' : '') + '</div><div class="mship-tok">' + (prefs.tokens != null ? prefs.tokens : 0) + ' listing token' + (prefs.tokens === 1 ? '' : 's') + ' left &middot; ' + (prefs.plan === 'premium' ? '50/month, rolls over to 100' : '3/month, resets monthly') + '</div></div>' +
           '<div class="mship-r">' + (prefs.plan === 'premium' ? '<button class="acct-signout" id="mManage" type="button">Manage subscription</button>' : '<button class="acct-pay" id="mUpgrade" type="button">Upgrade to Premium &middot; € 15/mo</button>') + '<button class="acct-signout" id="mBuy" type="button">Buy 25 tokens &middot; € 18</button></div>' +
         '</div>' +
         '<div class="acct-empty">1 token = 1 listing. Starter: 3 tokens/month. Premium: 50/month (rollover to 100) + lower commission. Early-bird € 15/mo.</div>' +
@@ -2441,9 +2442,10 @@
     if (!paid && !canceled && !lotParam && !account) return;
     history.replaceState(null, '', location.pathname);
     if (account){
-      if (typeof renderAccount === 'function') setTimeout(() => renderAccount(), 200);
-      if (account === 'premium') openModal('Welcome to Premium', 'You are now a Premium seller.', 'Your monthly listing tokens and lower commission are active. Manage your subscription anytime from your account.');
-      else if (account === 'tokens') openModal('Tokens added', 'Your top-up is complete.', '25 listing tokens have been added to your account.');
+      // the webhook that updates plan/tokens lands a moment after the redirect, so re-render a few times
+      if (typeof renderAccount === 'function'){ renderAccount(); [1500, 3500, 6000].forEach(t => setTimeout(() => renderAccount(), t)); }
+      if (account === 'premium') openModal('Welcome to Premium', 'You are now a Premium seller.', 'Your monthly listing tokens and lower commission are active. Your account updates in a moment. Manage your subscription anytime from here.');
+      else if (account === 'tokens') openModal('Tokens added', 'Your top-up is complete.', '25 listing tokens are being added to your account, it updates in a moment.');
       return;
     }
     if (lotParam && !paid && !canceled){ if (typeof openLot === 'function') setTimeout(() => openLot(lotParam), 300); return; }
