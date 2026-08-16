@@ -1177,6 +1177,14 @@
   </section>
 </main>
 
+<!-- ============================ LOT DETAIL (live, from DB) ============================ -->
+<main class="view" id="view-lot" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a data-nav="home" href="#collection">Shop</a><span class="sep">/</span><span class="here" id="lotCrumb">Lot</span></div>
+    <div id="lotBody"></div>
+  </div>
+</main>
+
 <!-- Account modal -->
 <div class="modal-bg" id="authModal" hidden>
   <div class="modal" id="authBody"></div>
@@ -1230,6 +1238,39 @@
   </div>
 </footer>
 
+<style>
+  .lot-main{ position:relative; aspect-ratio:1; background:var(--panel); border:1px solid var(--line); border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:none; }
+  .lot-main .lot-img{ width:100%; height:100%; object-fit:cover; display:block; user-select:none; -webkit-user-drag:none; }
+  .lot-nav{ position:absolute; top:50%; transform:translateY(-50%); z-index:4; width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.9); color:#131313; font-size:22px; line-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:background .15s; }
+  .lot-nav.prev{ left:12px; } .lot-nav.next{ right:12px; }
+  .lot-nav:hover{ background:#fff; }
+  .zoom-lens{ position:absolute; z-index:3; border:1px solid rgba(0,0,0,.5); background:rgba(255,255,255,.14); pointer-events:none; }
+  .zoom-pane{ position:fixed; z-index:60; background-repeat:no-repeat; background-color:var(--paper); border:1px solid var(--line); border-radius:4px; box-shadow:0 12px 44px rgba(0,0,0,.14); pointer-events:none; }
+  .lot-thumbs{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .lot-th{ width:64px; height:64px; border:1px solid var(--line); border-radius:3px; background-size:cover; background-position:center; background-color:var(--panel); cursor:pointer; padding:0; opacity:.55; transition:opacity .15s, border-color .15s; }
+  .lot-th:hover{ opacity:1; }
+  .lot-th.active{ opacity:1; border-color:var(--ink); }
+  .lot-variants{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 0; }
+  .lot-chip{ font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); border:1px solid var(--line); border-radius:3px; padding:6px 10px; }
+  .lot-chip b{ color:var(--ink); font-weight:700; }
+  .bidhist{ margin-top:8px; max-width:520px; }
+  .bidrow{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0; border-bottom:1px solid var(--line); font-family:var(--body); font-size:15px; color:var(--ink-2); }
+  .bidrow .amt{ font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink); }
+  .lot-owner{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--body); font-size:13px; color:var(--ink-3); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .lot-remove{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; background:none; border:1px solid var(--line); border-radius:3px; padding:8px 12px; color:var(--ink); cursor:pointer; transition:border-color .15s, color .15s; }
+  .lot-remove:hover{ border-color:#c0392b; color:#c0392b; }
+  .zoom-ov{ position:fixed; inset:0; z-index:1000; background:rgba(10,10,10,.95); }
+  .zoom-stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
+  .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
+  .zoom-x,.zoom-nav{ position:absolute; z-index:2; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.4); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .zoom-x{ top:18px; right:20px; width:44px; height:44px; border-radius:50%; font-size:16px; }
+  .zoom-nav{ top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:50%; font-size:28px; line-height:0; }
+  .zoom-nav.prev{ left:20px; } .zoom-nav.next{ right:20px; }
+  .zoom-x:hover,.zoom-nav:hover{ background:rgba(255,255,255,.16); }
+  .zoom-count{ position:absolute; top:24px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.72); font-family:var(--label); font-size:12px; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+  .zoom-hint{ position:absolute; bottom:22px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.55); font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+  @media (max-width:600px){ .zoom-nav{ width:44px; height:44px; font-size:24px; } .zoom-hint{ font-size:10px; } }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const COMMERCIAL = "https://www.youtube.com/watch?v=GVmwlCIPsgU";
@@ -1271,7 +1312,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), lot: document.getElementById('view-lot') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -1293,6 +1334,7 @@
     if (!nav) return;
     const dest = nav.dataset.nav;
     if (dest === 'seller'){ e.preventDefault(); renderSeller(nav.dataset.seller || 'cornerstone'); show('seller'); return; }
+    if (dest === 'lot'){ e.preventDefault(); openLot(nav.dataset.lot); return; }
     if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell' || dest === 'terms'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
@@ -1586,7 +1628,7 @@
             });
             if (error) throw error;
             injectDraftLots();
-            openModal('Lot listed', (current.toy || 'Your toy') + ' is live in the shop.', 'Saved. Diagnostics — photos selected: ' + files.length + ' · uploaded: ' + urls.length + (upErr ? ' · error: ' + upErr : '') + '.');
+            openModal('Lot listed', (current.toy || 'Your toy') + ' is live in the shop.', 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. It now appears in the Shop.');
           } catch (err) {
             openModal('Could not list', 'Something went wrong.', String((err && err.message) || err));
           } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; }
@@ -1744,9 +1786,9 @@
     };
     const html = lots.map(l =>
       '<article class="artifact-card draft-lot">' +
-        '<div class="vitrine" style="aspect-ratio:1' + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '"><span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+        '<div class="vitrine"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '"><span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
           (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
-        '<div class="label"><div class="ln"><span class="nm">' + e(l.name) + '</span></div>' +
+        '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
           '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
           '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (l.bids || 0) + ' bids</span></div><div class="cd">' + endsLabel(l) + '</div></div>' +
           '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>' +
@@ -1754,6 +1796,211 @@
     ).join('');
     grid.insertAdjacentHTML('afterbegin', html);
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
+  }
+
+  // ----- Lot detail page (live, from DB) -----
+  async function openLot(id){
+    const body = document.getElementById('lotBody');
+    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+    const row = (k, v) => '<div class="row"><span class="k">' + e(k) + '</span><span class="v">' + e(v) + '</span></div>';
+    document.getElementById('lotCrumb').textContent = 'Lot';
+    body.innerHTML = '<p style="padding:64px 0;color:var(--ink-3);font-family:var(--body)">Loading lot…</p>';
+    show('lot');
+    if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
+    const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
+    if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
+    const { data: bidRows } = await SB.from('bids').select('amount,created_at').eq('lot_id', id).order('amount', { ascending: false });
+    let seller = null;
+    if (lot.seller_id){ const { data: sp } = await SB.from('profiles').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
+    const bids = bidRows || [];
+    const cur = bids.length ? Number(bids[0].amount) : Number(lot.starting_bid || 0);
+    const imgs = (lot.image_urls || []).filter(Boolean);
+    document.getElementById('lotCrumb').textContent = lot.toy || 'Lot';
+    let ends = '';
+    if (lot.ends_at){ const ms = new Date(lot.ends_at) - Date.now(); if (ms <= 0) ends = 'Ended'; else { const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); ends = d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; } }
+    else ends = (lot.auction_days || 7) + 'd left';
+    const condPct = (c => { const t = String(c || '').toLowerCase(); if (/mint|mib|misb|sealed/.test(t)) return 100; if (/near|excellent/.test(t)) return 85; if (/very good|\bvg\b/.test(t)) return 70; if (/\bgood\b/.test(t)) return 55; if (/fair|played|loose/.test(t)) return 45; if (/poor|project|parts/.test(t)) return 25; return 0; })(lot.condition);
+    const variants = Array.isArray(lot.variants) ? lot.variants : [];
+    const varHtml = variants.length ? '<div class="lot-variants">' + variants.map(v => '<span class="lot-chip"><b>' + e(v.axis || '') + '</b> ' + e(v.value || '') + '</span>').join('') + '</div>' : '';
+    const mainImg = imgs.length ? imgs[0] : '';
+    const gallery =
+      '<div class="art-media">' +
+        '<div class="lot-main" id="lotMain">' +
+          '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+          (mainImg ? '<img class="lot-img" id="lotImg" src="' + e(mainImg) + '" alt="' + e(lot.toy) + '" draggable="false">' : '<div class="vlabel"><div class="k">' + e([lot.maker, lot.year].filter(Boolean).join(' · ')) + '</div><div class="n">' + e(lot.toy) + '</div></div>') +
+          '<div class="zoom-lens" id="zoomLens" hidden></div>' +
+        '</div>' +
+        (imgs.length > 1 ? '<div class="lot-thumbs">' + imgs.map((u, i) => '<button class="lot-th' + (i === 0 ? ' active' : '') + '" type="button" data-img="' + e(u) + '" style="background-image:url(' + e(u) + ')"></button>').join('') + '</div>' : '') +
+        '<div class="vcap" style="text-align:left">' + (imgs.length ? imgs.length + ' photo' + (imgs.length > 1 ? 's' : '') + ' from the seller.' : 'No photos yet.') + '</div>' +
+      '</div>';
+    const isOwner = authUser && lot.seller_id && authUser.id === lot.seller_id;
+    const ownerHtml = isOwner ? '<div class="lot-owner"><span>This is your lot.</span><button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>' : '';
+    const detail =
+      '<div class="art-detail">' +
+        '<div class="art-sub">' + e([lot.maker, lot.year, lot.line].filter(Boolean).join(' · ')) + '</div>' +
+        '<h1 class="art-title">' + e(lot.toy) + '</h1>' +
+        (lot.notes ? '<p style="font-family:var(--body);font-size:18px;color:var(--ink);margin:0;max-width:46ch">' + e(lot.notes) + '</p>' : '') +
+        varHtml +
+        '<div class="spec">' +
+          (lot.maker ? row('Maker', lot.maker) : '') +
+          (lot.year ? row('Released', lot.year) : '') +
+          (lot.line ? row('Line', lot.line) : '') +
+          (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
+          (lot.completeness ? row('Completeness', lot.completeness) : '') +
+          (seller ? row('Seller', (seller.display_name || 'Private seller') + (seller.location ? ' · ' + seller.location : '')) : '') +
+        '</div>' +
+        '<div class="auction">' +
+          '<div class="auction-row">' +
+            '<div><div class="auc-label">' + (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid') + '</div><div class="auc-amount">' + money(cur) + '</div></div>' +
+            '<div><div class="auc-label">' + (ends === 'Ended' ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown">' + ends + '</div></div>' +
+          '</div>' +
+          (ends === 'Ended' ? '' :
+            '<div class="buy-row">' +
+              '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
+              (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now · ' + money(lot.buy_now) + '</button>' : '') +
+            '</div>') +
+          '<div class="trust">' + (ends === 'Ended' ? 'This auction has ended.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.') + '</div>' +
+          ownerHtml +
+        '</div>' +
+      '</div>';
+    const hist = bids.length ?
+      '<hr class="rule" /><section class="band"><div class="wrap"><div class="band-head"><div><div class="ey">Bid history</div><h2>' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') + '</h2></div></div>' +
+      '<div class="bidhist">' + bids.map((b, i) => '<div class="bidrow"><span>' + (i === 0 ? 'Highest bid' : 'Bid') + '</span><span class="amt">' + money(b.amount) + '</span></div>').join('') + '</div></div></section>' : '';
+    body.innerHTML = '<div class="art-top">' + gallery + detail + '</div>' + hist;
+    let mainIdx = 0, ox = 0.5, oy = 0.5;
+    const lotImg = document.getElementById('lotImg');
+    const lotMain = document.getElementById('lotMain');
+    const thumbs = [...body.querySelectorAll('.lot-th')];
+    const setMain = idx => {
+      mainIdx = (idx + imgs.length) % imgs.length;
+      ox = 0.5; oy = 0.5;
+      if (lotImg){ lotImg.src = imgs[mainIdx]; lotImg.style.objectPosition = '50% 50%'; }
+      thumbs.forEach((x, i) => x.classList.toggle('active', i === mainIdx));
+    };
+    thumbs.forEach((t, idx) => t.addEventListener('click', () => setMain(idx)));
+    if (lotMain && lotImg && imgs.length){
+      // prev / next arrows on the large view
+      if (imgs.length > 1){
+        [[-1, '&#8249;', 'prev'], [1, '&#8250;', 'next']].forEach(([dir, sym, cls]) => {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'lot-nav ' + cls; b.innerHTML = sym; b.setAttribute('aria-label', dir < 0 ? 'Previous photo' : 'Next photo');
+          b.addEventListener('click', ev => { ev.stopPropagation(); setMain(mainIdx + dir); });
+          lotMain.appendChild(b);
+        });
+      }
+      const hover = window.matchMedia && window.matchMedia('(hover:hover)').matches;
+      const lens = document.getElementById('zoomLens');
+      document.querySelectorAll('.zoom-pane').forEach(p => p.remove());
+      const pane = document.createElement('div'); pane.className = 'zoom-pane'; pane.hidden = true; document.body.appendChild(pane);
+      const ZOOM = 4;
+      let dragging = false, moved = false, sx = 0, sy = 0, sox = 0.5, soy = 0.5, ovX = 0, ovY = 0;
+      const dims = () => { const mr = lotMain.getBoundingClientRect(); const nw = lotImg.naturalWidth, nh = lotImg.naturalHeight; const f = (nw && nh) ? Math.max(mr.width / nw, mr.height / nh) : 1; return { mr, nw, nh, f, ovX: Math.max(0, nw * f - mr.width), ovY: Math.max(0, nh * f - mr.height) }; };
+      const place = () => { const mr = lotMain.getBoundingClientRect(); pane.style.width = mr.width + 'px'; pane.style.height = mr.height + 'px'; let left = mr.right + 16; if (left + mr.width > window.innerWidth - 8) left = Math.max(8, window.innerWidth - mr.width - 8); pane.style.left = left + 'px'; pane.style.top = mr.top + 'px'; pane.style.backgroundImage = 'url(' + (lotImg.currentSrc || lotImg.src) + ')'; };
+      const leaveZoom = () => { pane.hidden = true; lens.hidden = true; };
+      const showZoom = (mx, my, d) => {
+        if (pane.hidden){ place(); pane.hidden = false; lens.hidden = false; }
+        const cropX = d.ovX * ox, cropY = d.ovY * oy;
+        const lensW = d.mr.width / ZOOM, lensH = d.mr.height / ZOOM;
+        const lx = Math.max(0, Math.min(d.mr.width - lensW, mx - lensW / 2)), ly = Math.max(0, Math.min(d.mr.height - lensH, my - lensH / 2));
+        lens.style.width = lensW + 'px'; lens.style.height = lensH + 'px'; lens.style.left = lx + 'px'; lens.style.top = ly + 'px';
+        pane.style.backgroundSize = (d.nw * d.f * ZOOM) + 'px ' + (d.nh * d.f * ZOOM) + 'px';
+        pane.style.backgroundPosition = '-' + ((lx + cropX) * ZOOM) + 'px -' + ((ly + cropY) * ZOOM) + 'px';
+      };
+      if (hover){
+        lotImg.style.cursor = 'crosshair';
+        lotMain.addEventListener('mousemove', ev => {
+          if (dragging) return;
+          const d = dims(); if (!d.nw){ leaveZoom(); return; }
+          const mx = ev.clientX - d.mr.left, my = ev.clientY - d.mr.top;
+          if (mx < 0 || my < 0 || mx > d.mr.width || my > d.mr.height){ leaveZoom(); return; }
+          showZoom(mx, my, d);
+        });
+        lotMain.addEventListener('mouseleave', leaveZoom);
+      }
+      // drag to pan when the image overflows the square (portrait / landscape)
+      lotMain.addEventListener('pointerdown', ev => {
+        if (ev.target.closest('.lot-nav')) return;
+        const d = dims(); if (d.ovX < 1 && d.ovY < 1) return;
+        dragging = true; moved = false; sx = ev.clientX; sy = ev.clientY; sox = ox; soy = oy; ovX = d.ovX; ovY = d.ovY;
+        lotImg.style.cursor = 'grabbing'; leaveZoom();
+        try { lotMain.setPointerCapture(ev.pointerId); } catch (e) {}
+      });
+      lotMain.addEventListener('pointermove', ev => {
+        if (!dragging) return;
+        const dx = ev.clientX - sx, dy = ev.clientY - sy;
+        if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+        if (ovX >= 1) ox = Math.max(0, Math.min(1, sox - dx / ovX));
+        if (ovY >= 1) oy = Math.max(0, Math.min(1, soy - dy / ovY));
+        lotImg.style.objectPosition = (ox * 100) + '% ' + (oy * 100) + '%';
+      });
+      const endDrag = () => { if (!dragging) return; dragging = false; lotImg.style.cursor = hover ? 'crosshair' : 'grab'; setTimeout(() => { moved = false; }, 0); };
+      lotMain.addEventListener('pointerup', endDrag);
+      lotMain.addEventListener('pointercancel', endDrag);
+      // click opens fullscreen (unless it was a pan-drag)
+      lotMain.addEventListener('click', ev => { if (ev.target.closest('.lot-nav') || moved) return; openZoom(imgs, mainIdx); });
+    }
+    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id));
+    const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => openModal('Buy now', lot.toy, 'Take it now for ' + money(lot.buy_now) + ' and skip the auction. On the live shop this goes to checkout. Layout preview.'));
+    const rm = document.getElementById('lotRemove'); if (rm) rm.addEventListener('click', async () => {
+      if (!window.confirm('Remove this lot? This cannot be undone.')) return;
+      rm.disabled = true;
+      const { error: de } = await SB.from('lots').delete().eq('id', lot.id);
+      if (de){ document.getElementById('lotCrumb').textContent = lot.toy; rm.disabled = false; openModal('Could not remove', 'Something went wrong', de.message); return; }
+      show('home'); injectDraftLots();
+    });
+  }
+
+  // ----- Fullscreen zoom + pan lightbox (mouse wheel, double-click, drag, pinch) -----
+  function openZoom(images, index){
+    images = (images || []).filter(Boolean);
+    if (!images.length) return;
+    let i = index || 0;
+    const ov = document.createElement('div');
+    ov.className = 'zoom-ov';
+    ov.innerHTML =
+      '<button class="zoom-x" type="button" aria-label="Close">&#10005;</button>' +
+      (images.length > 1 ? '<button class="zoom-nav prev" type="button" aria-label="Previous">&#8249;</button><button class="zoom-nav next" type="button" aria-label="Next">&#8250;</button>' : '') +
+      '<div class="zoom-stage"><img class="zoom-img" alt="" draggable="false"></div>' +
+      (images.length > 1 ? '<div class="zoom-count"></div>' : '') +
+      '<div class="zoom-hint">Scroll or double-click to zoom &middot; drag to pan' + (images.length > 1 ? ' &middot; &#8249; &#8250; to browse' : '') + '</div>';
+    document.body.appendChild(ov);
+    document.body.style.overflow = 'hidden';
+    const img = ov.querySelector('.zoom-img');
+    const stage = ov.querySelector('.zoom-stage');
+    const count = ov.querySelector('.zoom-count');
+    let scale = 1, tx = 0, ty = 0;
+    const apply = () => { img.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')'; img.style.cursor = scale > 1 ? 'grab' : 'zoom-in'; };
+    const clampPan = () => { const r = stage.getBoundingClientRect(); const mx = Math.max(0, (img.clientWidth * scale - r.width) / 2), my = Math.max(0, (img.clientHeight * scale - r.height) / 2); tx = Math.max(-mx, Math.min(mx, tx)); ty = Math.max(-my, Math.min(my, ty)); };
+    const zoomAt = (cx, cy, ns) => { const r = stage.getBoundingClientRect(); const ox = cx - r.left - r.width / 2, oy = cy - r.top - r.height / 2; const k = ns / scale; tx = (tx - ox) * k + ox; ty = (ty - oy) * k + oy; scale = ns; if (scale <= 1){ scale = 1; tx = 0; ty = 0; } clampPan(); apply(); };
+    const load = () => { scale = 1; tx = 0; ty = 0; img.src = images[i]; if (count) count.textContent = (i + 1) + ' / ' + images.length; apply(); };
+    load();
+    stage.addEventListener('wheel', ev => { ev.preventDefault(); zoomAt(ev.clientX, ev.clientY, Math.max(1, Math.min(5, scale * (ev.deltaY < 0 ? 1.15 : 0.87)))); }, { passive: false });
+    img.addEventListener('dblclick', ev => { ev.preventDefault(); zoomAt(ev.clientX, ev.clientY, scale > 1 ? 1 : 2.5); });
+    img.addEventListener('click', ev => { if (scale === 1 && !moved) zoomAt(ev.clientX, ev.clientY, 2.5); });
+    // pointer: drag-pan (1 finger) + pinch-zoom (2 fingers)
+    const pts = new Map(); let dragging = false, moved = false, sx = 0, sy = 0, stx = 0, sty = 0, pinchBase = 0, pinchScale = 1;
+    const two = () => [...pts.values()];
+    stage.addEventListener('pointerdown', ev => {
+      pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (pts.size === 1 && scale > 1){ dragging = true; moved = false; sx = ev.clientX; sy = ev.clientY; stx = tx; sty = ty; try { stage.setPointerCapture(ev.pointerId); } catch (e) {} }
+      else if (pts.size === 2){ dragging = false; const a = two(); pinchBase = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; pinchScale = scale; }
+    });
+    stage.addEventListener('pointermove', ev => {
+      if (!pts.has(ev.pointerId)) return;
+      pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+      if (pts.size === 2){ const a = two(); const d = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); zoomAt((a[0].x + a[1].x) / 2, (a[0].y + a[1].y) / 2, Math.max(1, Math.min(5, pinchScale * (d / pinchBase)))); return; }
+      if (dragging){ moved = true; tx = stx + (ev.clientX - sx); ty = sty + (ev.clientY - sy); clampPan(); apply(); }
+    });
+    const endPt = ev => { pts.delete(ev.pointerId); if (pts.size < 2 && !dragging) pinchBase = 0; if (pts.size === 0){ dragging = false; setTimeout(() => { moved = false; }, 0); } };
+    stage.addEventListener('pointerup', endPt);
+    stage.addEventListener('pointercancel', endPt);
+    const go = d => { i = (i + d + images.length) % images.length; load(); };
+    if (images.length > 1){ ov.querySelector('.prev').addEventListener('click', ev => { ev.stopPropagation(); go(-1); }); ov.querySelector('.next').addEventListener('click', ev => { ev.stopPropagation(); go(1); }); }
+    ov.querySelector('.zoom-x').addEventListener('click', close);
+    ov.addEventListener('click', ev => { if (ev.target === ov || ev.target === stage){ if (scale > 1){ scale = 1; tx = 0; ty = 0; apply(); } else close(); } });
+    const key = ev => { if (ev.key === 'Escape') close(); else if (ev.key === 'ArrowLeft' && images.length > 1) go(-1); else if (ev.key === 'ArrowRight' && images.length > 1) go(1); };
+    document.addEventListener('keydown', key);
+    function close(){ document.removeEventListener('keydown', key); document.body.style.overflow = ''; ov.remove(); }
   }
 
   // ----- Account (email magic-link, preview) -----
