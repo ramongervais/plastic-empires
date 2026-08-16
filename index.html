@@ -384,6 +384,13 @@
   textarea.ei { resize:vertical; line-height:1.5; }
   .ef-row { display:flex; gap:12px; }
   .ef-row .ef { flex:1; min-width:0; }
+  .variants { margin-top:20px; padding-top:18px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:14px; }
+  .v-head { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+  .variant .v-axis { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); margin-bottom:8px; }
+  .v-opts { display:flex; flex-wrap:wrap; gap:8px; }
+  .v-opt { font-family:var(--label); font-size:11px; letter-spacing:.04em; padding:8px 12px; border:1px solid var(--line); border-radius:2px; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease; }
+  .v-opt:hover { border-color:var(--ink-3); color:var(--ink); }
+  .v-opt.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
   .qstars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
   .qstars .base { color:var(--line-2); }
   .qstars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
@@ -446,7 +453,6 @@
       <a href="#empires" class="hide-sm" data-nav="home">The Empires</a>
       <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
       <a class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
-      <a class="hide-sm" data-nav="about" style="cursor:pointer">About</a>
       <a class="hide-sm" id="authLink" data-auth-label style="cursor:pointer">Sign in</a>
       <button class="theme-btn" id="themeBtn">Light / Dark</button>
       <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
@@ -456,7 +462,6 @@
     <a href="#empires" data-nav="home">The Empires</a>
     <a href="#collection" data-nav="home">Shop</a>
     <a data-nav="sell">Sell</a>
-    <a data-nav="about">About</a>
     <a id="authLinkM" data-auth-label>Sign in</a>
   </div>
 </header>
@@ -1089,6 +1094,7 @@
         <a data-nav="home">The Empires</a>
         <a data-nav="home">Shop</a>
         <a data-nav="artifact">Featured toy</a>
+        <a data-nav="about">About</a>
       </div>
       <div class="col">
         <span class="h">Empires</span>
@@ -1380,6 +1386,18 @@
       if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
       current = c; if (current.auctionDays == null) current.auctionDays = 7; viewMode();
     }
+    async function recurate(correction){
+      if (!files.length) return;
+      setCard('<div class="rc-empty">Applying your correction and rewriting the listing…</div>', true);
+      try {
+        const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ images: files.map(f => f.dataUrl), correction }) });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+        const days = current && current.auctionDays; showCuration(data.curation); if (days) { current.auctionDays = days; viewMode(); }
+      } catch (err) {
+        setCard('<div class="rc-empty">Could not rewrite: ' + esc(err.message || err) + '</div>', true);
+      }
+    }
 
     const STAR_PCT = { 'Mint': 100, 'Near mint': 90, 'Excellent': 80, 'Good': 60, 'Fair': 40, 'Poor': 20 };
     function stars(cond){
@@ -1390,17 +1408,25 @@
       const c = current;
       const est = (c.estimateLow && c.estimateHigh) ? 'Est. ' + eur(c.estimateLow) + ' – ' + eur(c.estimateHigh) : '';
       const condRow = '<div class="row"><span class="k">Condition</span><span class="v"><span class="cond-word">' + esc(c.condition || '—') + '</span> ' + stars(c.condition) + '</span></div>';
+      const variantsHtml = (c.variants && c.variants.length)
+        ? '<div class="variants"><div class="v-head">Variant · tap to correct</div>' + c.variants.map(v =>
+            '<div class="variant"><div class="v-axis">' + esc(v.axis) + '</div><div class="v-opts">' +
+            (v.options || []).map(o => '<button type="button" class="v-opt' + (o === v.value ? ' on' : '') + '" data-axis="' + esc(v.axis) + '" data-opt="' + esc(o) + '">' + esc(o) + '</button>').join('') +
+            '</div></div>').join('') + '</div>'
+        : '';
       const html =
         '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
         '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) + row('Auction length', (c.auctionDays || 7) + ' days') + '</div>' +
+        variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">Suggested starting bid</div><div class="amt">' + eur(c.startingBid) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
         '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this lot</button></div>';
       setCard(html, false);
       document.getElementById('editLot').addEventListener('click', editMode);
+      card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
       document.getElementById('submitLot').addEventListener('click', () => { saveDraftLot(current); openModal('Lot submitted', (current.toy || 'Your toy') + ' is now in your shop.', 'Added to the Shop as a draft lot, stored in this browser for the preview. On the live site this creates a real draft lot for review and payout setup.'); });
     }
 
