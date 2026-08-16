@@ -309,6 +309,24 @@
   @media (max-width:900px){ .vidgrid { grid-template-columns:repeat(2,1fr); } }
   @media (max-width:560px){ .vidgrid { grid-template-columns:1fr; } }
 
+  /* ---------- Auction / bidding ---------- */
+  .auction { margin-top:30px; }
+  .auction-row { display:flex; gap:40px; flex-wrap:wrap; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:18px 0; margin-bottom:20px; }
+  .auc-label { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:9px; }
+  .auc-amount, .auc-countdown { font-family:var(--body); font-weight:700; font-size:30px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .auc-card { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; padding-top:10px; border-top:1px solid var(--line-2); }
+  .auc-card .amt { font-family:var(--body); font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; }
+  .auc-card .sub { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-left:6px; }
+  .auc-card .cd { font-family:var(--label); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
+  .card-bid:hover { transform:translateY(-2px); }
+  .bidform { margin:2px 0 20px; }
+  .bidlabel { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; }
+  .bidinput-row { display:flex; gap:10px; }
+  .bidinput { flex:1; min-width:0; font-family:var(--body); font-size:20px; font-weight:700; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); font-variant-numeric:tabular-nums; }
+  .bidinput:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+  .bidhint { font-family:var(--label); font-size:11px; letter-spacing:.04em; color:var(--ink-3); margin-top:12px; line-height:1.5; }
+
   /* Footer */
   footer.foot { border-top:1px solid var(--line); padding:48px 0 60px; margin-top:40px; }
   .foot-in { display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap; }
@@ -328,6 +346,32 @@
     .moat .cell:last-child { border-bottom:0; }
     .collection { grid-template-columns:1fr 1fr; }
   }
+  /* ---------- Mobile menu ---------- */
+  .navtoggle { display:none; width:40px; height:38px; border:1px solid var(--line); border-radius:6px; background:transparent; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
+  .navtoggle span { display:block; width:17px; height:1.5px; background:var(--ink); transition:transform .2s ease, opacity .2s ease; }
+  header.mast.open .navtoggle span:nth-child(1){ transform:translateY(5.5px) rotate(45deg); }
+  header.mast.open .navtoggle span:nth-child(2){ opacity:0; }
+  header.mast.open .navtoggle span:nth-child(3){ transform:translateY(-5.5px) rotate(-45deg); }
+  .mobile-panel { display:none; flex-direction:column; border-top:1px solid var(--line); background:color-mix(in srgb, var(--paper) 97%, transparent); backdrop-filter:blur(10px); }
+  .mobile-panel a { padding:17px 28px; font-family:var(--label); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); border-bottom:1px solid var(--line-2); cursor:pointer; }
+  .mobile-panel a:last-child { border-bottom:0; }
+  header.mast.open .mobile-panel { display:flex; }
+  @media (max-width:860px){ .navtoggle { display:inline-flex; } }
+  @media (min-width:861px){ .mobile-panel { display:none !important; } }
+
+  /* ---------- Phone tuning ---------- */
+  @media (max-width:600px){
+    .collection { grid-template-columns:1fr; }
+    .wrap { padding:0 20px 56px; }
+    .hero h1, .art-title, .empire-title { letter-spacing:.06em; }
+    .hero h1 { font-size:34px; line-height:1.05; }
+    .empire-title { font-size:clamp(36px,10vw,52px); }
+    .auction-row { gap:22px; }
+    .auc-amount, .auc-countdown { font-size:26px; }
+    .mast-in { padding:12px 20px; }
+    .theme-btn { font-size:9px; padding:6px 7px; }
+  }
+
   @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; scroll-behavior:auto; } }
 </style>
 
@@ -339,10 +383,18 @@
     </div>
     <nav class="top">
       <a href="#empires" class="hide-sm" data-nav="home">The Empires</a>
-      <a href="#collection" class="hide-sm" data-nav="home">Collection</a>
-      <a href="#about" class="hide-sm">About</a>
+      <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
+      <a class="hide-sm" id="sellLink" data-sell style="cursor:pointer">Sell</a>
+      <a class="hide-sm" data-nav="about" style="cursor:pointer">About</a>
       <button class="theme-btn" id="themeBtn">Light / Dark</button>
+      <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </nav>
+  </div>
+  <div class="mobile-panel" id="mobilePanel">
+    <a href="#empires" data-nav="home">The Empires</a>
+    <a href="#collection" data-nav="home">Shop</a>
+    <a data-sell>Sell</a>
+    <a data-nav="about">About</a>
   </div>
 </header>
 
@@ -357,8 +409,8 @@
     <section class="hero">
       <div class="hero-copy">
         <div class="ey">Vintage Kenner · Star Wars · Ghostbusters</div>
-        <h1>Every toy was the last page of a story.</h1>
-        <p class="lede">Plastic Empires is a museum of vintage toys that happens to be a shop. Each piece arrives with its history, the company that made it, and the commercial that first sold it. You can read it, watch it, then take it home.</p>
+        <h1>Vintage toys.<br>Properly told.</h1>
+        <p class="lede">Plastic Empires brings together original vintage toys, the companies that made them and the stories that made them famous. Explore the history. Watch the commercials. Buy the originals.</p>
         <div class="cta-row">
           <a class="btn" href="#empires" data-nav="home">Enter the Empires</a>
           <a class="btn ghost" href="#collection" data-nav="home">Browse the collection</a>
@@ -366,8 +418,8 @@
       </div>
       <div class="hero-artifact" data-nav="artifact">
         <div class="badge">
-          <span class="ey">Featured artifact</span>
-          <span class="lk">View artifact →</span>
+          <span class="ey">Featured toy</span>
+          <span class="lk">View toy →</span>
         </div>
         <div class="vitrine" data-stars="1">
           <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
@@ -469,25 +521,25 @@
       <div class="band-head">
         <div>
           <div class="ey">Why we exist</div>
-          <h2>Not a grid of photos</h2>
+          <h2>Not just a grid of photos</h2>
         </div>
-        <p>Anyone can list a toy. We give every piece the three things that turn an object back into a memory.</p>
+        <p>Anyone can sell an old toy. We want to tell you what you're actually looking at.</p>
       </div>
       <div class="moat">
         <div class="cell">
+          <div class="num">— The Toy</div>
+          <h4>Know what you're buying</h4>
+          <p>Year, maker, series, scale, accessories and condition. The details collectors actually want to know.</p>
+        </div>
+        <div class="cell">
           <div class="num">— The Story</div>
-          <h4>Documented history</h4>
-          <p>Who designed it, when it shipped, why it mattered. Written beside every artifact, not buried in a description.</p>
+          <h4>Know where it came from</h4>
+          <p>Who made it, when it appeared and what made it special. The story behind the plastic.</p>
         </div>
         <div class="cell">
-          <div class="num">— The Makers</div>
-          <h4>Documentary pages</h4>
-          <p>Each line gets a full page on its company and era. The toy links up to it, so one purchase opens a whole world.</p>
-        </div>
-        <div class="cell">
-          <div class="num">— The Archive</div>
-          <h4>The original commercial</h4>
-          <p>The television spot that sold it the first time, restored and watchable on the artifact's own page.</p>
+          <div class="num">— The Commercial</div>
+          <h4>See how it was sold</h4>
+          <p>The original TV commercials that introduced these toys to the world, right where they belong.</p>
         </div>
       </div>
     </div>
@@ -497,54 +549,58 @@
     <div class="wrap">
       <div class="band-head">
         <div>
-          <div class="ey">For sale</div>
-          <h2>In the collection</h2>
+          <div class="ey">The shop</div>
+          <h2>For sale</h2>
         </div>
-        <p>A rotating selection. Reserve holds a piece for 48 hours while we talk condition and shipping.</p>
+        <p>Live auctions on original vintage toys. Place a bid, or take it straight away with Buy now.</p>
       </div>
       <div class="collection">
-        <article class="artifact-card" data-nav="artifact">
-          <div class="vitrine" style="aspect-ratio:1">
+        <article class="artifact-card">
+          <div class="vitrine" style="aspect-ratio:1" data-nav="artifact">
             <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
             <div class="vlabel"><div class="k">Kenner · 1979</div><div class="n" style="font-size:19px">Millennium Falcon</div></div>
           </div>
           <div class="label">
-            <div class="ln"><span class="nm">Millennium Falcon</span><span class="pr">€ 340</span></div>
+            <div class="ln"><span class="nm">Millennium Falcon</span></div>
             <div class="meta">Star Wars · Kenner · 1979</div>
-            <div class="status">● Available · view artifact</div>
+            <div class="auc-card"><div><span class="amt">€ 340</span><span class="sub">7 bids</span></div><div class="cd" data-cd data-ends="53">—</div></div>
+            <button class="card-bid" data-bid-btn data-name="Millennium Falcon" data-bid="340" data-bids="7">Place a bid</button>
           </div>
         </article>
-        <article class="artifact-card disabled">
+        <article class="artifact-card">
           <div class="vitrine" style="aspect-ratio:1">
             <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
             <div class="vlabel"><div class="k">Kenner · 1978</div><div class="n" style="font-size:19px">X-Wing Fighter</div></div>
           </div>
           <div class="label">
-            <div class="ln"><span class="nm">X-Wing Fighter</span><span class="pr">€ 165</span></div>
+            <div class="ln"><span class="nm">X-Wing Fighter</span></div>
             <div class="meta">Star Wars · Kenner · 1978</div>
-            <div class="status" style="color:var(--ink-3)">○ Coming soon</div>
+            <div class="auc-card"><div><span class="amt">€ 145</span><span class="sub">4 bids</span></div><div class="cd" data-cd data-ends="20">—</div></div>
+            <button class="card-bid" data-bid-btn data-name="X-Wing Fighter" data-bid="145" data-bids="4">Place a bid</button>
           </div>
         </article>
-        <article class="artifact-card disabled">
+        <article class="artifact-card">
           <div class="vitrine" style="aspect-ratio:1">
             <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
             <div class="vlabel"><div class="k">Bullmark · 1970s</div><div class="n" style="font-size:19px">Godzilla</div></div>
           </div>
           <div class="label">
-            <div class="ln"><span class="nm">Godzilla · sofubi</span><span class="pr">€ 420</span></div>
+            <div class="ln"><span class="nm">Godzilla · sofubi</span></div>
             <div class="meta">Kaiju · Bullmark · 1970s</div>
-            <div class="status" style="color:var(--ink-3)">○ Coming soon</div>
+            <div class="auc-card"><div><span class="amt">€ 380</span><span class="sub">11 bids</span></div><div class="cd" data-cd data-ends="78">—</div></div>
+            <button class="card-bid" data-bid-btn data-name="Godzilla · sofubi" data-bid="380" data-bids="11">Place a bid</button>
           </div>
         </article>
-        <article class="artifact-card disabled">
+        <article class="artifact-card">
           <div class="vitrine" style="aspect-ratio:1">
             <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
             <div class="vlabel"><div class="k">Kenner · 1986</div><div class="n" style="font-size:19px">Ecto-1</div></div>
           </div>
           <div class="label">
-            <div class="ln"><span class="nm">Ecto-1</span><span class="pr">€ 190</span></div>
+            <div class="ln"><span class="nm">Ecto-1</span></div>
             <div class="meta">Ghostbusters · Kenner · 1986</div>
-            <div class="status" style="color:var(--ink-3)">○ Coming soon</div>
+            <div class="auc-card"><div><span class="amt">€ 165</span><span class="sub">3 bids</span></div><div class="cd" data-cd data-ends="6">—</div></div>
+            <button class="card-bid" data-bid-btn data-name="Ecto-1" data-bid="165" data-bids="3">Place a bid</button>
           </div>
         </article>
       </div>
@@ -592,18 +648,24 @@
           <div class="row"><span class="k">Completeness</span><span class="v">Radar dish, cockpit, chess table present</span></div>
         </div>
 
-        <div class="price-block">
-          <div>
-            <div class="pr">€ 340</div>
-            <div class="prnote">Example price · final on inspection</div>
+        <div class="auction">
+          <div class="auction-row">
+            <div>
+              <div class="auc-label">Current bid · 7 bids</div>
+              <div class="auc-amount">€ 340</div>
+            </div>
+            <div>
+              <div class="auc-label">Ends in</div>
+              <div class="auc-countdown" data-cd data-ends="53">—</div>
+            </div>
           </div>
-        </div>
-        <div class="buy-row">
-          <button class="btn accent" id="reserveBtn">Reserve · 48 hours</button>
-          <button class="btn ghost" id="enquireBtn">Enquire</button>
-        </div>
-        <div class="trust">
-          <b>Reserve</b> holds this piece for 48 hours, no payment yet. We then confirm condition, photos and shipping with you directly. Every artifact is hand-inspected and insured in transit.
+          <div class="buy-row">
+            <button class="btn accent" data-bid-btn data-name="Millennium Falcon" data-bid="340" data-bids="7">Place a bid</button>
+            <button class="btn ghost" data-buynow-btn data-name="Millennium Falcon" data-buynow="520">Buy now · € 520</button>
+          </div>
+          <div class="trust">
+            Bidding is binding and a hidden reserve may apply. We confirm condition, photos and shipping before any payment, and every piece is hand-inspected and insured in transit. Layout preview, so no real bids are placed.
+          </div>
         </div>
       </div>
     </div>
@@ -762,7 +824,7 @@
           <h3>Star Wars</h3>
           <div class="era">1977 – 1985</div>
           <p>The line that started with an empty box and ended up on every shelf. The Falcon is in the collection now.</p>
-          <span class="enter">View the artifacts <span class="arw">→</span></span>
+          <span class="enter">View the toys <span class="arw">→</span></span>
         </article>
         <article class="empire" style="--sig:var(--gb)" data-empire="soon">
           <div class="chips"><span class="chip">Kenner</span></div>
@@ -786,7 +848,7 @@
     <div class="wrap">
       <div class="band-head">
         <div>
-          <div class="ey">The archive</div>
+          <div class="ey">Original commercials</div>
           <h2>The commercials</h2>
         </div>
         <p>The television spots that sold the toys the first time around. Six from the Kenner vault. They play inline here; the title opens the clip on YouTube.</p>
@@ -845,12 +907,46 @@
   </section>
 </main>
 
+<!-- ============================ ABOUT ============================ -->
+<main class="view" id="view-about" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">About</span></div>
+    <section class="empire-hero">
+      <div class="ey">About</div>
+      <h1 class="empire-title">It started with a shelf.</h1>
+      <div class="empire-dek">Plastic Empires · Netherlands</div>
+      <p class="empire-lede">A private collection that grew into something bigger. This is where it comes from, and what we hunt for.</p>
+    </section>
+  </div>
+  <section class="band">
+    <div class="wrap">
+      <div class="story" style="margin:0; max-width:66ch">
+        <p>What began as a handful of childhood pieces turned into a hunt: for the odd, the overlooked and the wonderfully strange. The finding, the careful cleaning, the search for a missing weapon or a lost accessory, the stories behind each toy. Somewhere along the way the collecting became a way of living.</p>
+        <p>We are drawn to the weird ones. Toys that were played with, loved and actually handled, over the pristine pieces sealed and graded never to be opened again. A toy locked in plastic, never to be read or felt, becomes a frozen artifact. We would rather keep them alive.</p>
+        <p>Have a collection of your own? We buy and take on whole collections and single pieces. Tell us what you have, send a few photos, and we will look after it.</p>
+        <div class="buy-row" style="margin-top:8px; max-width:520px">
+          <button class="btn accent" data-sell>Sell your collection</button>
+          <a class="btn ghost" href="mailto:hello@plasticempires.com">Reach out</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
 <!-- Reserve modal -->
 <div class="modal-bg" id="modal" hidden>
   <div class="modal">
     <div class="ey" id="modalEy">Reserved</div>
     <h3 id="modalTitle">The Falcon is held for you.</h3>
-    <p id="modalBody">On the live shop this reserves the piece for 48 hours and emails you to confirm condition, photos and shipping. This is a layout preview, so nothing has been charged.</p>
+    <p id="modalBody"></p>
+    <div class="bidform" id="bidForm" hidden>
+      <label class="bidlabel" for="bidInput">Your bid (€)</label>
+      <div class="bidinput-row">
+        <input class="bidinput" id="bidInput" type="number" inputmode="numeric" />
+        <button class="btn accent" id="bidConfirm">Place bid</button>
+      </div>
+      <div class="bidhint" id="bidHint"></div>
+    </div>
     <button class="btn close" id="modalClose">Close</button>
   </div>
 </div>
@@ -859,14 +955,14 @@
   <div class="wrap foot-in">
     <div>
       <div class="mark">Plastic Empires</div>
-      <div class="tl">A museum that sells.</div>
+      <div class="tl">Vintage toys. Full stories.</div>
     </div>
     <div class="cols">
       <div class="col">
         <span class="h">Visit</span>
         <a data-nav="home">The Empires</a>
-        <a data-nav="home">Collection</a>
-        <a data-nav="artifact">Featured artifact</a>
+        <a data-nav="home">Shop</a>
+        <a data-nav="artifact">Featured toy</a>
       </div>
       <div class="col">
         <span class="h">Empires</span>
@@ -920,7 +1016,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -941,7 +1037,7 @@
     const nav = e.target.closest('[data-nav]');
     if (!nav) return;
     const dest = nav.dataset.nav;
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire'){
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
@@ -1028,23 +1124,80 @@
       a.addEventListener('click', () => go(i + (+a.dataset.dir))));
   })();
 
-  // ----- Reserve / Enquire modal -----
+  // ----- Modal: bids / buy now / sell / info -----
   const modal = document.getElementById('modal');
+  const bidForm = document.getElementById('bidForm');
   function openModal(ey, title, body){
     document.getElementById('modalEy').textContent = ey;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').textContent = body;
+    if (bidForm) bidForm.hidden = true;
     modal.hidden = false;
   }
-  document.getElementById('reserveBtn').addEventListener('click', () =>
-    openModal('Reserved', 'The Falcon is held for you.', 'On the live shop this reserves the piece for 48 hours and emails you to confirm condition, photos and shipping. This is a layout preview, so nothing has been charged.'));
-  document.getElementById('enquireBtn').addEventListener('click', () =>
-    openModal('Enquiry', 'Ask us anything.', 'On the live shop this opens a short form to ask about condition, completeness or shipping, and we reply personally. This is a layout preview.'));
+  const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
+  function openBid(name, bid, bids){
+    const minNext = bid + Math.max(10, Math.round(bid * 0.05));
+    openModal('Place a bid', name, 'Current bid ' + eur(bid) + ' · ' + bids + ' bids. Enter at least ' + eur(minNext) + '.');
+    bidForm.hidden = false;
+    const input = document.getElementById('bidInput');
+    input.value = minNext; input.min = minNext;
+    document.getElementById('bidHint').textContent = 'Binding bid · a hidden reserve may apply · layout preview only.';
+    document.getElementById('bidConfirm').onclick = () => {
+      const v = parseInt(input.value, 10);
+      if (!v || v < minNext) { document.getElementById('bidHint').textContent = 'Enter at least ' + eur(minNext) + '.'; input.focus(); return; }
+      bidForm.hidden = true;
+      document.getElementById('modalEy').textContent = 'Bid placed';
+      document.getElementById('modalTitle').textContent = 'You are the highest bidder.';
+      document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '. Layout preview, so no real bid was placed.';
+    };
+    setTimeout(() => input.focus(), 40);
+  }
+  document.querySelectorAll('[data-bid-btn]').forEach(b => b.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    openBid(b.dataset.name, parseInt(b.dataset.bid, 10), parseInt(b.dataset.bids, 10));
+  }));
+  document.querySelectorAll('[data-buynow-btn]').forEach(b => b.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    openModal('Buy now', b.dataset.name, 'Take it now for ' + eur(b.dataset.buynow) + ' and skip the auction. On the live shop this goes to checkout. Layout preview.');
+  }));
+  const sellLink = document.getElementById('sellLink');
+  if (sellLink) sellLink.addEventListener('click', e => {
+    e.preventDefault();
+    openModal('Sell with us', 'Upload photos. Our AI does the rest.', 'Snap a few clear photos of your toy. Our AI identifies it, dates the year and line, grades condition and proposes a fair starting bid. Approved lots go straight to auction, and we handle photography, shipping and payment. On the live site this opens the upload flow. Layout preview.');
+  });
+
+  // ----- Auction countdowns -----
+  (function(){
+    const cds = [...document.querySelectorAll('[data-cd]')].map(el => ({ el, end: Date.now() + (parseFloat(el.dataset.ends) || 24) * 3600000 }));
+    if (!cds.length) return;
+    const pad = n => String(n).padStart(2, '0');
+    function fmt(ms){
+      if (ms <= 0) return 'Ended';
+      const d = Math.floor(ms/86400000), h = Math.floor(ms%86400000/3600000), m = Math.floor(ms%3600000/60000), s = Math.floor(ms%60000/1000);
+      return d > 0 ? d + 'd ' + pad(h) + 'h ' + pad(m) + 'm' : pad(h) + 'h ' + pad(m) + 'm ' + pad(s) + 's';
+    }
+    function tick(){ const now = Date.now(); cds.forEach(c => c.el.textContent = fmt(c.end - now)); }
+    tick(); setInterval(tick, 1000);
+  })();
   document.getElementById('modalClose').addEventListener('click', () => modal.hidden = true);
   modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true; });
 
   // ----- Theme -----
+  // ----- Mobile menu -----
+  (function(){
+    const mast = document.querySelector('header.mast');
+    const navToggle = document.getElementById('navToggle');
+    if (!mast || !navToggle) return;
+    navToggle.addEventListener('click', () => {
+      const open = mast.classList.toggle('open');
+      navToggle.setAttribute('aria-expanded', String(open));
+    });
+    document.querySelectorAll('.mobile-panel a').forEach(a => a.addEventListener('click', () => {
+      mast.classList.remove('open'); navToggle.setAttribute('aria-expanded', 'false');
+    }));
+  })();
+
   document.getElementById('themeBtn').addEventListener('click', () => {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';  // default (no attr) = light
     document.documentElement.setAttribute('data-theme', dark ? 'light' : 'dark');
