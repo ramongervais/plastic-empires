@@ -371,6 +371,7 @@
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
   .sell-tokens b { color:var(--ink); font-size:13px; }
   .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
+  .stamp-warn { font-family:var(--body); font-size:13px; color:#8a6a2e; background:rgba(181,138,63,.12); border:1px solid rgba(181,138,63,.4); border-radius:4px; padding:12px 14px; margin:16px 0 4px; line-height:1.5; }
   #curateBtn { display:block; width:100%; margin-top:20px; }
   #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
   .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
@@ -1018,6 +1019,18 @@
   </div>
   <section class="band">
     <div class="wrap">
+      <div class="ey" style="margin-bottom:8px">How it works</div>
+      <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.015em;margin:0 0 28px">Upload photos. We do the rest.</h2>
+      <div class="moat">
+        <div class="cell"><div class="num">— 1 · Upload</div><h4>A few clear photos</h4><p>Front, back, accessories and any flaws, plus one close-up of the maker's stamp: the moulded year, country and factory markings. That stamp confirms the age and origin, so it is required with every lot (a worn or scratched stamp is fine).</p></div>
+        <div class="cell"><div class="num">— 2 · AI curation</div><h4>We write and grade it</h4><p>Our AI identifies the toy, dates the year and line, grades condition, flags the variants that matter and proposes a fair starting bid. Anything that isn't a genuine collectible is rejected automatically, and no token is used.</p></div>
+        <div class="cell"><div class="num">— 3 · Confirm</div><h4>You stay in control</h4><p>Tweak any field, tap to correct a variant, and set a reserve or a Buy-now price. When you submit, one listing token is used.</p></div>
+        <div class="cell"><div class="num">— 4 · Auction</div><h4>It goes live</h4><p>Until launch your lot sits in Preview so buyers can watch it; at launch it opens for bidding. You are paid after the sale, we share the buyer's shipping address, and the buyer can leave you a review.</p></div>
+      </div>
+    </div>
+  </section>
+  <section class="band">
+    <div class="wrap">
       <div class="sell-grid">
         <div class="sell-left">
           <div class="sell-tokens" id="sellTokens"></div>
@@ -1026,7 +1039,7 @@
             <div class="dz-inner">
               <div class="dz-plus">+</div>
               <div class="dz-label">Add photos</div>
-              <div class="dz-hint">3–5 clear shots: front, back, accessories, and any flaws</div>
+              <div class="dz-hint">3–5 clear shots: front, back, accessories, any flaws, and one close-up of the maker's stamp (year, country, factory)</div>
             </div>
           </label>
           <div class="thumbs" id="thumbs"></div>
@@ -1680,6 +1693,7 @@
         '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
         '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
+        (c.stampVisible === false ? '<div class="stamp-warn">No maker\'s stamp photo detected. Please add a close-up of the moulded year / country / factory markings, it confirms the age and origin and builds buyer trust. A worn or scratched stamp is fine.</div>' : '') +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) + row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None') + row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None') + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">Suggested starting bid</div><div class="amt">' + eur(c.startingBid) + '</div></div>' +
