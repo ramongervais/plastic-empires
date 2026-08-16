@@ -1711,10 +1711,11 @@
     try { localStorage.setItem('pe_lots_v1', JSON.stringify(lots.slice(0, 20))); } catch (e) {}
     injectDraftLots();
   }
+  let injectGen = 0;
   async function injectDraftLots(){
     const grid = document.querySelector('#collection .collection');
     if (!grid) return;
-    grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
+    const gen = ++injectGen;
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [];
@@ -1734,6 +1735,8 @@
     } else {
       lots = loadDraftLots();
     }
+    if (gen !== injectGen) return;
+    grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
     if (!lots.length) return;
     const endsLabel = l => {
       if (l.ends_at) { const ms = new Date(l.ends_at) - Date.now(); if (ms <= 0) return 'Ended'; const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; }
