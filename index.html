@@ -2169,6 +2169,8 @@
       '</div>';
     const isOwner = authUser && lot.seller_id && authUser.id === lot.seller_id;
     const ownerHtml = isOwner ? '<div class="lot-owner"><span>This is your lot.</span><button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>' : '';
+    const s = lot.ship_to;
+    const shipHtml = (isOwner && s) ? '<div class="won-box"><div class="won-h">Ship to</div><div class="won-sub" style="white-space:pre-line">' + [s.name, s.line1, s.line2, [s.postal_code, s.city].filter(Boolean).join(' '), s.state, s.country].filter(Boolean).map(e).join('\n') + (s.phone ? '\n' + e(s.phone) : '') + (s.email ? '\n' + e(s.email) : '') + '</div></div>' : '';
     const detail =
       '<div class="art-detail">' +
         '<div class="art-sub">' + e([lot.maker, lot.year, lot.line].filter(Boolean).join(' · ')) + '</div>' +
@@ -2200,7 +2202,7 @@
               (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
             '</div>') +
           '<div class="trust">' + (ended ? 'Bidding on this lot is closed.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.') + '</div>' +
-          ownerHtml +
+          ownerHtml + shipHtml +
         '</div>' +
       '</div>';
     const hist = bids.length ?
