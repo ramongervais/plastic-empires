@@ -1781,6 +1781,7 @@
   function statBlock(n, lab){ return '<div class="stat"><div class="s-num">' + n + '</div><div class="s-lab">' + lab + '</div></div>'; }
 
   function renderSeller(id){
+    if (SB && /^[0-9a-f]{8}-[0-9a-f-]{20,}$/i.test(id)){ renderSellerDB(id); return; }
     const s = SELLERS[id] || SELLERS.cornerstone;
     document.getElementById('sellerCrumb').textContent = s.name;
     const mono = s.name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -1817,6 +1818,50 @@
       '</article>'
     ).join('');
     grid.querySelectorAll('.card-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10), parseInt(b.dataset.bids, 10)); }));
+  }
+
+  async function renderSellerDB(id){
+    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const head = document.getElementById('sellerHead');
+    document.getElementById('sellerCrumb').textContent = 'Seller';
+    head.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:32px 0">Loading seller…</p>';
+    document.getElementById('sellerLots').innerHTML = '';
+    const { data: prof } = await SB.from('profiles').select('id,display_name,handle,type,location,bio,created_at').eq('id', id).single();
+    const p = prof || {};
+    const name = p.display_name || 'Seller';
+    document.getElementById('sellerCrumb').textContent = name;
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at';
+    const { data: lotRows } = await SB.from('lots').select(sel).eq('seller_id', id).neq('status', 'draft').order('created_at', { ascending: false });
+    const lots = lotRows || [];
+    const now = Date.now();
+    const isEnded = l => l.status === 'sold' || l.status === 'ended' || (l.ends_at && new Date(l.ends_at) <= now);
+    const soldCount = lots.filter(l => l.status === 'sold').length;
+    const liveLots = lots.filter(l => !isEnded(l));
+    const ids = lots.map(l => l.id);
+    const agg = {};
+    if (ids.length){ const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids); (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; }); }
+    const mono = (name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('') || name.slice(0, 2)).toUpperCase();
+    const since = p.created_at ? new Date(p.created_at).getFullYear() : '';
+    head.innerHTML =
+      '<section class="seller-hero">' +
+        '<div class="seller-mono">' + e(mono) + '</div>' +
+        '<div class="seller-id">' +
+          '<div class="ey">Seller' + (p.type ? ' · ' + e(p.type) : '') + (p.location ? ' · ' + e(p.location) : '') + '</div>' +
+          '<h1 class="seller-name">' + e(name) + '</h1>' +
+          '<div class="seller-meta">' + e(p.handle ? ('@' + p.handle) : ('@' + name.toLowerCase().replace(/\s+/g, ''))) + (since ? ' · Member since ' + since : '') + '</div>' +
+          '<div class="buy-row" style="max-width:420px; margin-top:20px"><button class="btn accent" type="button" id="followBtn">Follow</button><button class="btn ghost" type="button" id="msgBtn">Message</button></div>' +
+        '</div>' +
+      '</section>' +
+      '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock('—', 'Followers') + '</div>' +
+      (p.bio ? '<p class="seller-bio">' + e(p.bio) + '</p>' : '');
+    document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + name + '.', 'You will be notified when this seller lists a new lot.'));
+    document.getElementById('msgBtn').addEventListener('click', () => openMessage(id, name));
+    document.getElementById('sellerLotsIntro').textContent = liveLots.length ? (name + ' has ' + liveLots.length + ' lot' + (liveLots.length > 1 ? 's' : '') + ' live right now.') : (name + ' has no live lots right now.');
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (isEnded(l) ? 'ended' : 'live'); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid), bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state }; });
+    const grid = document.getElementById('sellerLots');
+    grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
+    grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
+    show('seller');
   }
 
   // ----- Draft lots (browser-local persistence) -----
@@ -1972,6 +2017,28 @@
     } catch (err){ openModal('Checkout error', 'Could not start payment', err.message); }
   }
 
+  // ----- Message a seller (privacy-safe relay via Resend; email never exposed) -----
+  const MSG_URL = 'https://plasticempires-pay.ramongervais.workers.dev/message';
+  function openMessage(sellerId, sellerName){
+    if (SB && !authUser){ openAuth(); return; }
+    openModal('Message', 'Contact ' + sellerName, 'Your message is emailed to the seller. They reply to your address. Neither email is shown publicly.');
+    const body = document.getElementById('modalBody');
+    const form = document.createElement('div'); form.className = 'bidform'; form.style.marginTop = '14px';
+    form.innerHTML = '<textarea id="msgText" class="ei" rows="4" placeholder="Ask about condition, shipping, combined lots…"></textarea><div class="bidinput-row" style="margin-top:10px"><button class="btn accent" type="button" id="msgSend">Send message</button></div><div class="bidhint" id="msgHint"></div>';
+    body.appendChild(form);
+    document.getElementById('msgSend').addEventListener('click', async () => {
+      const t = document.getElementById('msgText').value.trim();
+      if (t.length < 5){ document.getElementById('msgHint').textContent = 'Please write a short message.'; return; }
+      const btn = document.getElementById('msgSend'); btn.disabled = true; document.getElementById('msgHint').textContent = 'Sending…';
+      try {
+        const r = await fetch(MSG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sellerId: sellerId, message: t, fromEmail: authUser ? authUser.email : '', origin: location.origin }) });
+        const d = await r.json();
+        if (d && d.ok){ form.remove(); document.getElementById('modalEy').textContent = 'Sent'; document.getElementById('modalTitle').textContent = 'Your message is on its way.'; document.getElementById('modalBody').textContent = 'We emailed it to ' + sellerName + '. They will reply to your address.'; }
+        else { document.getElementById('msgHint').textContent = (d && d.error) || 'Could not send. Please try again.'; btn.disabled = false; }
+      } catch (err){ document.getElementById('msgHint').textContent = err.message; btn.disabled = false; }
+    });
+  }
+
   // ----- Lot detail page (live, from DB) -----
   async function openLot(id){
     const body = document.getElementById('lotBody');
@@ -2028,7 +2095,7 @@
           (lot.line ? row('Line', lot.line) : '') +
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
-          (seller ? row('Seller', (seller.display_name || 'Private seller') + (seller.location ? ' · ' + seller.location : '')) : '') +
+          (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
