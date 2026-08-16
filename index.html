@@ -417,6 +417,8 @@
   .acceptbox { display:flex; align-items:flex-start; gap:10px; font-family:var(--body); font-size:13px; color:var(--ink-2); margin:16px 0 4px; cursor:pointer; line-height:1.5; }
   .acceptbox input { margin:2px 0 0; width:16px; height:16px; flex-shrink:0; accent-color:var(--ink); cursor:pointer; }
   .acceptbox a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  .acceptnote { font-family:var(--body); font-size:12.5px; color:var(--ink-3); margin:14px 0 4px; line-height:1.5; }
+  .acceptnote a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
   .qstars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
   .qstars .base { color:var(--line-2); }
   .qstars .fill { position:absolute; top:0; left:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
@@ -1211,6 +1213,14 @@
   </section>
 </main>
 
+<!-- ============================ ACCOUNT ============================ -->
+<main class="view" id="view-account" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Your account</span></div>
+    <div id="accountBody"></div>
+  </div>
+</main>
+
 <!-- Account modal -->
 <div class="modal-bg" id="authModal" hidden>
   <div class="modal" id="authBody"></div>
@@ -1298,6 +1308,27 @@
   .reserve-note.met::before{ content:"\2713  "; }
   .artifact-card.draft-lot .vitrine.closed{ opacity:.66; }
   .card-badge{ position:absolute; top:12px; left:12px; z-index:2; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:2px; }
+  .acct-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:8px 0 28px; }
+  .acct-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-bottom:16px; }
+  .acct-stat{ background:var(--paper); padding:20px; }
+  .acct-stat .n{ font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .acct-stat .k{ font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  .acct-sec{ margin:36px 0; }
+  .acct-sec .h{ font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); padding-bottom:10px; border-bottom:1px solid var(--ink); }
+  .acct-row{ display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); font-family:var(--body); }
+  .acct-row .th{ width:52px; height:52px; border:1px solid var(--line); border-radius:3px; background-size:cover; background-position:center; background-color:var(--panel); flex-shrink:0; cursor:pointer; }
+  .acct-row .info{ flex:1; min-width:0; cursor:pointer; }
+  .acct-row .info .t{ font-weight:600; font-size:15px; }
+  .acct-row .info .s{ font-size:12.5px; color:var(--ink-3); }
+  .acct-row .price{ font-variant-numeric:tabular-nums; font-weight:600; text-align:right; }
+  .acct-row .st{ font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .acct-empty{ font-family:var(--body); color:var(--ink-3); padding:14px 0; font-size:14px; }
+  .acct-toggle{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); font-family:var(--body); }
+  .acct-toggle .lbl{ font-size:14px; }
+  .acct-toggle .sw{ width:40px; height:22px; border-radius:100px; background:var(--line); position:relative; flex-shrink:0; }
+  .acct-toggle .sw::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--paper); box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .acct-pay, .acct-signout{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; padding:10px 14px; cursor:pointer; white-space:nowrap; }
+  .acct-signout{ background:none; color:var(--ink); border-color:var(--line); }
   .zoom-ov{ position:fixed; inset:0; z-index:1000; background:rgba(10,10,10,.95); }
   .zoom-stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
   .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
@@ -1351,7 +1382,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -1375,6 +1406,7 @@
     if (dest === 'seller'){ e.preventDefault(); renderSeller(nav.dataset.seller || 'cornerstone'); show('seller'); return; }
     if (dest === 'lot'){ e.preventDefault(); openLot(nav.dataset.lot); return; }
     if (dest === 'sold'){ e.preventDefault(); renderSold(); show('sold'); return; }
+    if (dest === 'account'){ e.preventDefault(); renderAccount(); return; }
     if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell' || dest === 'terms'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
@@ -1874,6 +1906,54 @@
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">No past results yet.</p>';
   }
 
+  // ----- Account / dashboard (owner's own activity) -----
+  async function renderAccount(){
+    const body = document.getElementById('accountBody');
+    show('account');
+    const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    if (!SB || !authUser){ body.innerHTML = '<p style="font-family:var(--body);padding:48px 0">Sign in to see your account.</p>'; return; }
+    body.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:48px 0">Loading your account…</p>';
+    const uid = authUser.id, now = Date.now();
+    const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
+    const topBids = async ids => { const m = {}; if (!ids.length) return m; const { data } = await SB.from('bids').select('lot_id,amount,bidder_id').in('lot_id', ids); (data || []).forEach(b => { const t = m[b.lot_id]; if (!t || Number(b.amount) > t.amount) m[b.lot_id] = { amount: Number(b.amount), bidder_id: b.bidder_id }; }); return m; };
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at';
+    const { data: myLots } = await SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false });
+    const { data: myBidsRaw } = await SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false });
+    const lots = myLots || [], myBids = myBidsRaw || [];
+    const bidIds = [...new Set(myBids.map(b => b.lot_id))];
+    let bidLots = [];
+    if (bidIds.length){ const { data } = await SB.from('lots').select(sel).in('id', bidIds); bidLots = data || []; }
+    const myTop = await topBids(lots.map(l => l.id));
+    const bidTop = await topBids(bidIds);
+    const finalPrice = (l, top) => (top[l.id] && top[l.id].amount) || Number(l.buy_now) || Number(l.starting_bid) || 0;
+    const soldLots = lots.filter(l => l.status === 'sold');
+    const liveLots = lots.filter(l => !isEnded(l));
+    const earned = soldLots.reduce((s, l) => s + finalPrice(l, myTop), 0);
+    const wins = bidLots.filter(l => isEnded(l) && bidTop[l.id] && bidTop[l.id].bidder_id === uid && (!l.reserve || bidTop[l.id].amount >= Number(l.reserve)));
+    const myBidByLot = {}; myBids.forEach(b => { const a = Number(b.amount); if (!myBidByLot[b.lot_id] || a > myBidByLot[b.lot_id]) myBidByLot[b.lot_id] = a; });
+    const stat = (n, k) => '<div class="acct-stat"><div class="n">' + n + '</div><div class="k">' + k + '</div></div>';
+    const stateOf = l => l.status === 'sold' ? 'Sold' : (isEnded(l) ? 'Ended' : 'Live');
+    const row = (l, right, sub) => '<div class="acct-row"><div class="th" data-nav="lot" data-lot="' + e(l.id) + '"' + (l.image_urls && l.image_urls[0] ? ' style="background-image:url(' + l.image_urls[0] + ')"' : '') + '></div><div class="info" data-nav="lot" data-lot="' + e(l.id) + '"><div class="t">' + e(l.toy) + '</div><div class="s">' + e(sub) + '</div></div>' + right + '</div>';
+    const listingsHtml = lots.length ? lots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
+    const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
+    const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = bidTop[l.id] && bidTop[l.id].bidder_id === uid; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
+    body.innerHTML =
+      '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
+      '<div class="acct-stats">' + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(myBids.length, 'Bids placed') + stat(wins.length, 'Won') + '</div>' +
+      '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
+      '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
+      '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
+      '<div class="acct-sec"><div class="h">Notifications</div>' +
+        '<div class="acct-toggle"><span class="lbl">Email me when I\'m outbid</span><span class="sw"></span></div>' +
+        '<div class="acct-toggle"><span class="lbl">Email me when I win a lot</span><span class="sw"></span></div>' +
+        '<div class="acct-toggle"><span class="lbl">Email me when one of my items sells</span><span class="sw"></span></div>' +
+        '<div class="acct-empty">Notification settings are coming soon.</div>' +
+      '</div>';
+    document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
+    body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
+  }
+
   // ----- Checkout (single flow: Buy-now + won-auction both land here) -----
   const PAY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/checkout';
   async function startCheckout(opts){
@@ -2121,11 +2201,10 @@
       b.querySelector('#authOut').addEventListener('click', async () => { if (SB) { await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
-      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><label class="acceptbox"><input type="checkbox" id="authAccept"><span>I have read and accept the <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a>.</span></label><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
       const go = async () => {
         const v = b.querySelector('#authEmail').value.trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
-        if (!b.querySelector('#authAccept').checked) { b.querySelector('#authHint').textContent = 'Please accept the Terms & Conditions to continue.'; return; }
         if (SB) {
           const btn = b.querySelector('#authGo'); btn.disabled = true; b.querySelector('#authHint').textContent = 'Sending…';
           const { error } = await SB.auth.signInWithOtp({ email: v, options: { emailRedirectTo: location.origin + location.pathname } });
@@ -2149,7 +2228,8 @@
   if (authModal){
     authModal.addEventListener('click', e => { if (e.target === authModal) authModal.hidden = true; });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') authModal.hidden = true; });
-    document.querySelectorAll('#authLink, #authLinkM, #authLinkB').forEach(el => el.addEventListener('click', e => { e.preventDefault(); openAuth(); }));
+    document.querySelectorAll('#authLink, #authLinkM').forEach(el => el.addEventListener('click', e => { e.preventDefault(); if (currentUser()) renderAccount(); else openAuth(); }));
+    const authB = document.getElementById('authLinkB'); if (authB) authB.addEventListener('click', e => { e.preventDefault(); if (currentUser()) renderAccount(); else openAuth(); });
     refreshAuthUI();
     if (SB) {
       SB.auth.getSession().then(({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); });
