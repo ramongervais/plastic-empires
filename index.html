@@ -1620,6 +1620,11 @@
     let current = null;
     function showCuration(c){
       if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
+      if (c.eligible === false){
+        setCard('<div class="rc-head"><div><div class="rc-title">Can\'t be listed</div><div class="rc-sub">Rejected automatically</div></div></div><div class="rc-notes" style="margin-top:16px">' + esc(c.rejectionReason || 'This item is not a collectible toy and cannot be listed on Plastic Empires.') + '</div><div class="rc-notes" style="color:var(--ink-3);margin-top:10px">No token was used. Only genuine vintage toys and collectibles are allowed.</div>', true);
+        current = null;
+        return;
+      }
       current = c; if (current.auctionDays == null) current.auctionDays = 7; viewMode();
     }
     async function recurate(correction){
