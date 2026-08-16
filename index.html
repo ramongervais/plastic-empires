@@ -472,7 +472,7 @@
 </style>
 
 <div class="promo-bar">
-  <span>Now in beta. The auctions open <b>1 September 2026</b>. Reserve your account for early access.</span>
+  <span id="promoText">Now in beta. Auctions open in <b id="promoCount">…</b> &middot; 1 September 2026.</span>
   <a id="authLinkB" class="promo-cta">Reserve your account &#8594;</a>
 </div>
 
@@ -2394,6 +2394,19 @@
   }
   injectDraftLots();
   (function(){ const ss = document.getElementById('shopSearch'); if (ss) ss.addEventListener('input', applyShopSearch); applyShopSearch(); })();
+
+  // ----- Launch countdown in the beta ribbon -----
+  (function(){
+    const el = document.getElementById('promoCount'); if (!el) return;
+    const target = new Date('2026-09-01T00:00:00+02:00').getTime();
+    (function tick(){
+      const ms = target - Date.now();
+      if (ms <= 0){ const t = document.getElementById('promoText'); if (t) t.innerHTML = 'We are live. The auctions are open.'; return; }
+      const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000), m = Math.floor(ms % 3600000 / 60000), s = Math.floor(ms % 60000 / 1000);
+      el.textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+      setTimeout(tick, 1000);
+    })();
+  })();
 
   // ----- Return from Stripe checkout -----
   (function(){
