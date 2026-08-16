@@ -363,6 +363,14 @@
   .thumbs .th { position:relative; width:72px; height:72px; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
   .thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
   .thumbs .th button { position:absolute; top:2px; right:2px; width:18px; height:18px; border:0; background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; font-size:12px; line-height:18px; padding:0; }
+  /* Sell uploader thumbnails — square, overrides the Falcon-page .thumbs rules (same class) */
+  #thumbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  #thumbs .th { position:relative; flex:0 0 auto; width:84px; height:84px; aspect-ratio:1; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  #thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
+  #thumbs .th button { position:absolute; top:2px; right:2px; width:18px; height:18px; }
+  .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
+  .sell-tokens b { color:var(--ink); font-size:13px; }
+  .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
   #curateBtn { display:block; width:100%; margin-top:20px; }
   #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
   .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
@@ -1005,13 +1013,14 @@
       <div class="ey">Sell with us</div>
       <h1 class="empire-title">Upload. Our AI does the rest.</h1>
       <div class="empire-dek">Photos in, a full listing out</div>
-      <p class="empire-lede">Add a few clear photos of your toy. Our AI identifies it, dates the year and line, grades the condition and proposes a fair starting bid. Approved lots go straight to auction.</p>
+      <p class="empire-lede">Add a few clear photos of your toy. Our AI identifies it, dates the year and line, grades the condition and proposes a fair starting bid. Genuine vintage is approved automatically; anything that isn't a collectible is rejected. Each listing uses one token.</p>
     </section>
   </div>
   <section class="band">
     <div class="wrap">
       <div class="sell-grid">
         <div class="sell-left">
+          <div class="sell-tokens" id="sellTokens"></div>
           <label class="dropzone" id="dropzone">
             <input type="file" id="fileInput" accept="image/*" multiple hidden />
             <div class="dz-inner">
@@ -1022,7 +1031,7 @@
           </label>
           <div class="thumbs" id="thumbs"></div>
           <button class="btn accent" id="curateBtn" disabled>Curate with AI</button>
-          <div class="sell-note" id="sellNote">Your photos stay in your browser until you curate. This is a layout preview: on the live site a curated toy becomes a draft lot for review. The AI curation runs on the live site and local file, not inside the claude.ai preview.</div>
+          <div class="sell-note" id="sellNote">Your photos stay in your browser until you curate. Curating uses AI to write and grade the listing; genuine toys are approved automatically, prohibited items are rejected (no token used). Each published listing uses one token.</div>
         </div>
         <div class="sell-right">
           <div class="result-card empty" id="resultCard">
@@ -1036,31 +1045,31 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Selling plans</div><h2>What it costs to sell</h2></div>
-        <p>List for free. You only pay a commission when an item actually sells.</p>
+        <p>1 token = 1 listing. Start free, or go Premium for more tokens and lower commission.</p>
       </div>
       <div class="tiers">
         <div class="tier">
           <div class="t-name">Starter</div>
           <div class="t-price">Free</div>
           <ul class="t-list">
-            <li>5 listings per week</li>
+            <li>3 listing tokens per month</li>
             <li>15% seller commission on sold lots</li>
-            <li>AI curation on every lot</li>
+            <li>AI curation and validation on every lot</li>
             <li>Standard placement</li>
           </ul>
-          <div class="t-note">No monthly fee. Unsold lots cost nothing.</div>
+          <div class="t-note">No monthly fee. You only pay commission when an item sells.</div>
         </div>
         <div class="tier feat">
           <div class="t-tag">For dealers</div>
           <div class="t-name">Premium</div>
-          <div class="t-price">€19<span>/month</span></div>
+          <div class="t-price">€15<span>/month</span></div>
           <ul class="t-list">
-            <li>100+ listings per month</li>
+            <li>50 listing tokens per month, rolls over to 100</li>
             <li>10% seller commission on sold lots</li>
             <li>Featured placement</li>
-            <li>Bulk upload and faster payout</li>
+            <li>Buy extra token packs anytime (25 for €18)</li>
           </ul>
-          <div class="t-note">For high-volume sellers. The lower commission pays for the fee fast.</div>
+          <div class="t-note">Early-bird price for the first 6 months, then €30/month.</div>
         </div>
       </div>
     </div>
@@ -1304,6 +1313,14 @@
   .mship-badge{ font-family:var(--label); font-size:9px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:4px 8px; border-radius:2px; }
   .mship-tok{ font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:4px; }
   .mship-r{ display:flex; gap:8px; flex-wrap:wrap; }
+  .rev-stars{ display:flex; gap:6px; margin-bottom:12px; }
+  .rev-star{ background:none; border:0; padding:0; font-size:28px; line-height:1; color:var(--line); cursor:pointer; transition:color .1s; }
+  .rev-star:hover, .rev-star.on{ color:var(--ink); }
+  .seller-reviews{ max-width:640px; }
+  .rev-item{ padding:14px 0; border-bottom:1px solid var(--line); }
+  .rev-item-h{ display:flex; align-items:center; gap:12px; }
+  .rev-date{ font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+  .rev-body{ font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:6px; line-height:1.55; }
   .acct-signout{ background:none; color:var(--ink); border-color:var(--line); }
   .acct-toggle .sw{ cursor:pointer; transition:background .15s; }
   .acct-toggle .sw::after{ transition:left .15s; }
@@ -1377,6 +1394,7 @@
     root.querySelectorAll('.film canvas.stars').forEach(c => c.dataset.done = '');
     window.scrollTo({ top:0, behavior: reduce ? 'auto':'smooth' });
     requestAnimationFrame(paintStars);
+    if (v === 'sell' && typeof refreshSellTokens === 'function') refreshSellTokens();
   }
   document.addEventListener('click', e => {
     const wb = e.target.closest('[data-watch]');
@@ -1701,7 +1719,7 @@
             const msg = String((err && err.message) || err);
             if (/NO_TOKENS/.test(msg)) openModal('Out of tokens', 'No listing tokens left.', 'You need a token to list a lot. Open your account to buy a token pack, or upgrade to Premium for 50 tokens a month.');
             else openModal('Could not list', 'Something went wrong.', msg);
-          } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; }
+          } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; if (typeof refreshSellTokens === 'function') refreshSellTokens(); }
           return;
         }
         saveDraftLot(current);
@@ -1838,6 +1856,10 @@
     const ids = lots.map(l => l.id);
     const agg = {};
     if (ids.length){ const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids); (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; }); }
+    let reviews = [];
+    { const { data: rv } = await SB.from('reviews').select('rating,body,created_at,lots!inner(seller_id)').eq('lots.seller_id', id).order('created_at', { ascending: false }).limit(20); reviews = rv || []; }
+    const revCount = reviews.length;
+    const avg = revCount ? reviews.reduce((s, r) => s + Number(r.rating), 0) / revCount : 0;
     const mono = (name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('') || name.slice(0, 2)).toUpperCase();
     const since = p.created_at ? new Date(p.created_at).getFullYear() : '';
     head.innerHTML =
@@ -1847,11 +1869,13 @@
           '<div class="ey">Seller' + (p.type ? ' · ' + e(p.type) : '') + (p.location ? ' · ' + e(p.location) : '') + '</div>' +
           '<h1 class="seller-name">' + e(name) + '</h1>' +
           '<div class="seller-meta">' + e(p.handle ? ('@' + p.handle) : ('@' + name.toLowerCase().replace(/\s+/g, ''))) + (since ? ' · Member since ' + since : '') + '</div>' +
+          (revCount ? '<div class="seller-rating">' + qstarsPct(avg / 5 * 100) + ' <b>' + avg.toFixed(1) + '</b> · ' + revCount + ' review' + (revCount > 1 ? 's' : '') + '</div>' : '') +
           '<div class="buy-row" style="max-width:420px; margin-top:20px"><button class="btn accent" type="button" id="followBtn">Follow</button><button class="btn ghost" type="button" id="msgBtn">Message</button></div>' +
         '</div>' +
       '</section>' +
-      '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock('—', 'Followers') + '</div>' +
-      (p.bio ? '<p class="seller-bio">' + e(p.bio) + '</p>' : '');
+      '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock(revCount ? avg.toFixed(1) : '—', 'Avg rating') + '</div>' +
+      (p.bio ? '<p class="seller-bio">' + e(p.bio) + '</p>' : '') +
+      (reviews.length ? '<div class="seller-reviews"><div class="ey" style="margin:28px 0 10px">Reviews</div>' + reviews.map(r => '<div class="rev-item"><div class="rev-item-h">' + qstarsPct(Number(r.rating) / 5 * 100) + '<span class="rev-date">' + new Date(r.created_at).toLocaleDateString('en-GB') + '</span></div>' + (r.body ? '<div class="rev-body">' + e(r.body) + '</div>' : '') + '</div>').join('') + '</div>' : '');
     document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + name + '.', 'You will be notified when this seller lists a new lot.'));
     document.getElementById('msgBtn').addEventListener('click', () => openMessage(id, name));
     document.getElementById('sellerLotsIntro').textContent = liveLots.length ? (name + ' has ' + liveLots.length + ' lot' + (liveLots.length > 1 ? 's' : '') + ' live right now.') : (name + ' has no live lots right now.');
@@ -2009,14 +2033,18 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at';
-    const [myLotsRes, myBidsRes, prefRes, watchRes] = await Promise.all([
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id';
+    const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
       SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending,plan,tokens').eq('id', uid).single(),
-      SB.from('watchlist').select('lot_id').eq('user_id', uid)
+      SB.from('watchlist').select('lot_id').eq('user_id', uid),
+      SB.from('lots').select(sel).eq('buyer_id', uid).order('created_at', { ascending: false }),
+      SB.from('reviews').select('lot_id').eq('reviewer_id', uid)
     ]);
     const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
+    const purchases = buysRes.data || [];
+    const reviewedLotIds = new Set((myRevRes.data || []).map(r => r.lot_id));
     const prefs = prefRes.data || {};
     const watchIds = [...new Set((watchRes.data || []).map(w => w.lot_id))];
     const bidIds = [...new Set(myBids.map(b => b.lot_id))];
@@ -2044,6 +2072,7 @@
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = bidTop[l.id] && bidTop[l.id].bidder_id === uid; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
+    const purchasesHtml = purchases.length ? purchases.map(l => row(l, (reviewedLotIds.has(l.id) ? '<div class="st">Reviewed</div>' : (l.seller_id && l.seller_id !== uid ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>' : '<div class="st">Your lot</div>')), 'Bought')).join('') : '';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Tokens left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
@@ -2054,6 +2083,7 @@
         '<div class="acct-empty">1 token = 1 listing. Starter: 3 tokens/month. Premium: 50/month (rollover to 100) + lower commission. Early-bird € 15/mo.</div>' +
       '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
+      (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
       '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
@@ -2065,6 +2095,7 @@
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
+    body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
     const mUp = document.getElementById('mUpgrade'); if (mUp) mUp.addEventListener('click', () => goCheckout(SUBSCRIBE_URL));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
     const mMan = document.getElementById('mManage'); if (mMan) mMan.addEventListener('click', () => goCheckout(PORTAL_URL));
@@ -2099,7 +2130,7 @@
       return;
     }
     try {
-      const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '', origin: location.origin }) });
+      const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '', buyerId: authUser ? authUser.id : '', origin: location.origin }) });
       const d = await r.json();
       if (d && d.url) location.href = d.url;
       else openModal('Checkout error', 'Could not start payment', (d && d.error) || 'Please try again.');
@@ -2125,6 +2156,43 @@
         if (d && d.ok){ form.remove(); document.getElementById('modalEy').textContent = 'Sent'; document.getElementById('modalTitle').textContent = 'Your message is on its way.'; document.getElementById('modalBody').textContent = 'We emailed it to ' + sellerName + '. They will reply to your address.'; }
         else { document.getElementById('msgHint').textContent = (d && d.error) || 'Could not send. Please try again.'; btn.disabled = false; }
       } catch (err){ document.getElementById('msgHint').textContent = err.message; btn.disabled = false; }
+    });
+  }
+
+  // ----- Sell page token counter -----
+  async function refreshSellTokens(){
+    const el = document.getElementById('sellTokens'); if (!el) return;
+    if (!SB || !authUser){ el.innerHTML = ''; return; }
+    try {
+      const { data } = await SB.from('profiles').select('tokens').eq('id', authUser.id).single();
+      const t = data ? data.tokens : null;
+      if (t == null){ el.innerHTML = ''; return; }
+      el.innerHTML = '<b>' + t + '</b> listing token' + (t === 1 ? '' : 's') + ' left &middot; each listing uses 1' + (t <= 0 ? ' &middot; <a data-nav="account">buy more</a>' : '');
+    } catch (e){ el.innerHTML = ''; }
+  }
+
+  // ----- Leave a seller review (buyer only, one per purchase) -----
+  function openReview(sellerId, lotId, lotName){
+    if (SB && !authUser){ openAuth(); return; }
+    openModal('Review', 'Rate this seller', 'How was your purchase of ' + (lotName || 'this lot') + '? Your review appears on the seller profile.');
+    const body = document.getElementById('modalBody');
+    const form = document.createElement('div'); form.className = 'bidform'; form.style.marginTop = '14px';
+    form.innerHTML = '<div class="rev-stars" id="revStars">' + [1, 2, 3, 4, 5].map(n => '<button type="button" class="rev-star" data-n="' + n + '" aria-label="' + n + ' star' + (n > 1 ? 's' : '') + '">&#9733;</button>').join('') + '</div><textarea id="revText" class="ei" rows="3" placeholder="What was your experience? (optional)"></textarea><div class="bidinput-row" style="margin-top:10px"><button class="btn accent" type="button" id="revSend">Post review</button></div><div class="bidhint" id="revHint"></div>';
+    body.appendChild(form);
+    let rating = 0;
+    const stars = form.querySelectorAll('.rev-star');
+    const paint = () => stars.forEach((s, i) => s.classList.toggle('on', i < rating));
+    stars.forEach((s, i) => s.addEventListener('click', () => { rating = i + 1; paint(); }));
+    document.getElementById('revSend').addEventListener('click', async () => {
+      if (!rating){ document.getElementById('revHint').textContent = 'Pick a star rating.'; return; }
+      const btn = document.getElementById('revSend'); btn.disabled = true;
+      const { error } = await SB.from('reviews').insert({ reviewer_id: authUser.id, lot_id: lotId, rating: rating, body: (document.getElementById('revText').value || '').trim() || null });
+      if (error){ document.getElementById('revHint').textContent = /duplicate|unique/i.test(error.message) ? 'You already reviewed this purchase.' : (/row-level|policy/i.test(error.message) ? 'Only the buyer of this lot can review it.' : error.message); btn.disabled = false; return; }
+      form.remove();
+      document.getElementById('modalEy').textContent = 'Thank you';
+      document.getElementById('modalTitle').textContent = 'Review posted.';
+      document.getElementById('modalBody').textContent = 'Your review now appears on ' + (lotName ? 'the ' : 'the ') + 'seller profile.';
+      if (typeof renderAccount === 'function') renderAccount();
     });
   }
 
