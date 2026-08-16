@@ -1329,6 +1329,14 @@
   .acct-toggle .sw::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:var(--paper); box-shadow:0 1px 2px rgba(0,0,0,.2); }
   .acct-pay, .acct-signout{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; padding:10px 14px; cursor:pointer; white-space:nowrap; }
   .acct-signout{ background:none; color:var(--ink); border-color:var(--line); }
+  .acct-toggle .sw{ cursor:pointer; transition:background .15s; }
+  .acct-toggle .sw::after{ transition:left .15s; }
+  .acct-toggle .sw.on{ background:var(--ink); }
+  .acct-toggle .sw.on::after{ left:20px; }
+  /* warm-sand accent: marks an anti-snipe extended auction */
+  .cd.extended, .auc-countdown.ext{ color:#b58a3f; }
+  .ext-tag{ display:inline-block; margin-top:8px; font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#b58a3f; background:rgba(181,138,63,.14); border:1px solid rgba(181,138,63,.42); padding:4px 8px; border-radius:2px; }
+  .ext-note{ font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#b58a3f; margin:-8px 0 16px; }
   .zoom-ov{ position:fixed; inset:0; z-index:1000; background:rgba(10,10,10,.95); }
   .zoom-stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
   .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
@@ -1516,6 +1524,7 @@
     document.getElementById('bidConfirm').onclick = async () => {
       const v = parseInt(input.value, 10);
       if (!v || v < minNext) { document.getElementById('bidHint').textContent = 'Enter at least ' + eur(minNext) + '.'; input.focus(); return; }
+      let extended = false;
       if (live) {
         if (!authUser) { openAuth(); return; }
         const btn = document.getElementById('bidConfirm'); btn.disabled = true;
@@ -1523,11 +1532,12 @@
         btn.disabled = false;
         if (error) { document.getElementById('bidHint').textContent = /row-level|policy/i.test(error.message) ? 'You cannot bid on your own lot.' : error.message; return; }
         injectDraftLots();
+        try { const nr = await fetch(NOTIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: lotId }) }); const nd = await nr.json(); if (nd && nd.ends_at) extended = true; } catch (e) {}
       }
       bidForm.hidden = true;
       document.getElementById('modalEy').textContent = 'Bid placed';
       document.getElementById('modalTitle').textContent = 'You are the highest bidder.';
-      document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '.' + (live ? ' Your bid is recorded.' : ' Layout preview, so no real bid was placed.');
+      document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '.' + (live ? ' Your bid is recorded.' + (extended ? ' The auction was extended by 2 minutes.' : '') : ' Layout preview, so no real bid was placed.');
     };
     setTimeout(() => input.focus(), 40);
   }
@@ -1889,7 +1899,8 @@
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
         '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (l.bids || 0) + ' bids') + '</span></div><div class="cd">' + endsTxt + '</div></div>' +
+        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (l.bids || 0) + ' bids') + '</span></div><div class="cd' + (!isClosed && l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
+        (!isClosed && l.extended ? '<div class="ext-tag">Extended +2 min</div>' : '') +
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>') +
       '</div></article>';
   }
@@ -1902,7 +1913,7 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [];
     if (SB) {
-      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at').neq('status', 'draft').order('created_at', { ascending: false }).limit(48);
+      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended').neq('status', 'draft').order('created_at', { ascending: false }).limit(48);
       const rows = data || [];
       const now = Date.now();
       const ids = rows.map(r => r.id);
@@ -1916,7 +1927,7 @@
         const timeEnded = r.ends_at && new Date(r.ends_at) <= now;
         const state = r.status === 'sold' ? 'sold' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live');
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended };
       });
       lots = mapped.filter(l => l.state === 'live').concat(mapped.filter(l => l.state !== 'live' && (now - l.closedMs) < 86400000));
     } else {
@@ -1963,11 +1974,13 @@
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
     const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at';
-    const [myLotsRes, myBidsRes] = await Promise.all([
+    const [myLotsRes, myBidsRes, prefRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
-      SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false })
+      SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
+      SB.from('profiles').select('notify_outbid,notify_won,notify_sold').eq('id', uid).single()
     ]);
     const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
+    const prefs = prefRes.data || {};
     const bidIds = [...new Set(myBids.map(b => b.lot_id))];
     const allIds = [...new Set(lots.map(l => l.id).concat(bidIds))];
     const [bidLotsRes, allBidsRes] = await Promise.all([
@@ -1985,6 +1998,7 @@
     const wins = bidLots.filter(l => isEnded(l) && bidTop[l.id] && bidTop[l.id].bidder_id === uid && (!l.reserve || bidTop[l.id].amount >= Number(l.reserve)));
     const myBidByLot = {}; myBids.forEach(b => { const a = Number(b.amount); if (!myBidByLot[b.lot_id] || a > myBidByLot[b.lot_id]) myBidByLot[b.lot_id] = a; });
     const stat = (n, k) => '<div class="acct-stat"><div class="n">' + n + '</div><div class="k">' + k + '</div></div>';
+    const tog = (key, label, on) => '<div class="acct-toggle" data-pref="' + key + '"><span class="lbl">' + label + '</span><span class="sw' + (on !== false ? ' on' : '') + '"></span></div>';
     const stateOf = l => l.status === 'sold' ? 'Sold' : (isEnded(l) ? 'Ended' : 'Live');
     const row = (l, right, sub) => '<div class="acct-row"><div class="th" data-nav="lot" data-lot="' + e(l.id) + '"' + (l.image_urls && l.image_urls[0] ? ' style="background-image:url(' + l.image_urls[0] + ')"' : '') + '></div><div class="info" data-nav="lot" data-lot="' + e(l.id) + '"><div class="t">' + e(l.toy) + '</div><div class="s">' + e(sub) + '</div></div>' + right + '</div>';
     const listingsHtml = lots.length ? lots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
@@ -1997,18 +2011,22 @@
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Notifications</div>' +
-        '<div class="acct-toggle"><span class="lbl">Email me when I\'m outbid</span><span class="sw"></span></div>' +
-        '<div class="acct-toggle"><span class="lbl">Email me when I win a lot</span><span class="sw"></span></div>' +
-        '<div class="acct-toggle"><span class="lbl">Email me when one of my items sells</span><span class="sw"></span></div>' +
-        '<div class="acct-empty">Notification settings are coming soon.</div>' +
+        tog('notify_outbid', 'Email me when I\'m outbid', prefs.notify_outbid) +
+        tog('notify_won', 'Email me when I win a lot', prefs.notify_won) +
+        tog('notify_sold', 'Email me when one of my items sells', prefs.notify_sold) +
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
+    body.querySelectorAll('.acct-toggle[data-pref]').forEach(t => t.addEventListener('click', async () => {
+      const sw = t.querySelector('.sw'); const on = !sw.classList.contains('on'); sw.classList.toggle('on', on);
+      try { await SB.from('profiles').update({ [t.dataset.pref]: on }).eq('id', uid); } catch (e) {}
+    }));
     } catch (err){ body.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:40px 0">Could not load your account. Please refresh. ' + ((err && err.message) || '') + '</p>'; }
   }
 
   // ----- Checkout (single flow: Buy-now + won-auction both land here) -----
   const PAY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/checkout';
+  const NOTIFY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/notify';
   async function startCheckout(opts){
     opts = opts || {};
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -2108,8 +2126,9 @@
         '<div class="auction">' +
           '<div class="auction-row">' +
             '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid')) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : '—')) : money(cur)) + '</div></div>' +
-            '<div><div class="auc-label">' + (ended ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown">' + (ended ? 'Ended' : ends) + '</div></div>' +
+            '<div><div class="auc-label">' + (ended ? 'Auction' : 'Ends in') + '</div><div class="auc-countdown' + (!ended && lot.extended ? ' ext' : '') + '">' + (ended ? 'Ended' : ends) + '</div></div>' +
           '</div>' +
+          ((!ended && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
           ((!ended && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
           (ended ?
             '<div class="won-box' + (iWon ? ' win' : '') + '">' +
@@ -2316,9 +2335,10 @@
   // ----- Return from Stripe checkout -----
   (function(){
     const p = new URLSearchParams(location.search);
-    const paid = p.get('paid'), canceled = p.get('canceled');
-    if (!paid && !canceled) return;
+    const paid = p.get('paid'), canceled = p.get('canceled'), lotParam = p.get('lot');
+    if (!paid && !canceled && !lotParam) return;
     history.replaceState(null, '', location.pathname);
+    if (lotParam && !paid && !canceled){ if (typeof openLot === 'function') setTimeout(() => openLot(lotParam), 300); return; }
     if (paid){
       openModal('Payment received', 'Thank you.', 'Your payment went through. We will confirm the details and arrange shipping by email. In the sandbox no real money moved.');
       if (typeof openLot === 'function') setTimeout(() => openLot(paid), 400);
