@@ -346,6 +346,35 @@
     .moat .cell:last-child { border-bottom:0; }
     .collection { grid-template-columns:1fr 1fr; }
   }
+  /* ---------- Sell / AI curation ---------- */
+  .sell-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+  .dropzone { display:block; border:1.5px dashed var(--line-2); border-radius:4px; padding:48px 24px; text-align:center; cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .dropzone:hover, .dropzone.drag { border-color:var(--ink); background:var(--panel); }
+  .dz-plus { font-family:var(--body); font-size:40px; font-weight:300; line-height:1; }
+  .dz-label { font-family:var(--label); font-size:13px; letter-spacing:.14em; text-transform:uppercase; margin-top:12px; }
+  .dz-hint { font-family:var(--body); font-size:13px; color:var(--ink-3); margin-top:8px; }
+  .thumbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .thumbs .th { position:relative; width:72px; height:72px; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumbs .th button { position:absolute; top:2px; right:2px; width:18px; height:18px; border:0; background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; font-size:12px; line-height:18px; padding:0; }
+  #curateBtn { display:block; width:100%; margin-top:20px; }
+  #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
+  .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
+  .result-card { border:1px solid var(--line); border-radius:4px; padding:28px; min-height:280px; }
+  .result-card.empty { display:flex; align-items:center; justify-content:center; }
+  .rc-empty { font-family:var(--label); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); text-align:center; max-width:34ch; line-height:1.6; }
+  .rc-title { font-family:var(--body); font-weight:700; font-size:24px; letter-spacing:-.01em; line-height:1.1; }
+  .rc-sub { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:8px; }
+  .rc-spec { margin-top:20px; border-top:1px solid var(--line); }
+  .rc-spec .row { display:flex; justify-content:space-between; gap:20px; padding:11px 0; border-bottom:1px solid var(--line-2); font-family:var(--body); font-size:14px; line-height:1.5; }
+  .rc-spec .row .k { color:var(--ink-3); white-space:nowrap; }
+  .rc-spec .row .v { text-align:right; }
+  .rc-bid { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-top:20px; }
+  .rc-bid .amt { font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .rc-conf { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); line-height:1.6; text-align:right; }
+  .rc-notes { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink); margin-top:16px; }
+  @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
+
   /* ---------- Mobile menu ---------- */
   .navtoggle { display:none; width:40px; height:38px; border:1px solid var(--line); border-radius:6px; background:transparent; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
   .navtoggle span { display:block; width:17px; height:1.5px; background:var(--ink); transition:transform .2s ease, opacity .2s ease; }
@@ -384,7 +413,7 @@
     <nav class="top">
       <a href="#empires" class="hide-sm" data-nav="home">The Empires</a>
       <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
-      <a class="hide-sm" id="sellLink" data-sell style="cursor:pointer">Sell</a>
+      <a class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
       <a class="hide-sm" data-nav="about" style="cursor:pointer">About</a>
       <button class="theme-btn" id="themeBtn">Light / Dark</button>
       <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
@@ -393,7 +422,7 @@
   <div class="mobile-panel" id="mobilePanel">
     <a href="#empires" data-nav="home">The Empires</a>
     <a href="#collection" data-nav="home">Shop</a>
-    <a data-sell>Sell</a>
+    <a data-nav="sell">Sell</a>
     <a data-nav="about">About</a>
   </div>
 </header>
@@ -925,8 +954,45 @@
         <p>We are drawn to the weird ones. Toys that were played with, loved and actually handled, over the pristine pieces sealed and graded never to be opened again. A toy locked in plastic, never to be read or felt, becomes a frozen artifact. We would rather keep them alive.</p>
         <p>Have a collection of your own? We buy and take on whole collections and single pieces. Tell us what you have, send a few photos, and we will look after it.</p>
         <div class="buy-row" style="margin-top:8px; max-width:520px">
-          <button class="btn accent" data-sell>Sell your collection</button>
+          <button class="btn accent" data-nav="sell">Sell your collection</button>
           <a class="btn ghost" href="mailto:hello@plasticempires.com">Reach out</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================ SELL ============================ -->
+<main class="view" id="view-sell" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Sell</span></div>
+    <section class="empire-hero">
+      <div class="ey">Sell with us</div>
+      <h1 class="empire-title">Upload. Our AI does the rest.</h1>
+      <div class="empire-dek">Photos in, a full listing out</div>
+      <p class="empire-lede">Add a few clear photos of your toy. Our AI identifies it, dates the year and line, grades the condition and proposes a fair starting bid. Approved lots go straight to auction.</p>
+    </section>
+  </div>
+  <section class="band">
+    <div class="wrap">
+      <div class="sell-grid">
+        <div class="sell-left">
+          <label class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept="image/*" multiple hidden />
+            <div class="dz-inner">
+              <div class="dz-plus">+</div>
+              <div class="dz-label">Add photos</div>
+              <div class="dz-hint">3–5 clear shots: front, back, accessories, and any flaws</div>
+            </div>
+          </label>
+          <div class="thumbs" id="thumbs"></div>
+          <button class="btn accent" id="curateBtn" disabled>Curate with AI</button>
+          <div class="sell-note" id="sellNote">Your photos stay in your browser until you curate. This is a layout preview: on the live site a curated toy becomes a draft lot for review. The AI curation runs on the live site and local file, not inside the claude.ai preview.</div>
+        </div>
+        <div class="sell-right">
+          <div class="result-card empty" id="resultCard">
+            <div class="rc-empty">Your AI curation will appear here.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -1016,7 +1082,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -1037,7 +1103,7 @@
     const nav = e.target.closest('[data-nav]');
     if (!nav) return;
     const dest = nav.dataset.nav;
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about'){
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'about' || dest === 'sell'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
@@ -1184,6 +1250,87 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true; });
 
   // ----- Theme -----
+  // ----- Sell: AI curation uploader -----
+  (function(){
+    const WORKER_URL = "https://plasticempires-curate.ramongervais.workers.dev";
+    const input = document.getElementById('fileInput');
+    const dz = document.getElementById('dropzone');
+    const thumbs = document.getElementById('thumbs');
+    const curateBtn = document.getElementById('curateBtn');
+    const card = document.getElementById('resultCard');
+    if (!input || !dz || !curateBtn || !card) return;
+
+    let files = []; // { name, dataUrl }
+    const esc = s => String(s).replace(/[<>&]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
+    const eur = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+
+    function render(){
+      thumbs.innerHTML = '';
+      files.forEach((f, i) => {
+        const el = document.createElement('div');
+        el.className = 'th';
+        el.innerHTML = '<img src="' + f.dataUrl + '" alt=""><button type="button" data-i="' + i + '" aria-label="Remove">×</button>';
+        thumbs.appendChild(el);
+      });
+      curateBtn.disabled = files.length === 0;
+    }
+    thumbs.addEventListener('click', e => {
+      const b = e.target.closest('button[data-i]');
+      if (!b) return;
+      files.splice(+b.dataset.i, 1); render();
+    });
+    function addFiles(list){
+      [...list].filter(f => f.type.startsWith('image/')).slice(0, 6 - files.length).forEach(f => {
+        const r = new FileReader();
+        r.onload = () => { files.push({ name: f.name, dataUrl: r.result }); render(); };
+        r.readAsDataURL(f);
+      });
+    }
+    input.addEventListener('change', () => { addFiles(input.files); input.value = ''; });
+    ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+    ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+    dz.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
+
+    function setCard(html, empty){ card.className = 'result-card' + (empty ? ' empty' : ''); card.innerHTML = html; }
+    function row(k, v){ return v ? '<div class="row"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>' : ''; }
+
+    curateBtn.addEventListener('click', async () => {
+      if (!files.length) return;
+      curateBtn.disabled = true; curateBtn.textContent = 'Curating…';
+      setCard('<div class="rc-empty">Reading the photos…</div>', true);
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ images: files.map(f => f.dataUrl) }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+        renderCuration(data.curation);
+      } catch (err) {
+        setCard('<div class="rc-empty">Could not curate. ' + esc(err.message || err) + '<br><br>The AI curation runs on the live site, not inside the claude.ai preview.</div>', true);
+      } finally {
+        curateBtn.disabled = false; curateBtn.textContent = 'Curate with AI';
+      }
+    });
+
+    function renderCuration(c){
+      if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
+      const est = (c.estimateLow && c.estimateHigh) ? 'Est. ' + eur(c.estimateLow) + ' – ' + eur(c.estimateHigh) : '';
+      const html =
+        '<div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
+        '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div>' +
+        '<div class="rc-spec">' + row('Condition', c.condition) + row('Completeness', c.completeness) + '</div>' +
+        '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">Suggested starting bid</div><div class="amt">' + eur(c.startingBid) + '</div></div>' +
+        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + '</div></div>' +
+        (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
+        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot">Submit this lot</button></div>';
+      setCard(html, false);
+      const sub = document.getElementById('submitLot');
+      if (sub) sub.addEventListener('click', () => openModal('Lot submitted', (c.toy || 'Your toy') + ' is on its way.', 'On the live site this creates a draft auction lot for review and payout setup. Layout preview, so nothing was submitted.'));
+    }
+  })();
+
   // ----- Mobile menu -----
   (function(){
     const mast = document.querySelector('header.mast');
