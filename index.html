@@ -2039,6 +2039,7 @@
   // ----- Checkout (single flow: Buy-now + won-auction both land here) -----
   const PAY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/checkout';
   const NOTIFY_URL = 'https://plasticempires-pay.ramongervais.workers.dev/notify';
+  const SHIP_URL = 'https://plasticempires-pay.ramongervais.workers.dev/notify-shipped';
   async function startCheckout(opts){
     opts = opts || {};
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -2124,6 +2125,14 @@
     const ownerHtml = isOwner ? '<div class="lot-owner"><span>This is your lot.</span><button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>' : '';
     const s = lot.ship_to;
     const shipHtml = (isOwner && s) ? '<div class="won-box"><div class="won-h">Ship to</div><div class="won-sub" style="white-space:pre-line">' + [s.name, s.line1, s.line2, [s.postal_code, s.city].filter(Boolean).join(' '), s.state, s.country].filter(Boolean).map(e).join('\n') + (s.phone ? '\n' + e(s.phone) : '') + (s.email ? '\n' + e(s.email) : '') + '</div></div>' : '';
+    const isBuyer = authUser && s && s.email && authUser.email && s.email.toLowerCase() === authUser.email.toLowerCase();
+    const shipped = !!lot.shipped_at;
+    const shipStatusHtml = !isSold ? '' : (
+      shipped
+        ? '<div class="won-box"><div class="won-h">Shipped</div><div class="won-sub">Sent ' + new Date(lot.shipped_at).toLocaleDateString('en-GB') + ((lot.tracking && (isOwner || isBuyer)) ? ' &middot; Tracking: ' + e(lot.tracking) : '') + '</div></div>'
+        : (isOwner
+            ? '<div class="won-box"><div class="won-h">Mark as shipped</div><div class="won-sub">Add a tracking number (optional) and let the buyer know it is on the way.</div><input id="shipTrack" class="ei" placeholder="Tracking number (optional)" style="margin-top:10px"><button class="btn accent" id="shipBtn" type="button" style="margin-top:10px;width:100%">Mark as shipped</button></div>'
+            : (isBuyer ? '<div class="won-box"><div class="won-h">Awaiting shipment</div><div class="won-sub">The seller has been notified and will ship your item.</div></div>' : '')));
     const detail =
       '<div class="art-detail">' +
         '<div class="art-sub">' + e([lot.maker, lot.year, lot.line].filter(Boolean).join(' · ')) + '</div>' +
@@ -2157,7 +2166,7 @@
                 (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
               '</div>')) +
           '<div class="trust">' + (isPreview ? 'This lot goes live on 1 September 2026.' : (ended ? 'Bidding on this lot is closed.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.')) + '</div>' +
-          ownerHtml + shipHtml +
+          ownerHtml + shipHtml + shipStatusHtml +
         '</div>' +
       '</div>';
     const hist = bids.length ?
@@ -2238,6 +2247,17 @@
     const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id));
     const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'buynow', amount: lot.buy_now, label: lot.toy }));
     const payBtn = document.getElementById('lotPay'); if (payBtn) payBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'win', amount: cur, label: lot.toy }));
+    const shipBtn = document.getElementById('shipBtn'); if (shipBtn) shipBtn.addEventListener('click', async () => {
+      shipBtn.disabled = true; shipBtn.textContent = 'Saving…';
+      const track = ((document.getElementById('shipTrack') || {}).value || '').trim() || null;
+      try {
+        const { error: ue } = await SB.from('lots').update({ shipped_at: new Date().toISOString(), tracking: track }).eq('id', lot.id);
+        if (ue) throw ue;
+        try { await fetch(SHIP_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: lot.id }) }); } catch (e) {}
+        openModal('Marked as shipped', lot.toy || 'Lot', 'The buyer has been notified' + (track ? ' with tracking ' + track : '') + '.');
+        openLot(lot.id);
+      } catch (err) { shipBtn.disabled = false; shipBtn.textContent = 'Mark as shipped'; openModal('Could not update', 'Something went wrong', String((err && err.message) || err)); }
+    });
     const lwatch = document.getElementById('lotWatch'); if (lwatch) lwatch.addEventListener('click', async () => {
       if (SB && !authUser){ openAuth(); return; }
       const on = !watchedIds.has(lot.id); if (on) watchedIds.add(lot.id); else watchedIds.delete(lot.id);
