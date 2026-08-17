@@ -26,4 +26,4 @@ Allow: /
 User-agent: Applebot-Extended
 Allow: /
 
-Sitemap: https://plasticempires.com/sitemap.xml
+Sitemap: https://hammerandmold.com/sitemap.xml
