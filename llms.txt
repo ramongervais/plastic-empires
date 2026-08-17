@@ -9,10 +9,10 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - AI curation writes the listing, dates the year and line, grades condition, flags variants and proposes a fair starting bid.
 - Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely; sellers ship worldwide, insured. Buyers can review sellers after a purchase.
 
-## The Empires (makers)
+## The Molders (makers)
 - Kenner (Cincinnati) — Star Wars, The Real Ghostbusters
 - Japanese kaiju makers — Bullmark, Marusan, Popy
-- Each maker has its own documentary page; each toy links back to its Empire.
+- Each maker has its own documentary page; each toy links back to its Molder.
 
 ## Seller plans
 - Starter (free): 3 listing tokens per month, 15% commission on sold lots, AI curation and validation.
