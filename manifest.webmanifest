@@ -1,0 +1,16 @@
+{
+  "name": "Plastic Empires",
+  "short_name": "Plastic Empires",
+  "description": "Auction house for original vintage toys. Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#131313",
+  "categories": ["shopping", "lifestyle"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

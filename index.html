@@ -19,6 +19,12 @@
 <meta name="twitter:description" content="Original vintage toys, identified, graded and told. Bid worldwide, insured.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23131313'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='14' font-weight='700' fill='white' text-anchor='middle'%3EPE%3C/text%3E%3C/svg%3E">
 <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Plastic Empires">
+<link rel="apple-touch-icon" href="/icon.svg">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://plasticempires.com/#org","name":"Plastic Empires","url":"https://plasticempires.com/","description":"Auction house for original vintage toys, Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told.","areaServed":"Worldwide","slogan":"Vintage toys with a story"},{"@type":"WebSite","@id":"https://plasticempires.com/#website","url":"https://plasticempires.com/","name":"Plastic Empires","inLanguage":"en","publisher":{"@id":"https://plasticempires.com/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://plasticempires.com/?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}
 </script>
@@ -502,6 +508,23 @@
     .auc-amount, .auc-countdown { font-size:26px; }
     .mast-in { padding:12px 20px; }
     .theme-btn { font-size:9px; padding:6px 7px; }
+  }
+
+  /* ---------- Mobile UX baseline (all touch widths) ---------- */
+  html { -webkit-text-size-adjust:100%; }
+  @media (max-width:600px){
+    html, body { overflow-x:hidden; max-width:100%; }
+    /* iOS zooms the page in whenever a focused field is <16px — pin inputs at 16px */
+    input, select, textarea { font-size:16px; }
+    /* comfortable, thumb-sized tap targets */
+    .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
+    .btn, button { -webkit-tap-highlight-color:rgba(0,0,0,0); touch-action:manipulation; }
+    /* stop double-tap zoom fighting our own buttons */
+    a, button, [role="button"] { touch-action:manipulation; }
+    /* sticky pay/bid bars sit above the iOS home indicator */
+    .sticky-bar, .paybar, .bidbar { padding-bottom:calc(12px + env(safe-area-inset-bottom)); }
+    /* keep images from ever forcing a sideways scroll */
+    img { max-width:100%; height:auto; }
   }
 
   @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; scroll-behavior:auto; } }
@@ -2618,5 +2641,6 @@
   });
   paintStars();
 </script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); }); }</script>
 </body>
 </html>
