@@ -395,6 +395,10 @@
   .sell-tokens b { color:var(--ink); font-size:13px; }
   .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
   .stamp-warn { font-family:var(--body); font-size:13px; color:#8a6a2e; background:rgba(181,138,63,.12); border:1px solid rgba(181,138,63,.4); border-radius:4px; padding:12px 14px; margin:16px 0 4px; line-height:1.5; }
+  .sale-toggle { display:flex; margin:16px 0; border:1px solid var(--line); border-radius:4px; overflow:hidden; max-width:320px; }
+  .sale-toggle button { flex:1; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:11px; border:0; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s, color .12s; }
+  .sale-toggle button + button { border-left:1px solid var(--line); }
+  .sale-toggle button.on { background:var(--ink); color:var(--paper); }
   #curateBtn { display:block; width:100%; margin-top:20px; }
   #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
   .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
@@ -1714,19 +1718,25 @@
             (v.options || []).map(o => '<button type="button" class="v-opt' + (o === v.value ? ' on' : '') + '" data-axis="' + esc(v.axis) + '" data-opt="' + esc(o) + '">' + esc(o) + '</button>').join('') +
             '</div></div>').join('') + '</div>'
         : '';
+      const fixed = c.saleType === 'fixed';
+      const price = fixed ? (c.buyNow || c.startingBid) : c.startingBid;
       const html =
         '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
         '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
         (c.stampVisible === false ? '<div class="stamp-warn">No maker\'s stamp photo detected. Please add a close-up of the moulded year / country / factory markings, it confirms the age and origin and builds buyer trust. A worn or scratched stamp is fine.</div>' : '') +
-        '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) + row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None') + row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None') + '</div>' +
+        '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
+        '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
+          (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
+          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None')) + '</div>' +
         variantsHtml +
-        '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">Suggested starting bid</div><div class="amt">' + eur(c.startingBid) + '</div></div>' +
+        '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
-        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this lot</button></div>';
+        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this ' + (fixed ? 'item' : 'lot') + '</button></div>';
       setCard(html, false);
       document.getElementById('editLot').addEventListener('click', editMode);
+      card.querySelectorAll('.sale-toggle button').forEach(b => b.addEventListener('click', () => { const st = b.dataset.sale; if (st === (current.saleType || 'auction')) return; if (st === 'fixed' && !current.buyNow) current.buyNow = current.startingBid; current.saleType = st; viewMode(); }));
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
       document.getElementById('submitLot').addEventListener('click', async () => {
         if (SB && !authUser) { openAuth(); return; }
@@ -1746,13 +1756,15 @@
               } catch (e) { upErr = String((e && e.message) || e); }
             }
             const pre = preLaunch();
-            const ends = pre ? null : new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
+            const fixedSale = current.saleType === 'fixed';
+            const ends = (pre || fixedSale) ? null : new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
             const { error } = await SB.from('lots').insert({
               id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
               condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
-              variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0, reserve: current.reserve || null, buy_now: current.buyNow || null,
+              variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
+              reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
               estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
-              auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends,
+              auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
             });
             if (error) throw error;
             injectDraftLots();
@@ -1888,7 +1900,7 @@
     const p = prof || {};
     const name = p.display_name || 'Seller';
     document.getElementById('sellerCrumb').textContent = name;
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,sale_type';
     const { data: lotRows } = await SB.from('lots').select(sel).eq('seller_id', id).neq('status', 'draft').order('created_at', { ascending: false });
     const lots = lotRows || [];
     const now = Date.now();
@@ -1921,7 +1933,7 @@
     document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + name + '.', 'You will be notified when this seller lists a new lot.'));
     document.getElementById('msgBtn').addEventListener('click', () => openMessage(id, name));
     document.getElementById('sellerLotsIntro').textContent = liveLots.length ? (name + ' has ' + liveLots.length + ' lot' + (liveLots.length > 1 ? 's' : '') + ' live right now.') : (name + ' has no live lots right now.');
-    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (isEnded(l) ? 'ended' : 'live'); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid), bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state }; });
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
@@ -1973,7 +1985,8 @@
     const ended = l.state === 'ended' || (!isPreview && !isSold && l.ends_at && new Date(l.ends_at) <= Date.now());
     const isClosed = isSold || ended;
     const badgeWord = isSold ? 'Sold' : 'Ended';
-    const endsTxt = isPreview ? 'Opens 1 Sep' : (isClosed ? badgeWord : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left'));
+    const isFixed = l.saleType === 'fixed';
+    const endsTxt = isPreview ? 'Opens 1 Sep' : (isClosed ? badgeWord : (isFixed ? 'Direct sale' : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left')));
     return '<article class="artifact-card draft-lot">' +
       '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '">' +
         (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (isPreview ? '<span class="card-badge sand">Preview</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : ''))) +
@@ -1982,8 +1995,8 @@
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
         '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (l.bids || 0) + ' bids')) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
-        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 September</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>')) +
+        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
+        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 September</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
 
@@ -1995,7 +2008,7 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [];
     if (SB) {
-      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended').neq('status', 'draft').order('created_at', { ascending: false }).limit(48);
+      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type').neq('status', 'draft').order('created_at', { ascending: false }).limit(48);
       const rows = data || [];
       const now = Date.now();
       const ids = rows.map(r => r.id);
@@ -2009,7 +2022,8 @@
         const timeEnded = r.ends_at && new Date(r.ends_at) <= now;
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended };
+        const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type };
       });
       const active = mapped.filter(l => l.state === 'preview' || l.state === 'live');
       const closedRecent = mapped.filter(l => (l.state === 'ended' || l.state === 'sold') && (now - l.closedMs) < 86400000);
@@ -2262,6 +2276,8 @@
     const iWon = ended && topBid && reserveMet && authUser && topBid.bidder_id === authUser.id;
     const isSold = lot.status === 'sold';
     const isPreview = lot.status === 'preview';
+    const isFixed = lot.sale_type === 'fixed';
+    const fixedPrice = Number(lot.buy_now || cur || 0);
     const imgs = (lot.image_urls || []).filter(Boolean);
     document.getElementById('lotCrumb').textContent = lot.toy || 'Lot';
     let ends = '';
@@ -2309,23 +2325,25 @@
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
-            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid')) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : '—')) : money(cur)) + '</div></div>' +
-            '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : 'Ends in')) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Sep 2026' : (ended ? 'Ended' : ends)) + '</div></div>' +
+            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '—'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div></div>' +
+            '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Sep 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
           '</div>' +
-          ((!ended && !isPreview && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
-          ((!ended && !isPreview && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
+          ((!ended && !isPreview && !isFixed && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
+          ((!ended && !isPreview && !isFixed && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
           (ended ?
             '<div class="won-box' + (iWon ? ' win' : '') + '">' +
               (iWon ? '<div class="won-h">You won this lot.</div><div class="won-sub">' + (isSold ? 'Payment received. Thank you.' : 'Complete your payment to confirm the purchase.') + '</div>' + (isSold ? '' : '<button class="btn accent" type="button" id="lotPay">Pay now &middot; ' + money(cur) + '</button>') :
                 (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : (isSold ? '<div class="won-h">Sold.</div><div class="won-sub">This lot has been purchased' + (lot.buy_now ? ' for ' + money(lot.buy_now) : '') + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>'))) +
             '</div>' :
             (isPreview ?
-              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">Bidding opens 1 September 2026. Watch this lot to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
-              '<div class="buy-row">' +
-                '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
-                (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
-              '</div>')) +
-          '<div class="trust">' + (isPreview ? 'This lot goes live on 1 September 2026.' : (ended ? 'Bidding on this lot is closed.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.')) + '</div>' +
+              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item goes on sale 1 September 2026.' : 'Bidding opens 1 September 2026.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
+              (isFixed ?
+                '<div class="buy-row"><button class="btn accent" type="button" id="lotBuy">Buy now &middot; ' + money(fixedPrice) + '</button></div>' :
+                '<div class="buy-row">' +
+                  '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
+                  (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
+                '</div>'))) +
+          '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 September 2026.' : 'This lot goes live on 1 September 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected and insured in transit.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.'))) + '</div>' +
           ownerHtml + shipHtml + shipStatusHtml +
         '</div>' +
       '</div>';
