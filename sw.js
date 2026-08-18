@@ -1,4 +1,4 @@
-// Plastic Empires service worker — network-first (always fresh; cache is only an offline fallback)
+// Hammer & Mold service worker — network-first (always fresh; cache is only an offline fallback)
 const CACHE = 'pe-v1';
 
 self.addEventListener('install', () => self.skipWaiting());

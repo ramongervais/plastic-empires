@@ -99,7 +99,7 @@
   .dateline { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:11px 0; border-top:2px solid var(--ink); border-bottom:1px solid var(--line); font-family:var(--label); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2); }
   .dateline b { color:var(--ink); font-weight:600; }
   @media (max-width:640px){ .dateline { font-size:9px; letter-spacing:.08em; } }
-  .hero { padding: 40px 0 64px; display:grid; grid-template-columns: 1.15fr .85fr; gap: 56px; align-items:center; }
+  .hero { padding: 40px 0 64px; display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr); gap: 40px; align-items:center; }
   .hero-copy .ey { margin-bottom: 26px; }
   .hero h1 { font-family:var(--display); font-weight:600; font-size: clamp(38px, 5.6vw, 68px); line-height:1.02; letter-spacing:-.02em; margin:0 0 26px; text-wrap:balance; max-width: 15ch; }
   .hero p.lede { font-family:var(--body); font-weight:600; font-size: clamp(19px, 1.8vw, 22px); line-height:1.4; color:var(--ink); max-width: 46ch; margin:0 0 32px; }
@@ -126,9 +126,11 @@
   .vitrine .plinth { position:absolute; left:0; right:0; bottom:0; height:34%; background:linear-gradient(to top, color-mix(in srgb, var(--ink) 8%, transparent), transparent); pointer-events:none; }
   .vcap { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-3); margin-top:12px; text-align:center; }
 
-  .hero-artifact { cursor:pointer; }
-  .hero-artifact .badge { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
-  .hero-artifact .badge .lk { font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); }
+  /* Frameless hero photograph (cut-out on white, no border, no plinth) */
+  .hero-shot { display:block; width:100%; height:auto; }
+
+  /* Hero photograph: wider than its column, bleeding toward the right page edge */
+  .hero-artifact { margin-right: calc(-1 * min(160px, max(0px, (100vw - 1180px) / 2 + 28px))); }
 
   /* ---------- Section frame ---------- */
   section.band { padding: 64px 0; border-top:1px solid var(--line); }
@@ -374,6 +376,7 @@
 
   @media (max-width: 900px){
     .hero { grid-template-columns:1fr; gap:40px; }
+    .hero-artifact { margin-right:0; }
     .art-top { grid-template-columns:1fr; gap:34px; }
     .art-media { position:static; }
     .empires, .moat, .collection { grid-template-columns:1fr; }
@@ -589,21 +592,8 @@
           <a class="btn ghost" href="#collection" data-nav="home">Browse the collection</a>
         </div>
       </div>
-      <div class="hero-artifact" data-nav="artifact">
-        <div class="badge">
-          <span class="ey">Featured toy</span>
-          <span class="lk">View toy →</span>
-        </div>
-        <div class="vitrine" data-stars="1">
-          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-          <div class="vlabel">
-            <div class="k">Kenner · Star Wars</div>
-            <div class="n">Millennium Falcon</div>
-            <div class="y">1979</div>
-          </div>
-          <div class="plinth"></div>
-        </div>
-        <div class="vcap">Studio photography to be placed · this is the display frame</div>
+      <div class="hero-artifact">
+        <img class="hero-shot" src="Empires/Brandedimages/kong-agfa.jpg" width="1800" height="1423" fetchpriority="high" decoding="async" alt="A vintage King Kong figure cranking the handle of an Agfa movie projector.">
       </div>
     </section>
   <section class="band" id="collection">
@@ -850,7 +840,7 @@
       <div class="ey">The Molder</div>
       <h1 class="empire-title">Kenner</h1>
       <div class="empire-dek">Cincinnati, Ohio · 1947 – 2000</div>
-      <p class="empire-lede">The company that turned licences into legends. From a toy oven that actually baked to an empty box that launched Star Wars, Kenner spent five decades deciding what a generation would find under the tree.</p>
+      <p class="empire-lede">The company that turned licenses into legends. From a toy oven that actually baked to an empty box that launched Star Wars, Kenner spent five decades deciding what a generation would find under the tree.</p>
       <div class="factbar">
         <div class="fact"><div class="fn">1947</div><div class="fl">Founded, Cincinnati</div></div>
         <div class="fact"><div class="fn">300M+</div><div class="fl">Star Wars figures sold, 1978–85</div></div>
@@ -941,7 +931,7 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Inside the workshop</div><h2>The lines</h2></div>
-        <p>Kenner's licences read like a childhood. These are the ones represented in the collection.</p>
+        <p>Kenner's licenses read like a childhood. These are the ones represented in the collection.</p>
       </div>
       <div class="empires">
         <article class="empire" style="--sig:var(--sw)" data-nav="artifact">
@@ -1338,7 +1328,7 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Inside the workshop</div><h2>The lines</h2></div>
-        <p>The licences that made LJN, from the treasured to the infamous.</p>
+        <p>The licenses that made LJN, from the treasured to the infamous.</p>
       </div>
       <div class="empires">
         <article class="empire" style="--sig:var(--sw)">
@@ -1442,7 +1432,7 @@
           <div class="ey">Origins</div>
           <h2>A wind-up chimp, and a son who dropped out.</h2>
           <p><span class="drop">L</span>ewis and Barbara Galoob started their company in San Francisco in 1957, selling toys and stationery out of a modest operation. Their first real hit is one you have almost certainly seen even if you don't know the name: a battery-powered Jolly Chimp that banged a pair of cymbals and grinned. That same wide-eyed monkey later became horror-film shorthand for dread. It kept the lights on through the 1960s.</p>
-          <p>In 1970 Lewis fell too ill to run the business, and his 21-year-old son David dropped out of the University of Southern California to take it over. It was the first of several moments when the company's survival hung by a thread. Galoob licensed television to stay afloat, and in 1983 one of those licences was The A-Team: Mr. T, a black van and a squad of toys that rode the show straight onto every shelf.</p>
+          <p>In 1970 Lewis fell too ill to run the business, and his 21-year-old son David dropped out of the University of Southern California to take it over. It was the first of several moments when the company's survival hung by a thread. Galoob licensed television to stay afloat, and in 1983 one of those licenses was The A-Team: Mr. T, a black van and a squad of toys that rode the show straight onto every shelf.</p>
         </div>
         <div class="scale-visual">
           <div class="ey" style="margin-bottom:18px">Galoob · 1983</div>
@@ -1502,7 +1492,7 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Inside the workshop</div><h2>The lines</h2></div>
-        <p>The licences and inventions that carried Galoob through four decades.</p>
+        <p>The licenses and inventions that carried Galoob through four decades.</p>
       </div>
       <div class="empires">
         <article class="empire" style="--sig:var(--sw)">
@@ -1527,7 +1517,7 @@
           <div class="chips"><span class="chip">Galoob</span></div>
           <h3>Star Wars Micro Machines</h3>
           <div class="era">1993</div>
-          <p>A galaxy shrunk to pocket size, and one of the '90s' best-loved licences.</p>
+          <p>A galaxy shrunk to pocket size, and one of the '90s' best-loved licenses.</p>
         </article>
         <article class="empire" style="--sig:var(--gb)">
           <div class="chips"><span class="chip">Galoob</span></div>

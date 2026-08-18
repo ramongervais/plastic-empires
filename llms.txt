@@ -5,13 +5,17 @@
 Hammer & Mold is a curated, auction-first marketplace for genuine vintage collectible toys, based in the Netherlands. Every lot is identified, condition-graded and told: the toy, the maker, and the story behind it. Only genuine collectibles are accepted; prohibited or non-toy items are rejected automatically.
 
 ## How it works
-- Sellers upload a few clear photos, including a close-up of the maker's stamp (moulded year, country and factory markings).
+- Sellers upload a few clear photos, including a close-up of the maker's stamp (molded year, country and factory markings).
 - AI curation writes the listing, dates the year and line, grades condition, flags variants and proposes a fair starting bid.
 - Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely; sellers ship worldwide, insured. Buyers can review sellers after a purchase.
 
 ## The Molders (makers)
-- Kenner (Cincinnati) — Star Wars, The Real Ghostbusters
-- Japanese kaiju makers — Bullmark, Marusan, Popy
+- Kenner (Cincinnati) - Star Wars 1977-1985, The Real Ghostbusters 1986-1991
+- Marusan, Bullmark and Popy (Tokyo) - soft-vinyl kaiju 1966-1984, the Godzilla and Ultraman monsters of the tokusatsu boom
+- Playmates - Teenage Mutant Ninja Turtles 1988-1997
+- LJN - E.T. the Extra-Terrestrial 1982
+- Galoob - The A-Team 1983-1984
+- Thinkway Toys - Toy Story 1995
 - Each maker has its own documentary page; each toy links back to its Molder.
 
 ## Seller plans
