@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hammer &amp; Mold &middot; Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#131313">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23131313'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='700' fill='white' text-anchor='middle'%3EHM%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper:#ffffff; --paper-2:#f5f5f5; --panel:#f1f1f1;
+    --ink:#131313; --ink-2:#4d4d4d; --ink-3:#8c8c8c;
+    --line:#e4e4e4; --line-2:#efefef;
+    --accent:#131313; --accent-ink:#ffffff;
+    --live:#1e7229; --warn:#8a6a2e; --bad:#c0392b;
+    --display:"Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;
+    --body:"Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;
+    --label:"Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--body); line-height:1.2; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  .ey { font-family:var(--label); font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-3); }
+
+  /* ---------- Masthead ---------- */
+  .mast { border-bottom:2px solid var(--ink); }
+  .mast-in { max-width:1320px; margin:0 auto; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:baseline; gap:12px; }
+  .brand .mark { font-family:var(--display); font-weight:600; font-size:19px; letter-spacing:.14em; text-transform:uppercase; }
+  .brand .tag { font-family:var(--label); font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); }
+  .who { display:flex; align-items:center; gap:16px; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .who b { color:var(--ink); font-weight:600; text-transform:none; letter-spacing:0; font-size:13px; }
+
+  .wrap { max-width:1320px; margin:0 auto; padding:0 28px 80px; }
+
+  /* ---------- Tabs ---------- */
+  .tabs { display:flex; gap:0; border-bottom:1px solid var(--line); margin:0 0 34px; flex-wrap:wrap; }
+  .tab { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); background:none; border:0; border-bottom:2px solid transparent; padding:18px 22px 15px; cursor:pointer; transition:color .14s, border-color .14s; }
+  .tab:first-child { padding-left:0; }
+  .tab:hover { color:var(--ink); }
+  .tab.on { color:var(--ink); border-bottom-color:var(--ink); }
+
+  /* ---------- Section frame ---------- */
+  .sec { padding:6px 0 0; }
+  .sec[hidden] { display:none; }
+  .sec-head { display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; padding-bottom:18px; border-bottom:1px solid var(--line); margin-bottom:28px; }
+  .sec-head h1 { font-family:var(--display); font-weight:600; font-size:clamp(24px,3vw,34px); letter-spacing:-.015em; margin:6px 0 0; }
+  .sec-head p { font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2); margin:0; max-width:52ch; }
+
+  /* ---------- Stat tiles ---------- */
+  .tiles { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin-bottom:32px; }
+  .tile { background:var(--paper); padding:20px 22px; }
+  .tile .k { font-family:var(--label); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .tile .v { font-family:var(--display); font-weight:600; font-size:30px; letter-spacing:-.02em; margin-top:10px; font-variant-numeric:tabular-nums; }
+  .tile .s { font-family:var(--body); font-size:12px; color:var(--ink-3); margin-top:4px; }
+
+  /* ---------- Tables ---------- */
+  table { width:100%; border-collapse:collapse; font-family:var(--body); font-size:14px; }
+  thead th { font-family:var(--label); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); text-align:left; font-weight:400; padding:0 14px 12px 0; border-bottom:1px solid var(--ink); white-space:nowrap; }
+  tbody td { padding:15px 14px 15px 0; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr:hover { background:var(--paper-2); }
+  td .nm { font-weight:600; }
+  td .sub { color:var(--ink-3); font-size:12px; margin-top:3px; }
+  .num { font-variant-numeric:tabular-nums; }
+  .tbl-scroll { overflow-x:auto; }
+
+  /* ---------- Badges ---------- */
+  .badge { display:inline-block; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; padding:5px 9px; border:1px solid var(--line); border-radius:2px; color:var(--ink-3); white-space:nowrap; }
+  .badge.live { border-color:var(--live); color:var(--live); }
+  .badge.sched { border-color:var(--warn); color:var(--warn); }
+  .badge.done { border-color:var(--line); color:var(--ink-3); }
+  .badge.paid { border-color:var(--ink); color:var(--ink); background:var(--ink); color:var(--paper); }
+  .badge.unpaid { border-color:var(--warn); color:var(--warn); }
+  .badge.refunded { border-color:var(--bad); color:var(--bad); }
+  .badge.premium { border-color:var(--ink); background:var(--ink); color:var(--paper); }
+
+  /* ---------- Controls ---------- */
+  .btn { font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; padding:12px 20px; border:1px solid var(--ink); background:var(--ink); color:var(--accent-ink); border-radius:3px; cursor:pointer; transition:opacity .14s, background .14s, color .14s; }
+  .btn:hover { opacity:.84; }
+  .btn.ghost { background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn.ghost:hover { border-color:var(--ink); opacity:1; }
+  .btn.sm { padding:8px 12px; font-size:10px; letter-spacing:.1em; }
+  .btn.danger { background:transparent; color:var(--bad); border-color:var(--line); }
+  .btn.danger:hover { border-color:var(--bad); }
+  .btn:disabled { opacity:.4; cursor:default; }
+  .rowacts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  .rankcell { display:flex; align-items:center; gap:8px; }
+  .rankno { font-family:var(--display); font-weight:600; font-size:15px; color:var(--ink-3); min-width:12px; }
+  .rank-acts { display:flex; flex-direction:column; gap:2px; }
+  .rank-acts button { font-family:var(--body); font-size:11px; line-height:1; padding:3px 7px; border:1px solid var(--line); background:var(--paper); color:var(--ink-2); border-radius:2px; cursor:pointer; }
+  .rank-acts button:hover { border-color:var(--ink); color:var(--ink); }
+  .rank-acts button:disabled { opacity:.3; cursor:default; }
+
+  label.f { display:block; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-bottom:7px; }
+  input.f, select.f, textarea.f { width:100%; font-family:var(--body); font-size:14px; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:11px 12px; }
+  input.f:focus, select.f:focus, textarea.f:focus { outline:none; border-color:var(--ink); }
+  select.f { cursor:pointer; }
+
+  .form { border:1px solid var(--line); padding:24px; margin-bottom:32px; }
+  .form h2 { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; margin:0 0 20px; color:var(--ink); }
+  .fgrid { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:18px; align-items:end; }
+  .fgrid .wide { grid-column:1 / -1; }
+
+  .filters { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:22px; }
+  .fchip { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:100px; padding:8px 15px; cursor:pointer; }
+  .fchip:hover { border-color:var(--ink); }
+  .fchip.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+
+  .empty { font-family:var(--body); font-size:14px; color:var(--ink-3); padding:34px 0; border-bottom:1px solid var(--line); }
+  .note { font-family:var(--body); font-size:13px; line-height:1.7; color:var(--ink-3); margin-top:18px; }
+  .msg { font-family:var(--body); font-size:13px; padding:13px 16px; border:1px solid var(--line); border-radius:3px; margin-bottom:22px; }
+  .msg.err { border-color:var(--bad); color:var(--bad); }
+  .msg.ok { border-color:var(--live); color:var(--live); }
+  .msg[hidden] { display:none; }
+
+  /* ---------- Gate ---------- */
+  .gate { max-width:430px; margin:14vh auto; padding:0 28px; }
+  .gate .mark { font-family:var(--display); font-weight:600; font-size:19px; letter-spacing:.14em; text-transform:uppercase; }
+  .gate h1 { font-family:var(--display); font-weight:600; font-size:27px; letter-spacing:-.015em; margin:26px 0 12px; }
+  .gate p { font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2); margin:0 0 24px; }
+  .gate .btn { width:100%; margin-top:16px; }
+  .setup { border:1px solid var(--line); padding:20px; margin-top:28px; font-family:var(--body); font-size:13px; line-height:1.7; color:var(--ink-2); }
+  .setup code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; background:var(--panel); padding:2px 5px; border-radius:2px; }
+
+  @media (max-width:900px){
+    .tiles { grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:600px){
+    .tiles { grid-template-columns:1fr; }
+    .mast-in, .wrap { padding-left:20px; padding-right:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== Gate ===================== -->
+<div class="gate" id="gate" hidden>
+  <div class="mark">Hammer &amp; Mold</div>
+  <h1 id="gateTitle">Admin console</h1>
+  <p id="gateText">Sign in with the email on your admin account. We send a one-time link, no password.</p>
+  <div id="gateForm">
+    <label class="f" for="gateEmail">Email</label>
+    <input class="f" id="gateEmail" type="email" autocomplete="email" placeholder="you@email.com">
+    <button class="btn" type="button" id="gateGo">Send sign-in link</button>
+  </div>
+  <div class="msg" id="gateMsg" hidden></div>
+  <div class="setup" id="gateSetup" hidden></div>
+</div>
+
+<!-- ===================== Console ===================== -->
+<div id="app" hidden>
+  <header class="mast">
+    <div class="mast-in">
+      <div class="brand">
+        <span class="mark">Hammer &amp; Mold</span>
+        <span class="tag">Admin</span>
+      </div>
+      <div class="who">
+        <a href="/" title="Back to the shop">View site &nearr;</a>
+        <b id="whoEmail"></b>
+        <button class="btn ghost sm" type="button" id="signOut">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-sec="featured" type="button">Featured ads</button>
+      <button class="tab" data-sec="sellers" type="button">Sellers</button>
+      <button class="tab" data-sec="settings" type="button">Site settings</button>
+    </div>
+
+    <!-- ---------- Featured ads ---------- -->
+    <section class="sec" id="sec-featured">
+      <div class="sec-head">
+        <div>
+          <div class="ey">Paid placement</div>
+          <h1>Featured ads</h1>
+        </div>
+        <p>A placement puts a lot in the promoted strip at the top of the shop. Up to eight run at once, ordered by rank. Placements expire on their own when their window closes.</p>
+      </div>
+
+      <div class="msg" id="fMsg" hidden></div>
+
+      <div class="tiles">
+        <div class="tile"><div class="k">Live now</div><div class="v num" id="tLive">0</div><div class="s" id="tLiveSub">of 8 slots</div></div>
+        <div class="tile"><div class="k">Scheduled</div><div class="v num" id="tSched">0</div><div class="s">not started yet</div></div>
+        <div class="tile"><div class="k">Revenue paid</div><div class="v num" id="tPaid">&euro; 0</div><div class="s">settled placements</div></div>
+        <div class="tile"><div class="k">Outstanding</div><div class="v num" id="tUnpaid">&euro; 0</div><div class="s" id="tUnpaidSub">awaiting payment</div></div>
+      </div>
+
+      <div class="form">
+        <h2>New placement</h2>
+        <div class="fgrid">
+          <div class="wide">
+            <label class="f" for="npLot">Lot</label>
+            <select class="f" id="npLot"><option value="">Loading lots…</option></select>
+          </div>
+          <div>
+            <label class="f" for="npStart">Starts</label>
+            <input class="f" id="npStart" type="datetime-local">
+          </div>
+          <div>
+            <label class="f" for="npEnd">Ends <span style="text-transform:none;letter-spacing:0">(blank = open ended)</span></label>
+            <input class="f" id="npEnd" type="datetime-local">
+          </div>
+          <div>
+            <label class="f" for="npAmount">Amount (&euro;)</label>
+            <input class="f num" id="npAmount" type="number" min="0" step="0.01" value="0">
+          </div>
+          <div>
+            <label class="f" for="npStatus">Payment</label>
+            <select class="f" id="npStatus">
+              <option value="unpaid">Unpaid</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+          <div class="wide">
+            <label class="f" for="npNote">Note <span style="text-transform:none;letter-spacing:0">(optional, admin only)</span></label>
+            <input class="f" id="npNote" type="text" placeholder="Invoice reference, agreed terms…">
+          </div>
+          <div class="wide">
+            <button class="btn" type="button" id="npSave">Create placement</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filters" id="fFilters">
+        <span class="ey" style="margin-right:6px">Show</span>
+        <button class="fchip on" data-filter="all" type="button">All</button>
+        <button class="fchip" data-filter="live" type="button">Live</button>
+        <button class="fchip" data-filter="scheduled" type="button">Scheduled</button>
+        <button class="fchip" data-filter="unpaid" type="button">Unpaid</button>
+        <button class="fchip" data-filter="expired" type="button">Expired</button>
+      </div>
+
+      <div class="tbl-scroll">
+        <table id="fTable">
+          <thead><tr>
+            <th style="width:34px">Rank</th><th>Lot</th><th>Window</th><th>State</th>
+            <th class="num">Amount</th><th>Payment</th><th>Note</th><th></th>
+          </tr></thead>
+          <tbody id="fBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="fEmpty" hidden>No placements yet. Create one above and it appears at the top of the shop.</div>
+      <p class="note">A placement shows on the shop while its window is open and it has not been refunded, so an unpaid invoice does not stall the promotion. Mark one refunded to pull it immediately.</p>
+    </section>
+
+    <!-- ---------- Sellers ---------- -->
+    <section class="sec" id="sec-sellers" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">Accounts</div>
+          <h1>Sellers</h1>
+        </div>
+        <p>Everyone with a profile. Premium buys 50 listing tokens a month, a lower commission and featured placement. Adjust a plan or top up tokens here.</p>
+      </div>
+
+      <div class="msg" id="sMsg" hidden></div>
+
+      <div class="tiles">
+        <div class="tile"><div class="k">Profiles</div><div class="v num" id="tProfiles">0</div><div class="s">total accounts</div></div>
+        <div class="tile"><div class="k">Premium</div><div class="v num" id="tPremium">0</div><div class="s">paid memberships</div></div>
+        <div class="tile"><div class="k">Starter</div><div class="v num" id="tStarter">0</div><div class="s">free plan</div></div>
+        <div class="tile"><div class="k">Tokens held</div><div class="v num" id="tTokens">0</div><div class="s">across all accounts</div></div>
+      </div>
+
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Seller</th><th>Type</th><th>Location</th><th>Plan</th>
+            <th class="num">Tokens</th><th class="num">Lots</th><th>Joined</th><th></th>
+          </tr></thead>
+          <tbody id="sBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="sEmpty" hidden>No profiles yet.</div>
+    </section>
+
+    <!-- ---------- Site settings ---------- -->
+    <section class="sec" id="sec-settings" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">Configuration</div>
+          <h1>Site settings</h1>
+        </div>
+        <p>Key/value settings the public site can read. Anything you want to change without a deploy lives here: launch date, commission rates, banner copy.</p>
+      </div>
+
+      <div class="msg" id="cMsg" hidden></div>
+
+      <div class="form">
+        <h2>Add or overwrite a setting</h2>
+        <div class="fgrid">
+          <div>
+            <label class="f" for="ncKey">Key</label>
+            <input class="f" id="ncKey" type="text" placeholder="launch_date">
+          </div>
+          <div>
+            <label class="f" for="ncLabel">Label <span style="text-transform:none;letter-spacing:0">(optional)</span></label>
+            <input class="f" id="ncLabel" type="text" placeholder="Public auction opening date">
+          </div>
+          <div class="wide">
+            <label class="f" for="ncValue">Value <span style="text-transform:none;letter-spacing:0">(JSON, or plain text)</span></label>
+            <input class="f" id="ncValue" type="text" placeholder='"2026-09-01" or 15 or true'>
+          </div>
+          <div class="wide">
+            <button class="btn" type="button" id="ncSave">Save setting</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Key</th><th>Label</th><th>Value</th><th>Updated</th><th></th></tr></thead>
+          <tbody id="cBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="cEmpty" hidden>No settings stored yet.</div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  'use strict';
+  const SUPA_URL = 'https://yazoeshmplhmxefnovjy.supabase.co';
+  const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
+  const SB = (window.supabase && window.supabase.createClient)
+    ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+
+  const FEATURED_MAX = 8;   // mirrors the shop grid: 4-up, two rows
+
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const eur = n => '€ ' + Number(n || 0).toLocaleString('nl-NL', {minimumFractionDigits:0, maximumFractionDigits:2});
+  // Money follows nl-NL grouping for euros; dates stay English to match the site.
+  const dt = s => s ? new Date(s).toLocaleString('en-GB', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+  const d = s => s ? new Date(s).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : '';
+
+  function say(el, text, kind){
+    const m = $(el); if (!m) return;
+    m.textContent = text; m.className = 'msg' + (kind ? ' ' + kind : ''); m.hidden = !text;
+    if (kind === 'ok') setTimeout(() => { if (m.textContent === text) m.hidden = true; }, 4000);
+  }
+  // Turn a Postgres error into something actionable rather than a raw code.
+  function explain(err){
+    if (!err) return '';
+    const c = err.code || '', msg = err.message || String(err);
+    if (c === '42P01' || c === 'PGRST205') return 'That table does not exist yet. Run admin/schema.sql in the Supabase SQL editor first.';
+    if (c === '42703') return 'That column does not exist yet. Run admin/schema.sql in the Supabase SQL editor first.';
+    if (c === '42501' || c === 'PGRST301') return 'The database refused the write. Check that your profile has is_admin = true and that the RLS policies from admin/schema.sql are in place.';
+    return msg;
+  }
+
+  let me = null;         // auth user
+  let placements = [];
+  let lotsById = {};
+  let fFilter = 'all';
+
+  /* ================= Gate ================= */
+  function showGate(title, text, opts){
+    opts = opts || {};
+    $('app').hidden = true; $('gate').hidden = false;
+    $('gateTitle').textContent = title;
+    $('gateText').textContent = text;
+    $('gateForm').hidden = !!opts.hideForm;
+    const s = $('gateSetup');
+    if (opts.setup){ s.innerHTML = opts.setup; s.hidden = false; } else { s.hidden = true; }
+  }
+
+  async function boot(){
+    if (!SB){ showGate('Cannot reach the database', 'The Supabase client failed to load. Check your connection and reload.', {hideForm:true}); return; }
+    const { data } = await SB.auth.getSession();
+    me = data.session ? data.session.user : null;
+    if (!me){ showGate('Admin console', 'Sign in with the email on your admin account. We send a one-time link, no password.'); return; }
+    await gateOnAdmin();
+  }
+
+  async function gateOnAdmin(){
+    const { data, error } = await SB.from('profiles').select('is_admin').eq('id', me.id).maybeSingle();
+    if (error){
+      const needsSchema = ['42703','42P01','PGRST205','42501'].indexOf(error.code) !== -1;
+      showGate('Not set up yet', explain(error), { hideForm:true, setup: needsSchema
+        ? 'Signed in as <code>' + esc(me.email) + '</code>. Run <code>admin/schema.sql</code> in the Supabase SQL editor, then grant yourself access:<br><br><code>update public.profiles p set is_admin = true from auth.users u where u.id = p.id and u.email = \'' + esc(me.email) + '\';</code>'
+        : '' });
+      wireSignOutOnGate();
+      return;
+    }
+    if (!data || !data.is_admin){
+      showGate('No access', 'You are signed in, but this account is not an admin.', { hideForm:true,
+        setup: 'Signed in as <code>' + esc(me.email) + '</code>. To grant access, run this in the Supabase SQL editor:<br><br><code>update public.profiles p set is_admin = true from auth.users u where u.id = p.id and u.email = \'' + esc(me.email) + '\';</code>' });
+      wireSignOutOnGate();
+      return;
+    }
+    $('gate').hidden = true; $('app').hidden = false;
+    $('whoEmail').textContent = me.email || '';
+    loadFeatured(); loadSellers(); loadSettings();
+  }
+
+  function wireSignOutOnGate(){
+    const s = $('gateSetup');
+    if (!s || s.querySelector('.btn')) return;
+    const b = document.createElement('button');
+    b.className = 'btn ghost sm'; b.type = 'button'; b.textContent = 'Sign out';
+    b.style.marginTop = '16px';
+    b.addEventListener('click', async () => { await SB.auth.signOut(); location.reload(); });
+    s.appendChild(b);
+  }
+
+  $('gateGo').addEventListener('click', async () => {
+    const v = ($('gateEmail').value || '').trim();
+    if (!/.+@.+\..+/.test(v)){ say('gateMsg', 'Enter a valid email address.', 'err'); return; }
+    $('gateGo').disabled = true;
+    const { error } = await SB.auth.signInWithOtp({ email: v, options: { emailRedirectTo: location.origin + location.pathname } });
+    $('gateGo').disabled = false;
+    say('gateMsg', error ? error.message : 'Check your inbox. The link brings you straight back here.', error ? 'err' : 'ok');
+  });
+  $('gateEmail').addEventListener('keydown', e => { if (e.key === 'Enter') $('gateGo').click(); });
+  $('signOut').addEventListener('click', async () => { await SB.auth.signOut(); location.reload(); });
+
+  /* ================= Tabs ================= */
+  $('tabs').addEventListener('click', e => {
+    const t = e.target.closest('.tab'); if (!t) return;
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+    document.querySelectorAll('.sec').forEach(s => { s.hidden = s.id !== 'sec-' + t.dataset.sec; });
+  });
+
+  /* ================= Featured ads ================= */
+  function stateOf(p){
+    const now = Date.now();
+    if (p.status === 'refunded') return 'expired';
+    if (new Date(p.starts_at).getTime() > now) return 'scheduled';
+    if (p.ends_at && new Date(p.ends_at).getTime() < now) return 'expired';
+    return 'live';
+  }
+
+  async function loadFeatured(){
+    // lots for the picker, and a lookup for the table
+    const lotsRes = await SB.from('lots')
+      .select('id,toy,maker,line,year,status,seller_id')
+      .neq('status','draft').order('created_at',{ascending:false}).limit(200);
+    lotsById = {};
+    (lotsRes.data || []).forEach(l => { lotsById[l.id] = l; });
+    const sel = $('npLot');
+    const rows = lotsRes.data || [];
+    sel.innerHTML = rows.length
+      ? '<option value="">Choose a lot…</option>' + rows.map(l =>
+          '<option value="' + esc(l.id) + '">' + esc(l.toy) +
+          (l.maker ? ' · ' + esc(l.maker) : '') +
+          (l.year ? ' · ' + esc(l.year) : '') +
+          (l.status && l.status !== 'live' ? ' (' + esc(l.status) + ')' : '') + '</option>').join('')
+      : '<option value="">No lots in the database yet</option>';
+
+    const res = await SB.from('featured_placements')
+      .select('*').order('rank',{ascending:true}).order('created_at',{ascending:false});
+    if (res.error){ say('fMsg', explain(res.error), 'err'); placements = []; }
+    else { say('fMsg', '', ''); placements = res.data || []; }
+    renderFeatured();
+  }
+
+  function renderFeatured(){
+    const now = Date.now();
+    const live = placements.filter(p => stateOf(p) === 'live');
+    const sched = placements.filter(p => stateOf(p) === 'scheduled');
+    const paid = placements.filter(p => p.status === 'paid').reduce((s,p) => s + Number(p.amount_eur || 0), 0);
+    const unpaidRows = placements.filter(p => p.status === 'unpaid');
+    const unpaid = unpaidRows.reduce((s,p) => s + Number(p.amount_eur || 0), 0);
+
+    $('tLive').textContent = live.length;
+    $('tLiveSub').textContent = 'of ' + FEATURED_MAX + ' slots' + (live.length > FEATURED_MAX ? ' · over capacity' : '');
+    $('tSched').textContent = sched.length;
+    $('tPaid').textContent = eur(paid);
+    $('tUnpaid').textContent = eur(unpaid);
+    $('tUnpaidSub').textContent = unpaidRows.length ? unpaidRows.length + (unpaidRows.length === 1 ? ' invoice open' : ' invoices open') : 'nothing outstanding';
+
+    const shown = placements.filter(p => {
+      if (fFilter === 'all') return true;
+      if (fFilter === 'unpaid') return p.status === 'unpaid';
+      return stateOf(p) === fFilter;
+    });
+
+    const body = $('fBody');
+    body.innerHTML = shown.map((p, i) => {
+      const lot = lotsById[p.lot_id];
+      const st = stateOf(p);
+      const overflow = st === 'live' && live.indexOf(p) >= FEATURED_MAX;
+      const idx = placements.indexOf(p);
+      return '<tr>' +
+        '<td><div class="rankcell"><span class="rankno num">' + (idx + 1) + '</span><div class="rank-acts">' +
+          '<button type="button" data-up="' + esc(p.id) + '"' + (idx === 0 ? ' disabled' : '') + ' aria-label="Move up">↑</button>' +
+          '<button type="button" data-down="' + esc(p.id) + '"' + (idx === placements.length - 1 ? ' disabled' : '') + ' aria-label="Move down">↓</button>' +
+        '</div></div></td>' +
+        '<td><div class="nm">' + esc(lot ? lot.toy : 'Lot removed') + '</div>' +
+          '<div class="sub">' + esc(lot ? [lot.line, lot.maker, lot.year].filter(Boolean).join(' · ') : p.lot_id) + '</div></td>' +
+        '<td><div>' + esc(dt(p.starts_at)) + '</div><div class="sub">' + (p.ends_at ? 'until ' + esc(dt(p.ends_at)) : 'open ended') + '</div></td>' +
+        '<td><span class="badge ' + (st === 'live' ? 'live' : st === 'scheduled' ? 'sched' : 'done') + '">' + st + '</span>' +
+          (overflow ? '<div class="sub" style="color:var(--warn)">past slot ' + FEATURED_MAX + '</div>' : '') + '</td>' +
+        '<td class="num">' + esc(eur(p.amount_eur)) + '</td>' +
+        '<td><span class="badge ' + esc(p.status) + '">' + esc(p.status) + '</span></td>' +
+        '<td class="sub" style="max-width:200px">' + esc(p.note || '') + '</td>' +
+        '<td><div class="rowacts">' +
+          (p.status === 'unpaid' ? '<button class="btn sm" type="button" data-paid="' + esc(p.id) + '">Mark paid</button>' : '') +
+          (p.status === 'paid' ? '<button class="btn ghost sm" type="button" data-unpaid="' + esc(p.id) + '">Mark unpaid</button>' : '') +
+          (p.status !== 'refunded' ? '<button class="btn ghost sm" type="button" data-refund="' + esc(p.id) + '">Refund</button>' : '') +
+          (p.ends_at && st !== 'expired' ? '' : '') +
+          '<button class="btn danger sm" type="button" data-del="' + esc(p.id) + '">Delete</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+    $('fEmpty').hidden = shown.length > 0;
+    $('fEmpty').textContent = placements.length
+      ? 'No placements match this filter.'
+      : 'No placements yet. Create one above and it appears at the top of the shop.';
+  }
+
+  $('fFilters').addEventListener('click', e => {
+    const c = e.target.closest('.fchip'); if (!c) return;
+    fFilter = c.dataset.filter;
+    document.querySelectorAll('#fFilters .fchip').forEach(x => x.classList.toggle('on', x === c));
+    renderFeatured();
+  });
+
+  const toIso = v => v ? new Date(v).toISOString() : null;
+
+  $('npSave').addEventListener('click', async () => {
+    const lot_id = $('npLot').value;
+    if (!lot_id){ say('fMsg', 'Choose a lot first.', 'err'); return; }
+    const starts = toIso($('npStart').value) || new Date().toISOString();
+    const ends = toIso($('npEnd').value);
+    if (ends && new Date(ends) <= new Date(starts)){ say('fMsg', 'The end date has to be after the start date.', 'err'); return; }
+    const row = {
+      lot_id: lot_id,
+      seller_id: (lotsById[lot_id] && lotsById[lot_id].seller_id) || null,
+      starts_at: starts,
+      ends_at: ends,
+      amount_eur: Number($('npAmount').value || 0),
+      status: $('npStatus').value,
+      note: ($('npNote').value || '').trim() || null,
+      rank: placements.length ? Math.max.apply(null, placements.map(p => p.rank || 0)) + 1 : 0
+    };
+    $('npSave').disabled = true;
+    const { error } = await SB.from('featured_placements').insert(row);
+    $('npSave').disabled = false;
+    if (error){ say('fMsg', explain(error), 'err'); return; }
+    $('npLot').value = ''; $('npStart').value = ''; $('npEnd').value = '';
+    $('npAmount').value = '0'; $('npNote').value = '';
+    say('fMsg', 'Placement created. It is live on the shop as soon as its window opens.', 'ok');
+    loadFeatured();
+  });
+
+  async function patch(id, patchObj, okText){
+    const { error } = await SB.from('featured_placements').update(patchObj).eq('id', id);
+    if (error){ say('fMsg', explain(error), 'err'); return; }
+    if (okText) say('fMsg', okText, 'ok');
+    loadFeatured();
+  }
+
+  // Reorder by swapping rank with the neighbour, so the shop order is explicit.
+  async function move(id, dir){
+    const i = placements.findIndex(p => p.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= placements.length) return;
+    const a = placements[i], b = placements[j];
+    const ra = a.rank || 0, rb = b.rank || 0;
+    // equal ranks would not move anything, so force a gap
+    const newA = (ra === rb) ? (dir < 0 ? rb - 1 : rb + 1) : rb;
+    const r1 = await SB.from('featured_placements').update({ rank: newA }).eq('id', a.id);
+    if (r1.error){ say('fMsg', explain(r1.error), 'err'); return; }
+    const r2 = await SB.from('featured_placements').update({ rank: ra }).eq('id', b.id);
+    if (r2.error){ say('fMsg', explain(r2.error), 'err'); return; }
+    loadFeatured();
+  }
+
+  $('fBody').addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const ds = b.dataset;
+    if (ds.paid) return patch(ds.paid, { status:'paid' }, 'Marked paid.');
+    if (ds.unpaid) return patch(ds.unpaid, { status:'unpaid' }, 'Marked unpaid.');
+    if (ds.refund){
+      if (!confirm('Refund this placement? It stops showing on the shop immediately.')) return;
+      return patch(ds.refund, { status:'refunded' }, 'Refunded and pulled from the shop.');
+    }
+    if (ds.up) return move(ds.up, -1);
+    if (ds.down) return move(ds.down, 1);
+    if (ds.del){
+      if (!confirm('Delete this placement for good? The payment record goes with it. Refund instead if you want to keep the history.')) return;
+      const { error } = await SB.from('featured_placements').delete().eq('id', ds.del);
+      if (error){ say('fMsg', explain(error), 'err'); return; }
+      say('fMsg', 'Placement deleted.', 'ok');
+      loadFeatured();
+    }
+  });
+
+  /* ================= Sellers ================= */
+  async function loadSellers(){
+    const res = await SB.from('profiles')
+      .select('id,display_name,handle,type,location,plan,tokens,created_at')
+      .order('created_at',{ascending:false}).limit(500);
+    if (res.error){ say('sMsg', explain(res.error), 'err'); $('sBody').innerHTML = ''; $('sEmpty').hidden = false; return; }
+    say('sMsg', '', '');
+    const rows = res.data || [];
+
+    // lot counts per seller
+    const lotsRes = await SB.from('lots').select('seller_id').neq('status','draft').limit(2000);
+    const counts = {};
+    (lotsRes.data || []).forEach(l => { if (l.seller_id) counts[l.seller_id] = (counts[l.seller_id] || 0) + 1; });
+
+    const premium = rows.filter(r => (r.plan || '').toLowerCase() === 'premium');
+    $('tProfiles').textContent = rows.length;
+    $('tPremium').textContent = premium.length;
+    $('tStarter').textContent = rows.length - premium.length;
+    $('tTokens').textContent = rows.reduce((s,r) => s + Number(r.tokens || 0), 0);
+
+    $('sBody').innerHTML = rows.map(r => {
+      const isPrem = (r.plan || '').toLowerCase() === 'premium';
+      return '<tr>' +
+        '<td><div class="nm">' + esc(r.display_name || 'Unnamed') + '</div>' +
+          '<div class="sub">' + esc(r.handle ? '@' + r.handle : r.id) + '</div></td>' +
+        '<td class="sub">' + esc(r.type || '') + '</td>' +
+        '<td class="sub">' + esc(r.location || '') + '</td>' +
+        '<td><span class="badge' + (isPrem ? ' premium' : '') + '">' + esc(r.plan || 'starter') + '</span></td>' +
+        '<td class="num">' + Number(r.tokens || 0) + '</td>' +
+        '<td class="num">' + (counts[r.id] || 0) + '</td>' +
+        '<td class="sub">' + esc(d(r.created_at)) + '</td>' +
+        '<td><div class="rowacts">' +
+          '<button class="btn ' + (isPrem ? 'ghost ' : '') + 'sm" type="button" data-plan="' + esc(r.id) + '" data-to="' + (isPrem ? 'starter' : 'premium') + '">' +
+            (isPrem ? 'Downgrade' : 'Make Premium') + '</button>' +
+          '<button class="btn ghost sm" type="button" data-tokens="' + esc(r.id) + '" data-cur="' + Number(r.tokens || 0) + '">Tokens</button>' +
+        '</div></td>' +
+      '</tr>';
+    }).join('');
+    $('sEmpty').hidden = rows.length > 0;
+  }
+
+  $('sBody').addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.plan){
+      const to = b.dataset.to;
+      if (!confirm('Set this account to ' + to + '?')) return;
+      const { error } = await SB.from('profiles').update({ plan: to }).eq('id', b.dataset.plan);
+      if (error){ say('sMsg', explain(error), 'err'); return; }
+      say('sMsg', 'Plan set to ' + to + '.', 'ok'); loadSellers();
+    }
+    if (b.dataset.tokens){
+      const cur = b.dataset.cur;
+      const v = prompt('Token balance for this account:', cur);
+      if (v === null) return;
+      const n = parseInt(v, 10);
+      if (isNaN(n) || n < 0){ say('sMsg', 'Enter a whole number of tokens, zero or more.', 'err'); return; }
+      const { error } = await SB.from('profiles').update({ tokens: n }).eq('id', b.dataset.tokens);
+      if (error){ say('sMsg', explain(error), 'err'); return; }
+      say('sMsg', 'Token balance set to ' + n + '.', 'ok'); loadSellers();
+    }
+  });
+
+  /* ================= Site settings ================= */
+  async function loadSettings(){
+    const res = await SB.from('settings').select('*').order('key',{ascending:true});
+    if (res.error){ say('cMsg', explain(res.error), 'err'); $('cBody').innerHTML = ''; $('cEmpty').hidden = false; return; }
+    say('cMsg', '', '');
+    const rows = res.data || [];
+    $('cBody').innerHTML = rows.map(r =>
+      '<tr>' +
+        '<td><span class="nm">' + esc(r.key) + '</span></td>' +
+        '<td class="sub">' + esc(r.label || '') + '</td>' +
+        '<td><code style="font-size:12px">' + esc(JSON.stringify(r.value)) + '</code></td>' +
+        '<td class="sub">' + esc(dt(r.updated_at)) + '</td>' +
+        '<td><div class="rowacts">' +
+          '<button class="btn ghost sm" type="button" data-edit="' + esc(r.key) + '">Edit</button>' +
+          '<button class="btn danger sm" type="button" data-delk="' + esc(r.key) + '">Delete</button>' +
+        '</div></td>' +
+      '</tr>').join('');
+    $('cEmpty').hidden = rows.length > 0;
+  }
+
+  // Accept real JSON, and fall back to treating the input as a plain string.
+  function parseValue(raw){
+    const s = (raw || '').trim();
+    if (!s) return null;
+    try { return JSON.parse(s); } catch (e) { return s; }
+  }
+
+  $('ncSave').addEventListener('click', async () => {
+    const key = ($('ncKey').value || '').trim();
+    if (!/^[a-z0-9_.-]+$/i.test(key)){ say('cMsg', 'Use a simple key: letters, numbers, underscore, dot or dash.', 'err'); return; }
+    const row = { key: key, value: parseValue($('ncValue').value), label: ($('ncLabel').value || '').trim() || null, updated_at: new Date().toISOString() };
+    $('ncSave').disabled = true;
+    const { error } = await SB.from('settings').upsert(row, { onConflict:'key' });
+    $('ncSave').disabled = false;
+    if (error){ say('cMsg', explain(error), 'err'); return; }
+    $('ncKey').value = ''; $('ncLabel').value = ''; $('ncValue').value = '';
+    say('cMsg', 'Setting saved.', 'ok');
+    loadSettings();
+  });
+
+  $('cBody').addEventListener('click', async e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.edit){
+      const row = (await SB.from('settings').select('*').eq('key', b.dataset.edit).maybeSingle()).data;
+      if (!row) return;
+      $('ncKey').value = row.key; $('ncLabel').value = row.label || '';
+      $('ncValue').value = JSON.stringify(row.value);
+      $('ncKey').scrollIntoView({behavior:'smooth', block:'center'});
+      say('cMsg', 'Loaded "' + row.key + '" into the form. Saving overwrites it.', 'ok');
+    }
+    if (b.dataset.delk){
+      if (!confirm('Delete the setting "' + b.dataset.delk + '"?')) return;
+      const { error } = await SB.from('settings').delete().eq('key', b.dataset.delk);
+      if (error){ say('cMsg', explain(error), 'err'); return; }
+      say('cMsg', 'Setting deleted.', 'ok');
+      loadSettings();
+    }
+  });
+
+  /* ================= Go ================= */
+  if (SB) SB.auth.onAuthStateChange((_e, session) => {
+    const had = !!me;
+    me = session ? session.user : null;
+    if (me && !had) gateOnAdmin();
+  });
+  boot();
+})();
+</script>
+</body>
+</html>

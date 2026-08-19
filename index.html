@@ -175,7 +175,11 @@
   .moat p { font-family:var(--body); font-size:15px; color:var(--ink-2); margin:0; }
 
   /* Collection grid */
-  .collection { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  .collection, .featured-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  /* Featured lots: a paid promotion strip above the shop grid. Max two rows. */
+  .featured-strip { margin-bottom:36px; padding-bottom:32px; border-bottom:1px solid var(--line); }
+  .featured-head { display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .featured-note { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
   .artifact-card { cursor:pointer; }
   .artifact-card.disabled { cursor:default; opacity:.72; }
   .label { margin-top:14px; }
@@ -379,10 +383,10 @@
     .hero-artifact { margin-right:0; }
     .art-top { grid-template-columns:1fr; gap:34px; }
     .art-media { position:static; }
-    .empires, .moat, .collection { grid-template-columns:1fr; }
+    .empires, .moat, .collection, .featured-grid { grid-template-columns:1fr; }
     .moat .cell { border-right:0; border-bottom:1px solid var(--line); }
     .moat .cell:last-child { border-bottom:0; }
-    .collection { grid-template-columns:1fr 1fr; }
+    .collection, .featured-grid { grid-template-columns:1fr 1fr; }
   }
   /* ---------- Sell / AI curation ---------- */
   .sell-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
@@ -502,7 +506,7 @@
 
   /* ---------- Phone tuning ---------- */
   @media (max-width:600px){
-    .collection { grid-template-columns:1fr; }
+    .collection, .featured-grid { grid-template-columns:1fr; }
     .wrap { padding:0 20px 56px; }
     .hero h1, .art-title, .empire-title { letter-spacing:.06em; }
     .hero h1 { font-size:34px; line-height:1.05; }
@@ -604,6 +608,13 @@
           <h2>For sale</h2>
         </div>
         <p>Live auctions on original vintage toys. Place a bid, or take it straight away with Buy now.</p>
+      </div>
+      <div class="featured-strip" id="featuredStrip" hidden>
+        <div class="featured-head">
+          <div class="ey">Featured lots</div>
+          <div class="featured-note">Promoted placement, paid for by the seller</div>
+        </div>
+        <div class="featured-grid" id="featuredGrid"></div>
       </div>
       <div class="collection">
       </div>
@@ -2885,6 +2896,8 @@
       '</div></article>';
   }
 
+  const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
+
   async function injectDraftLots(){
     const grid = document.querySelector('#collection .collection');
     if (!grid) return;
@@ -2893,8 +2906,17 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [];
     if (SB) {
-      const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type').neq('status', 'draft').order('created_at', { ascending: false }).limit(48);
-      const rows = data || [];
+      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type';
+      // featured_active is a view over the admin's paid placements: lot_id + rank only,
+      // already filtered to the open window. It does not exist until admin/schema.sql
+      // has been run, so a missing view simply means nothing is promoted.
+      const [lotsRes, featRes] = await Promise.all([
+        SB.from('lots').select(COLS).neq('status', 'draft').order('created_at', { ascending: false }).limit(48),
+        SB.from('featured_active').select('lot_id,rank')
+      ]);
+      const rows = lotsRes.data || [];
+      const featRank = {};
+      if (!featRes.error) (featRes.data || []).forEach(f => { featRank[f.lot_id] = Number(f.rank || 0); });
       const now = Date.now();
       const ids = rows.map(r => r.id);
       const agg = {};
@@ -2908,7 +2930,7 @@
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0 };
       });
       const active = mapped.filter(l => l.state === 'preview' || l.state === 'live');
       const closedRecent = mapped.filter(l => (l.state === 'ended' || l.state === 'sold') && (now - l.closedMs) < 86400000);
@@ -2922,11 +2944,24 @@
       lots = loadDraftLots();
     }
     if (gen !== injectGen) return;
+
+    // A featured lot buys a promoted slot at the top of the shop. Only an open
+    // lot earns one, and it is lifted out of the main grid so it never doubles.
+    const promoted = lots.filter(l => l.featured && (l.state === 'live' || l.state === 'preview'))
+      .sort((a, b) => (a.featRank || 0) - (b.featRank || 0))
+      .slice(0, FEATURED_MAX);
+    const promotedSet = new Set(promoted);
+    const rest = lots.filter(l => !promotedSet.has(l));
+
+    const fstrip = document.getElementById('featuredStrip');
+    const fgrid = document.getElementById('featuredGrid');
+    if (fgrid) fgrid.innerHTML = promoted.map(lotCardHtml).join('');
+    if (fstrip) fstrip.hidden = !promoted.length;
+
     grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
-    if (!lots.length) return;
-    const html = lots.map(lotCardHtml).join('');
-    grid.insertAdjacentHTML('afterbegin', html);
-    grid.querySelectorAll('.card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
+    if (rest.length) grid.insertAdjacentHTML('afterbegin', rest.map(lotCardHtml).join(''));
+
+    document.querySelectorAll('#collection .card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
     applyShopSearch();
   }
 
@@ -2935,9 +2970,17 @@
     const input = document.getElementById('shopSearch'); if (!input) return;
     const q = input.value.trim().toLowerCase();
     const grid = document.querySelector('#collection .collection'); if (!grid) return;
-    const cards = grid.querySelectorAll('.artifact-card');
+    // the promoted strip is filtered too, so a search never leaves stale ads on screen
+    const cards = document.querySelectorAll('#collection .artifact-card');
     let shown = 0;
     cards.forEach(c => { const match = !q || c.textContent.toLowerCase().includes(q); c.style.display = match ? '' : 'none'; if (match) shown++; });
+    const fstrip = document.getElementById('featuredStrip');
+    const fgrid = document.getElementById('featuredGrid');
+    if (fstrip && fgrid){
+      const fTotal = fgrid.querySelectorAll('.artifact-card').length;
+      const fShown = [...fgrid.querySelectorAll('.artifact-card')].filter(c => c.style.display !== 'none').length;
+      fstrip.hidden = !fTotal || !fShown;
+    }
     const count = document.getElementById('shopCount'); if (count) count.textContent = cards.length ? (q ? shown + ' of ' + cards.length + ' lots' : cards.length + ' lots') : '';
     const empty = document.getElementById('shopEmpty'); if (empty) empty.hidden = !(q && shown === 0);
   }

@@ -1,29 +1,40 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
-# AI search crawlers — explicitly allowed
+# AI search crawlers — explicitly allowed.
+# Each group repeats the admin rule: robots.txt groups do not inherit,
+# so a bot with its own group would otherwise ignore the wildcard Disallow.
 User-agent: GPTBot
 Allow: /
+Disallow: /admin/
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /admin/
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /admin/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin/
 
 User-agent: Claude-Web
 Allow: /
+Disallow: /admin/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin/
 
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin/
 
 User-agent: Applebot-Extended
 Allow: /
+Disallow: /admin/
 
 Sitemap: https://hammerandmold.com/sitemap.xml
