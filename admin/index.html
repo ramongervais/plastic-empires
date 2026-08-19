@@ -352,7 +352,8 @@
     const c = err.code || '', msg = err.message || String(err);
     if (c === '42P01' || c === 'PGRST205') return 'That table does not exist yet. Run admin/schema.sql in the Supabase SQL editor first.';
     if (c === '42703') return 'That column does not exist yet. Run admin/schema.sql in the Supabase SQL editor first.';
-    if (c === '42501' || c === 'PGRST301') return 'The database refused the write. Check that your profile has is_admin = true and that the RLS policies from admin/schema.sql are in place.';
+    if (c === 'PGRST202' || c === '42883') return 'The is_admin() function is missing. Run admin/schema.sql in the Supabase SQL editor first.';
+    if (c === '42501' || c === 'PGRST301') return 'The database refused that (' + c + '). Either the authenticated role lacks a table grant, or an RLS policy from admin/schema.sql is missing. ' + msg;
     return msg;
   }
 
@@ -381,16 +382,19 @@
   }
 
   async function gateOnAdmin(){
-    const { data, error } = await SB.from('profiles').select('is_admin').eq('id', me.id).maybeSingle();
+    // Ask the security-definer function rather than reading profiles directly:
+    // the authenticated role has no SELECT grant on that table, and this way the
+    // gate does not depend on table privileges at all.
+    const { data, error } = await SB.rpc('is_admin');
     if (error){
-      const needsSchema = ['42703','42P01','PGRST205','42501'].indexOf(error.code) !== -1;
+      const needsSchema = ['42703','42P01','PGRST202','PGRST205','42883'].indexOf(error.code) !== -1;
       showGate('Not set up yet', explain(error), { hideForm:true, setup: needsSchema
         ? 'Signed in as <code>' + esc(me.email) + '</code>. Run <code>admin/schema.sql</code> in the Supabase SQL editor, then grant yourself access:<br><br><code>update public.profiles p set is_admin = true from auth.users u where u.id = p.id and u.email = \'' + esc(me.email) + '\';</code>'
         : '' });
       wireSignOutOnGate();
       return;
     }
-    if (!data || !data.is_admin){
+    if (data !== true){
       showGate('No access', 'You are signed in, but this account is not an admin.', { hideForm:true,
         setup: 'Signed in as <code>' + esc(me.email) + '</code>. To grant access, run this in the Supabase SQL editor:<br><br><code>update public.profiles p set is_admin = true from auth.users u where u.id = p.id and u.email = \'' + esc(me.email) + '\';</code>' });
       wireSignOutOnGate();
