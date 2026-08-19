@@ -601,17 +601,14 @@
 
   /* ================= Sellers ================= */
   async function loadSellers(){
-    const res = await SB.from('profiles')
-      .select('id,display_name,handle,type,location,plan,tokens,created_at')
-      .order('created_at',{ascending:false}).limit(500);
+    // Via RPC, not the table: authenticated has no SELECT/UPDATE grant on
+    // profiles, and granting UPDATE would let any user set their own is_admin.
+    const res = await SB.rpc('admin_list_sellers');
     if (res.error){ say('sMsg', explain(res.error), 'err'); $('sBody').innerHTML = ''; $('sEmpty').hidden = false; return; }
     say('sMsg', '', '');
     const rows = res.data || [];
-
-    // lot counts per seller
-    const lotsRes = await SB.from('lots').select('seller_id').neq('status','draft').limit(2000);
     const counts = {};
-    (lotsRes.data || []).forEach(l => { if (l.seller_id) counts[l.seller_id] = (counts[l.seller_id] || 0) + 1; });
+    rows.forEach(r => { counts[r.id] = Number(r.lots || 0); });
 
     const premium = rows.filter(r => (r.plan || '').toLowerCase() === 'premium');
     $('tProfiles').textContent = rows.length;
@@ -645,7 +642,7 @@
     if (b.dataset.plan){
       const to = b.dataset.to;
       if (!confirm('Set this account to ' + to + '?')) return;
-      const { error } = await SB.from('profiles').update({ plan: to }).eq('id', b.dataset.plan);
+      const { error } = await SB.rpc('admin_set_plan', { target: b.dataset.plan, new_plan: to });
       if (error){ say('sMsg', explain(error), 'err'); return; }
       say('sMsg', 'Plan set to ' + to + '.', 'ok'); loadSellers();
     }
@@ -655,7 +652,7 @@
       if (v === null) return;
       const n = parseInt(v, 10);
       if (isNaN(n) || n < 0){ say('sMsg', 'Enter a whole number of tokens, zero or more.', 'err'); return; }
-      const { error } = await SB.from('profiles').update({ tokens: n }).eq('id', b.dataset.tokens);
+      const { error } = await SB.rpc('admin_set_tokens', { target: b.dataset.tokens, new_tokens: n });
       if (error){ say('sMsg', explain(error), 'err'); return; }
       say('sMsg', 'Token balance set to ' + n + '.', 'ok'); loadSellers();
     }

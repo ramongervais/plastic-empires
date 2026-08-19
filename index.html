@@ -2792,7 +2792,9 @@
     document.getElementById('sellerCrumb').textContent = 'Seller';
     head.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:32px 0">Loading seller…</p>';
     document.getElementById('sellerLots').innerHTML = '';
-    const { data: prof } = await SB.from('profiles').select('id,display_name,handle,type,location,bio,created_at').eq('id', id).single();
+    // seller_public: the public columns only. profiles itself is own-row for a
+    // signed-in user, so reading it here would return nothing for a visitor.
+    const { data: prof } = await SB.from('seller_public').select('id,display_name,handle,type,location,bio,created_at').eq('id', id).single();
     const p = prof || {};
     const name = p.display_name || 'Seller';
     document.getElementById('sellerCrumb').textContent = name;
@@ -3194,7 +3196,7 @@
     if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
     const { data: bidRows } = await SB.from('bids').select('amount,created_at,bidder_id').eq('lot_id', id).order('amount', { ascending: false });
     let seller = null;
-    if (lot.seller_id){ const { data: sp } = await SB.from('profiles').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
+    if (lot.seller_id){ const { data: sp } = await SB.from('seller_public').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
     const bids = bidRows || [];
     const cur = bids.length ? Number(bids[0].amount) : Number(lot.starting_bid || 0);
     const ended = lot.status === 'ended' || lot.status === 'sold' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
