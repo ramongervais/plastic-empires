@@ -417,6 +417,14 @@
   #thumbs .th .th-move button:disabled { opacity:.3; cursor:default; }
   #thumbs .th .th-cover { position:absolute; top:2px; left:2px; font-family:var(--label); font-size:8px; letter-spacing:.1em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:2px 4px; border-radius:2px; }
   @media (hover:none){ #thumbs .th .th-move { opacity:1; } }
+  .ef-ro .ro-val { font-family:var(--body); font-size:14px; color:var(--ink-3); padding:9px 0; line-height:1.2; }
+  .ef-top .ef-ro .ro-val { text-align:right; }
+  .ef-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin:0 0 16px; }
+  .ef-top .rc-sub { margin:0; }
+  .ef-top .ef { width:132px; flex:0 0 auto; margin-bottom:0; }
+  .ef-top .ef > span { justify-content:flex-end; }
+  .ef-top .ef .ef-i::after { left:auto; right:0; }
+  @media (max-width:520px){ .ef-top { flex-direction:column; } .ef-top .ef { width:100%; } .ef-top .ef > span { justify-content:flex-start; } }
   .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
   .price-err[hidden] { display:none; }
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
@@ -2939,6 +2947,9 @@
     const ef = (label, id, val, type, hint) => '<label class="ef"><span>' + label + tip(hint) + '</span><input class="ei" id="' + id + '" type="' + (type || 'text') + '" value="' + esc(val == null ? '' : val) + '"></label>';
     const efSel = (label, id, val, opts, hint) => '<label class="ef"><span>' + label + tip(hint) + '</span><select class="ei" id="' + id + '">' + opts.map(o => '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>';
     const efArea = (label, id, val, hint) => '<label class="ef"><span>' + label + tip(hint) + '</span><textarea class="ei" id="' + id + '" rows="3">' + esc(val == null ? '' : val) + '</textarea></label>';
+    // The AI's own assessment, not a seller decision: shown as a value, not a field.
+    const efRO = (label, val, hint) => '<div class="ef ef-ro"><span>' + label + tip(hint) + '</span>' +
+      '<div class="ro-val">' + (val == null || val === '' ? '\u2014' : esc(String(val))) + '</div></div>';
 
     // Blocking: a Buy-now under the opening bid means nobody would ever bid,
     // they would simply take it, and the lot sells below where it opened.
@@ -2970,16 +2981,16 @@
     function editMode(){
       const c = current;
       const html =
-        '<div class="rc-sub" style="margin:0 0 16px">Edit curation</div>' +
+        '<div class="ef-top"><div class="rc-sub">Edit curation</div>' +
+          efRO('AI confidence', c.confidence, 'How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.') + '</div>' +
         ef('Toy', 'e_toy', c.toy, 'text', 'The name buyers search for. Keep it plain: the character or model, not a sales pitch.') +
         '<div class="ef-row">' + ef('Maker', 'e_maker', c.maker, 'text', 'The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.') + ef('Year', 'e_year', c.year, 'text', 'Year or range moulded, from the copyright stamp. Not the year the film came out.') + '</div>' +
         ef('Line', 'e_line', c.line, 'text', 'The toy line it belongs to, such as Star Wars or Teenage Mutant Ninja Turtles.') +
         efSel('Condition', 'e_condition', c.condition, CONDITIONS, 'How it presents, from Mint down to Poor. This sets the star rating buyers see, so grade honestly: over-grading is the fastest way to a dispute.') +
         efArea('Completeness', 'e_completeness', c.completeness, 'What is and is not in the box. Name every missing accessory. Buyers forgive a missing blaster they were told about, not one they discover.') +
-        '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + efSel('Confidence', 'e_confidence', c.confidence, CONFS, 'How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.') + '</div>' +
-        '<div class="ef-row">' + ef('Est. low €', 'e_lo', c.estimateLow, 'number', 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + ef('Est. high €', 'e_hi', c.estimateHigh, 'number', 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
-        '<div class="ef-row">' + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + '</div>' +
-        efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') +
+        '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
+        '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
+        '<div class="ef-row">' + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
         efArea('Notes', 'e_notes', c.notes, 'Anything a buyer needs to know: repairs, repaints, replaced parts, smells, provenance. This is where trust is won.') +
         '<div class="price-err" id="priceErr" hidden></div>' +
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
@@ -2990,9 +3001,11 @@
         const next = { ...current,
           toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
           condition: g('e_condition'), completeness: g('e_completeness'),
-          startingBid: num('e_bid'), estimateLow: num('e_lo'), estimateHigh: num('e_hi'),
+          startingBid: num('e_bid'),
           reserve: num('e_reserve'), buyNow: num('e_buynow'),
-          confidence: g('e_confidence'), notes: g('e_notes'),
+          notes: g('e_notes'),
+          // estimateLow, estimateHigh and confidence are the AI's assessment and
+          // are not editable, so they carry over from current untouched
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
         };
         const bad = priceProblem(next);
