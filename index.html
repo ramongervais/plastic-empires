@@ -113,6 +113,9 @@
   /* Vitrine (museum display placeholder) */
   .vitrine { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:3px; aspect-ratio: 4/5; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .vitrine.wide { aspect-ratio: 4/3; }
+  .vitrine .cardimg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .dz-size { grid-column:1 / -1; font-family:var(--label); font-size:11px; letter-spacing:.06em; color:var(--ink-3); margin-top:4px; }
+  .dropzone.busy { opacity:.6; pointer-events:none; }
   .vitrine canvas.stars { position:absolute; inset:0; width:100%; height:100%; display:block; }
   .vitrine .tick { position:absolute; width:9px; height:9px; border-color:var(--ink-3); opacity:.5; }
   .vitrine .tick.tl { top:12px; left:12px; border-top:1px solid; border-left:1px solid; }
@@ -2027,6 +2030,94 @@
 </main>
 
 <!-- ============================ TERMS ============================ -->
+<main class="view" id="view-privacy" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Privacy</span></div>
+    <section class="empire-hero">
+      <div class="ey">Legal</div>
+      <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Privacy Policy</h1>
+      <div class="empire-dek">Draft v0.1 · pending legal review</div>
+    </section>
+  </div>
+  <section class="band">
+    <div class="wrap">
+      <div class="story" style="margin:0; max-width:72ch">
+        <div class="terms-draft"><b>DRAFT · not legal advice.</b> A working starting point, not yet reviewed by a lawyer or a privacy specialist. It describes what the Platform actually does with your data today. Complete the [bracketed] fields before publishing.</div>
+        <p><b>Controller:</b> [legal entity], [address], Netherlands. KvK [number]. Privacy contact: [privacy@hammerandmold.com]. Last updated [date].</p>
+        <p>This policy explains what personal data Hammer &amp; Mold collects, why, who it is shared with, how long it is kept and what rights you have. It covers hammerandmold.com and the accounts, listings, bidding and payment features on it.</p>
+
+        <div class="terms-h">1 · The short version</div>
+        <p>We collect the minimum needed to run an auction house: your email to sign you in, what you list, what you bid, what you buy, and a delivery address when something sells. <b>We run no analytics, no advertising trackers and no tracking cookies.</b> We do not sell or rent personal data, ever. We do not profile you for advertising.</p>
+
+        <div class="terms-h">2 · What we collect</div>
+        <p><b>Account and identity.</b> Your email address, and the display name, handle, seller type, location and bio you choose to add.</p>
+        <p><b>Membership and balances.</b> Your plan, listing-token balance, notification preferences, and the customer and subscription identifiers our payment provider gives us. We never see or store your card details.</p>
+        <p><b>Listings.</b> The photographs you upload and the description, condition, variant and price data attached to them.</p>
+        <p><b>Activity.</b> Bids you place, lots you win or sell, lots you add to your watchlist, and reviews you write or receive.</p>
+        <p><b>Delivery.</b> When you buy, our payment provider collects your name, delivery address, phone number and email and passes them to us so the Seller can ship. A tracking number if one is added.</p>
+        <p><b>Messages.</b> If you message a Seller, we process the message text and your email address so they can reply. Neither party's address is shown publicly.</p>
+        <p><b>Technical.</b> Our host, content networks and providers log IP addresses and request data to serve the site and keep it secure. Your browser stores a sign-in token, your theme choice and any unsent listing draft locally on your own device.</p>
+
+        <div class="terms-h">3 · Why, and on what legal basis</div>
+        <p><b>To perform our contract with you</b> (Art. 6(1)(b) GDPR): creating and running your account, publishing your listings, registering bids, taking payment, sharing a delivery address so a sale can be fulfilled, and running a paid membership.</p>
+        <p><b>Our legitimate interests</b> (Art. 6(1)(f)): preventing fraud, shill bidding and abuse; moderating what is listed; keeping the Platform secure; emailing you about your own activity, such as being outbid, winning, selling, or a watched lot ending soon; and establishing or defending legal claims. You can turn the activity emails off in your account at any time.</p>
+        <p><b>Legal obligation</b> (Art. 6(1)(c)): keeping transaction and invoice records for tax and accounting.</p>
+        <p><b>Consent</b> (Art. 6(1)(a)): announcements and any future marketing email. You can withdraw consent at any time without affecting anything done before.</p>
+
+        <div class="terms-h">4 · Automated curation and moderation</div>
+        <p>When you upload photographs to list an item, <b>the images are sent to an AI provider</b> which identifies the toy, dates it, grades its condition, drafts the description and proposes a starting price. The same step screens for items that may not be listed. This is automated, it is not guaranteed to be correct, and you review and confirm every listing before it goes live.</p>
+        <p>An automated screen can refuse a listing. That decision is not final: a person will review it if you ask us to, and you can reach us at the privacy contact above or through your account. We do not use automated decision-making to profile you or to set prices individually.</p>
+
+        <div class="terms-h">5 · Who your data is shared with</div>
+        <p>We use the following processors and services. Each receives only what it needs.</p>
+        <p><b>Supabase</b> · database, sign-in and photo storage. Hosting region [region].<br>
+        <b>Cloudflare</b> · the functions that handle payments, notifications, AI curation and the message relay.<br>
+        <b>Anthropic</b> · the AI that reads your listing photographs. United States.<br>
+        <b>Stripe</b> · payments, membership billing, and collecting the delivery address. Ireland and United States.<br>
+        <b>Resend</b> · sending our email. European Union (Ireland).<br>
+        <b>GitHub Pages</b> · hosting the website itself. United States.<br>
+        <b>jsDelivr</b> · delivering one software library the site needs.<br>
+        <b>Google (YouTube)</b> · the archive commercial thumbnails on our maker pages load from YouTube's image servers, so <b>your IP address reaches Google when you view those pages</b>. Clicking one opens YouTube, where Google's own privacy policy applies.</p>
+        <p>We also share a Buyer's delivery details with the relevant Seller, for fulfilment only. We disclose data to authorities where the law requires it. If the business is ever sold or restructured, data may transfer with it, and we will tell you first.</p>
+
+        <div class="terms-h">6 · Transfers outside the EEA</div>
+        <p>Some providers above are in, or process data in, the United States. Those transfers rely on the European Commission's Standard Contractual Clauses, on an adequacy decision such as the EU-US Data Privacy Framework where the provider participates, or on another lawful mechanism, together with the provider's own safeguards. You can ask us which mechanism applies to a specific provider.</p>
+
+        <div class="terms-h">7 · What is public</div>
+        <p>Your seller page shows your display name, handle, seller type, location, bio, the date you joined, your listings and any reviews you have received. <b>Your email address, plan, token balance, notification settings and delivery address are never published.</b> Bids are shown as amounts and a count, not as bidder names. A review you write is published with your display name.</p>
+
+        <div class="terms-h">8 · How long we keep it</div>
+        <p>Account and profile data: while your account is open, then deleted or anonymised within [period] of closure.<br>
+        Transaction, invoice and commission records: <b>seven years</b>, as Dutch tax law requires.<br>
+        Listings and photographs: while listed, and afterwards in the sold archive as a price record.<br>
+        Bids: kept with the lot, so a completed auction stays auditable.<br>
+        Messages: [period]. Reviews: while the profile they concern exists.<br>
+        Server and security logs: [period], per each provider's own retention.</p>
+
+        <div class="terms-h">9 · Cookies and local storage</div>
+        <p><b>We set no analytics, advertising or tracking cookies, and we have no consent banner because we have nothing to ask consent for.</b> What we do use is strictly necessary: a sign-in token so you stay logged in, your light or dark theme choice, an unsent listing draft, and an offline cache so the site loads. All of it sits in your own browser and you can clear it at any time. Third-party requests described in section 5 will see your IP address, as any web request does.</p>
+
+        <div class="terms-h">10 · Your rights</div>
+        <p>You can ask us to give you a copy of your data, correct it, delete it, restrict or object to how we use it, or hand it to you in a portable form. You can withdraw consent where we relied on it, and turn off activity emails yourself in your account. Some data we must keep regardless, such as invoices within the seven-year tax period.</p>
+        <p>Write to the privacy contact above. We answer within one month. If you are unhappy with our answer, you may complain to the Dutch data protection authority, the <b>Autoriteit Persoonsgegevens</b> (autoriteitpersoonsgegevens.nl), or to the authority where you live.</p>
+
+        <div class="terms-h">11 · Security and breaches</div>
+        <p>Access to the database is restricted per record, so signed-in users reach only their own data. Payment card details never touch our systems. Administrative functions are limited to admin accounts. No system is perfectly secure; if a breach is likely to put your rights at risk we will notify the Autoriteit Persoonsgegevens within 72 hours and tell you where the law requires it.</p>
+
+        <div class="terms-h">12 · Children</div>
+        <p>The Platform is for people aged 18 and over. We do not knowingly collect data from children. If you believe a child has registered, tell us and we will delete the account.</p>
+
+        <div class="terms-h">13 · Changes</div>
+        <p>We may update this policy. The date at the top always shows the current version, and we will tell you about a significant change before it takes effect.</p>
+
+        <div class="terms-h">Contact</div>
+        <p>[legal entity] · [address] · hammerandmold.com · [privacy@hammerandmold.com]</p>
+        <p style="color:var(--ink-3); font-size:13px">Draft v0.1 for review. Complete the [bracketed] fields and have a qualified adviser review before publishing. See also our <a data-nav="terms" style="text-decoration:underline">Terms &amp; Conditions</a>.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
 <main class="view" id="view-terms" hidden>
   <div class="wrap">
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Terms</span></div>
@@ -2086,7 +2177,7 @@
         <p>After a completed purchase a Buyer may leave one review of the Seller. Reviews must be honest and based on a genuine transaction. No fake, incentivised, abusive, defamatory or unlawful reviews, and no reviewing your own listings. We may remove or withhold reviews that breach these rules, and reviews reflect the opinion of the Buyer, not of the Platform.</p>
 
         <div class="terms-h">15 · Content, privacy, law</div>
-        <p>You keep ownership of your photos and text and grant us a license to host and display them for the Platform. To complete a sale, a Buyer's shipping details are shared with the relevant Seller for fulfilment only. Your public seller page shows your display name, handle, seller type, location, bio, the date you joined, your listings and any reviews you have received; your email address, plan, token balance and notification settings are not published. We process personal data per our Privacy Policy [link] and the GDPR. These Terms are governed by the laws of the Netherlands, subject to any mandatory consumer protections in your own country.</p>
+        <p>You keep ownership of your photos and text and grant us a license to host and display them for the Platform. To complete a sale, a Buyer's shipping details are shared with the relevant Seller for fulfilment only. Your public seller page shows your display name, handle, seller type, location, bio, the date you joined, your listings and any reviews you have received; your email address, plan, token balance and notification settings are not published. We process personal data per our <a data-nav="privacy" style="text-decoration:underline">Privacy Policy</a> and the GDPR. These Terms are governed by the laws of the Netherlands, subject to any mandatory consumer protections in your own country.</p>
 
         <div class="terms-h">Contact</div>
         <p>[legal entity] · [address] · hammerandmold.com · [contact email]</p>
@@ -2178,6 +2269,7 @@
         <span>hammerandmold.com</span>
         <span>Worldwide, insured</span>
         <a data-nav="terms">Terms &amp; Conditions</a>
+        <a data-nav="privacy">Privacy Policy</a>
       </div>
     </div>
   </div>
@@ -2325,7 +2417,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -2358,7 +2450,7 @@
     if (dest === 'lot'){ e.preventDefault(); openLot(nav.dataset.lot); return; }
     if (dest === 'sold'){ e.preventDefault(); renderSold(); show('sold'); return; }
     if (dest === 'account'){ e.preventDefault(); renderAccount(); return; }
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'about' || dest === 'sell' || dest === 'terms'){
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
@@ -2526,9 +2618,44 @@
     const card = document.getElementById('resultCard');
     if (!input || !dz || !curateBtn || !card) return;
 
-    let files = []; // { name, dataUrl }
+    let files = []; // { name, dataUrl (display), cardUrl (thumb), was, now }
     const esc = s => String(s).replace(/[<>&]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
     const eur = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
+
+    // Photos are resized in the browser before they ever leave the device. A phone
+    // photo is 2-5 MB; stored at that size it burns storage and, far worse, egress
+    // every time a shop page loads. Two sizes: a display copy for the lot page and
+    // a small copy for the shop cards.
+    const DISPLAY_MAX = 1600, DISPLAY_Q = 0.82;
+    const CARD_MAX = 400, CARD_Q = 0.78;
+    const dataUrlBytes = d => { const i = d.indexOf(','); return i < 0 ? 0 : Math.round((d.length - i - 1) * 0.75); };
+    const kb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.round(b / 1024) + ' KB';
+
+    function shrinkImage(file, maxDim, quality){
+      return new Promise(resolve => {
+        const fr = new FileReader();
+        fr.onerror = () => resolve('');
+        fr.onload = () => {
+          const img = new Image();
+          img.onerror = () => resolve(fr.result);   // not decodable, send the original on
+          img.onload = () => {
+            try {
+              const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+              const w = Math.max(1, Math.round(img.width * scale));
+              const h = Math.max(1, Math.round(img.height * scale));
+              const c = document.createElement('canvas');
+              c.width = w; c.height = h;
+              const ctx = c.getContext('2d');
+              ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);   // flatten any alpha
+              ctx.drawImage(img, 0, 0, w, h);
+              resolve(c.toDataURL('image/jpeg', quality));
+            } catch (e) { resolve(fr.result); }
+          };
+          img.src = fr.result;
+        };
+        fr.readAsDataURL(file);
+      });
+    }
 
     function render(){
       thumbs.innerHTML = '';
@@ -2538,6 +2665,15 @@
         el.innerHTML = '<img src="' + f.dataUrl + '" alt=""><button type="button" data-i="' + i + '" aria-label="Remove">×</button>';
         thumbs.appendChild(el);
       });
+      if (files.length){
+        const was = files.reduce((a, f) => a + (f.was || 0), 0);
+        const now = files.reduce((a, f) => a + (f.now || 0), 0);
+        const note = document.createElement('div');
+        note.className = 'dz-size';
+        note.textContent = files.length + (files.length === 1 ? ' photo' : ' photos') + ' · '
+          + kb(now) + ' to upload' + (was > now * 1.15 ? ' (resized from ' + kb(was) + ')' : '');
+        thumbs.appendChild(note);
+      }
       curateBtn.disabled = files.length === 0;
     }
     thumbs.addEventListener('click', e => {
@@ -2545,12 +2681,20 @@
       if (!b) return;
       files.splice(+b.dataset.i, 1); render();
     });
-    function addFiles(list){
-      [...list].filter(f => f.type.startsWith('image/')).slice(0, 6 - files.length).forEach(f => {
-        const r = new FileReader();
-        r.onload = () => { files.push({ name: f.name, dataUrl: r.result }); render(); };
-        r.readAsDataURL(f);
-      });
+    async function addFiles(list){
+      const picked = [...list].filter(f => f.type.startsWith('image/')).slice(0, 6 - files.length);
+      if (!picked.length) return;
+      dz.classList.add('busy');
+      for (const f of picked){
+        const [big, small] = await Promise.all([
+          shrinkImage(f, DISPLAY_MAX, DISPLAY_Q),
+          shrinkImage(f, CARD_MAX, CARD_Q)
+        ]);
+        if (!big) continue;
+        files.push({ name: f.name, dataUrl: big, cardUrl: small || big, was: f.size, now: dataUrlBytes(big) + dataUrlBytes(small || '') });
+        render();
+      }
+      dz.classList.remove('busy');
     }
     input.addEventListener('change', () => { addFiles(input.files); input.value = ''; });
     ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
@@ -2649,10 +2793,16 @@
             for (let i = 0; i < files.length; i++) {
               try {
                 const blob = await (await fetch(files[i].dataUrl)).blob();
-                const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-                const path = uid + '/' + lotId + '/' + i + '.' + ext;
-                const up = await SB.storage.from('lots').upload(path, blob, { contentType: blob.type, upsert: true });
+                const path = uid + '/' + lotId + '/' + i + '.jpg';
+                const up = await SB.storage.from('lots').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
                 if (up.error) { upErr = up.error.message; } else { urls.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl); }
+                // the shop-card copy, found by convention as <name>_card.jpg
+                if (files[i].cardUrl){
+                  try {
+                    const cb = await (await fetch(files[i].cardUrl)).blob();
+                    await SB.storage.from('lots').upload(uid + '/' + lotId + '/' + i + '_card.jpg', cb, { contentType: 'image/jpeg', upsert: true });
+                  } catch (e) {}
+                }
               } catch (e) { upErr = String((e && e.message) || e); }
             }
             const pre = preLaunch();
@@ -2879,6 +3029,11 @@
   }
 
   // Shared shop/sold card. l.state = 'live' | 'ended' | 'sold' (undefined = live).
+  // Shop cards load the small copy uploaded alongside each photo. Lots created
+  // before browser-side resizing have no _card.jpg, so the <img> falls back to the
+  // full image on error and nothing breaks.
+  const cardSrc = u => String(u || '').replace(/\.(jpe?g|png|webp)(\?.*)?$/i, '_card.jpg$2');
+
   function lotCardHtml(l){
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -2890,7 +3045,8 @@
     const isFixed = l.saleType === 'fixed';
     const endsTxt = isPreview ? 'Opens 1 Sep' : (isClosed ? badgeWord : (isFixed ? 'Direct sale' : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left')));
     return '<article class="artifact-card draft-lot">' +
-      '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + (l.img ? ';background-image:url(' + l.img + ');background-size:cover;background-position:center' : '') + '">' +
+      '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + '">' +
+        (l.img ? '<img class="cardimg" src="' + e(cardSrc(l.img)) + '" data-full="' + e(l.img) + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : '') +
         (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (isPreview ? '<span class="card-badge sand">Preview</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : ''))) +
         (!isClosed && l.id ? '<button class="watch-btn' + (watchedIds.has(l.id) ? ' on' : '') + '" type="button" data-watch="' + e(l.id) + '" aria-label="Watch this lot" aria-pressed="' + (watchedIds.has(l.id) ? 'true' : 'false') + '">' + watchStarSvg(watchedIds.has(l.id)) + '</button>' : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
@@ -3451,7 +3607,7 @@
       b.querySelector('#authOut').addEventListener('click', async () => { if (SB) { await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
-      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a> and our <a data-nav="privacy">Privacy Policy</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
       const go = async () => {
         const v = b.querySelector('#authEmail').value.trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
