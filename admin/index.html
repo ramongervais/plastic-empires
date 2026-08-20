@@ -73,6 +73,7 @@
   .badge.paid { border-color:var(--ink); color:var(--ink); background:var(--ink); color:var(--paper); }
   .badge.unpaid { border-color:var(--warn); color:var(--warn); }
   .badge.refunded { border-color:var(--bad); color:var(--bad); }
+  .badge.included { border-color:var(--ink); color:var(--ink); }
   .badge.premium { border-color:var(--ink); background:var(--ink); color:var(--paper); }
 
   /* ---------- Controls ---------- */
@@ -214,6 +215,7 @@
             <select class="f" id="npStatus">
               <option value="unpaid">Unpaid</option>
               <option value="paid">Paid</option>
+              <option value="included">Included with Premium</option>
             </select>
           </div>
           <div class="wide">
@@ -434,6 +436,10 @@
   });
 
   /* ================= Featured ads ================= */
+  // A Premium placement is settled at zero, so it needs no new status column:
+  // amount 0 + paid is what "included" means, and it adds nothing to revenue.
+  const isIncluded = p => Number(p.amount_eur || 0) === 0 && p.status === 'paid';
+
   function stateOf(p){
     const now = Date.now();
     if (p.status === 'refunded') return 'expired';
@@ -503,12 +509,12 @@
         '<td><div>' + esc(dt(p.starts_at)) + '</div><div class="sub">' + (p.ends_at ? 'until ' + esc(dt(p.ends_at)) : 'open ended') + '</div></td>' +
         '<td><span class="badge ' + (st === 'live' ? 'live' : st === 'scheduled' ? 'sched' : 'done') + '">' + st + '</span>' +
           (overflow ? '<div class="sub" style="color:var(--warn)">past slot ' + FEATURED_MAX + '</div>' : '') + '</td>' +
-        '<td class="num">' + esc(eur(p.amount_eur)) + '</td>' +
-        '<td><span class="badge ' + esc(p.status) + '">' + esc(p.status) + '</span></td>' +
+        '<td class="num">' + (isIncluded(p) ? '<span class="sub">included</span>' : esc(eur(p.amount_eur))) + '</td>' +
+        '<td><span class="badge ' + (isIncluded(p) ? 'included">Premium' : esc(p.status) + '">' + esc(p.status)) + '</span></td>' +
         '<td class="sub" style="max-width:200px">' + esc(p.note || '') + '</td>' +
         '<td><div class="rowacts">' +
           (p.status === 'unpaid' ? '<button class="btn sm" type="button" data-paid="' + esc(p.id) + '">Mark paid</button>' : '') +
-          (p.status === 'paid' ? '<button class="btn ghost sm" type="button" data-unpaid="' + esc(p.id) + '">Mark unpaid</button>' : '') +
+          (p.status === 'paid' && !isIncluded(p) ? '<button class="btn ghost sm" type="button" data-unpaid="' + esc(p.id) + '">Mark unpaid</button>' : '') +
           (p.status !== 'refunded' ? '<button class="btn ghost sm" type="button" data-refund="' + esc(p.id) + '">Refund</button>' : '') +
           (p.ends_at && st !== 'expired' ? '' : '') +
           '<button class="btn danger sm" type="button" data-del="' + esc(p.id) + '">Delete</button>' +
@@ -530,20 +536,30 @@
 
   const toIso = v => v ? new Date(v).toISOString() : null;
 
+  // "Included with Premium" is a zero-fee placement, so the amount is fixed at 0
+  $('npStatus').addEventListener('change', () => {
+    const inc = $('npStatus').value === 'included';
+    const amt = $('npAmount');
+    if (inc){ amt.value = '0'; amt.disabled = true; } else { amt.disabled = false; }
+    if (inc && !$('npNote').value.trim()) $('npNote').value = 'Included with Premium';
+  });
+
   $('npSave').addEventListener('click', async () => {
     const lot_id = $('npLot').value;
     if (!lot_id){ say('fMsg', 'Choose a lot first.', 'err'); return; }
     const starts = toIso($('npStart').value) || new Date().toISOString();
     const ends = toIso($('npEnd').value);
     if (ends && new Date(ends) <= new Date(starts)){ say('fMsg', 'The end date has to be after the start date.', 'err'); return; }
+    const included = $('npStatus').value === 'included';
     const row = {
       lot_id: lot_id,
       seller_id: (lotsById[lot_id] && lotsById[lot_id].seller_id) || null,
       starts_at: starts,
       ends_at: ends,
-      amount_eur: Number($('npAmount').value || 0),
-      status: $('npStatus').value,
-      note: ($('npNote').value || '').trim() || null,
+      // an included placement is settled at zero, so it never shows as outstanding
+      amount_eur: included ? 0 : Number($('npAmount').value || 0),
+      status: included ? 'paid' : $('npStatus').value,
+      note: ($('npNote').value || '').trim() || (included ? 'Included with Premium' : null),
       rank: placements.length ? Math.max.apply(null, placements.map(p => p.rank || 0)) + 1 : 0
     };
     $('npSave').disabled = true;
@@ -551,7 +567,8 @@
     $('npSave').disabled = false;
     if (error){ say('fMsg', explain(error), 'err'); return; }
     $('npLot').value = ''; $('npStart').value = ''; $('npEnd').value = '';
-    $('npAmount').value = '0'; $('npNote').value = '';
+    $('npAmount').value = '0'; $('npAmount').disabled = false;
+    $('npStatus').value = 'unpaid'; $('npNote').value = '';
     say('fMsg', 'Placement created. It is live on the shop as soon as its window opens.', 'ok');
     loadFeatured();
   });

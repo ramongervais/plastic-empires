@@ -20,7 +20,8 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 
 ## Seller plans
 - Starter (free): 3 listing tokens per month, 15% commission on sold lots, AI curation and validation.
-- Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, featured placement. Early-bird pricing for the first six months.
+- Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, and featured placement included (one lot promoted at the top of the shop at a time, up to 7 days per lot). Early-bird pricing for the first six months.
+- Featured placement is advertising and is always labelled as a paid promotion. It changes only where a lot appears, never the bidding, the commission or the outcome. Outside the promoted strip, payment does not influence ranking.
 - One token = one listing. Extra token packs can be bought at any time.
 
 ## Launch
