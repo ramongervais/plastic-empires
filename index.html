@@ -430,6 +430,7 @@
   .ef-top .ef > span { justify-content:flex-end; }
   .ef-top .ef .ef-i::after { left:auto; right:0; }
   @media (max-width:520px){ .ef-top { flex-direction:column; } .ef-top .ef { width:100%; } .ef-top .ef > span { justify-content:flex-start; } }
+  .sold-count { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 20px; }
   .shop-more { display:flex; justify-content:center; margin-top:34px; }
   .shop-more[hidden] { display:none; }
   .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
@@ -2240,7 +2241,9 @@
   </div>
   <section class="band">
     <div class="wrap">
+      <div class="sold-count" id="soldCount"></div>
       <div class="collection" id="soldGrid"></div>
+      <div class="shop-more" id="soldMore" hidden><button class="btn ghost" type="button">Load more</button></div>
     </div>
   </section>
 </main>
@@ -3352,14 +3355,27 @@
   }
 
   // ----- Sold archive page (all past results) -----
-  async function renderSold(){
+  let soldPage = 1;
+  async function renderSold(reset){
     const grid = document.getElementById('soldGrid');
+    const countEl = document.getElementById('soldCount');
+    const moreEl = document.getElementById('soldMore');
     if (!grid) return;
-    grid.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">Loading past results…</p>';
+    if (reset !== false) soldPage = 1;
+    if (soldPage === 1) grid.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">Loading past results…</p>';
     if (!SB){ grid.innerHTML = '<p style="font-family:var(--body);padding:24px 0">Past results are available on the live site.</p>'; return; }
-    const now = Date.now();
-    const { data } = await SB.from('lots').select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at').neq('status', 'draft').order('created_at', { ascending: false }).limit(120);
-    const rows = (data || []).filter(r => r.status === 'sold' || r.status === 'ended' || (r.ends_at && new Date(r.ends_at) <= now));
+
+    // Filtered and ordered in Postgres. The old version fetched every non-draft
+    // lot and filtered to sold/ended in the browser, so live and preview lots
+    // ate the row budget and the archive shrank as the shop grew.
+    const res = await SB.from('lots')
+      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at', { count: 'exact' })
+      .in('status', ['sold', 'ended'])
+      .order('closed_at', { ascending: false, nullsFirst: false })
+      .range(0, soldPage * SHOP_PAGE - 1);
+    if (res.error){ grid.innerHTML = '<p style="font-family:var(--body);padding:24px 0">Could not load past results.</p>'; return; }
+    const rows = res.data || [], total = Number(res.count || 0);
+
     const ids = rows.map(r => r.id);
     const agg = {};
     if (ids.length){ const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids); (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; }); }
@@ -3368,8 +3384,20 @@
       const state = r.status === 'sold' ? 'sold' : 'ended';
       return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) };
     });
-    mapped.sort((a, b) => b.closedMs - a.closedMs);
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">No past results yet.</p>';
+    if (countEl) countEl.textContent = total ? (mapped.length < total ? mapped.length + ' of ' + total + ' results' : total + ' result' + (total === 1 ? '' : 's')) : '';
+    if (moreEl){
+      const btn = moreEl.querySelector('button');
+      if (mapped.length < total){
+        moreEl.hidden = false;
+        btn.disabled = false;
+        btn.textContent = 'Load more · ' + Math.min(SHOP_PAGE, total - mapped.length) + ' of ' + (total - mapped.length) + ' left';
+        if (!btn.dataset.w){
+          btn.dataset.w = '1';
+          btn.addEventListener('click', () => { btn.disabled = true; btn.textContent = 'Loading…'; soldPage++; renderSold(false); });
+        }
+      } else moreEl.hidden = true;
+    }
   }
 
   // ----- Account / dashboard (owner's own activity) -----
