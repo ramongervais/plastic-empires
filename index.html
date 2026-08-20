@@ -129,11 +129,16 @@
   .vitrine .plinth { position:absolute; left:0; right:0; bottom:0; height:34%; background:linear-gradient(to top, color-mix(in srgb, var(--ink) 8%, transparent), transparent); pointer-events:none; }
   .vcap { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-3); margin-top:12px; text-align:center; }
 
-  /* Frameless hero photograph (cut-out on white, no border, no plinth) */
-  .hero-shot { display:block; width:100%; height:auto; }
 
-  /* Hero photograph: wider than its column, bleeding toward the right page edge */
-  .hero-artifact { margin-right: calc(-1 * min(160px, max(0px, (100vw - 1180px) / 2 + 28px))); }
+  /* Hero logo. Contained, not bled: a mark that runs off the page edge reads as
+     broken, unlike a photograph. The art is black on transparent, so the dark
+     theme inverts it to white rather than needing a second file. */
+  .hero-logo { display:block; width:100%; max-width:430px; height:auto; margin:0 auto; }
+  :root[data-theme="dark"] .hero-logo { filter:invert(1); }
+  @media (max-width:900px){ .hero-logo { max-width:320px; margin:0; } }
+
+  /* The Kong photograph, now illustrating "Not just a grid of photos" */
+  .why-shot { display:block; width:100%; max-width:780px; height:auto; margin:0 auto 44px; }
 
   /* ---------- Section frame ---------- */
   section.band { padding: 64px 0; border-top:1px solid var(--line); }
@@ -625,7 +630,7 @@
         </div>
       </div>
       <div class="hero-artifact">
-        <img class="hero-shot" src="Empires/Brandedimages/kong-agfa.jpg" width="1800" height="1423" fetchpriority="high" decoding="async" alt="A vintage King Kong figure cranking the handle of an Agfa movie projector.">
+        <img class="hero-logo" src="Empires/Brandedimages/hm-godzilla.svg" width="1148" height="885" fetchpriority="high" alt="Hammer &amp; Mold: Godzilla holding an auctioneer's hammer.">
       </div>
     </section>
   <section class="band" id="collection">
@@ -740,6 +745,7 @@
         </div>
         <p>Anyone can sell an old toy. We want to tell you what you're actually looking at.</p>
       </div>
+      <img class="why-shot" src="Empires/Brandedimages/kong-agfa.jpg" width="1800" height="1423" loading="lazy" decoding="async" alt="A vintage King Kong figure cranking the handle of an Agfa movie projector.">
       <div class="moat">
         <div class="cell">
           <div class="num">— The Toy</div>
