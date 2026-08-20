@@ -2730,6 +2730,57 @@
     });
 
     let current = null;
+    let draftId = null;        // set when working on a saved draft
+    let draftUrls = null;      // photos already uploaded for that draft
+
+    const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+
+    // Upload every picked photo at both sizes. Returns the display URLs.
+    async function uploadPhotos(uid, lotId){
+      const urls = [];
+      for (let i = 0; i < files.length; i++) {
+        const blob = await (await fetch(files[i].dataUrl)).blob();
+        const path = uid + '/' + lotId + '/' + i + '.jpg';
+        const up = await SB.storage.from('lots').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+        if (up.error) throw up.error;
+        urls.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl);
+        // the shop-card copy, found by convention as <name>_card.jpg
+        if (files[i].cardUrl){
+          try {
+            const cb = await (await fetch(files[i].cardUrl)).blob();
+            await SB.storage.from('lots').upload(uid + '/' + lotId + '/' + i + '_card.jpg', cb, { contentType: 'image/jpeg', upsert: true });
+          } catch (e) {}
+        }
+      }
+      return urls;
+    }
+
+    function lotRow(lotId, uid, urls){
+      const pre = preLaunch();
+      const fixedSale = current.saleType === 'fixed';
+      const ends = (pre || fixedSale) ? null : new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
+      return {
+        id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
+        condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
+        variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
+        reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
+        estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
+        auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
+      };
+    }
+
+    // Reopen a saved draft in the curation card. Photos stay where they are.
+    window.HM_openDraft = function(draft){
+      draftId = draft.id;
+      draftUrls = draft.image_urls || [];
+      files = [];   // nothing to re-upload; the draft already owns its photos
+      render();
+      current = Object.assign({}, draft.payload || {});
+      if (current.auctionDays == null) current.auctionDays = 7;
+      show('sell');
+      viewMode();
+    };
+
     function showCuration(c){
       if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
       if (c.eligible === false){
@@ -2782,46 +2833,53 @@
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
-        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this ' + (fixed ? 'item' : 'lot') + '</button></div>';
+        '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this ' + (fixed ? 'item' : 'lot') + '</button>' +
+          (SB ? '<button class="btn ghost" id="draftLot" type="button">' + (draftId ? 'Update draft' : 'Save as draft') + '</button>' : '') + '</div>' +
+        (draftId ? '<div class="rc-notes" style="color:var(--ink-3);margin-top:12px">Working on a saved draft. No token has been used yet; publishing spends one.</div>' : '');
       setCard(html, false);
       document.getElementById('editLot').addEventListener('click', editMode);
       card.querySelectorAll('.sale-toggle button').forEach(b => b.addEventListener('click', () => { const st = b.dataset.sale; if (st === (current.saleType || 'auction')) return; if (st === 'fixed' && !current.buyNow) current.buyNow = current.startingBid; current.saleType = st; viewMode(); }));
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
+      const dBtn = document.getElementById('draftLot');
+      if (dBtn) dBtn.addEventListener('click', async () => {
+        if (!authUser){ openAuth(); return; }
+        dBtn.disabled = true; dBtn.textContent = 'Saving…';
+        try {
+          const uid = authUser.id;
+          if (!draftId) draftId = newId();
+          // upload only if this draft has no photos yet
+          if (!draftUrls || !draftUrls.length) draftUrls = files.length ? await uploadPhotos(uid, draftId) : [];
+          const row = { id: draftId, seller_id: uid, payload: current, image_urls: draftUrls, updated_at: new Date().toISOString() };
+          const { error } = await SB.from('lot_drafts').upsert(row, { onConflict: 'id' });
+          if (error) throw error;
+          openModal('Draft saved', (current.toy || 'Your lot') + ' is saved as a draft.',
+            'No listing token was used. Find it under Drafts in your account, and publish when you are ready.');
+          viewMode();
+        } catch (err) {
+          const msg = String((err && err.message) || err);
+          openModal('Could not save the draft', 'Something went wrong.',
+            /lot_drafts/.test(msg) ? 'The lot_drafts table does not exist yet. Run section 6 of admin/schema.sql.' : msg);
+        } finally { dBtn.disabled = false; dBtn.textContent = draftId ? 'Update draft' : 'Save as draft'; }
+      });
       document.getElementById('submitLot').addEventListener('click', async () => {
         if (SB && !authUser) { openAuth(); return; }
         if (SB && authUser) {
           const btn = document.getElementById('submitLot'); btn.disabled = true; btn.textContent = 'Publishing…';
           try {
             const uid = authUser.id;
-            const lotId = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
-            const urls = []; let upErr = '';
-            for (let i = 0; i < files.length; i++) {
-              try {
-                const blob = await (await fetch(files[i].dataUrl)).blob();
-                const path = uid + '/' + lotId + '/' + i + '.jpg';
-                const up = await SB.storage.from('lots').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
-                if (up.error) { upErr = up.error.message; } else { urls.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl); }
-                // the shop-card copy, found by convention as <name>_card.jpg
-                if (files[i].cardUrl){
-                  try {
-                    const cb = await (await fetch(files[i].cardUrl)).blob();
-                    await SB.storage.from('lots').upload(uid + '/' + lotId + '/' + i + '_card.jpg', cb, { contentType: 'image/jpeg', upsert: true });
-                  } catch (e) {}
-                }
-              } catch (e) { upErr = String((e && e.message) || e); }
-            }
+            // publishing a draft keeps its id, so its photos stay where they are
+            const lotId = draftId || newId();
+            let urls;
+            if (draftUrls && draftUrls.length) urls = draftUrls;
+            else urls = files.length ? await uploadPhotos(uid, lotId) : [];
             const pre = preLaunch();
-            const fixedSale = current.saleType === 'fixed';
-            const ends = (pre || fixedSale) ? null : new Date(Date.now() + (current.auctionDays || 7) * 86400000).toISOString();
-            const { error } = await SB.from('lots').insert({
-              id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
-              condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
-              variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
-              reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
-              estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
-              auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
-            });
+            const { error } = await SB.from('lots').insert(lotRow(lotId, uid, urls));
             if (error) throw error;
+            // the draft has become a real lot, so retire it
+            if (draftId){
+              try { await SB.from('lot_drafts').delete().eq('id', draftId); } catch (e) {}
+              draftId = null; draftUrls = null;
+            }
             injectDraftLots();
             openModal(pre ? 'Lot in preview' : 'Lot listed', (current.toy || 'Your toy') + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 September 2026.' : 'It now appears in the Shop.'));
           } catch (err) {
@@ -3187,13 +3245,14 @@
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
     const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id';
-    const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes] = await Promise.all([
+    const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
       SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending,plan,tokens').eq('id', uid).single(),
       SB.from('watchlist').select('lot_id').eq('user_id', uid),
       SB.from('lots').select(sel).eq('buyer_id', uid).order('created_at', { ascending: false }),
-      SB.from('reviews').select('lot_id').eq('reviewer_id', uid)
+      SB.from('reviews').select('lot_id').eq('reviewer_id', uid),
+      SB.from('lot_drafts').select('id,payload,image_urls,updated_at').eq('seller_id', uid).order('updated_at', { ascending: false })
     ]);
     const lots = myLotsRes.data || [], myBids = myBidsRes.data || [];
     const purchases = buysRes.data || [];
@@ -3225,6 +3284,23 @@
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = bidTop[l.id] && bidTop[l.id].bidder_id === uid; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
+    // lot_drafts may not exist yet if section 6 of the schema has not been run;
+    // supabase-js reports that as an error rather than throwing, so show none.
+    const drafts = (draftsRes && !draftsRes.error) ? (draftsRes.data || []) : [];
+    const draftsHtml = drafts.length ? drafts.map(d => {
+      const pl = d.payload || {};
+      const img = (d.image_urls && d.image_urls[0]) || '';
+      const meta = [pl.line, pl.maker, pl.year].filter(Boolean).join(' · ');
+      const n = (d.image_urls || []).length;
+      return '<div class="acct-row"><div class="th"' + (img ? ' style="background-image:url(' + img + ');background-size:cover;background-position:center"' : '') + '></div>' +
+        '<div class="nm"><div class="t">' + e(pl.toy || 'Untitled draft') + '</div><div class="st">' + e(meta || 'Draft') +
+        ' · saved ' + e(new Date(d.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })) + '</div></div>' +
+        '<div><div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">' +
+          '<button class="acct-pay" data-draft-open="' + e(d.id) + '" type="button">Open</button>' +
+          '<button class="acct-signout" data-draft-del="' + e(d.id) + '" type="button">Delete</button>' +
+        '</div><div class="st" style="text-align:right;margin-top:4px">' + n + ' photo' + (n === 1 ? '' : 's') + '</div></div></div>';
+    }).join('') : '<div class="acct-empty">No drafts. On the Sell page, curate a lot and choose Save as draft to keep it here without spending a token.</div>';
+
     const purchasesHtml = purchases.length ? purchases.map(l => row(l, (reviewedLotIds.has(l.id) ? '<div class="st">Reviewed</div>' : (l.seller_id && l.seller_id !== uid ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>' : '<div class="st">Your lot</div>')), 'Bought')).join('') : '';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
@@ -3238,6 +3314,7 @@
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
       '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
+      '<div class="acct-sec"><div class="h">Drafts</div>' + draftsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Notifications</div>' +
@@ -3251,6 +3328,17 @@
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
     const mUp = document.getElementById('mUpgrade'); if (mUp) mUp.addEventListener('click', () => goCheckout(SUBSCRIBE_URL));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
+    body.querySelectorAll('[data-draft-open]').forEach(b => b.addEventListener('click', async () => {
+      const { data, error } = await SB.from('lot_drafts').select('id,payload,image_urls').eq('id', b.dataset.draftOpen).maybeSingle();
+      if (error || !data){ openModal('Could not open the draft', 'It may have been deleted.', String((error && error.message) || 'Not found')); return; }
+      if (typeof window.HM_openDraft === 'function') window.HM_openDraft(data);
+    }));
+    body.querySelectorAll('[data-draft-del]').forEach(b => b.addEventListener('click', async () => {
+      if (!confirm('Delete this draft? The curation is lost. Photos already uploaded stay in storage.')) return;
+      const { error } = await SB.from('lot_drafts').delete().eq('id', b.dataset.draftDel);
+      if (error){ openModal('Could not delete', 'Something went wrong.', error.message); return; }
+      renderAccount();
+    }));
     const mMan = document.getElementById('mManage'); if (mMan) mMan.addEventListener('click', () => goCheckout(PORTAL_URL));
     body.querySelectorAll('.acct-toggle[data-pref]').forEach(t => t.addEventListener('click', async () => {
       const sw = t.querySelector('.sw'); const on = !sw.classList.contains('on'); sw.classList.toggle('on', on);

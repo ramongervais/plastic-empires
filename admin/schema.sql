@@ -260,6 +260,42 @@ grant select, update on public.profiles to authenticated;
 --   revoke insert, delete on public.profiles from anon;
 
 -- ---------------------------------------------------------------------------
+-- 6. Saved drafts (sell flow)
+-- ---------------------------------------------------------------------------
+-- A curation that has not been published yet. Deliberately its OWN table
+-- rather than a lots row with status='draft', for two reasons:
+--   1. consume_token() fires BEFORE INSERT on lots, so a draft row there would
+--      spend a listing token immediately and another one on publish. Keeping
+--      drafts out of lots means that trigger stays exactly as it is, and the
+--      token is charged once, at publish, as it always was.
+--   2. Nothing can leak into the shop by forgetting a status filter.
+--
+-- id becomes the lot id when published, so photos upload once to their final
+-- path (uid/<id>/n.jpg) and the URLs stay valid afterwards.
+
+create table if not exists public.lot_drafts (
+  id          uuid primary key default gen_random_uuid(),
+  seller_id   uuid not null references auth.users(id) on delete cascade,
+  payload     jsonb not null default '{}'::jsonb,
+  image_urls  text[] not null default '{}',
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists lot_drafts_seller_idx on public.lot_drafts (seller_id, updated_at desc);
+
+alter table public.lot_drafts enable row level security;
+
+-- Strictly your own drafts, read and write.
+drop policy if exists lot_drafts_own on public.lot_drafts;
+create policy lot_drafts_own on public.lot_drafts
+  for all to authenticated
+  using (auth.uid() = seller_id)
+  with check (auth.uid() = seller_id);
+
+grant select, insert, update, delete on public.lot_drafts to authenticated;
+
+-- ---------------------------------------------------------------------------
 -- 5. Make yourself an admin
 -- ---------------------------------------------------------------------------
 -- Run this last, with your own address. Without it the console will sign you
