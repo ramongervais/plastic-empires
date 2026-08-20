@@ -406,7 +406,19 @@
   #thumbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
   #thumbs .th { position:relative; flex:0 0 auto; width:84px; height:84px; aspect-ratio:1; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
   #thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
-  #thumbs .th button { position:absolute; top:2px; right:2px; width:18px; height:18px; }
+  #thumbs .th { transition:border-color .14s; }
+  #thumbs .th.cover { border-color:var(--ink); }
+  #thumbs .th .th-x { position:absolute; top:2px; right:2px; width:18px; height:18px; }
+  /* reorder controls, revealed on hover or keyboard focus so the photo stays visible */
+  #thumbs .th .th-move { position:absolute; left:0; right:0; bottom:0; display:flex; opacity:0; transition:opacity .14s; }
+  #thumbs .th:hover .th-move, #thumbs .th:focus-within .th-move { opacity:1; }
+  #thumbs .th .th-move button { position:static; flex:1; height:20px; border:0; background:rgba(19,19,19,.82); color:#fff; font-size:11px; line-height:1; cursor:pointer; padding:0; }
+  #thumbs .th .th-move button:hover:not(:disabled) { background:#131313; }
+  #thumbs .th .th-move button:disabled { opacity:.3; cursor:default; }
+  #thumbs .th .th-cover { position:absolute; top:2px; left:2px; font-family:var(--label); font-size:8px; letter-spacing:.1em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:2px 4px; border-radius:2px; }
+  @media (hover:none){ #thumbs .th .th-move { opacity:1; } }
+  .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
+  .price-err[hidden] { display:none; }
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
   .sell-tokens b { color:var(--ink); font-size:13px; }
   .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
@@ -2666,22 +2678,40 @@
       thumbs.innerHTML = '';
       files.forEach((f, i) => {
         const el = document.createElement('div');
-        el.className = 'th';
-        el.innerHTML = '<img src="' + f.dataUrl + '" alt=""><button type="button" data-i="' + i + '" aria-label="Remove">×</button>';
+        el.className = 'th' + (i === 0 ? ' cover' : '');
+        // a draft's photos are already uploaded, so they render from their URL
+        const src = f.existing ? f.url : f.dataUrl;
+        el.innerHTML = '<img src="' + src + '" alt="">' +
+          '<button class="th-x" type="button" data-i="' + i + '" aria-label="Remove photo">×</button>' +
+          '<div class="th-move">' +
+            '<button type="button" data-mv="' + i + '" data-dir="-1"' + (i === 0 ? ' disabled' : '') + ' aria-label="Move photo earlier">&#8592;</button>' +
+            '<button type="button" data-mv="' + i + '" data-dir="1"' + (i === files.length - 1 ? ' disabled' : '') + ' aria-label="Move photo later">&#8594;</button>' +
+          '</div>' +
+          (i === 0 ? '<span class="th-cover">Cover</span>' : '');
         thumbs.appendChild(el);
       });
       if (files.length){
-        const was = files.reduce((a, f) => a + (f.was || 0), 0);
-        const now = files.reduce((a, f) => a + (f.now || 0), 0);
+        const fresh = files.filter(f => !f.existing);
+        const was = fresh.reduce((a, f) => a + (f.was || 0), 0);
+        const now = fresh.reduce((a, f) => a + (f.now || 0), 0);
         const note = document.createElement('div');
         note.className = 'dz-size';
-        note.textContent = files.length + (files.length === 1 ? ' photo' : ' photos') + ' · '
-          + kb(now) + ' to upload' + (was > now * 1.15 ? ' (resized from ' + kb(was) + ')' : '');
+        note.textContent = files.length + (files.length === 1 ? ' photo' : ' photos')
+          + ' · first one is the cover buyers see'
+          + (fresh.length ? ' · ' + kb(now) + ' to upload' + (was > now * 1.15 ? ' (resized from ' + kb(was) + ')' : '') : '');
         thumbs.appendChild(note);
       }
-      curateBtn.disabled = files.length === 0;
+      curateBtn.disabled = files.filter(f => !f.existing).length === 0;
     }
     thumbs.addEventListener('click', e => {
+      const mv = e.target.closest('button[data-mv]');
+      if (mv){
+        const i = +mv.dataset.mv, j = i + (+mv.dataset.dir);
+        if (j < 0 || j >= files.length) return;
+        const t = files[i]; files[i] = files[j]; files[j] = t;
+        render();
+        return;
+      }
       const b = e.target.closest('button[data-i]');
       if (!b) return;
       files.splice(+b.dataset.i, 1); render();
@@ -2736,19 +2766,25 @@
     const newId = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
 
     // Upload every picked photo at both sizes. Returns the display URLs.
+    // Returns the display URLs in thumbnail order. Photos already in storage (a
+    // reopened draft) keep their URL; new ones get a random name so adding to a
+    // draft can never overwrite a file that is already there.
     async function uploadPhotos(uid, lotId){
       const urls = [];
       for (let i = 0; i < files.length; i++) {
-        const blob = await (await fetch(files[i].dataUrl)).blob();
-        const path = uid + '/' + lotId + '/' + i + '.jpg';
+        const f = files[i];
+        if (f.existing){ urls.push(f.url); continue; }
+        const key = newId().replace(/-/g, '').slice(0, 10);
+        const blob = await (await fetch(f.dataUrl)).blob();
+        const path = uid + '/' + lotId + '/' + key + '.jpg';
         const up = await SB.storage.from('lots').upload(path, blob, { contentType: 'image/jpeg', upsert: true });
         if (up.error) throw up.error;
         urls.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl);
         // the shop-card copy, found by convention as <name>_card.jpg
-        if (files[i].cardUrl){
+        if (f.cardUrl){
           try {
-            const cb = await (await fetch(files[i].cardUrl)).blob();
-            await SB.storage.from('lots').upload(uid + '/' + lotId + '/' + i + '_card.jpg', cb, { contentType: 'image/jpeg', upsert: true });
+            const cb = await (await fetch(f.cardUrl)).blob();
+            await SB.storage.from('lots').upload(uid + '/' + lotId + '/' + key + '_card.jpg', cb, { contentType: 'image/jpeg', upsert: true });
           } catch (e) {}
         }
       }
@@ -2772,8 +2808,9 @@
     // Reopen a saved draft in the curation card. Photos stay where they are.
     window.HM_openDraft = function(draft){
       draftId = draft.id;
-      draftUrls = draft.image_urls || [];
-      files = [];   // nothing to re-upload; the draft already owns its photos
+      draftUrls = null;   // rebuilt from the thumbnail order on save
+      // show the draft's photos as thumbnails so they can be reordered or removed
+      files = (draft.image_urls || []).map(u => ({ existing: true, url: u }));
       render();
       current = Object.assign({}, draft.payload || {});
       if (current.auctionDays == null) current.auctionDays = 7;
@@ -2847,8 +2884,8 @@
         try {
           const uid = authUser.id;
           if (!draftId) draftId = newId();
-          // upload only if this draft has no photos yet
-          if (!draftUrls || !draftUrls.length) draftUrls = files.length ? await uploadPhotos(uid, draftId) : [];
+          // always rebuild from thumbnail order, so a reorder or removal is saved
+          draftUrls = files.length ? await uploadPhotos(uid, draftId) : [];
           const row = { id: draftId, seller_id: uid, payload: current, image_urls: draftUrls, updated_at: new Date().toISOString() };
           const { error } = await SB.from('lot_drafts').upsert(row, { onConflict: 'id' });
           if (error) throw error;
@@ -2863,15 +2900,15 @@
       });
       document.getElementById('submitLot').addEventListener('click', async () => {
         if (SB && !authUser) { openAuth(); return; }
+        const stop = priceProblem(current);
+        if (stop){ openModal('Check the prices', 'That combination would cost you money.', stop); return; }
         if (SB && authUser) {
           const btn = document.getElementById('submitLot'); btn.disabled = true; btn.textContent = 'Publishing…';
           try {
             const uid = authUser.id;
             // publishing a draft keeps its id, so its photos stay where they are
             const lotId = draftId || newId();
-            let urls;
-            if (draftUrls && draftUrls.length) urls = draftUrls;
-            else urls = files.length ? await uploadPhotos(uid, lotId) : [];
+            const urls = files.length ? await uploadPhotos(uid, lotId) : (draftUrls || []);
             const pre = preLaunch();
             const { error } = await SB.from('lots').insert(lotRow(lotId, uid, urls));
             if (error) throw error;
@@ -2903,6 +2940,33 @@
     const efSel = (label, id, val, opts, hint) => '<label class="ef"><span>' + label + tip(hint) + '</span><select class="ei" id="' + id + '">' + opts.map(o => '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>').join('') + '</select></label>';
     const efArea = (label, id, val, hint) => '<label class="ef"><span>' + label + tip(hint) + '</span><textarea class="ei" id="' + id + '" rows="3">' + esc(val == null ? '' : val) + '</textarea></label>';
 
+    // Blocking: a Buy-now under the opening bid means nobody would ever bid,
+    // they would simply take it, and the lot sells below where it opened.
+    function priceProblem(c){
+      const fixed = c.saleType === 'fixed';
+      const bid = Number(c.startingBid || 0), buy = c.buyNow == null ? null : Number(c.buyNow);
+      if (!fixed && buy != null && buy > 0 && buy < bid)
+        return 'Buy now (' + eur(buy) + ') is below the starting bid (' + eur(bid) + '). A buyer would skip the auction and take it for the lower price. Raise Buy now above the starting bid, or clear it.';
+      if (!fixed && c.reserve != null && Number(c.reserve) > 0 && buy != null && buy > 0 && Number(c.reserve) > buy)
+        return 'The reserve (' + eur(c.reserve) + ') is above Buy now (' + eur(buy) + '), so a Buy-now sale would fall below your own minimum. Lower the reserve or raise Buy now.';
+      if (bid < 0 || (buy != null && buy < 0)) return 'Prices cannot be negative.';
+      return null;
+    }
+    // Non-blocking: legitimate sometimes, but usually a mistake worth flagging.
+    function priceWarning(c){
+      if (c.saleType === 'fixed') return null;
+      const bid = Number(c.startingBid || 0), hi = Number(c.estimateHigh || 0);
+      if (hi > 0 && bid > hi)
+        return { title: 'The opening bid is above the estimate.',
+                 body: 'You are starting at ' + eur(bid) + ' while the estimate tops out at ' + eur(hi) + '. That is allowed, but a high opening price is the usual reason a lot gets no bids at all. A low start with competition tends to finish higher.' };
+      return null;
+    }
+    function showPriceError(msg){
+      const box = document.getElementById('priceErr');
+      if (box){ box.textContent = msg; box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      else openModal('Check the prices', 'That combination would cost you money.', msg);
+    }
+
     function editMode(){
       const c = current;
       const html =
@@ -2917,12 +2981,13 @@
         '<div class="ef-row">' + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + '</div>' +
         efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') +
         efArea('Notes', 'e_notes', c.notes, 'Anything a buyer needs to know: repairs, repaints, replaced parts, smells, provenance. This is where trust is won.') +
+        '<div class="price-err" id="priceErr" hidden></div>' +
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
       setCard(html, false);
       document.getElementById('saveLot').addEventListener('click', () => {
         const g = id => document.getElementById(id).value.trim();
         const num = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? undefined : v; };
-        current = { ...current,
+        const next = { ...current,
           toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'), estimateLow: num('e_lo'), estimateHigh: num('e_hi'),
@@ -2930,7 +2995,12 @@
           confidence: g('e_confidence'), notes: g('e_notes'),
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
         };
+        const bad = priceProblem(next);
+        if (bad){ showPriceError(bad); return; }
+        current = next;
+        const warn = priceWarning(current);
         viewMode();
+        if (warn) setTimeout(() => openModal('Worth a second look', warn.title, warn.body), 60);
       });
       document.getElementById('cancelLot').addEventListener('click', viewMode);
     }
