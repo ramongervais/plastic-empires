@@ -321,6 +321,27 @@
         </table>
       </div>
       <div class="empty" id="cEmpty" hidden>No settings stored yet.</div>
+
+      <div class="sec-head" style="margin-top:52px">
+        <div>
+          <div class="ey">One-off jobs</div>
+          <h1 style="font-size:clamp(20px,2.2vw,26px)">Maintenance</h1>
+        </div>
+        <p>Photos uploaded before browser-side resizing existed are still full camera resolution, and have no shop-card copy. This rebuilds both sizes for every lot.</p>
+      </div>
+
+      <div class="msg" id="mMsg" hidden></div>
+      <div class="form">
+        <h2>Rebuild image sizes</h2>
+        <p style="font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink-2); margin:0 0 18px; max-width:60ch">
+          For every photo on every lot: re-encode a display copy at 1600px over the existing file, and write a
+          400px card copy alongside it. URLs do not change, so nothing in the database needs updating. Safe to
+          run more than once. Leave this tab open while it works.
+        </p>
+        <button class="btn" type="button" id="mRun">Rebuild all image sizes</button>
+        <button class="btn ghost" type="button" id="mDry" style="margin-left:8px">Dry run (measure only)</button>
+        <div id="mLog" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:12px; line-height:1.7; color:var(--ink-2); margin-top:20px; max-height:340px; overflow:auto"></div>
+      </div>
     </section>
   </div>
 </div>
@@ -733,6 +754,103 @@
       loadSettings();
     }
   });
+
+  /* ================= Maintenance: rebuild image sizes ================= */
+  const DISPLAY_MAX = 1600, DISPLAY_Q = 0.82, CARD_MAX = 400, CARD_Q = 0.78;
+  const kb = b => b >= 1048576 ? (b / 1048576).toFixed(2) + ' MB' : Math.round(b / 1024) + ' KB';
+
+  function logLine(t){ const l = $('mLog'); l.innerHTML += esc(t) + '<br>'; l.scrollTop = l.scrollHeight; }
+
+  // Storage serves public objects with access-control-allow-origin: *, so a
+  // crossOrigin image keeps the canvas untainted and we can re-encode in place.
+  function reencode(url, maxDim, quality){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onerror = () => reject(new Error('could not load'));
+      img.onload = () => {
+        try {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.max(1, Math.round(img.width * scale));
+          const h = Math.max(1, Math.round(img.height * scale));
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          c.toBlob(b => b ? resolve({ blob: b, w: w, h: h }) : reject(new Error('encode failed')), 'image/jpeg', quality);
+        } catch (e) { reject(e); }
+      };
+      img.src = url + (url.indexOf('?') < 0 ? '?' : '&') + 'r=' + Date.now();
+    });
+  }
+
+  // ".../object/public/lots/<path>" -> "<path>"
+  const pathOf = u => { const m = String(u).match(/\/object\/public\/lots\/(.+)$/); return m ? decodeURIComponent(m[1].split('?')[0]) : null; };
+  const cardPathOf = p => p.replace(/\.(jpe?g|png|webp)$/i, '_card.jpg');
+
+  async function rebuildImages(dry){
+    $('mRun').disabled = true; $('mDry').disabled = true;
+    $('mLog').innerHTML = '';
+    say('mMsg', '', '');
+    try {
+      const res = await SB.from('lots').select('id,toy,image_urls').limit(500);
+      if (res.error) throw res.error;
+      const lots = (res.data || []).filter(l => (l.image_urls || []).length);
+      logLine((dry ? 'DRY RUN. ' : '') + lots.length + ' lots with photos.');
+      let before = 0, after = 0, done = 0, failed = 0;
+      for (const lot of lots){
+        for (const url of lot.image_urls){
+          const path = pathOf(url);
+          if (!path){ logLine('  skip (unrecognised url) ' + url.slice(-40)); failed++; continue; }
+          try {
+            const head = await fetch(url, { method: 'HEAD' });
+            const was = Number(head.headers.get('content-length') || 0);
+            const big = await reencode(url, DISPLAY_MAX, DISPLAY_Q);
+            const small = await reencode(url, CARD_MAX, CARD_Q);
+            // A photo already at or below the display size, already well compressed,
+            // gets bigger and slightly worse if re-encoded. Only replace it when that
+            // actually saves at least a tenth. The card copy is always new, so always write it.
+            const worthIt = was > 0 && big.blob.size < was * 0.9;
+            before += was;
+            after += (worthIt ? big.blob.size : was) + small.blob.size;
+            if (!dry){
+              if (worthIt){
+                const u1 = await SB.storage.from('lots').upload(path, big.blob, { contentType: 'image/jpeg', upsert: true });
+                if (u1.error) throw u1.error;
+              }
+              const u2 = await SB.storage.from('lots').upload(cardPathOf(path), small.blob, { contentType: 'image/jpeg', upsert: true });
+              if (u2.error) throw u2.error;
+            }
+            done++;
+            logLine('  ' + (dry ? 'would ' : '') + (worthIt ? (dry ? 'shrink' : 'shrank') : 'keep display for')
+              + ' ' + path.split('/').slice(-2).join('/')
+              + '  ' + kb(was) + ' -> ' + kb(worthIt ? big.blob.size : was)
+              + (worthIt ? '  (' + big.w + 'x' + big.h + ')' : '  (already optimal)')
+              + '  + ' + kb(small.blob.size) + ' card');
+          } catch (e){
+            failed++;
+            logLine('  FAILED ' + path + ': ' + ((e && e.message) || e));
+          }
+        }
+      }
+      logLine('');
+      logLine((dry ? 'Would rebuild ' : 'Rebuilt ') + done + ' photo' + (done === 1 ? '' : 's')
+        + (failed ? ', ' + failed + ' failed' : '') + '.');
+      logLine('Storage ' + kb(before) + ' -> ' + kb(after)
+        + (before > 0 ? '  (' + Math.round(100 - after / before * 100) + '% smaller)' : ''));
+      say('mMsg', dry ? 'Dry run complete. Nothing was written.' : 'Rebuild complete. Reload the shop to see the card copies in use.', 'ok');
+    } catch (e){
+      say('mMsg', explain(e), 'err');
+    }
+    $('mRun').disabled = false; $('mDry').disabled = false;
+  }
+
+  $('mRun').addEventListener('click', () => {
+    if (!confirm('Rebuild every photo on every lot? Existing files are overwritten in place. URLs stay the same.')) return;
+    rebuildImages(false);
+  });
+  $('mDry').addEventListener('click', () => rebuildImages(true));
 
   /* ================= Go ================= */
   if (SB) SB.auth.onAuthStateChange((_e, session) => {
