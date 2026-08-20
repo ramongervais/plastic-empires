@@ -430,6 +430,8 @@
   .ef-top .ef > span { justify-content:flex-end; }
   .ef-top .ef .ef-i::after { left:auto; right:0; }
   @media (max-width:520px){ .ef-top { flex-direction:column; } .ef-top .ef { width:100%; } .ef-top .ef > span { justify-content:flex-start; } }
+  .shop-more { display:flex; justify-content:center; margin-top:34px; }
+  .shop-more[hidden] { display:none; }
   .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
   .price-err[hidden] { display:none; }
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
@@ -3156,6 +3158,10 @@
   }
   let injectGen = 0;
   let shopSort = 'newest';
+  const SHOP_PAGE = 24;          // lots per page in the shop grid
+  let shopPage = 1;              // how many pages are currently loaded
+  let shopQuery = '';            // the live search term, matched server-side
+  let shopSearchTimer = null;
 
   // ----- Watchlist -----
   // Soft-cornered white star (rounded joins = friendlier); filled when watching.
@@ -3220,17 +3226,39 @@
     const gen = ++injectGen;
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
-    let lots = [];
+    let lots = [], activeTotal = 0, activeShown = 0;
     if (SB) {
       const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type';
+      const since = new Date(Date.now() - 86400000).toISOString();
+      // ilike patterns go inside an or() string, so strip what would break it
+      const q = shopQuery.replace(/[,()*%\\]/g, ' ').trim();
+      const searchOr = q ? 'toy.ilike.*' + q + '*,maker.ilike.*' + q + '*,line.ilike.*' + q + '*' : '';
+      // Ordered in Postgres, not in the browser, so page two is consistent with
+      // page one. Price sorts on the opening bid: the current bid is an
+      // aggregate over the bids table and cannot be an ORDER BY here.
+      const applySort = qb => shopSort === 'ending' ? qb.order('ends_at', { ascending: true, nullsFirst: false })
+        : shopSort === 'price-asc' ? qb.order('starting_bid', { ascending: true })
+        : shopSort === 'price-desc' ? qb.order('starting_bid', { ascending: false })
+        : qb.order('created_at', { ascending: false });
+
+      let activeQ = SB.from('lots').select(COLS, { count: 'exact' }).in('status', ['live', 'preview']);
+      if (searchOr) activeQ = activeQ.or(searchOr);
+      activeQ = applySort(activeQ).range(0, shopPage * SHOP_PAGE - 1);
+
+      let closedQ = SB.from('lots').select(COLS).in('status', ['ended', 'sold']).gte('closed_at', since);
+      if (searchOr) closedQ = closedQ.or(searchOr);
+      closedQ = closedQ.order('closed_at', { ascending: false }).limit(SHOP_PAGE);
+
       // featured_active is a view over the admin's paid placements: lot_id + rank only,
       // already filtered to the open window. It does not exist until admin/schema.sql
       // has been run, so a missing view simply means nothing is promoted.
-      const [lotsRes, featRes] = await Promise.all([
-        SB.from('lots').select(COLS).neq('status', 'draft').order('created_at', { ascending: false }).limit(48),
-        SB.from('featured_active').select('lot_id,rank')
+      const [actRes, closedRes, featRes] = await Promise.all([
+        activeQ, closedQ, SB.from('featured_active').select('lot_id,rank')
       ]);
-      const rows = lotsRes.data || [];
+      activeTotal = Number(actRes.count || 0);
+      const activeRows = actRes.data || [];
+      activeShown = activeRows.length;
+      const rows = activeRows.concat(closedRes.data || []);
       const featRank = {};
       if (!featRes.error) (featRes.data || []).forEach(f => { featRank[f.lot_id] = Number(f.rank || 0); });
       const now = Date.now();
@@ -3240,7 +3268,7 @@
         const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids);
         (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; });
       }
-      const mapped = rows.map(r => {
+      lots = rows.map(r => {
         const a = agg[r.id] || { max: 0, count: 0 };
         const timeEnded = r.ends_at && new Date(r.ends_at) <= now;
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
@@ -3248,14 +3276,6 @@
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
         return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0 };
       });
-      const active = mapped.filter(l => l.state === 'preview' || l.state === 'live');
-      const closedRecent = mapped.filter(l => (l.state === 'ended' || l.state === 'sold') && (now - l.closedMs) < 86400000);
-      const endMs = l => l.ends_at ? new Date(l.ends_at).getTime() : Infinity;
-      if (shopSort === 'price-asc') active.sort((a, b) => (a.bid || 0) - (b.bid || 0));
-      else if (shopSort === 'price-desc') active.sort((a, b) => (b.bid || 0) - (a.bid || 0));
-      else if (shopSort === 'ending') active.sort((a, b) => endMs(a) - endMs(b));
-      // 'newest' keeps the created-desc fetch order
-      lots = active.concat(closedRecent);
     } else {
       lots = loadDraftLots();
     }
@@ -3263,7 +3283,10 @@
 
     // A featured lot buys a promoted slot at the top of the shop. Only an open
     // lot earns one, and it is lifted out of the main grid so it never doubles.
-    const promoted = lots.filter(l => l.featured && (l.state === 'live' || l.state === 'preview'))
+    // During a search the strip is hidden and promoted lots compete in the
+    // results like everything else, which is what someone searching expects.
+    const searching = !!shopQuery.trim();
+    const promoted = searching ? [] : lots.filter(l => l.featured && (l.state === 'live' || l.state === 'preview'))
       .sort((a, b) => (a.featRank || 0) - (b.featRank || 0))
       .slice(0, FEATURED_MAX);
     const promotedSet = new Set(promoted);
@@ -3278,27 +3301,54 @@
     if (rest.length) grid.insertAdjacentHTML('afterbegin', rest.map(lotCardHtml).join(''));
 
     document.querySelectorAll('#collection .card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
-    applyShopSearch();
+
+    // Count what is really there, and offer the rest rather than silently
+    // dropping it the way the old fixed limit of 48 did.
+    const count = document.getElementById('shopCount');
+    if (count){
+      const onScreen = document.querySelectorAll('#collection .artifact-card').length;
+      count.textContent = !onScreen ? (searching ? 'No lots match' : '')
+        : (activeShown < activeTotal ? onScreen + ' of ' + activeTotal + ' lots'
+           : onScreen + ' lot' + (onScreen === 1 ? '' : 's'))
+          + (searching ? ' matching your search' : '');
+    }
+    const empty = document.getElementById('shopEmpty');
+    if (empty) empty.hidden = !(searching && !document.querySelectorAll('#collection .artifact-card').length);
+
+    let more = document.getElementById('shopMore');
+    if (activeShown < activeTotal){
+      if (!more){
+        more = document.createElement('div');
+        more.id = 'shopMore';
+        more.className = 'shop-more';
+        more.innerHTML = '<button class="btn ghost" type="button">Load more</button>';
+        grid.parentNode.insertBefore(more, grid.nextSibling);
+        more.querySelector('button').addEventListener('click', () => {
+          const b = more.querySelector('button');
+          b.disabled = true; b.textContent = 'Loading…';
+          shopPage++;
+          injectDraftLots();
+        });
+      }
+      const b = more.querySelector('button');
+      b.disabled = false;
+      b.textContent = 'Load more · ' + Math.min(SHOP_PAGE, activeTotal - activeShown) + ' of ' + (activeTotal - activeShown) + ' left';
+      more.hidden = false;
+    } else if (more) { more.hidden = true; }
   }
 
-  // ----- Shop search (filters the For sale grid by toy / maker / line) -----
+  // ----- Shop search (matched in Postgres, so it finds lots that are not loaded) -----
   function applyShopSearch(){
     const input = document.getElementById('shopSearch'); if (!input) return;
-    const q = input.value.trim().toLowerCase();
-    const grid = document.querySelector('#collection .collection'); if (!grid) return;
-    // the promoted strip is filtered too, so a search never leaves stale ads on screen
-    const cards = document.querySelectorAll('#collection .artifact-card');
-    let shown = 0;
-    cards.forEach(c => { const match = !q || c.textContent.toLowerCase().includes(q); c.style.display = match ? '' : 'none'; if (match) shown++; });
-    const fstrip = document.getElementById('featuredStrip');
-    const fgrid = document.getElementById('featuredGrid');
-    if (fstrip && fgrid){
-      const fTotal = fgrid.querySelectorAll('.artifact-card').length;
-      const fShown = [...fgrid.querySelectorAll('.artifact-card')].filter(c => c.style.display !== 'none').length;
-      fstrip.hidden = !fTotal || !fShown;
-    }
-    const count = document.getElementById('shopCount'); if (count) count.textContent = cards.length ? (q ? shown + ' of ' + cards.length + ' lots' : cards.length + ' lots') : '';
-    const empty = document.getElementById('shopEmpty'); if (empty) empty.hidden = !(q && shown === 0);
+    const next = input.value.trim();
+    if (next === shopQuery) return;
+    shopQuery = next;
+    shopPage = 1;                 // a new search starts from the first page
+    injectDraftLots();
+  }
+  function queueShopSearch(){
+    clearTimeout(shopSearchTimer);
+    shopSearchTimer = setTimeout(applyShopSearch, 300);   // it hits the network now
   }
 
   // ----- Sold archive page (all past results) -----
@@ -3827,7 +3877,18 @@
     }
   }
   injectDraftLots();
-  (function(){ const ss = document.getElementById('shopSearch'); if (ss) ss.addEventListener('input', applyShopSearch); const qp = new URLSearchParams(location.search).get('q'); if (qp && ss) ss.value = qp; applyShopSearch(); const so = document.getElementById('shopSort'); if (so) so.addEventListener('change', () => { shopSort = so.value; injectDraftLots(); }); })();
+  (function(){
+    const ss = document.getElementById('shopSearch');
+    if (ss){
+      ss.addEventListener('input', queueShopSearch);
+      ss.addEventListener('search', applyShopSearch);          // the native clear button
+      ss.addEventListener('keydown', e => { if (e.key === 'Enter'){ clearTimeout(shopSearchTimer); applyShopSearch(); } });
+      const qp = new URLSearchParams(location.search).get('q');
+      if (qp){ ss.value = qp; shopQuery = qp.trim(); }
+    }
+    const so = document.getElementById('shopSort');
+    if (so) so.addEventListener('change', () => { shopSort = so.value; shopPage = 1; injectDraftLots(); });
+  })();
 
   // ----- Launch countdown in the beta ribbon -----
   (function(){
