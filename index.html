@@ -221,6 +221,18 @@
   .price-block .prnote { font-family:var(--label); font-size:11px; color:var(--ink-3); letter-spacing:.06em; }
   .buy-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
   .buy-row .btn { flex:1; min-width:170px; text-align:center; }
+  /* Buyer protection, collapsed by default so it informs without shouting */
+  .protect { margin-top:18px; border-top:1px solid var(--line); }
+  .protect-h { width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:none; border:0; padding:14px 0; cursor:pointer; color:var(--ink);
+    font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+  .protect-h:hover { color:var(--ink-2); }
+  .protect-x { font-family:var(--body); font-size:15px; color:var(--ink-3); line-height:1; }
+  .protect-list { list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .protect-list[hidden] { display:none; }
+  .protect-list li { display:flex; flex-direction:column; gap:3px; }
+  .protect-list b { font-family:var(--body); font-weight:600; font-size:13.5px; color:var(--ink); }
+  .protect-list span { font-family:var(--body); font-size:13px; line-height:1.6; color:var(--ink-3); }
   .trust { font-family:var(--label); font-size:11px; color:var(--ink-3); letter-spacing:.04em; margin-top:16px; line-height:1.7; }
   .trust b { color:var(--ink-2); font-weight:400; }
 
@@ -3248,6 +3260,19 @@
       '</div></article>';
   }
 
+  // Buyer protection. Every line is something we control or have insured,
+  // because a promise we cannot keep is worse than no promise. Transit damage is
+  // framed as a carrier claim we handle rather than a refund we fund: under CRD
+  // Art. 20 the risk stays with the seller until the buyer has the goods, so it
+  // cannot be disclaimed to a consumer, but the insurance is what pays for it.
+  const PROTECTION = [
+    ['Checked before it is listed', 'Every lot is identified, dated and condition-graded, with the maker\u2019s stamp photographed. Nothing goes up unexamined.'],
+    ['It arrives, or your money back', 'Posted tracked. If it never reaches you, you are refunded in full.'],
+    ['It matches the listing, or your money back', 'If what arrives is materially different from the description, send it back and you are refunded.'],
+    ['Transit damage is insured', 'Every parcel is insured. Tell us within 48 hours with photos, keep the packaging, and we handle the carrier claim for you.'],
+    ['You pay us, not a stranger', 'Card payment through Stripe. Your card details never reach the seller or us.']
+  ];
+
   // Shipping policy, stated in one place so the lot page, the Terms and the Sell
   // page cannot drift apart. EU consumer law wants the total price including
   // delivery shown before the order is placed, so this must always be visible
@@ -3736,6 +3761,10 @@
                   (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
                 '</div>'))) +
           '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 September 2026.' : 'This lot goes live on 1 September 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected and insured in transit.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.'))) + '</div>' +
+          '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
+            '<span>Buyer protection</span><span class="protect-x">+</span></button>' +
+            '<ul class="protect-list" hidden>' + PROTECTION.map(function(x){ return '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>'; }).join('') +
+          '</ul></div>' +
           ownerHtml + shipHtml + shipStatusHtml +
         '</div>' +
       '</div>';
@@ -3743,6 +3772,14 @@
       '<hr class="rule" /><section class="band"><div class="wrap"><div class="band-head"><div><div class="ey">Bid history</div><h2>' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') + '</h2></div></div>' +
       '<div class="bidhist">' + bids.map((b, i) => '<div class="bidrow"><span>' + (i === 0 ? 'Highest bid' : 'Bid') + '</span><span class="amt">' + money(b.amount) + '</span></div>').join('') + '</div></div></section>' : '';
     body.innerHTML = '<div class="art-top">' + gallery + detail + '</div>' + hist;
+    var pb = document.getElementById('lotProtect');
+    if (pb) pb.addEventListener('click', function(){
+      var list = pb.parentNode.querySelector('.protect-list');
+      var open = list.hidden;
+      list.hidden = !open;
+      pb.setAttribute('aria-expanded', open ? 'true' : 'false');
+      pb.querySelector('.protect-x').textContent = open ? '\u2013' : '+';
+    });
     let mainIdx = 0, ox = 0.5, oy = 0.5;
     const lotImg = document.getElementById('lotImg');
     const lotMain = document.getElementById('lotMain');
