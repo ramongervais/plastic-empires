@@ -2351,12 +2351,36 @@
   .watch-btn{ position:absolute; top:10px; right:10px; z-index:3; width:34px; height:34px; border-radius:8px; border:0; background:#131313; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:transform .1s ease, box-shadow .15s ease; }
   .watch-btn:hover{ transform:scale(1.08); box-shadow:0 3px 10px rgba(0,0,0,.28); }
   .watch-btn .wstar{ display:block; }
-  .shop-tools{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin:24px 0 8px; flex-wrap:wrap; }
-  .shop-search{ flex:1; min-width:220px; font-family:var(--body); font-size:15px; padding:12px 16px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); }
-  .shop-search:focus{ outline:none; border-color:var(--ink); }
-  .shop-sort{ font-family:var(--label); font-size:12px; letter-spacing:.04em; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); cursor:pointer; }
-  .shop-sort:focus{ outline:none; border-color:var(--ink); }
-  .shop-count{ font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap; }
+  /* Search, sort and the count are one control: a single border with hairline
+     dividers, so they read as connected rather than three loose boxes. */
+  .shop-tools{ display:flex; align-items:stretch; gap:0; margin:24px 0 8px;
+    border:1px solid var(--line); border-radius:3px; background:var(--paper); }
+  .shop-tools:focus-within{ border-color:var(--ink); }
+  .shop-search{ flex:1; min-width:0; font-family:var(--body); font-size:15px; padding:13px 16px;
+    border:0; border-radius:3px 0 0 3px; background:transparent; color:var(--ink); }
+  .shop-search:focus{ outline:none; }
+  /* appearance:none so the chevron is ours and can be given real breathing room;
+     the native one sits hard against the edge with no way to inset it. */
+  .shop-sort{ font-family:var(--label); font-size:12px; letter-spacing:.04em;
+    padding:13px 42px 13px 16px; border:0; border-left:1px solid var(--line); border-radius:0;
+    background-color:transparent; color:var(--ink); cursor:pointer;
+    -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23131313' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 16px center; background-size:11px 8px; }
+  :root[data-theme="dark"] .shop-sort{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .shop-sort:focus{ outline:none; }
+  .shop-sort:hover{ color:var(--ink); }
+  .shop-count{ display:flex; align-items:center; white-space:nowrap; padding:0 16px;
+    border-left:1px solid var(--line);
+    font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .shop-count:empty{ display:none; }   /* no stray divider before there are lots */
+  @media (max-width:600px){
+    .shop-tools{ flex-direction:column; align-items:stretch; }
+    .shop-search{ border-radius:3px 3px 0 0; }
+    .shop-sort{ border-left:0; border-top:1px solid var(--line); }
+    .shop-count{ border-left:0; border-top:1px solid var(--line); padding:12px 16px; }
+  }
   @media (max-width:600px){ .shop-search{ flex:1 1 100%; } .shop-sort{ flex:1 1 auto; } }
   .shop-empty{ font-family:var(--body); color:var(--ink-3); padding:8px 0 28px; }
   .acct-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:8px 0 28px; }
