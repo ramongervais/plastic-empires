@@ -466,6 +466,10 @@
   .calc-row.total { border-bottom:0; border-top:2px solid var(--ink); margin-top:6px; padding-top:14px; font-weight:600; color:var(--ink); font-size:16px; }
   .calc-note { font-family:var(--body); font-size:13px; line-height:1.65; color:var(--ink-3); margin:16px 0 0; }
   @media (max-width:820px){ .calc { grid-template-columns:1fr; gap:24px; } }
+  .ship-hint { font-family:var(--body); font-size:12.5px; line-height:1.6; color:var(--ink-3); margin:-4px 0 12px; }
+  .ship-hint b { color:var(--ink-2); font-weight:600; }
+  .hint-apply { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; background:var(--ink); color:var(--paper); border:0; border-radius:2px; padding:4px 8px; cursor:pointer; }
+  .hint-apply:hover { opacity:.85; }
   .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
   .price-err[hidden] { display:none; }
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
@@ -2771,13 +2775,30 @@
   // 14.45 UK from-price, and the import columns are estimates because a foreign
   // seller uses a carrier we do not control. One table, so rates change in one place.
   const SHIP_BANDS = [
-    { label: 'Up to 0.5 kg', nl: 6.95,  eu: 10, uk: 14, row: 20 },
-    { label: '0.5 to 1 kg',  nl: 6.95,  eu: 12, uk: 17, row: 23 },
-    { label: '1 to 2 kg',    nl: 6.95,  eu: 15, uk: 20, row: 27 },
-    { label: '2 to 5 kg',    nl: 6.95,  eu: 20, uk: 26, row: 35 },
-    { label: '5 to 10 kg',   nl: 6.95,  eu: 25, uk: 33, row: 50 },
-    { label: '10 to 20 kg',  nl: 16.95, eu: 35, uk: 45, row: 70 }
+    { label: 'Up to 0.5 kg', max: 0.5, nl: 6.95,  eu: 10, uk: 14, row: 20 },
+    { label: '0.5 to 1 kg', max: 1, nl: 6.95,  eu: 12, uk: 17, row: 23 },
+    { label: '1 to 2 kg', max: 2, nl: 6.95,  eu: 15, uk: 20, row: 27 },
+    { label: '2 to 5 kg', max: 5, nl: 6.95,  eu: 20, uk: 26, row: 35 },
+    { label: '5 to 10 kg', max: 10, nl: 6.95,  eu: 25, uk: 33, row: 50 },
+    { label: '10 to 20 kg', max: 20, nl: 16.95, eu: 35, uk: 45, row: 70 }
   ];
+  // the band a given weight falls into, clamped to the heaviest
+  const bandFor = kg => SHIP_BANDS.filter(b => Number(kg) <= b.max)[0] || SHIP_BANDS[SHIP_BANDS.length - 1];
+
+  // Where a seller posts from. It decides their real postage and, for a buyer,
+  // whether a purchase is an EU movement or a customs import, so it is not optional.
+  const COUNTRIES = [
+    ['NL','Netherlands'],['BE','Belgium'],['DE','Germany'],['FR','France'],['ES','Spain'],['IT','Italy'],
+    ['PT','Portugal'],['AT','Austria'],['IE','Ireland'],['LU','Luxembourg'],['DK','Denmark'],['SE','Sweden'],
+    ['FI','Finland'],['PL','Poland'],['CZ','Czechia'],['SK','Slovakia'],['SI','Slovenia'],['HU','Hungary'],
+    ['RO','Romania'],['BG','Bulgaria'],['HR','Croatia'],['GR','Greece'],['EE','Estonia'],['LV','Latvia'],
+    ['LT','Lithuania'],['MT','Malta'],['CY','Cyprus'],
+    ['GB','United Kingdom'],['CH','Switzerland'],['NO','Norway'],
+    ['US','United States'],['CA','Canada'],['JP','Japan'],['AU','Australia'],['NZ','New Zealand'],['OTHER','Somewhere else']
+  ];
+  const EU27 = ['NL','BE','DE','FR','ES','IT','PT','AT','IE','LU','DK','SE','FI','PL','CZ','SK','SI','HU','RO','BG','HR','GR','EE','LV','LT','MT','CY'];
+  const countryName = c => (COUNTRIES.filter(x => x[0] === c)[0] || ['', ''])[1];
+
   const IMPORT = { vat: 0.21, lowValueDuty: 3, lowValueCeiling: 150, euHandlingFrom2026: 2 };
   const ZONES = [
     { key: 'nl',  name: 'Netherlands',            customs: false },
@@ -3170,6 +3191,7 @@
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
         auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
         shipping_eur: Number(current.shipping || 0),
+        weight_kg: current.weightKg == null ? null : Number(current.weightKg),
       };
     }
 
@@ -3268,6 +3290,14 @@
       });
       document.getElementById('submitLot').addEventListener('click', async () => {
         if (SB && !authUser) { openAuth(); return; }
+        if (SB && authUser){
+          const pr = await SB.from('profiles').select('country').eq('id', authUser.id).maybeSingle();
+          if (!pr.error && (!pr.data || !pr.data.country)){
+            openModal('One thing first', 'We need to know where you post from.',
+              'Your country decides what postage costs you, and tells a buyer whether their order is an EU movement or a customs import. Set it under "Where you post from" in your account, then publish.');
+            return;
+          }
+        }
         const stop = priceProblem(current);
         if (stop){ openModal('Check the prices', 'That combination would cost you money.', stop); return; }
         if (SB && authUser) {
@@ -3353,12 +3383,31 @@
         efArea('Completeness', 'e_completeness', c.completeness, 'What is and is not in the box. Name every missing accessory. Buyers forgive a missing blaster they were told about, not one they discover.') +
         '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
-        '<div class="ef-row">' + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + ef('Shipping €', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
-        efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') +
+        '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
+        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding. We use it to suggest what postage will cost you, so you are not guessing.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
+        '<div class="ship-hint" id="shipHint"></div>' +
         efArea('Notes', 'e_notes', c.notes, 'Anything a buyer needs to know: repairs, repaints, replaced parts, smells, provenance. This is where trust is won.') +
         '<div class="price-err" id="priceErr" hidden></div>' +
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
       setCard(html, false);
+      (function(){
+        const w = document.getElementById('e_weight'), sh = document.getElementById('e_ship'), hint = document.getElementById('shipHint');
+        if (!w || !hint) return;
+        function draw(){
+          const kg = parseFloat(w.value);
+          if (!kg || kg <= 0){ hint.innerHTML = 'Enter a packed weight and we will suggest what postage costs.'; return; }
+          const b = bandFor(kg);
+          hint.innerHTML = 'At ' + kg + ' kg that is <b>' + b.label.toLowerCase() + '</b>: about ' + eur(b.nl) +
+            ' within the Netherlands and ' + eur(b.eu) + ' to the EU. You charge one amount for both, so ' +
+            '<button type="button" class="hint-apply" data-v="' + b.eu + '">use ' + eur(b.eu) + '</button> to stay whole.';
+        }
+        w.addEventListener('input', draw);
+        hint.addEventListener('click', function(e){
+          const btn = e.target.closest('.hint-apply'); if (!btn) return;
+          sh.value = btn.dataset.v; draw();
+        });
+        draw();
+      })();
       document.getElementById('saveLot').addEventListener('click', () => {
         const g = id => document.getElementById(id).value.trim();
         const num = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? undefined : v; };
@@ -3366,7 +3415,7 @@
           toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'),
-          reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'),
+          reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'), weightKg: num('e_weight'),
           notes: g('e_notes'),
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
@@ -3795,7 +3844,7 @@
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
-      SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending,plan,tokens').eq('id', uid).single(),
+      SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending,plan,tokens,country').eq('id', uid).single(),
       SB.from('watchlist').select('lot_id').eq('user_id', uid),
       SB.from('lots').select(sel).eq('buyer_id', uid).order('created_at', { ascending: false }),
       SB.from('reviews').select('lot_id').eq('reviewer_id', uid),
@@ -3861,6 +3910,14 @@
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
       '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
+      '<div class="acct-sec"><div class="h">Where you post from</div>' +
+        '<div class="acct-empty" style="padding-bottom:12px">We use this to work out your postage, and to tell buyers whether an order is an EU movement or a customs import. Required before you can list.</div>' +
+        '<label class="ef" style="max-width:320px"><span>Country</span><select class="ei" id="acctCountry">' +
+          '<option value="">Choose your country…</option>' +
+          COUNTRIES.map(function(c){ return '<option value="' + c[0] + '"' + (prefs.country === c[0] ? ' selected' : '') + '>' + e(c[1]) + '</option>'; }).join('') +
+        '</select></label>' +
+        '<div class="acct-empty" id="acctCountryMsg"></div>' +
+      '</div>' +
       '<div class="acct-sec"><div class="h">Drafts</div>' + draftsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
@@ -3875,6 +3932,13 @@
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
     const mUp = document.getElementById('mUpgrade'); if (mUp) mUp.addEventListener('click', () => goCheckout(SUBSCRIBE_URL));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
+    var cSel = document.getElementById('acctCountry');
+    if (cSel) cSel.addEventListener('change', async function(){
+      var msg = document.getElementById('acctCountryMsg');
+      var res = await SB.from('profiles').update({ country: cSel.value || null }).eq('id', uid);
+      msg.textContent = res.error ? ('Could not save: ' + res.error.message)
+        : (cSel.value ? 'Saved. You post from ' + countryName(cSel.value) + '.' : 'Cleared.');
+    });
     body.querySelectorAll('[data-draft-open]').forEach(b => b.addEventListener('click', async () => {
       const { data, error } = await SB.from('lot_drafts').select('id,payload,image_urls').eq('id', b.dataset.draftOpen).maybeSingle();
       if (error || !data){ openModal('Could not open the draft', 'It may have been deleted.', String((error && error.message) || 'Not found')); return; }
@@ -4054,6 +4118,7 @@
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
+          (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
           row('Shipping', SHIPPING.line(lot.shipping_eur)) +
         '</div>' +
         '<div class="auction">' +
