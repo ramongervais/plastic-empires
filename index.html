@@ -2337,7 +2337,8 @@
         <p>Placement affects only where a lot is displayed. It does not change the lot, the reserve, the bidding, the commission or the outcome of a sale, and it gives no preference in any dispute. We do not guarantee views, bids, a sale or any particular result. We may refuse, reschedule or withdraw a placement, including where a lot is removed, breaches clause 4 or 13, or where the promoted strip is oversubscribed; if we withdraw a paid placement before it has run we refund the unused part. Once a placement has started, fees for it are otherwise non-refundable. Fees for placement are for an advertising service and are charged separately from seller commission.</p>
         <p><b>How lots are ranked.</b> In the shop, lots are ordered by the sort you choose (newest, ending soon, or price), and within the promoted strip by the order we set. Apart from the promoted strip, payment does not influence ranking: no plan, fee or membership moves a lot up the normal listings. The promoted strip is the only placement that can be paid for, and it is always labelled as such.</p>
         <div class="terms-h">8 · Shipping, loss and damage</div>
-        <p><b>Shipping is included in the price shown.</b> The price you see at checkout is the total: we do not add postage afterwards and we do not invoice it separately. We currently ship to the Netherlands and the EU only, tracked and insured. If you are outside that area, contact us before bidding.</p>
+        <p><b>Every lot states its shipping cost, and the checkout total is what you pay.</b> A lot either includes postage in its price or shows a shipping amount, which is added once at checkout as part of the same payment. We never add postage afterwards and never invoice it separately. We currently ship to the Netherlands and the EU only, tracked and insured. If you are outside that area, contact us before bidding.</p>
+        <p>Sellers set the shipping amount to what posting the item actually costs them, up to a cap. <b>Commission is charged on the total including shipping</b>, so inflating postage to lower a headline price gains a Seller nothing, and doing so is fee circumvention under clause 13.</p>
         <p>The Seller packs and dispatches promptly after payment, using a tracked and insured service. Sellers should account for postage when setting a starting bid or a fixed price, since it cannot be charged on top.</p>
         <p><b>Risk in transit.</b> Where you buy as a consumer, the risk of loss or damage in transit stays with us until you take physical possession of the item, as Dutch and EU consumer law requires. Every parcel is insured. If an item arrives damaged, tell us <b>within 48 hours</b> with photographs and keep the packaging so the carrier claim can be made: the insurer requires both, and without them a claim may be refused. If an item does not arrive at all, you are refunded in full. Between businesses, risk passes on dispatch.</p>
 
@@ -2995,6 +2996,7 @@
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
         auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
+        shipping_eur: Number(current.shipping || 0),
       };
     }
 
@@ -3058,7 +3060,7 @@
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
           (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
-          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None')) + '</div>' +
+          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) + row('Shipping', Number(c.shipping||0) > 0 ? eur(c.shipping) + ' added at checkout' : 'Included in your price') : 'None')) + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
@@ -3145,6 +3147,9 @@
         return 'Buy now (' + eur(buy) + ') is below the starting bid (' + eur(bid) + '). A buyer would skip the auction and take it for the lower price. Raise Buy now above the starting bid, or clear it.';
       if (!fixed && c.reserve != null && Number(c.reserve) > 0 && buy != null && buy > 0 && Number(c.reserve) > buy)
         return 'The reserve (' + eur(c.reserve) + ') is above Buy now (' + eur(buy) + '), so a Buy-now sale would fall below your own minimum. Lower the reserve or raise Buy now.';
+      const ship = c.shipping == null ? 0 : Number(c.shipping);
+      if (ship < 0) return 'Shipping cannot be negative.';
+      if (ship > SHIPPING.MAX) return 'Shipping of ' + SHIPPING.eur(ship) + ' is above the ' + SHIPPING.eur(SHIPPING.MAX) + ' cap. Postage is not a hidden fee: if it genuinely costs more than that, contact us.';
       if (bid < 0 || (buy != null && buy < 0)) return 'Prices cannot be negative.';
       return null;
     }
@@ -3175,7 +3180,8 @@
         efArea('Completeness', 'e_completeness', c.completeness, 'What is and is not in the box. Name every missing accessory. Buyers forgive a missing blaster they were told about, not one they discover.') +
         '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
-        '<div class="ef-row">' + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
+        '<div class="ef-row">' + ef('Buy now € (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + ef('Shipping €', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
+        efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') +
         efArea('Notes', 'e_notes', c.notes, 'Anything a buyer needs to know: repairs, repaints, replaced parts, smells, provenance. This is where trust is won.') +
         '<div class="price-err" id="priceErr" hidden></div>' +
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
@@ -3187,7 +3193,7 @@
           toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'),
-          reserve: num('e_reserve'), buyNow: num('e_buynow'),
+          reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'),
           notes: g('e_notes'),
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
@@ -3413,11 +3419,13 @@
   // delivery shown before the order is placed, so this must always be visible
   // and must never be invoiced afterwards.
   const SHIPPING = {
-    included: true,                                  // included in the price
     zones: 'Netherlands and the EU',
     detail: 'Tracked and insured',
-    label: function(){ return this.included ? 'Included in the price' : 'Calculated at checkout'; },
-    line: function(){ return this.label() + ' · ' + this.detail + ' · ' + this.zones; }
+    MAX: 60,                          // sanity cap; postage is not a hidden fee
+    eur: function(n){ return '€ ' + Number(n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+    // A lot with no amount set ships free, so nothing changes for existing lots.
+    label: function(n){ return Number(n || 0) > 0 ? this.eur(n) : 'Included in the price'; },
+    line: function(n){ return this.label(n) + ' · ' + this.detail + ' · ' + this.zones; }
   };
 
   const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
@@ -3873,7 +3881,7 @@
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
-          row('Shipping', SHIPPING.line()) +
+          row('Shipping', SHIPPING.line(lot.shipping_eur)) +
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
@@ -3895,6 +3903,10 @@
                   '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
                   (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
                 '</div>'))) +
+          (Number(lot.shipping_eur || 0) > 0 && !ended
+            ? '<div class="ship-total">' + SHIPPING.eur(lot.shipping_eur) + ' shipping is added at checkout' +
+              (isFixed ? ', so you pay ' + SHIPPING.eur(Number(fixedPrice) + Number(lot.shipping_eur)) + ' in total' : '') + '.</div>'
+            : '') +
           '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 September 2026.' : 'This lot goes live on 1 September 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected and insured in transit.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.'))) + '</div>' +
           '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
             '<span>Buyer protection</span><span class="protect-x">+</span></button>' +

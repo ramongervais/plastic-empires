@@ -25,9 +25,9 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - One token = one listing. Extra token packs can be bought at any time.
 
 ## Shipping
-- Included in the price. The checkout total is the total; postage is never added afterwards or invoiced separately.
+- Every lot states its shipping cost. A lot either includes postage in its price or shows an amount, added once at checkout in the same payment. The checkout total is the total; postage is never added afterwards or invoiced separately.
 - Tracked and insured, to the Netherlands and the EU. Buyers elsewhere should ask before bidding.
-- Sellers factor postage into their starting bid or fixed price.
+- Sellers set the amount to what posting actually costs them, up to a cap. Commission is charged on the total including shipping, so inflating postage gains a seller nothing.
 
 ## Launch
 - The public auctions open on 1 September 2026. Before then, lots appear in Preview and early sign-ups are welcome.
