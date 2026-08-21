@@ -1,13 +1,13 @@
 # Hammer & Mold
 
-> An auction house for original vintage toys. Sellers upload photos; our AI identifies, dates, grades and validates each toy; buyers bid. Kenner Star Wars, The Real Ghostbusters, Japanese kaiju and more. Worldwide, insured.
+> An auction house for original vintage toys. Sellers upload photos; our AI identifies, dates, grades and validates each toy; buyers bid. Kenner Star Wars, The Real Ghostbusters, Japanese kaiju and more. Shipping included, tracked and insured, across the EU.
 
 Hammer & Mold is a curated, auction-first marketplace for genuine vintage collectible toys, based in the Netherlands. Every lot is identified, condition-graded and told: the toy, the maker, and the story behind it. Only genuine collectibles are accepted; prohibited or non-toy items are rejected automatically.
 
 ## How it works
 - Sellers upload a few clear photos, including a close-up of the maker's stamp (molded year, country and factory markings).
 - AI curation writes the listing, dates the year and line, grades condition, flags variants and proposes a fair starting bid.
-- Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely; sellers ship worldwide, insured. Buyers can review sellers after a purchase.
+- Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely. Shipping is included in the price shown, tracked and insured, to the Netherlands and the EU. Buyers can review sellers after a purchase.
 
 ## The Molders (makers)
 - Kenner (Cincinnati) - Star Wars 1977-1985, The Real Ghostbusters 1986-1991
@@ -23,6 +23,11 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, and featured placement included (one lot promoted at the top of the shop at a time, up to 7 days per lot). Early-bird pricing for the first six months.
 - Featured placement is advertising and is always labelled as a paid promotion. It changes only where a lot appears, never the bidding, the commission or the outcome. Outside the promoted strip, payment does not influence ranking.
 - One token = one listing. Extra token packs can be bought at any time.
+
+## Shipping
+- Included in the price. The checkout total is the total; postage is never added afterwards or invoiced separately.
+- Tracked and insured, to the Netherlands and the EU. Buyers elsewhere should ask before bidding.
+- Sellers factor postage into their starting bid or fixed price.
 
 ## Launch
 - The public auctions open on 1 September 2026. Before then, lots appear in Preview and early sign-ups are welcome.
