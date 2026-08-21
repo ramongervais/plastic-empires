@@ -447,6 +447,25 @@
   .sold-count { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 20px; }
   .shop-more { display:flex; justify-content:center; margin-top:34px; }
   .shop-more[hidden] { display:none; }
+  .zone-list { list-style:none; padding:0; margin:14px 0 0; display:flex; flex-direction:column; gap:12px; }
+  .zone-list li { display:flex; flex-direction:column; gap:2px; font-family:var(--body); }
+  .zone-list b { font-size:14.5px; }
+  .zone-list span { font-size:14px; line-height:1.6; color:var(--ink-3); }
+  .calc-eg { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink-2); border-left:2px solid var(--ink); padding-left:14px; margin-top:16px; }
+  .tbl-wrap { overflow-x:auto; margin-top:22px; }
+  .ship-table { width:100%; border-collapse:collapse; font-family:var(--body); font-size:13.5px; min-width:760px; }
+  .ship-table th { font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:400; text-align:left; padding:0 14px 10px 0; border-bottom:1px solid var(--ink); vertical-align:bottom; }
+  .ship-table td { padding:12px 14px 12px 0; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  .ship-table tbody tr:hover { background:var(--paper-2); }
+  .calc { display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:start; }
+  .calc-form { display:flex; flex-direction:column; gap:14px; }
+  .calc-out { border:1px solid var(--line); padding:24px; }
+  .calc-rows { display:flex; flex-direction:column; }
+  .calc-row { display:flex; justify-content:space-between; gap:16px; padding:11px 0; border-bottom:1px solid var(--line-2); font-family:var(--body); font-size:14px; color:var(--ink-2); }
+  .calc-row .num { font-variant-numeric:tabular-nums; color:var(--ink); }
+  .calc-row.total { border-bottom:0; border-top:2px solid var(--ink); margin-top:6px; padding-top:14px; font-weight:600; color:var(--ink); font-size:16px; }
+  .calc-note { font-family:var(--body); font-size:13px; line-height:1.65; color:var(--ink-3); margin:16px 0 0; }
+  @media (max-width:820px){ .calc { grid-template-columns:1fr; gap:24px; } }
   .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
   .price-err[hidden] { display:none; }
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
@@ -2299,6 +2318,83 @@
   </section>
 </main>
 
+<main class="view" id="view-help" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Shipping &amp; import</span></div>
+    <section class="empire-hero">
+      <div class="ey">Help</div>
+      <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Shipping &amp; import</h1>
+      <div class="empire-dek">What a parcel costs to send, and what a purchase from abroad really costs you.</div>
+    </section>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="story" style="margin:0; max-width:74ch">
+        <div class="terms-draft"><b>Estimates, not quotes.</b> The figures below are indicative, for working out roughly what something will cost. The only binding number is the shipping amount shown on a lot and charged at checkout.</div>
+
+        <div class="terms-h">The four zones</div>
+        <p>Shipping and customs do not follow the same map, which is where most people go wrong. <b>Europe is not the EU.</b> The United Kingdom, Switzerland and Norway are in Europe but sit outside the EU customs union, so a parcel from any of them is a customs import even though PostNL groups the UK into a nearby shipping zone. We therefore use four:</p>
+        <ul class="zone-list">
+          <li><b>Netherlands</b> <span>Domestic. No customs, ever.</span></li>
+          <li><b>EU</b> <span>The 27 member states. Free circulation, so no duty and no import VAT.</span></li>
+          <li><b>UK / Europe non-EU</b> <span>United Kingdom, Switzerland, Norway. Near for shipping, foreign for customs.</span></li>
+          <li><b>Rest of world</b> <span>Everywhere else, including the US and Japan.</span></li>
+        </ul>
+
+        <div class="terms-h">Estimated shipping by weight</div>
+        <p>Sending from the Netherlands, and receiving into the Netherlands. Domestic is a real PostNL price. The rest are working estimates, because a seller in Osaka or Ohio uses a carrier we do not control.</p>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="ship-table">
+          <thead><tr><th>Weight</th><th>NL to NL</th><th>NL to EU</th><th>NL to UK / non-EU Europe</th><th>NL to rest of world</th><th>Into NL from EU</th><th>Into NL from outside EU</th></tr></thead>
+          <tbody id="shipTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="story" style="margin:34px 0 0; max-width:74ch">
+        <div class="terms-h">Buying from inside the EU</div>
+        <p>Simple. The goods are already in free circulation, so there is no duty and no import VAT to pay on arrival.</p>
+        <p class="calc-eg">item + shipping = what you pay. A &euro;50 figure from France with &euro;12 postage costs you &euro;62.</p>
+
+        <div class="terms-h">Buying from outside the EU</div>
+        <p>This is where a bargain stops being one. Four things can land on top of the item and the postage:</p>
+        <ul class="zone-list">
+          <li><b>Import VAT</b> <span>21% Dutch VAT, charged on the customs value, which includes the shipping.</span></li>
+          <li><b>Customs duty</b> <span>Since <b>1 July 2026</b> the EU has abolished the old &euro;150 duty relief. A flat <b>&euro;3 per goods category</b> applies to consignments of &euro;150 or less, an interim measure running to 1 July 2028. Above &euro;150, normal duty applies according to the commodity code.</span></li>
+          <li><b>Handling</b> <span>The carrier charges its own clearance fee. A further <b>&euro;2 per consignment</b> EU handling fee is due in November 2026.</span></li>
+          <li><b>The exchange rate</b> <span>Whatever your card issuer decides to add.</span></li>
+        </ul>
+        <p class="calc-eg">item + shipping + import VAT + duty + handling = landed cost. A &euro;100 Godzilla from Japan with &euro;23 postage lands nearer &euro;155 than &euro;123.</p>
+
+        <div class="terms-h">Selling from the Netherlands</div>
+        <p>Your buyer pays the item plus the shipping shown on the lot, in one payment. If they are outside the EU their own country may then charge them import VAT, duty and handling on arrival, which is theirs to pay and not something we can quote for them. Business exports from the Netherlands can be zero-rated for Dutch VAT where the conditions are met, which is a question for an accountant rather than for us.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Work it out</div><h2>Cost calculator</h2></div>
+        <p>Pick a direction, a zone and a weight. Buying gives you the landed cost. Selling gives you the figure to put in a lot's shipping field.</p>
+      </div>
+      <div class="calc">
+        <div class="calc-form">
+          <label class="ef"><span>I am</span>
+            <select class="ei" id="cDir"><option value="buy">Buying, into the Netherlands</option><option value="sell">Selling, from the Netherlands</option></select></label>
+          <label class="ef"><span>Zone</span><select class="ei" id="cZone"></select></label>
+          <label class="ef"><span>Weight</span><select class="ei" id="cWeight"></select></label>
+          <label class="ef"><span>Item price &euro;</span><input class="ei" id="cValue" type="number" min="0" step="0.01" value="50"></label>
+          <label class="ef" id="cHandleWrap"><span>Carrier handling &euro;</span><input class="ei" id="cHandle" type="number" min="0" step="0.01" value="12.50"></label>
+        </div>
+        <div class="calc-out" id="calcOut"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
 <main class="view" id="view-terms" hidden>
   <div class="wrap">
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Terms</span></div>
@@ -2454,6 +2550,7 @@
         <span class="h">Contact</span>
         <span>hammerandmold.com</span>
         <span>EU shipping, included</span>
+        <a data-nav="help">Shipping &amp; import</a>
         <a data-nav="terms">Terms &amp; Conditions</a>
         <a data-nav="privacy">Privacy Policy</a>
       </div>
@@ -2627,7 +2724,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -2661,12 +2758,88 @@
     if (dest === 'lot'){ e.preventDefault(); openLot(nav.dataset.lot); return; }
     if (dest === 'sold'){ e.preventDefault(); renderSold(); show('sold'); return; }
     if (dest === 'account'){ e.preventDefault(); renderAccount(); return; }
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'imperial' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy'){
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'imperial' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy' || dest === 'help'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
     }
   });
+
+  // ---- Shipping and import estimates (help page only, never a checkout rate) ----
+  // Domestic is a real PostNL 2026 price. Export EU / rest-of-world come from
+  // Ramon's research. The UK column is interpolated between them, anchored on the
+  // 14.45 UK from-price, and the import columns are estimates because a foreign
+  // seller uses a carrier we do not control. One table, so rates change in one place.
+  const SHIP_BANDS = [
+    { label: 'Up to 0.5 kg', nl: 6.95,  eu: 10, uk: 14, row: 20 },
+    { label: '0.5 to 1 kg',  nl: 6.95,  eu: 12, uk: 17, row: 23 },
+    { label: '1 to 2 kg',    nl: 6.95,  eu: 15, uk: 20, row: 27 },
+    { label: '2 to 5 kg',    nl: 6.95,  eu: 20, uk: 26, row: 35 },
+    { label: '5 to 10 kg',   nl: 6.95,  eu: 25, uk: 33, row: 50 },
+    { label: '10 to 20 kg',  nl: 16.95, eu: 35, uk: 45, row: 70 }
+  ];
+  const IMPORT = { vat: 0.21, lowValueDuty: 3, lowValueCeiling: 150, euHandlingFrom2026: 2 };
+  const ZONES = [
+    { key: 'nl',  name: 'Netherlands',            customs: false },
+    { key: 'eu',  name: 'EU',                     customs: false },
+    { key: 'uk',  name: 'UK / Europe non-EU',     customs: true  },
+    { key: 'row', name: 'Rest of world',          customs: true  }
+  ];
+
+  // ----- Shipping & import help page -----
+  (function(){
+    const body = document.getElementById('shipTableBody');
+    if (!body) return;
+    const eur = n => '\u20ac ' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    body.innerHTML = SHIP_BANDS.map(b =>
+      '<tr><td><b>' + b.label + '</b></td><td>' + eur(b.nl) + '</td><td>' + eur(b.eu) + '</td><td>' + eur(b.uk) +
+      '</td><td>' + eur(b.row) + '</td><td>' + eur(b.eu) + '</td><td>' + eur(b.row) + '</td></tr>').join('');
+
+    const dir = document.getElementById('cDir'), zone = document.getElementById('cZone'),
+          wt = document.getElementById('cWeight'), val = document.getElementById('cValue'),
+          hand = document.getElementById('cHandle'), handWrap = document.getElementById('cHandleWrap'),
+          out = document.getElementById('calcOut');
+    if (!dir) return;
+    zone.innerHTML = ZONES.map(z => '<option value="' + z.key + '">' + z.name + '</option>').join('');
+    wt.innerHTML = SHIP_BANDS.map((b, i) => '<option value="' + i + '">' + b.label + '</option>').join('');
+    zone.value = 'eu';
+
+    function calc(){
+      const z = ZONES.filter(x => x.key === zone.value)[0];
+      const band = SHIP_BANDS[+wt.value] || SHIP_BANDS[0];
+      const ship = band[z.key];
+      const item = Math.max(0, Number(val.value) || 0);
+      const buying = dir.value === 'buy';
+      handWrap.hidden = !(buying && z.customs);
+      const rows = [];
+      rows.push(['Item', item]);
+      rows.push([buying ? 'Shipping to you' : 'Shipping you charge', ship]);
+      let total = item + ship;
+      if (buying && z.customs){
+        const vat = (item + ship) * IMPORT.vat;
+        const duty = (item + ship) <= IMPORT.lowValueCeiling ? IMPORT.lowValueDuty : 0;
+        const handling = Math.max(0, Number(hand.value) || 0) + IMPORT.euHandlingFrom2026;
+        rows.push(['Import VAT at 21%', vat]);
+        rows.push([(item + ship) <= IMPORT.lowValueCeiling
+          ? 'Customs duty, flat rate under \u20ac150'
+          : 'Customs duty, by commodity code', duty]);
+        rows.push(['Handling, carrier plus the \u20ac2 EU fee', handling]);
+        total = item + ship + vat + duty + handling;
+      }
+      const note = buying
+        ? (z.customs
+            ? 'Above \u20ac150 the flat \u20ac3 does not apply and real duty is charged on the commodity code, which for toys is usually low but is not zero. Treat this as a floor.'
+            : 'Inside the EU there is no duty and no import VAT, so this is the whole cost.')
+        : 'This is what to put in the lot\u2019s shipping field. Your buyer pays item plus shipping as one payment. Outside the EU they may then owe import charges of their own, which are theirs to pay.';
+      out.innerHTML =
+        '<div class="calc-rows">' + rows.map(r =>
+          '<div class="calc-row"><span>' + r[0] + '</span><span class="num">' + eur(r[1]) + '</span></div>').join('') +
+        '<div class="calc-row total"><span>' + (buying ? 'Estimated landed cost' : 'Buyer pays') + '</span><span class="num">' + eur(total) + '</span></div></div>' +
+        '<p class="calc-note">' + note + '</p>';
+    }
+    [dir, zone, wt, val, hand].forEach(el => { el.addEventListener('input', calc); el.addEventListener('change', calc); });
+    calc();
+  })();
 
   // ----- Film -> commercial -----
   document.querySelectorAll('.film').forEach(f => f.addEventListener('click', () => window.open(COMMERCIAL, '_blank', 'noopener')));
