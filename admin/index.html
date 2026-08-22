@@ -169,6 +169,7 @@
     <div class="tabs" id="tabs">
       <button class="tab on" data-sec="featured" type="button">Featured ads</button>
       <button class="tab" data-sec="sellers" type="button">Sellers</button>
+      <button class="tab" data-sec="lots" type="button">Lots</button>
       <button class="tab" data-sec="calibration" type="button">Calibration</button>
       <button class="tab" data-sec="settings" type="button">Site settings</button>
     </div>
@@ -280,6 +281,72 @@
         </table>
       </div>
       <div class="empty" id="sEmpty" hidden>No profiles yet.</div>
+    </section>
+
+    <!-- ---------- Lots ---------- -->
+    <!-- Editing a live listing in place. Deleting and re-creating loses the lot
+         id, the bids, the watchers and the calibration row, which is far too
+         much to pay for a typo. Commercial terms lock once a bid exists: a
+         seller who changes the price under people who have already bid is a
+         different thing from a seller who fixes a description. -->
+    <section class="sec" id="sec-lots" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">The shop</div>
+          <h1>Lots</h1>
+        </div>
+        <p>Edit a listing without taking it down. Descriptions, condition, notes and shipping can be changed at any time. Price and auction length lock the moment a lot has a bid, because changing the terms under someone who has already bid is not an edit.</p>
+      </div>
+
+      <div class="msg" id="lMsg" hidden></div>
+
+      <div class="tiles">
+        <div class="tile"><div class="k">Live</div><div class="v num" id="tLotsLive">0</div><div class="s">open for bidding</div></div>
+        <div class="tile"><div class="k">Preview</div><div class="v num" id="tLotsPrev">0</div><div class="s">before launch</div></div>
+        <div class="tile"><div class="k">Not sold</div><div class="v num" id="tLotsUnsold">0</div><div class="s">relistable</div></div>
+        <div class="tile"><div class="k">Closed</div><div class="v num" id="tLotsClosed">0</div><div class="s">sold or awaiting payment</div></div>
+      </div>
+
+      <div class="form" id="lotEditBox" hidden>
+        <h2 id="lotEditTitle">Edit lot</h2>
+        <div class="fgrid">
+          <div><label class="f" for="le_toy">Toy</label><input class="f" id="le_toy"></div>
+          <div><label class="f" for="le_maker">Maker</label><input class="f" id="le_maker"></div>
+          <div><label class="f" for="le_line">Line</label><input class="f" id="le_line"></div>
+          <div><label class="f" for="le_year">Year</label><input class="f" id="le_year"></div>
+          <div>
+            <label class="f" for="le_condition">Condition</label>
+            <select class="f" id="le_condition">
+              <option value="">—</option><option>Mint</option><option>Near mint</option>
+              <option>Excellent</option><option>Good</option><option>Fair</option><option>Poor</option>
+            </select>
+          </div>
+          <div><label class="f" for="le_ship">Shipping &euro;</label><input class="f" id="le_ship" type="number" step="0.01" min="0"></div>
+          <div><label class="f" for="le_weight">Weight kg</label><input class="f" id="le_weight" type="number" step="0.1" min="0"></div>
+          <div><label class="f" for="le_start">Starting bid &euro;</label><input class="f" id="le_start" type="number" step="1" min="0"></div>
+          <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
+          <div><label class="f" for="le_buynow">Buy now &euro;</label><input class="f" id="le_buynow" type="number" step="1" min="0"></div>
+          <div class="wide"><label class="f" for="le_blurb">Opening paragraph</label><textarea class="f" id="le_blurb" rows="3"></textarea></div>
+          <div class="wide"><label class="f" for="le_completeness">Completeness</label><textarea class="f" id="le_completeness" rows="3"></textarea></div>
+          <div class="wide"><label class="f" for="le_notes">Curator's notes</label><textarea class="f" id="le_notes" rows="4"></textarea></div>
+        </div>
+        <div class="s" id="lotLockNote" style="margin-top:14px"></div>
+        <div class="rowacts" style="margin-top:18px">
+          <button class="btn" id="lotSave" type="button">Save changes</button>
+          <button class="btn ghost" id="lotCancel" type="button">Cancel</button>
+        </div>
+      </div>
+
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Lot</th><th>Status</th><th class="num">Bids</th><th class="num">Price</th>
+            <th>Shipping</th><th>Stamp</th><th></th>
+          </tr></thead>
+          <tbody id="lotsBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="lotsEmpty" hidden>No lots yet.</div>
     </section>
 
     <!-- ---------- Calibration ---------- -->
@@ -469,7 +536,7 @@
     }
     $('gate').hidden = true; $('app').hidden = false;
     $('whoEmail').textContent = me.email || '';
-    loadFeatured(); loadSellers(); loadSettings(); loadCalibration();
+    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots();
   }
 
   function wireSignOutOnGate(){
@@ -718,6 +785,126 @@
     }).join('');
     $('sEmpty').hidden = rows.length > 0;
   }
+
+  // ---------- Lots ----------
+  // Which fields are safe to change while people are bidding. Descriptions can
+  // always be corrected: a better description helps a bidder. Money and timing
+  // cannot, once a bid exists, because that changes the deal someone already
+  // accepted. The lock is on bids, not on status: a live lot with no bids is
+  // still fully editable.
+  const LOT_DESC = ['toy', 'maker', 'line', 'year', 'condition', 'completeness', 'notes', 'blurb', 'shipping_eur', 'weight_kg'];
+  const LOT_MONEY = ['starting_bid', 'reserve', 'buy_now'];
+  let allLots = [], lotBids = {}, editingLot = null;
+
+  async function loadLots(){
+    const cols = 'id,toy,maker,line,year,condition,completeness,notes,blurb,status,starting_bid,reserve,buy_now,' +
+                 'shipping_eur,weight_kg,stamp_shown,ends_at,seller_id,created_at';
+    const res = await SB.from('lots').select(cols).order('created_at', { ascending: false });
+    if (res.error){ say('lMsg', explain(res.error), 'err'); $('lotsBody').innerHTML = ''; $('lotsEmpty').hidden = false; return; }
+    allLots = res.data || [];
+    lotBids = {};
+    const ids = allLots.map(l => l.id);
+    if (ids.length){
+      const b = await SB.from('bids').select('lot_id,amount').in('lot_id', ids);
+      (b.data || []).forEach(x => {
+        const m = lotBids[x.lot_id] || { n: 0, max: 0 };
+        m.n++; m.max = Math.max(m.max, Number(x.amount));
+        lotBids[x.lot_id] = m;
+      });
+    }
+    const by = st => allLots.filter(l => l.status === st).length;
+    $('tLotsLive').textContent = by('live');
+    $('tLotsPrev').textContent = by('preview');
+    $('tLotsUnsold').textContent = by('unsold');
+    $('tLotsClosed').textContent = by('sold') + by('ended');
+
+    $('lotsEmpty').hidden = allLots.length > 0;
+    $('lotsBody').innerHTML = allLots.map(l => {
+      const b = lotBids[l.id] || { n: 0, max: 0 };
+      const cls = l.status === 'live' ? 'live' : (l.status === 'preview' ? 'sched' : (l.status === 'unsold' ? 'refunded' : 'done'));
+      const label = l.status === 'ended' ? 'awaiting payment' : l.status;
+      return '<tr>' +
+        '<td><div class="nm">' + esc(l.toy || 'Untitled') + '</div>' +
+          '<div class="sub">' + esc([l.maker, l.year].filter(Boolean).join(' · ')) + '</div></td>' +
+        '<td><span class="badge ' + cls + '">' + esc(label) + '</span></td>' +
+        '<td class="num">' + b.n + '</td>' +
+        '<td class="num">' + eur(b.n ? b.max : l.starting_bid) + '</td>' +
+        '<td class="sub">' + (Number(l.shipping_eur || 0) > 0 ? eur(l.shipping_eur) : 'included') + '</td>' +
+        '<td class="sub">' + (l.stamp_shown === false ? 'not shown' : (l.stamp_shown === true ? 'yes' : '—')) + '</td>' +
+        '<td><button class="btn ghost sm" type="button" data-editlot="' + esc(l.id) + '">Edit</button></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  function openLotEdit(id){
+    const l = allLots.find(x => x.id === id); if (!l) return;
+    editingLot = l;
+    const bids = (lotBids[id] || { n: 0 }).n;
+    const v = (f, val) => { const el = $(f); if (el) el.value = val == null ? '' : val; };
+    v('le_toy', l.toy); v('le_maker', l.maker); v('le_line', l.line); v('le_year', l.year);
+    v('le_condition', l.condition || ''); v('le_ship', l.shipping_eur); v('le_weight', l.weight_kg);
+    v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
+    v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
+
+    // Lock the money fields rather than hide them, so it is obvious why.
+    LOT_MONEY.forEach(f => {
+      const el = $('le_' + (f === 'starting_bid' ? 'start' : f === 'buy_now' ? 'buynow' : 'reserve'));
+      if (el) el.disabled = bids > 0;
+    });
+    $('lotLockNote').textContent = bids > 0
+      ? 'This lot has ' + bids + ' bid' + (bids === 1 ? '' : 's') + ', so the price fields are locked. Changing what a lot costs after someone has bid on it changes the deal they accepted. Descriptions, condition, notes and shipping can still be corrected.'
+      : 'No bids yet, so everything here can still be changed.';
+    $('lotEditTitle').textContent = 'Edit: ' + (l.toy || 'lot');
+    $('lotEditBox').hidden = false;
+    $('lotEditBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function closeLotEdit(){ $('lotEditBox').hidden = true; editingLot = null; }
+
+  $('lotsBody').addEventListener('click', e => {
+    const b = e.target.closest('[data-editlot]'); if (!b) return;
+    openLotEdit(b.dataset.editlot);
+  });
+  $('lotCancel').addEventListener('click', closeLotEdit);
+
+  $('lotSave').addEventListener('click', async () => {
+    if (!editingLot) return;
+    const l = editingLot, bids = (lotBids[l.id] || { n: 0 }).n;
+    const g = id => { const el = $(id); return el ? el.value.trim() : ''; };
+    const num = id => { const el = $(id); if (!el || el.value === '') return null; const n = parseFloat(el.value); return isNaN(n) ? null : n; };
+
+    const patch = {
+      toy: g('le_toy') || 'Untitled lot',
+      maker: g('le_maker') || null,
+      line: g('le_line') || null,
+      year: g('le_year') || null,
+      condition: g('le_condition') || null,
+      completeness: g('le_completeness') || null,
+      notes: g('le_notes') || null,
+      blurb: g('le_blurb') || null,
+      shipping_eur: num('le_ship') || 0,
+      weight_kg: num('le_weight'),
+    };
+    // Money only travels when nobody has bid. Not merely disabled in the form:
+    // a disabled input is a hint, and the rule has to hold even if it is bypassed.
+    if (bids === 0){
+      patch.starting_bid = num('le_start') || 0;
+      patch.reserve = num('le_reserve');
+      patch.buy_now = num('le_buynow');
+    }
+
+    const btn = $('lotSave'); btn.disabled = true; btn.textContent = 'Saving…';
+    const res = await SB.from('lots').update(patch).eq('id', l.id).select('id');
+    btn.disabled = false; btn.textContent = 'Save changes';
+    if (res.error){ say('lMsg', explain(res.error), 'err'); return; }
+    if (!res.data || !res.data.length){
+      say('lMsg', 'The database accepted the request but changed no rows, which means RLS filtered it out. Run section 12 of admin/schema.sql to give admins update on lots.', 'err');
+      return;
+    }
+    say('lMsg', 'Saved. The listing is updated and stayed live throughout.', 'ok');
+    closeLotEdit();
+    loadLots();
+  });
 
   // ---------- Calibration ----------
   // Median rather than mean throughout: with a handful of lots one freak result
