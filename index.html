@@ -496,6 +496,10 @@
   .rc-spec .row { display:flex; justify-content:space-between; gap:20px; padding:11px 0; border-bottom:1px solid var(--line-2); font-family:var(--body); font-size:14px; line-height:1.5; }
   .rc-spec .row .k { color:var(--ink-3); white-space:nowrap; }
   .rc-spec .row .v { text-align:right; }
+  /* A long value (Completeness runs to several lines) reads as broken
+     when it is right-aligned, so it stacks under its label instead. */
+  .rc-spec .row.col { display:block; }
+  .rc-spec .row.col .v { display:block; text-align:left; margin-top:8px; }
   .rc-bid { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-top:20px; }
   .rc-bid .amt { font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .rc-conf { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); line-height:1.6; text-align:right; }
@@ -3226,7 +3230,12 @@
     dz.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
 
     function setCard(html, empty){ card.className = 'result-card' + (empty ? ' empty' : ''); card.innerHTML = html; }
-    function row(k, v){ return v ? '<div class="row"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>' : ''; }
+    function row(k, v){
+      if (!v) return '';
+      // Long values stack under the label rather than being right-aligned.
+      const col = String(v).length > 58 ? ' col' : '';
+      return '<div class="row' + col + '"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>';
+    }
 
     // The brand mark, mid-swing. Reused at two sizes: the big waiting card and
     // the small one inside the price-evidence panel.
