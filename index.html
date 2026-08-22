@@ -215,6 +215,10 @@
   .spec .row .k { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
   .spec .row .v { font-family:var(--display); color:var(--ink); text-align:right; }
   .spec .row .v.good { color:var(--good); }
+  /* Prose values (Completeness, Curator's notes) stack under their label and
+     read left to right, like text. Right-aligned paragraphs look like a fault. */
+  .spec .row.col { display:block; }
+  .spec .row.col .v { display:block; text-align:left; margin-top:8px; font-family:var(--body); line-height:1.65; color:var(--ink-2); }
 
   .price-block { margin-top:30px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; }
   .price-block .pr { font-family:var(--body); font-weight:700; font-size:34px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
@@ -503,7 +507,10 @@
   .rc-bid { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-top:20px; }
   .rc-bid .amt { font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .rc-conf { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); line-height:1.6; text-align:right; }
-  .rc-notes { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink); margin-top:16px; }
+  .rc-notes { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink-2); margin-top:16px; }
+  /* The lead. Set larger than the evidence below it, because it is what
+     a buyer actually reads before deciding to care. */
+  .rc-lede { font-family:var(--body); font-size:16.5px; line-height:1.6; color:var(--ink); margin-top:14px; }
   /* Price evidence: the comparables the estimate was built from. */
   .comps { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; }
   .comps-h { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
@@ -3349,6 +3356,7 @@
       return {
         id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
         condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
+        blurb: current.blurb || null,
         variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
@@ -3569,6 +3577,7 @@
         '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
         '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
+        (c.blurb ? '<div class="rc-lede">' + esc(c.blurb) + '</div>' : '') +
         (c.stampVisible === false ? '<div class="stamp-warn">No maker\'s stamp photo detected. Please add a close-up of the molded year / country / factory markings, it confirms the age and origin and builds buyer trust. A worn or scratched stamp is fine.</div>' : '') +
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
@@ -3714,7 +3723,8 @@
         '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
         '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding. We use it to suggest what postage will cost you, so you are not guessing.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
         '<div class="ship-hint" id="shipHint"></div>' +
-        efArea('Notes', 'e_notes', c.notes, 'Anything a buyer needs to know: repairs, repaints, replaced parts, smells, provenance. This is where trust is won.') +
+        efArea('Opening paragraph', 'e_blurb', c.blurb, 'The first thing a buyer reads. Two or three sentences on what this is and why this release. Keep the stamp and the measurements out of it, they live in Notes.') +
+        efArea('Notes', 'e_notes', c.notes, 'The evidence, shown under Curator\'s notes: the moulded stamp, how it was dated, variants, repairs, repaints, replaced parts, provenance. This is where trust is won.') +
         '<div class="price-err" id="priceErr" hidden></div>' +
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
       setCard(html, false);
@@ -3744,7 +3754,7 @@
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'),
           reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'), weightKg: num('e_weight'),
-          notes: g('e_notes'),
+          blurb: g('e_blurb'), notes: g('e_notes'),
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
@@ -4381,7 +4391,9 @@
     const body = document.getElementById('lotBody');
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
-    const row = (k, v) => '<div class="row"><span class="k">' + e(k) + '</span><span class="v">' + e(v) + '</span></div>';
+    // Long values (Completeness, Curator's notes) stack under their label. Right
+    // -aligning six lines of prose reads as a layout fault, not as a choice.
+    const row = (k, v) => '<div class="row' + (String(v).length > 58 ? ' col' : '') + '"><span class="k">' + e(k) + '</span><span class="v">' + e(v) + '</span></div>';
     document.getElementById('lotCrumb').textContent = 'Lot';
     body.innerHTML = '<p style="padding:64px 0;color:var(--ink-3);font-family:var(--body)">Loading lot…</p>';
     show('lot');
@@ -4437,7 +4449,9 @@
       '<div class="art-detail">' +
         '<div class="art-sub">' + e([lot.maker, lot.year, lot.line].filter(Boolean).join(' · ')) + '</div>' +
         '<h1 class="art-title">' + e(lot.toy) + '</h1>' +
-        (lot.notes ? '<p style="font-family:var(--body);font-size:18px;color:var(--ink);margin:0;max-width:46ch">' + e(lot.notes) + '</p>' : '') +
+        // The lead is the blurb. Older lots have no blurb, so they fall back to
+        // notes rather than losing their opening paragraph entirely.
+        ((lot.blurb || lot.notes) ? '<p style="font-family:var(--body);font-size:18px;color:var(--ink);margin:0;max-width:46ch">' + e(lot.blurb || lot.notes) + '</p>' : '') +
         varHtml +
         '<div class="spec">' +
           (lot.maker ? row('Maker', lot.maker) : '') +
@@ -4445,6 +4459,9 @@
           (lot.line ? row('Line', lot.line) : '') +
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
+          // The forensics: stamp transcription, dating, variant reasoning. Only
+          // shown when a blurb took over the lead, or it would appear twice.
+          ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
           (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
           row('Shipping', SHIPPING.line(lot.shipping_eur)) +
