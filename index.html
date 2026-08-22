@@ -4705,11 +4705,17 @@
         pane.style.backgroundSize = (d.nw * d.f * ZOOM) + 'px ' + (d.nh * d.f * ZOOM) + 'px';
         pane.style.backgroundPosition = '-' + ((lx + cropX) * ZOOM) + 'px -' + ((ly + cropY) * ZOOM) + 'px';
       };
+      // The cursor has to say which of the three gestures is available, and that
+      // depends on the photo: only one that overflows the square can be dragged.
+      // A crosshair said "point precisely" when the answer was "you can move this".
+      const panCursor = d => (d && (d.ovX >= 1 || d.ovY >= 1)) ? 'grab' : 'zoom-in';
+      const setPanCursor = () => { lotImg.style.cursor = panCursor(dims()); };
       if (hover){
-        lotImg.style.cursor = 'crosshair';
+        setPanCursor();
         lotMain.addEventListener('mousemove', ev => {
           if (dragging) return;
           const d = dims(); if (!d.nw){ leaveZoom(); return; }
+          lotImg.style.cursor = panCursor(d);   // recomputed: each photo crops differently
           const mx = ev.clientX - d.mr.left, my = ev.clientY - d.mr.top;
           if (mx < 0 || my < 0 || mx > d.mr.width || my > d.mr.height){ leaveZoom(); return; }
           showZoom(mx, my, d);
@@ -4732,7 +4738,7 @@
         if (ovY >= 1) oy = Math.max(0, Math.min(1, soy - dy / ovY));
         lotImg.style.objectPosition = (ox * 100) + '% ' + (oy * 100) + '%';
       });
-      const endDrag = () => { if (!dragging) return; dragging = false; lotImg.style.cursor = hover ? 'crosshair' : 'grab'; setTimeout(() => { moved = false; }, 0); };
+      const endDrag = () => { if (!dragging) return; dragging = false; setPanCursor(); setTimeout(() => { moved = false; }, 0); };
       lotMain.addEventListener('pointerup', endDrag);
       lotMain.addEventListener('pointercancel', endDrag);
       // click opens fullscreen (unless it was a pan-drag)
@@ -4800,7 +4806,7 @@
     const two = () => [...pts.values()];
     stage.addEventListener('pointerdown', ev => {
       pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
-      if (pts.size === 1 && scale > 1){ dragging = true; moved = false; sx = ev.clientX; sy = ev.clientY; stx = tx; sty = ty; try { stage.setPointerCapture(ev.pointerId); } catch (e) {} }
+      if (pts.size === 1 && scale > 1){ dragging = true; moved = false; sx = ev.clientX; sy = ev.clientY; stx = tx; sty = ty; img.style.cursor = 'grabbing'; try { stage.setPointerCapture(ev.pointerId); } catch (e) {} }
       else if (pts.size === 2){ dragging = false; const a = two(); pinchBase = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y) || 1; pinchScale = scale; }
     });
     stage.addEventListener('pointermove', ev => {
