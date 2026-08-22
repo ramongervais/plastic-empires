@@ -3167,6 +3167,26 @@
       });
     }
 
+    // Back to an empty sell page, ready for the next lot. Called after a lot is
+    // published and after a draft is stored: in both cases the item is safely
+    // away, and the job of this page is now the next one. Bumping curationSeq
+    // matters more than it looks: a price search can still be in flight, and
+    // without this it would land on the blank form behind the modal.
+    function resetSell(){
+      curationSeq++;
+      if (compTimer){ clearInterval(compTimer); compTimer = null; }
+      files = [];
+      current = null;
+      draftId = null;
+      draftUrls = null;
+      editing = false;
+      input.value = '';
+      render();
+      setCard('<div class="rc-empty">Your AI curation will appear here.</div>', true);
+      curateBtn.disabled = true;
+      curateBtn.textContent = 'Curate with AI';
+    }
+
     function render(){
       thumbs.innerHTML = '';
       files.forEach((f, i) => {
@@ -3582,9 +3602,10 @@
           const row = { id: draftId, seller_id: uid, payload: current, image_urls: draftUrls, updated_at: new Date().toISOString() };
           const { error } = await SB.from('lot_drafts').upsert(row, { onConflict: 'id' });
           if (error) throw error;
-          openModal('Draft saved', (current.toy || 'Your lot') + ' is saved as a draft.',
-            'No listing token was used. Find it under Drafts in your account, and publish when you are ready.');
-          viewMode();
+          const draftToy = current.toy || 'Your lot';
+          resetSell();
+          openModal('Draft saved', draftToy + ' is saved as a draft.',
+            'No listing token was used. Find it under Drafts in your account, and publish when you are ready. The page is cleared, so you can start the next one.');
         } catch (err) {
           const msg = String((err && err.message) || err);
           openModal('Could not save the draft', 'Something went wrong.',
@@ -3620,7 +3641,9 @@
               draftId = null; draftUrls = null;
             }
             injectDraftLots();
-            openModal(pre ? 'Lot in preview' : 'Lot listed', (current.toy || 'Your toy') + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.'));
+            const wasToy = current.toy || 'Your toy';
+            resetSell();   // clear the form so the next lot can go straight in
+            openModal(pre ? 'Lot in preview' : 'Lot listed', wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.') + ' The page is cleared, so you can start the next one.');
           } catch (err) {
             const msg = String((err && err.message) || err);
             if (/NO_TOKENS/.test(msg)) openModal('Out of tokens', 'No listing tokens left.', 'You need a token to list a lot. Open your account to buy a token pack, or upgrade to Premium for 50 tokens a month.');
