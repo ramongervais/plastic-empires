@@ -276,6 +276,8 @@
   .modal h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:0 0 12px; letter-spacing:-.01em; }
   .modal p { font-family:var(--body); font-size:16px; color:var(--ink); margin:0 0 22px; line-height:1.8; }
   .modal .close { margin-top:8px; }
+  .modal-acts { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  .modal-acts .close { margin-top:0; }
 
   /* ---------- Empire (maker) documentary page ---------- */
   .empire-hero { padding: 56px 0 40px; }
@@ -2639,7 +2641,10 @@
       </div>
       <div class="bidhint" id="bidHint"></div>
     </div>
-    <button class="btn close" id="modalClose">Close</button>
+    <div class="modal-acts">
+      <button class="btn close" id="modalClose">Close</button>
+      <button class="btn ghost" id="modalNever" hidden>Don't show this again</button>
+    </div>
   </div>
 </div>
 
@@ -3064,7 +3069,31 @@
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').textContent = body;
     if (bidForm) bidForm.hidden = true;
+    const never = document.getElementById('modalNever');
+    if (never) never.hidden = true;
     modal.hidden = false;
+  }
+
+  // A tip earns three showings. After that it has either landed or it never
+  // will, and a modal that keeps reappearing in front of a task is just a
+  // toll gate. Returns false when it stayed shut, so a caller can carry on.
+  const TIP_LIMIT = 3;
+  function tipSeen(key){
+    try { return Number(localStorage.getItem('hm_tip_' + key) || 0); } catch (e) { return TIP_LIMIT; }
+  }
+  function tipModal(key, ey, title, body){
+    if (tipSeen(key) >= TIP_LIMIT) return false;
+    try { localStorage.setItem('hm_tip_' + key, String(tipSeen(key) + 1)); } catch (e) {}
+    openModal(ey, title, body);
+    const never = document.getElementById('modalNever');
+    if (never){
+      never.hidden = false;
+      never.onclick = () => {
+        try { localStorage.setItem('hm_tip_' + key, String(TIP_LIMIT)); } catch (e) {}
+        closeModal();
+      };
+    }
+    return true;
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
   function openBid(name, bid, bids, lotId){
@@ -3104,9 +3133,9 @@
     openModal('Buy now', b.dataset.name, 'Take it now for ' + eur(b.dataset.buynow) + ' and skip the auction. On the live shop this goes to checkout. Layout preview.');
   }));
   const sellLink = document.getElementById('sellLink');
-  if (sellLink) sellLink.addEventListener('click', e => {
-    e.preventDefault();
-    openModal('Sell with us', 'Upload photos. Our AI does the rest.', 'Snap a few clear photos of your toy. Our AI identifies it, dates the year and line, grades condition and proposes a fair starting bid. Approved lots go straight to auction, and we handle photography, shipping and payment. On the live site this opens the upload flow. Layout preview.');
+  if (sellLink) sellLink.addEventListener('click', () => {
+    tipModal('sell', 'Sell with us', 'Upload photos. Our AI does the rest.',
+      'Photograph the toy from the front and the back, plus any flaws, and one close-up of the moulded stamp: the year, country and factory marks. That last one is required, because it is the only text unique to your toy and it is what lets us date it and find what it actually sells for. Everything else is written for you.');
   });
 
   // ----- Auction countdowns -----
@@ -3122,9 +3151,10 @@
     function tick(){ const now = Date.now(); cds.forEach(c => c.el.textContent = fmt(c.end - now)); }
     tick(); setInterval(tick, 1000);
   })();
-  document.getElementById('modalClose').addEventListener('click', () => modal.hidden = true);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.hidden = true; });
+  function closeModal(){ modal.hidden = true; }
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   // ----- Theme -----
   // ----- Sell: AI curation uploader -----
@@ -3483,6 +3513,27 @@
       if (!editing) viewMode();   // never redraw over a form the seller is filling in
     }
 
+    // Deploys are manual and the schema is migrated by hand, so a new column can
+    // exist in this file before it exists in the database. That must degrade, not
+    // break: PostgREST replies PGRST204 and names the column it does not know, so
+    // drop that key and try again rather than losing the whole listing. It gives
+    // up after a few rounds so a real error still surfaces.
+    async function insertTolerant(table, row){
+      const dropped = [];
+      for (let i = 0; i < 5; i++){
+        const res = await SB.from(table).insert(row);
+        if (!res.error) {
+          if (dropped.length) console.warn('Saved without ' + dropped.join(', ') + ': column missing, run the migration.');
+          return res;
+        }
+        const m = /Could not find the '([^']+)' column/.exec(res.error.message || '');
+        if (!m || !(m[1] in row)) return res;
+        dropped.push(m[1]);
+        delete row[m[1]];
+      }
+      return { error: { message: 'Too many unknown columns. Run the pending migration in admin/schema.sql.' } };
+    }
+
     // Append-only calibration record. Never allowed to fail the publish: the
     // lot is already saved by the time this runs, and a lost telemetry row is
     // worth less than a seller seeing an error for a listing that went fine.
@@ -3490,7 +3541,7 @@
       const a = (current && current.ai) || null;
       if (!SB || !a) return;
       try {
-        await SB.from('curation_log').insert({
+        await insertTolerant('curation_log', {
           lot_id: lotId, seller_id: uid,
           toy: current.toy || null, maker: current.maker || null, line: current.line || null, year: current.year || null,
           ai_start: a.start ?? null, ai_low: a.low ?? null, ai_high: a.high ?? null,
@@ -3660,7 +3711,7 @@
             const lotId = draftId || newId();
             const urls = files.length ? await uploadPhotos(uid, lotId) : (draftUrls || []);
             const pre = preLaunch();
-            const { error } = await SB.from('lots').insert(lotRow(lotId, uid, urls));
+            const { error } = await insertTolerant('lots', lotRow(lotId, uid, urls));
             if (error) throw error;
             await logCuration(lotId, uid);
             // the draft has become a real lot, so retire it
