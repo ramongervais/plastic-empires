@@ -500,6 +500,23 @@
   .rc-bid .amt { font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .rc-conf { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); line-height:1.6; text-align:right; }
   .rc-notes { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink); margin-top:16px; }
+  /* Price evidence: the comparables the estimate was built from. */
+  .comps { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; }
+  .comps-h { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  .comps-sum { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:10px; }
+  .comp { display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--line-2); }
+  .comp:last-child { border-bottom:0; }
+  .comp-l { min-width:0; }
+  .comp-t { font-family:var(--body); font-size:13.5px; line-height:1.45; }
+  .comp-t a { color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
+  .comp-t a:hover { border-color:var(--ink); }
+  .comp-m { font-family:var(--label); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin-top:5px; line-height:1.6; }
+  .comp-r { text-align:right; flex-shrink:0; }
+  .comp-p { font-family:var(--body); font-weight:700; font-size:15px; font-variant-numeric:tabular-nums; }
+  .comp-k { font-family:var(--label); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+  .comp-k.sold { color:#2f6b3a; }
+  .comp-k.asking, .comp-k.guide { color:var(--ink-3); }
+  .comps-none { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:10px; }
   #view-sell .empire-title { font-size:clamp(38px, 5.6vw, 68px); line-height:1.02; }
   @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
   @media (max-width:600px){ #view-sell .empire-title { font-size:34px; } }
@@ -617,7 +634,7 @@
 <body>
 
 <div class="promo-bar">
-  <span id="promoText">Now in beta. Auctions open in <b id="promoCount">…</b> &middot; 1 September 2026.</span>
+  <span id="promoText">Now in beta. Auctions open in <b id="promoCount">…</b> &middot; 1 October 2026.</span>
   <a id="authLinkB" class="promo-cta">Reserve your account &#8594;</a>
 </div>
 
@@ -2196,7 +2213,7 @@
       <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.015em;margin:0 0 28px">Upload photos. We do the rest.</h2>
       <div class="moat">
         <div class="cell"><div class="num">— 1 · Upload</div><h4>A few clear photos</h4><p>Front, back, accessories and any flaws, plus one close-up of the maker's stamp: the molded year, country and factory markings. That stamp confirms the age and origin, so it is required with every lot (a worn or scratched stamp is fine).</p></div>
-        <div class="cell"><div class="num">— 2 · AI curation</div><h4>We write and grade it</h4><p>Our AI identifies the toy, dates the year and line, grades condition, flags the variants that matter and proposes a fair starting bid. Anything that isn't a genuine collectible is rejected automatically, and no token is used.</p></div>
+        <div class="cell"><div class="num">— 2 · AI curation</div><h4>We write and grade it</h4><p>Our AI identifies the toy, dates the year and line, grades condition and flags the variants that matter. Then it goes looking for what the same toy actually fetched recently and prices your lot off those sales, with a link behind every number so you can check the work. Anything that isn't a genuine collectible is rejected automatically, and no token is used.</p></div>
         <div class="cell"><div class="num">— 3 · Confirm</div><h4>You stay in control</h4><p>Tweak any field, tap to correct a variant, and set a reserve or a Buy-now price. When you submit, one listing token is used.</p></div>
         <div class="cell"><div class="num">— 4 · Auction</div><h4>It goes live</h4><p>Until launch your lot sits in Preview so buyers can watch it; at launch it opens for bidding. You are paid after the sale, we share the buyer's shipping address, and the buyer can leave you a review.</p></div>
       </div>
@@ -2316,13 +2333,14 @@
 
         <div class="terms-h">4 · Automated curation and moderation</div>
         <p>When you upload photographs to list an item, <b>the images are sent to an AI provider</b> which identifies the toy, dates it, grades its condition, drafts the description and proposes a starting price. The same step screens for items that may not be listed. This is automated, it is not guaranteed to be correct, and you review and confirm every listing before it goes live.</p>
+        <p>To price the lot, a second automated step then <b>searches the public web</b> for recent sales of the same toy. The search terms describe the object only, for example its maker, year and moulded markings. Your photographs are not published, and no information about you as a person is included in a search.</p>
         <p>An automated screen can refuse a listing. That decision is not final: a person will review it if you ask us to, and you can reach us at the privacy contact above or through your account. We do not use automated decision-making to profile you or to set prices individually.</p>
 
         <div class="terms-h">5 · Who your data is shared with</div>
         <p>We use the following processors and services. Each receives only what it needs.</p>
         <p><b>Supabase</b> · database, sign-in and photo storage. Hosting region [region].<br>
         <b>Cloudflare</b> · the functions that handle payments, notifications, AI curation and the message relay.<br>
-        <b>Anthropic</b> · the AI that reads your listing photographs. United States.<br>
+        <b>Anthropic</b> · the AI that reads your listing photographs and searches the web for comparable sales. United States.<br>
         <b>Stripe</b> · payments, membership billing, and collecting the delivery address. Ireland and United States.<br>
         <b>Resend</b> · sending our email. European Union (Ireland).<br>
         <b>GitHub Pages</b> · hosting the website itself. United States.<br>
@@ -2471,6 +2489,7 @@
 
         <div class="terms-h">4 · Listings, AI curation and moderation</div>
         <p>Listings are prepared with AI-assisted curation and this is not guaranteed to be accurate. The Seller is solely responsible for reviewing and confirming every listing (identification, variant, condition, completeness, authenticity) before it goes live. Only genuine collectible toys, models and related memorabilia may be listed; items that are not collectibles, or that are prohibited (including adult, sexual, weapon or illegal content) are refused automatically, and we may edit, refuse or remove any listing at our discretion. Each published listing uses one listing token from the Seller's balance.</p>
+        <p>Suggested starting bids, estimate ranges and any comparable sales shown to the Seller are indicative market research, not a valuation, an appraisal or a guarantee of value. Comparable listings are third-party data collected automatically from public sources: they may be inaccurate, out of date, mis-converted between currencies or not genuinely comparable to the lot. The Seller sets the final price and is responsible for it. Nothing in a curation is investment or resale advice.</p>
 
         <div class="terms-h">5 · Bidding and winning</div>
         <p>A placed bid is a binding, irrevocable offer, subject to any hidden reserve. The highest valid bid at close, or acceptance of a Buy-now price, wins. We may extend, void or re-open an auction in case of a fault, error or suspected manipulation.</p>
@@ -2738,7 +2757,7 @@
   const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
   const SB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
   let authUser = null;
-  const LAUNCH_TS = Date.parse('2026-09-01T00:00:00+02:00'); // launch: 1 September 2026 (Amsterdam)
+  const LAUNCH_TS = Date.parse('2026-10-01T00:00:00+02:00'); // launch: 1 October 2026 (Amsterdam)
   const preLaunch = () => Date.now() < LAUNCH_TS;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -3173,10 +3192,21 @@
     function setCard(html, empty){ card.className = 'result-card' + (empty ? ' empty' : ''); card.innerHTML = html; }
     function row(k, v){ return v ? '<div class="row"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>' : ''; }
 
+    // Curation is two passes now and the second one searches the web, so the
+    // wait runs to tens of seconds. Say what is happening instead of holding
+    // one frozen line for a minute.
+    const STAGES = ['Reading the photos…', 'Reading the moulded stamp…', 'Searching for recent sales…', 'Comparing what it fetched elsewhere…', 'Pricing the lot…'];
+    function stageTicker(){
+      let i = 0;
+      setCard('<div class="rc-empty">' + STAGES[0] + '</div>', true);
+      const t = setInterval(() => { i = Math.min(i + 1, STAGES.length - 1); setCard('<div class="rc-empty">' + STAGES[i] + '</div>', true); }, 7000);
+      return () => clearInterval(t);
+    }
+
     curateBtn.addEventListener('click', async () => {
       if (!files.length) return;
       curateBtn.disabled = true; curateBtn.textContent = 'Curating…';
-      setCard('<div class="rc-empty">Reading the photos…</div>', true);
+      const stopTicker = stageTicker();
       try {
         const res = await fetch(WORKER_URL, {
           method: 'POST',
@@ -3185,10 +3215,18 @@
         });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+        if (data.curation){
+          if (data.compsError) data.curation.compsError = data.compsError;
+          data.curation.versions = data.versions || null;
+          data.curation.searches = data.searches ?? null;
+        }
+        stopTicker();
         showCuration(data.curation);
       } catch (err) {
+        stopTicker();
         setCard('<div class="rc-empty">Could not curate. ' + esc(err.message || err) + '<br><br>The AI curation runs on the live site, not inside the claude.ai preview.</div>', true);
       } finally {
+        stopTicker();
         curateBtn.disabled = false; curateBtn.textContent = 'Curate with AI';
       }
     });
@@ -3261,19 +3299,89 @@
         current = null;
         return;
       }
+      // Snapshot what the AI said BEFORE the seller can touch a field. Once the
+      // lot sells, the winning bid turns this into a labelled example, and an
+      // edit the seller makes is itself feedback that we were off.
+      c.ai = {
+        start: c.startingBid, low: c.estimateLow, high: c.estimateHigh,
+        confidence: c.confidence, pricedFrom: c.pricedFrom, comps: c.comps || [],
+        queries: c.compsQueries || [], searches: c.searches, versions: c.versions,
+      };
       current = c; if (current.auctionDays == null) current.auctionDays = 7; viewMode();
+    }
+
+    // Append-only calibration record. Never allowed to fail the publish: the
+    // lot is already saved by the time this runs, and a lost telemetry row is
+    // worth less than a seller seeing an error for a listing that went fine.
+    async function logCuration(lotId, uid){
+      const a = (current && current.ai) || null;
+      if (!SB || !a) return;
+      try {
+        await SB.from('curation_log').insert({
+          lot_id: lotId, seller_id: uid,
+          toy: current.toy || null, maker: current.maker || null, line: current.line || null, year: current.year || null,
+          ai_start: a.start ?? null, ai_low: a.low ?? null, ai_high: a.high ?? null,
+          ai_confidence: a.confidence || null, priced_from: a.pricedFrom || null,
+          searches: a.searches ?? null, comps: a.comps || [], queries: a.queries || [],
+          final_start: current.startingBid ?? null, seller_edited: current.edited === true,
+          versions: a.versions || {},
+        });
+      } catch (e) {}
     }
     async function recurate(correction){
       if (!files.length) return;
-      setCard('<div class="rc-empty">Applying your correction and rewriting the listing…</div>', true);
+      // A corrected variant changes what the toy IS, so it changes what it is
+      // worth: the comps are searched again rather than carried over.
+      setCard('<div class="rc-empty">Applying your correction and re-pricing against the market…</div>', true);
+      const stopTicker = stageTicker();
       try {
         const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ images: files.map(f => f.dataUrl), correction }) });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+        if (data.curation){
+          if (data.compsError) data.curation.compsError = data.compsError;
+          data.curation.versions = data.versions || null;
+          data.curation.searches = data.searches ?? null;
+        }
+        stopTicker();
         const days = current && current.auctionDays; showCuration(data.curation); if (days) { current.auctionDays = days; viewMode(); }
       } catch (err) {
         setCard('<div class="rc-empty">Could not rewrite: ' + esc(err.message || err) + '</div>', true);
+      } finally {
+        stopTicker();
       }
+    }
+
+    // ----- Price evidence -----
+    // The comparables the estimate was built from, with a link behind every
+    // number. Seller-facing only: this is how the seller checks our price, not
+    // a public argument for what a buyer should bid. It rides along in the
+    // draft payload and is never written to the lots table.
+    const KIND_WORD = { sold: 'Sold', asking: 'Asking', guide: 'Guide' };
+    function compsHtml(c){
+      const comps = (c.comps || []).filter(k => k && k.url && k.priceEur);
+      if (!comps.length){
+        const why = c.compsError
+          ? 'The market check could not run this time, so the estimate is the curator\'s own reading of the photos.'
+          : 'No comparable sales were found for this exact toy, so the estimate is the curator\'s own reading of the photos.';
+        return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span>none found</span></div>' +
+          '<div class="comps-none">' + why + ' Treat it as a starting point, and set the price yourself if you know this toy better than we do.' +
+          (c.compsSummary ? ' ' + esc(c.compsSummary) : '') + '</div></div>';
+      }
+      const rows = comps.map(k => {
+        const native = (k.currency && k.currency !== 'EUR' && k.price) ? ' · ' + esc(k.price + ' ' + k.currency) : '';
+        return '<div class="comp"><div class="comp-l">' +
+          '<div class="comp-t"><a href="' + esc(k.url) + '" target="_blank" rel="noopener nofollow">' + esc(k.title || 'Listing') + '</a></div>' +
+          '<div class="comp-m">' + esc([k.source, k.match, k.condition, k.date].filter(Boolean).join(' · ')) + '</div></div>' +
+          '<div class="comp-r"><div class="comp-p">' + eur(k.priceEur) + '</div>' +
+          '<div class="comp-k ' + esc(k.kind || '') + '">' + esc(KIND_WORD[k.kind] || k.kind || '') + native + '</div></div></div>';
+      }).join('');
+      const q = (c.compsQueries || []).length
+        ? '<div class="comp-m" style="margin-top:12px">Searched: ' + esc(c.compsQueries.join('  ·  ')) + '</div>' : '';
+      return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span>' +
+        comps.length + ' comp' + (comps.length === 1 ? '' : 's') + ' · ' + esc(c.pricedFrom || '') + '</span></div>' +
+        (c.compsSummary ? '<div class="comps-sum">' + esc(c.compsSummary) + '</div>' : '') +
+        rows + q + '</div>';
     }
 
     const STAR_PCT = { 'Mint': 100, 'Near mint': 90, 'Excellent': 80, 'Good': 60, 'Fair': 40, 'Poor': 20 };
@@ -3304,7 +3412,10 @@
           (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) + row('Shipping', Number(c.shipping||0) > 0 ? eur(c.shipping) + ' added at checkout' : 'Included in your price') : 'None')) + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
-        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') + (c.edited ? '<br>Edited' : '') + '</div></div>' +
+        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
+          (c.pricedFrom ? '<br>' + esc(c.pricedFrom === 'curator estimate' ? 'Curator estimate' : 'Estimate from ' + c.pricedFrom) : '') +
+          (c.edited ? '<br>Edited' : '') + '</div></div>' +
+        compsHtml(c) +
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
         '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this ' + (fixed ? 'item' : 'lot') + '</button>' +
           (SB ? '<button class="btn ghost" id="draftLot" type="button">' + (draftId ? 'Update draft' : 'Save as draft') + '</button>' : '') + '</div>' +
@@ -3356,13 +3467,14 @@
             const pre = preLaunch();
             const { error } = await SB.from('lots').insert(lotRow(lotId, uid, urls));
             if (error) throw error;
+            await logCuration(lotId, uid);
             // the draft has become a real lot, so retire it
             if (draftId){
               try { await SB.from('lot_drafts').delete().eq('id', draftId); } catch (e) {}
               draftId = null; draftUrls = null;
             }
             injectDraftLots();
-            openModal(pre ? 'Lot in preview' : 'Lot listed', (current.toy || 'Your toy') + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 September 2026.' : 'It now appears in the Shop.'));
+            openModal(pre ? 'Lot in preview' : 'Lot listed', (current.toy || 'Your toy') + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.'));
           } catch (err) {
             const msg = String((err && err.message) || err);
             if (/NO_TOKENS/.test(msg)) openModal('Out of tokens', 'No listing tokens left.', 'You need a token to list a lot. Open your account to buy a token pack, or upgrade to Premium for 50 tokens a month.');
@@ -3654,7 +3766,7 @@
     const isClosed = isSold || ended;
     const badgeWord = isSold ? 'Sold' : 'Ended';
     const isFixed = l.saleType === 'fixed';
-    const endsTxt = isPreview ? 'Opens 1 Sep' : (isClosed ? badgeWord : (isFixed ? 'Direct sale' : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left')));
+    const endsTxt = isPreview ? 'Opens 1 Oct' : (isClosed ? badgeWord : (isFixed ? 'Direct sale' : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : (l.days || 7) + 'd left')));
     return '<article class="artifact-card draft-lot">' +
       '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + '">' +
         (l.img ? '<img class="cardimg" src="' + e(cardSrc(l.img)) + '" data-full="' + e(l.img) + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : '') +
@@ -3665,7 +3777,7 @@
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
         '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
-        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 September</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
+        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 October</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
 
@@ -4170,7 +4282,7 @@
         '<div class="auction">' +
           '<div class="auction-row">' +
             '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '—'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div></div>' +
-            '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Sep 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
+            '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Oct 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
           '</div>' +
           ((!ended && !isPreview && !isFixed && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
           ((!ended && !isPreview && !isFixed && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
@@ -4180,7 +4292,7 @@
                 (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : (isSold ? '<div class="won-h">Sold.</div><div class="won-sub">This lot has been purchased' + (lot.buy_now ? ' for ' + money(lot.buy_now) : '') + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>'))) +
             '</div>' :
             (isPreview ?
-              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item goes on sale 1 September 2026.' : 'Bidding opens 1 September 2026.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
+              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item goes on sale 1 October 2026.' : 'Bidding opens 1 October 2026.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
               (isFixed ?
                 '<div class="buy-row"><button class="btn accent" type="button" id="lotBuy">Buy now &middot; ' + money(fixedPrice) + '</button></div>' :
                 '<div class="buy-row">' +
@@ -4191,7 +4303,7 @@
             ? '<div class="ship-total">' + SHIPPING.eur(lot.shipping_eur) + ' shipping is added at checkout' +
               (isFixed ? ', so you pay ' + SHIPPING.eur(Number(fixedPrice) + Number(lot.shipping_eur)) + ' in total' : '') + '.</div>'
             : '') +
-          '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 September 2026.' : 'This lot goes live on 1 September 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected and insured in transit.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.'))) + '</div>' +
+          '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 October 2026.' : 'This lot goes live on 1 October 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected and insured in transit.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and insured in transit.'))) + '</div>' +
           '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
             '<span>Buyer protection</span><span class="protect-x">+</span></button>' +
             '<ul class="protect-list" hidden>' + PROTECTION.map(function(x){ return '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>'; }).join('') +
@@ -4429,7 +4541,7 @@
   // ----- Launch countdown in the beta ribbon -----
   (function(){
     const el = document.getElementById('promoCount'); if (!el) return;
-    const target = new Date('2026-09-01T00:00:00+02:00').getTime();
+    const target = new Date('2026-10-01T00:00:00+02:00').getTime();
     (function tick(){
       const ms = target - Date.now();
       if (ms <= 0){ const t = document.getElementById('promoText'); if (t) t.innerHTML = 'We are live. The auctions are open.'; return; }

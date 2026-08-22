@@ -1,2 +1,5 @@
 .DS_Store
 QA-CHECKLIST.md
+
+# schema + policies: keep local, do not serve from a public repo
+admin/schema.sql

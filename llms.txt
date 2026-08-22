@@ -6,7 +6,8 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 
 ## How it works
 - Sellers upload a few clear photos, including a close-up of the maker's stamp (molded year, country and factory markings).
-- AI curation writes the listing, dates the year and line, grades condition, flags variants and proposes a fair starting bid.
+- AI curation writes the listing, dates the year and line, grades condition and flags variants.
+- Pricing is then researched, not guessed: a second step searches public listings for recent sales of the same toy and prices the lot from those comparables, showing the seller each comparable with its source link, whether it sold or is only being asked, and how close a match it is. Sold prices outweigh asking prices. When nothing comparable is found we say so rather than inventing a number.
 - Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely. Shipping is included in the price shown, tracked and insured, to the Netherlands and the EU. Buyers can review sellers after a purchase.
 
 ## The Molders (makers)
@@ -30,7 +31,7 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - Sellers set the amount to what posting actually costs them, up to a cap. Commission is charged on the total including shipping, so inflating postage gains a seller nothing.
 
 ## Launch
-- The public auctions open on 1 September 2026. Before then, lots appear in Preview and early sign-ups are welcome.
+- The public auctions open on 1 October 2026. Before then, lots appear in Preview and early sign-ups are welcome.
 
 ## Links
 - Site: https://hammerandmold.com/

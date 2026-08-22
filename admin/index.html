@@ -169,6 +169,7 @@
     <div class="tabs" id="tabs">
       <button class="tab on" data-sec="featured" type="button">Featured ads</button>
       <button class="tab" data-sec="sellers" type="button">Sellers</button>
+      <button class="tab" data-sec="calibration" type="button">Calibration</button>
       <button class="tab" data-sec="settings" type="button">Site settings</button>
     </div>
 
@@ -281,6 +282,49 @@
       <div class="empty" id="sEmpty" hidden>No profiles yet.</div>
     </section>
 
+    <!-- ---------- Calibration ---------- -->
+    <!-- What the curation predicted against what the lot actually fetched. One
+         row per sold lot. This is the only screen that can tell you whether the
+         comps search is earning its money, so it deliberately reports the
+         uncomfortable number (how often we were wrong) first. -->
+    <section class="sec" id="sec-calibration" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">Pricing accuracy</div>
+          <h1>Calibration</h1>
+        </div>
+        <p>Every sold lot, comparing what the AI estimated with what it actually fetched. A ratio above 1 means we under-called it and the seller got more than we promised; below 1 means we over-called it, which is the expensive direction. Split by how the price was reached, so you can see whether real comps beat the model's own guess.</p>
+      </div>
+
+      <div class="tiles">
+        <div class="tile"><div class="k">Sold with a curation</div><div class="v num" id="calN">0</div><div class="s">labelled examples</div></div>
+        <div class="tile"><div class="k">Inside the estimate</div><div class="v num" id="calHit">—</div><div class="s">hammer within the range</div></div>
+        <div class="tile"><div class="k">Median ratio</div><div class="v num" id="calRatio">—</div><div class="s">hammer / low estimate</div></div>
+        <div class="tile"><div class="k">Seller overrode us</div><div class="v num" id="calEdit">—</div><div class="s">changed the price by hand</div></div>
+      </div>
+
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Basis</th><th class="num">Lots</th><th class="num">In range</th>
+            <th class="num">Median ratio</th><th class="num">Avg comps</th>
+          </tr></thead>
+          <tbody id="calGroup"></tbody>
+        </table>
+      </div>
+
+      <div class="tbl-scroll" style="margin-top:32px">
+        <table>
+          <thead><tr>
+            <th>Lot</th><th>Basis</th><th class="num">Comps</th><th>Conf.</th>
+            <th class="num">Estimate</th><th class="num">Hammer</th><th class="num">Ratio</th><th>Prompt</th><th>Closed</th>
+          </tr></thead>
+          <tbody id="calBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="calEmpty" hidden>Nothing to calibrate yet. A row appears here when a lot that was curated actually sells.</div>
+    </section>
+
     <!-- ---------- Site settings ---------- -->
     <section class="sec" id="sec-settings" hidden>
       <div class="sec-head">
@@ -306,7 +350,7 @@
           </div>
           <div class="wide">
             <label class="f" for="ncValue">Value <span style="text-transform:none;letter-spacing:0">(JSON, or plain text)</span></label>
-            <input class="f" id="ncValue" type="text" placeholder='"2026-09-01" or 15 or true'>
+            <input class="f" id="ncValue" type="text" placeholder='"2026-10-01" or 15 or true'>
           </div>
           <div class="wide">
             <button class="btn" type="button" id="ncSave">Save setting</button>
@@ -425,7 +469,7 @@
     }
     $('gate').hidden = true; $('app').hidden = false;
     $('whoEmail').textContent = me.email || '';
-    loadFeatured(); loadSellers(); loadSettings();
+    loadFeatured(); loadSellers(); loadSettings(); loadCalibration();
   }
 
   function wireSignOutOnGate(){
@@ -673,6 +717,61 @@
       '</tr>';
     }).join('');
     $('sEmpty').hidden = rows.length > 0;
+  }
+
+  // ---------- Calibration ----------
+  // Median rather than mean throughout: with a handful of lots one freak result
+  // would otherwise decide the verdict.
+  const median = a => { if (!a.length) return null; const s = [...a].sort((x,y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
+  const pct = (n, of) => of ? Math.round(n / of * 100) + '%' : '—';
+
+  async function loadCalibration(){
+    const res = await SB.rpc('admin_calibration');
+    if (res.error){ $('calBody').innerHTML = ''; $('calEmpty').hidden = false; $('calEmpty').textContent = explain(res.error); return; }
+    const rows = res.data || [];
+    $('calEmpty').hidden = rows.length > 0;
+
+    const ratios = rows.map(r => Number(r.ratio)).filter(n => n > 0);
+    $('calN').textContent = rows.length;
+    $('calHit').textContent = pct(rows.filter(r => r.in_range).length, rows.length);
+    const m = median(ratios);
+    $('calRatio').textContent = m == null ? '—' : m.toFixed(2);
+    $('calEdit').textContent = pct(rows.filter(r => r.seller_edited).length, rows.length);
+
+    // Grouped by how the price was reached. This is the comparison that says
+    // whether the search step pays for itself.
+    const groups = {};
+    rows.forEach(r => {
+      const k = r.priced_from || 'unknown';
+      (groups[k] = groups[k] || []).push(r);
+    });
+    $('calGroup').innerHTML = Object.keys(groups).sort().map(k => {
+      const g = groups[k];
+      const gm = median(g.map(r => Number(r.ratio)).filter(n => n > 0));
+      const avgComps = g.reduce((s,r) => s + Number(r.comps || 0), 0) / g.length;
+      return '<tr><td><div class="nm">' + esc(k) + '</div></td>' +
+        '<td class="num">' + g.length + '</td>' +
+        '<td class="num">' + pct(g.filter(r => r.in_range).length, g.length) + '</td>' +
+        '<td class="num">' + (gm == null ? '—' : gm.toFixed(2)) + '</td>' +
+        '<td class="num">' + avgComps.toFixed(1) + '</td></tr>';
+    }).join('');
+
+    $('calBody').innerHTML = rows.map(r => {
+      const ratio = Number(r.ratio) || 0;
+      const cls = !ratio ? '' : (r.in_range ? 'live' : (ratio > 1 ? 'sched' : 'refunded'));
+      return '<tr>' +
+        '<td><div class="nm">' + esc(r.toy || 'Untitled') + '</div>' +
+          '<div class="sub">' + esc([r.maker, r.line].filter(Boolean).join(' · ')) + '</div></td>' +
+        '<td class="sub">' + esc(r.priced_from || '') + '</td>' +
+        '<td class="num">' + Number(r.comps || 0) + '</td>' +
+        '<td class="sub">' + esc(r.confidence || '') + '</td>' +
+        '<td class="num sub">&euro;' + Number(r.ai_low || 0) + '–' + Number(r.ai_high || 0) + '</td>' +
+        '<td class="num"><b>&euro;' + Number(r.hammer || 0) + '</b></td>' +
+        '<td class="num">' + (ratio ? '<span class="badge ' + cls + '">' + ratio.toFixed(2) + '</span>' : '—') + '</td>' +
+        '<td class="sub">' + esc((r.versions && r.versions.prompt) || '') + '</td>' +
+        '<td class="sub">' + esc(d(r.closed_at)) + '</td>' +
+      '</tr>';
+    }).join('');
   }
 
   $('sBody').addEventListener('click', async e => {
