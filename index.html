@@ -483,6 +483,8 @@
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
   .sell-tokens b { color:var(--ink); font-size:13px; }
   .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
+  .stamp-btn { display:block; margin-top:10px; font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid rgba(181,138,63,.55); color:#8a6a2e; border-radius:3px; padding:7px 11px; cursor:pointer; }
+  .stamp-btn:hover { border-color:#8a6a2e; }
   .stamp-warn { font-family:var(--body); font-size:13px; color:#8a6a2e; background:rgba(181,138,63,.12); border:1px solid rgba(181,138,63,.4); border-radius:4px; padding:12px 14px; margin:16px 0 4px; line-height:1.5; }
   .sale-toggle { display:flex; margin:16px 0; border:1px solid var(--line); border-radius:4px; overflow:hidden; max-width:320px; }
   .sale-toggle button { flex:1; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:11px; border:0; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s, color .12s; }
@@ -2276,7 +2278,7 @@
             <div class="dz-inner">
               <div class="dz-plus">+</div>
               <div class="dz-label">Add photos</div>
-              <div class="dz-hint">3–5 clear shots: front, back, accessories, any flaws, and one close-up of the maker's stamp (year, country, factory)</div>
+              <div class="dz-hint">3&ndash;5 clear shots: front, back, accessories and any flaws. <b>One close-up of the moulded stamp is required</b>, the year, country and factory marks on the soles, the lower back or between the shoulders. It is the only text unique to your toy, so it is what lets us date it and find what it actually sells for. A worn or half-legible stamp is fine.</div>
             </div>
           </label>
           <div class="thumbs" id="thumbs"></div>
@@ -3357,6 +3359,7 @@
         id: lotId, seller_id: uid, toy: current.toy || 'Untitled lot', maker: current.maker || null, line: current.line || null, year: current.year || null,
         condition: current.condition || null, completeness: current.completeness || null, notes: current.notes || null,
         blurb: current.blurb || null,
+        stamp_shown: current.stampVisible !== false,
         variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
@@ -3494,6 +3497,7 @@
           ai_confidence: a.confidence || null, priced_from: a.pricedFrom || null,
           searches: a.searches ?? null, comps: a.comps || [], queries: a.queries || [],
           final_start: current.startingBid ?? null, seller_edited: current.edited === true,
+          stamp_shown: current.stampVisible !== false,
           versions: a.versions || {},
         });
       } catch (e) {}
@@ -3578,7 +3582,11 @@
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
         '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
         (c.blurb ? '<div class="rc-lede">' + esc(c.blurb) + '</div>' : '') +
-        (c.stampVisible === false ? '<div class="stamp-warn">No maker\'s stamp photo detected. Please add a close-up of the molded year / country / factory markings, it confirms the age and origin and builds buyer trust. A worn or scratched stamp is fine.</div>' : '') +
+        (c.stampVisible === false
+          ? (c.noStamp
+              ? '<div class="stamp-warn">Recorded as having no legible stamp. The lot will say so, and dating rests on the sculpt alone. <button type="button" class="stamp-btn" id="stampUndo">I can photograph it after all</button></div>'
+              : '<div class="stamp-warn"><b>A close-up of the moulded stamp is missing.</b> The year, country and factory marks are the only text unique to your toy, so they are what let us date it and search for what it really sells for. Without them the price is a guess. Look at the soles, the lower back or between the shoulders; worn or scratched is fine. <button type="button" class="stamp-btn" id="stampNone">This toy has no legible stamp</button></div>')
+          : '') +
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
           (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
@@ -3597,6 +3605,12 @@
       editing = false;
       if (c.compsPending) bindCompWait();
       document.getElementById('editLot').addEventListener('click', editMode);
+      // The stamp is a requirement, not a nag, so the way past it is a recorded
+      // choice rather than a dismissed banner.
+      const sNone = document.getElementById('stampNone');
+      if (sNone) sNone.addEventListener('click', () => { current.noStamp = true; viewMode(); });
+      const sUndo = document.getElementById('stampUndo');
+      if (sUndo) sUndo.addEventListener('click', () => { current.noStamp = false; viewMode(); });
       card.querySelectorAll('.sale-toggle button').forEach(b => b.addEventListener('click', () => { const st = b.dataset.sale; if (st === (current.saleType || 'auction')) return; if (st === 'fixed' && !current.buyNow) current.buyNow = current.startingBid; current.saleType = st; viewMode(); }));
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
       const dBtn = document.getElementById('draftLot');
@@ -3630,6 +3644,11 @@
               'Your country decides what postage costs you, and tells a buyer whether their order is an EU movement or a customs import. Set it under "Where you post from" in your account, then publish.');
             return;
           }
+        }
+        if (current && current.stampVisible === false && !current.noStamp){
+          openModal('The maker\'s mark is missing', 'One photo still needed.',
+            'A close-up of the moulded year, country and factory marks is required. It is the only text unique to your toy, so it is what lets us date it and price it against real sales. Add the photo and curate again, or, if this piece genuinely carries no legible marks, say so on the card and publish.');
+          return;
         }
         const stop = priceProblem(current);
         if (stop){ openModal('Check the prices', 'That combination would cost you money.', stop); return; }
@@ -4458,6 +4477,7 @@
           (lot.year ? row('Released', lot.year) : '') +
           (lot.line ? row('Line', lot.line) : '') +
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
+          (lot.stamp_shown === false ? row("Maker's mark", 'Not shown, dated from the sculpt') : (lot.stamp_shown === true ? row("Maker's mark", 'Photographed') : '')) +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
           // The forensics: stamp transcription, dating, variant reasoning. Only
           // shown when a blurb took over the lead, or it would appear twice.
