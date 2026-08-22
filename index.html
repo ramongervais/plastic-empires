@@ -3466,7 +3466,7 @@
       compTimer = setInterval(upd, 1000);
     }
 
-    async function fetchComps(seq){
+    async function fetchComps(seq, force){
       compT0 = Date.now();
       const idn = {
         toy: current.toy, maker: current.maker, line: current.line, year: current.year,
@@ -3478,7 +3478,7 @@
       try {
         const res = await fetch(WORKER_URL, {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ curation: idn }),
+          body: JSON.stringify({ curation: idn, force: force === true }),
         });
         data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
@@ -3488,9 +3488,16 @@
       if (seq !== curationSeq || !current) return;   // a newer curation replaced this one
 
       current.compsPending = false;
+      current.compsSkipped = null;
       if (failed || !data || !data.comps && !data.curation){
         current.compsError = failed || 'no result';
+      } else if (data.skipped === 'below_floor'){
+        // A market search costs about as much as the lot is worth down here, and
+        // for cheap pieces it reliably finds nothing comparable anyway. The
+        // seller can still ask for it: they know if theirs is the exception.
+        current.compsSkipped = data.floor || 40;
       } else {
+        current.compsCached = data.cached === true;
         const p = data.curation || {};
         current.comps = p.comps || [];
         current.compsQueries = p.compsQueries || [];
@@ -3591,6 +3598,11 @@
           '<div class="comps-wait">' + HAMMER +
           '<div class="t">Searching for what this actually fetched recently. The listing above is ready, so you can read it through while we look.</div></div></div>';
       }
+      if (c.compsSkipped){
+        return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span>not checked</span></div>' +
+          '<div class="comps-none">Below around ' + eur(c.compsSkipped) + ' a market search costs roughly what the lot is worth, and for inexpensive pieces it usually finds nothing genuinely comparable. The estimate above is the curator\'s reading of the photos. If you think this one is worth more than it looks, check it anyway.' +
+          '<button type="button" class="stamp-btn" id="compsForce" style="margin-top:12px">Check the market anyway</button></div></div>';
+      }
       const comps = (c.comps || []).filter(k => k && k.url && k.priceEur);
       if (!comps.length){
         const why = c.compsError
@@ -3651,6 +3663,7 @@
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
           (c.pricedFrom ? '<br>' + esc(c.pricedFrom === 'curator estimate' ? 'Curator estimate' : 'Estimate from ' + c.pricedFrom) : '') +
+          (c.compsCached ? '<br>Comps from cache' : '') +
           (c.edited ? '<br>Edited' : '') + '</div></div>' +
         compsHtml(c) +
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
@@ -3667,6 +3680,12 @@
       if (sNone) sNone.addEventListener('click', () => { current.noStamp = true; viewMode(); });
       const sUndo = document.getElementById('stampUndo');
       if (sUndo) sUndo.addEventListener('click', () => { current.noStamp = false; viewMode(); });
+      const cForce = document.getElementById('compsForce');
+      if (cForce) cForce.addEventListener('click', () => {
+        current.compsSkipped = null; current.compsPending = true;
+        viewMode();
+        fetchComps(curationSeq, true);
+      });
       card.querySelectorAll('.sale-toggle button').forEach(b => b.addEventListener('click', () => { const st = b.dataset.sale; if (st === (current.saleType || 'auction')) return; if (st === 'fixed' && !current.buyNow) current.buyNow = current.startingBid; current.saleType = st; viewMode(); }));
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
       const dBtn = document.getElementById('draftLot');
