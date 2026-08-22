@@ -517,6 +517,42 @@
   .comp-k.sold { color:#2f6b3a; }
   .comp-k.asking, .comp-k.guide { color:var(--ink-3); }
   .comps-none { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:10px; }
+  /* Waiting state. The curation is two calls and the second one searches the
+     web, so the wait runs to a minute and a half. A spinner says nothing for
+     that long, so the brand mark brings the hammer down instead, with a stage
+     line and a running count so nobody wonders whether it has died. */
+  .hmr { position:relative; margin:0 auto; }
+  .hmr img { position:absolute; left:0; bottom:0; width:100%; display:block;
+             transform-origin:62% 100%; animation:hmrslam 1.25s cubic-bezier(.4,0,.55,1) infinite; }
+  .hmr .bang { position:absolute; left:0; top:6%; width:38%; opacity:0; animation:hmrbang 1.25s linear infinite; }
+  .hmr .bang path { stroke:currentColor; stroke-width:3; stroke-linecap:round; fill:none; }
+  @keyframes hmrslam {
+    0%   { transform:rotate(-14deg) }
+    28%  { transform:rotate(-18deg) }
+    40%  { transform:rotate(8deg) }
+    48%  { transform:rotate(2deg) }
+    56%  { transform:rotate(5deg) }
+    82%  { transform:rotate(-14deg) }
+    100% { transform:rotate(-14deg) }
+  }
+  @keyframes hmrbang {
+    0%,37% { opacity:0; transform:scale(.6) }
+    41%    { opacity:1; transform:scale(1) }
+    54%    { opacity:0; transform:scale(1.5) }
+    100%   { opacity:0; transform:scale(.6) }
+  }
+  .load-wrap { text-align:center; padding:18px 0 6px; }
+  .load-wrap .hmr { width:112px; height:96px; }
+  .load-stage { font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:18px; }
+  .load-sec { font-variant-numeric:tabular-nums; color:var(--ink-3); }
+  .comps-wait { display:flex; align-items:center; gap:14px; margin-top:12px; }
+  .comps-wait .hmr { width:68px; height:58px; margin:0; flex-shrink:0; }
+  .comps-wait .t { font-family:var(--body); font-size:13.5px; line-height:1.6; color:var(--ink-2); }
+  :root[data-theme="dark"] .hmr img { filter:invert(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .hmr img, .hmr .bang { animation:none; }
+    .hmr img { transform:rotate(-6deg); }
+  }
   #view-sell .empire-title { font-size:clamp(38px, 5.6vw, 68px); line-height:1.02; }
   @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
   @media (max-width:600px){ #view-sell .empire-title { font-size:34px; } }
@@ -3192,36 +3228,50 @@
     function setCard(html, empty){ card.className = 'result-card' + (empty ? ' empty' : ''); card.innerHTML = html; }
     function row(k, v){ return v ? '<div class="row"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>' : ''; }
 
-    // Curation is two passes now and the second one searches the web, so the
-    // wait runs to tens of seconds. Say what is happening instead of holding
-    // one frozen line for a minute.
-    const STAGES = ['Reading the photos…', 'Reading the moulded stamp…', 'Searching for recent sales…', 'Comparing what it fetched elsewhere…', 'Pricing the lot…'];
-    function stageTicker(){
+    // The brand mark, mid-swing. Reused at two sizes: the big waiting card and
+    // the small one inside the price-evidence panel.
+    const HAMMER = '<div class="hmr"><img src="Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
+      '<svg class="bang" viewBox="0 0 34 26" aria-hidden="true"><path d="M4 20 L0 24"/><path d="M15 17 L15 24"/><path d="M26 20 L31 25"/></svg></div>';
+
+    // Named stages rather than one frozen line, plus a running second count so
+    // a long wait never looks like a hang. The markup is written once and only
+    // the text is updated afterwards, because re-rendering it would restart
+    // the animation on every tick.
+    function stageTicker(stages){
+      const t0 = Date.now();
+      setCard('<div class="load-wrap">' + HAMMER +
+        '<div class="load-stage"><span id="loadStage">' + esc(stages[0]) + '</span> ' +
+        '<span class="load-sec" id="loadSec">(0s)</span></div></div>', true);
       let i = 0;
-      setCard('<div class="rc-empty">' + STAGES[0] + '</div>', true);
-      const t = setInterval(() => { i = Math.min(i + 1, STAGES.length - 1); setCard('<div class="rc-empty">' + STAGES[i] + '</div>', true); }, 7000);
-      return () => clearInterval(t);
+      const tick = setInterval(() => {
+        const secs = Math.round((Date.now() - t0) / 1000);
+        const st = document.getElementById('loadStage'), sc = document.getElementById('loadSec');
+        if (!sc) return;                            // card was replaced, nothing to update
+        if (secs >= (i + 1) * 8 && i < stages.length - 1) { i++; if (st) st.textContent = stages[i]; }
+        sc.textContent = '(' + secs + 's)';
+      }, 1000);
+      return () => clearInterval(tick);
     }
+    const LOOK_STAGES = ['Reading the photos', 'Reading the moulded stamp', 'Dating the year and the line', 'Grading the condition', 'Writing the listing'];
+    const COMP_STAGES = ['Searching for recent sales', 'Reading the listings it found', 'Checking which ones are comparable', 'Converting to euros', 'Pricing the lot'];
 
     curateBtn.addEventListener('click', async () => {
       if (!files.length) return;
       curateBtn.disabled = true; curateBtn.textContent = 'Curating…';
-      const stopTicker = stageTicker();
+      const stopTicker = stageTicker(LOOK_STAGES);
       try {
+        // Pass 1 only. The search pass is asked for separately so the seller
+        // gets a finished listing to read while the market is being checked.
         const res = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ images: files.map(f => f.dataUrl) }),
+          body: JSON.stringify({ images: files.map(f => f.dataUrl), skipComps: true }),
         });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
-        if (data.curation){
-          if (data.compsError) data.curation.compsError = data.compsError;
-          data.curation.versions = data.versions || null;
-          data.curation.searches = data.searches ?? null;
-        }
+        if (data.curation) data.curation.versions = data.versions || null;
         stopTicker();
-        showCuration(data.curation);
+        showCuration(data.curation, true);
       } catch (err) {
         stopTicker();
         setCard('<div class="rc-empty">Could not curate. ' + esc(err.message || err) + '<br><br>The AI curation runs on the live site, not inside the claude.ai preview.</div>', true);
@@ -3292,7 +3342,13 @@
       viewMode();
     };
 
-    function showCuration(c){
+    // Bumped on every fresh curation. A search that started for an earlier
+    // curation must not land on a later one, which is exactly what would
+    // happen when a seller taps a variant while the first search is in flight.
+    let curationSeq = 0;
+    let editing = false;   // set while the seller has the edit form open
+
+    function showCuration(c, thenPrice){
       if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
       if (c.eligible === false){
         setCard('<div class="rc-head"><div><div class="rc-title">Can\'t be listed</div><div class="rc-sub">Rejected automatically</div></div></div><div class="rc-notes" style="margin-top:16px">' + esc(c.rejectionReason || 'This item is not a collectible toy and cannot be listed on Hammer &amp; Mold.') + '</div><div class="rc-notes" style="color:var(--ink-3);margin-top:10px">No token was used. Only genuine vintage toys and collectibles are allowed.</div>', true);
@@ -3307,7 +3363,84 @@
         confidence: c.confidence, pricedFrom: c.pricedFrom, comps: c.comps || [],
         queries: c.compsQueries || [], searches: c.searches, versions: c.versions,
       };
-      current = c; if (current.auctionDays == null) current.auctionDays = 7; viewMode();
+      current = c; if (current.auctionDays == null) current.auctionDays = 7;
+      const seq = ++curationSeq;
+      if (thenPrice && c.eligible !== false && c.identified !== false){
+        current.compsPending = true;
+        viewMode();
+        fetchComps(seq);
+      } else {
+        viewMode();
+      }
+    }
+
+    // The search pass, on its own, with no photographs re-sent. Its result is
+    // merged into the card in place. Anything the seller has already changed
+    // wins: their own starting bid is never overwritten by a later search.
+    // Seconds counter for the small waiting row. Rebound after every render,
+    // because viewMode replaces the element it writes into.
+    let compT0 = 0, compTimer = null;
+    function bindCompWait(){
+      if (compTimer) { clearInterval(compTimer); compTimer = null; }
+      const upd = () => {
+        const el = document.getElementById('compWait');
+        if (!el || !current || !current.compsPending){ if (compTimer) clearInterval(compTimer); compTimer = null; return; }
+        el.textContent = Math.round((Date.now() - compT0) / 1000) + 's';
+      };
+      upd();
+      compTimer = setInterval(upd, 1000);
+    }
+
+    async function fetchComps(seq){
+      compT0 = Date.now();
+      const idn = {
+        toy: current.toy, maker: current.maker, line: current.line, year: current.year,
+        condition: current.condition, completeness: current.completeness, notes: current.notes,
+        variants: current.variants, startingBid: current.startingBid,
+        estimateLow: current.estimateLow, estimateHigh: current.estimateHigh,
+      };
+      let data = null, failed = null;
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ curation: idn }),
+        });
+        data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
+      } catch (err) {
+        failed = String((err && err.message) || err);
+      }
+      if (seq !== curationSeq || !current) return;   // a newer curation replaced this one
+
+      current.compsPending = false;
+      if (failed || !data || !data.comps && !data.curation){
+        current.compsError = failed || 'no result';
+      } else {
+        const p = data.curation || {};
+        current.comps = p.comps || [];
+        current.compsQueries = p.compsQueries || [];
+        current.compsSummary = p.compsSummary || '';
+        current.pricedFrom = p.pricedFrom || current.pricedFrom;
+        current.searches = data.searches ?? null;
+        if (data.versions) current.versions = data.versions;
+        if (p.notes) current.notes = p.notes;
+        // Only take the search's price if the seller has not set their own.
+        if (!current.edited && p.pricedFrom && p.pricedFrom !== 'curator estimate'){
+          if (p.startingBid) current.startingBid = p.startingBid;
+          if (p.estimateLow) current.estimateLow = p.estimateLow;
+          if (p.estimateHigh) current.estimateHigh = p.estimateHigh;
+          if (p.confidence) current.confidence = p.confidence;
+        }
+        // Refresh the calibration snapshot: the comps price is the AI's final
+        // word, and that is what the log is meant to record.
+        current.ai = Object.assign({}, current.ai, {
+          start: current.startingBid, low: current.estimateLow, high: current.estimateHigh,
+          confidence: current.confidence, pricedFrom: current.pricedFrom,
+          comps: current.comps, queries: current.compsQueries,
+          searches: current.searches, versions: current.versions,
+        });
+      }
+      if (!editing) viewMode();   // never redraw over a form the seller is filling in
     }
 
     // Append-only calibration record. Never allowed to fail the publish: the
@@ -3332,19 +3465,16 @@
       if (!files.length) return;
       // A corrected variant changes what the toy IS, so it changes what it is
       // worth: the comps are searched again rather than carried over.
-      setCard('<div class="rc-empty">Applying your correction and re-pricing against the market…</div>', true);
-      const stopTicker = stageTicker();
+      const stopTicker = stageTicker(LOOK_STAGES);
       try {
-        const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ images: files.map(f => f.dataUrl), correction }) });
+        const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ images: files.map(f => f.dataUrl), correction, skipComps: true }) });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
-        if (data.curation){
-          if (data.compsError) data.curation.compsError = data.compsError;
-          data.curation.versions = data.versions || null;
-          data.curation.searches = data.searches ?? null;
-        }
+        if (data.curation) data.curation.versions = data.versions || null;
         stopTicker();
-        const days = current && current.auctionDays; showCuration(data.curation); if (days) { current.auctionDays = days; viewMode(); }
+        const days = current && current.auctionDays;
+        showCuration(data.curation, true);
+        if (days && current) { current.auctionDays = days; viewMode(); }
       } catch (err) {
         setCard('<div class="rc-empty">Could not rewrite: ' + esc(err.message || err) + '</div>', true);
       } finally {
@@ -3359,6 +3489,11 @@
     // draft payload and is never written to the lots table.
     const KIND_WORD = { sold: 'Sold', asking: 'Asking', guide: 'Guide' };
     function compsHtml(c){
+      if (c.compsPending){
+        return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span id="compWait">checking</span></div>' +
+          '<div class="comps-wait">' + HAMMER +
+          '<div class="t">Searching for what this actually fetched recently. The listing above is ready, so you can read it through while we look.</div></div></div>';
+      }
       const comps = (c.comps || []).filter(k => k && k.url && k.priceEur);
       if (!comps.length){
         const why = c.compsError
@@ -3421,6 +3556,8 @@
           (SB ? '<button class="btn ghost" id="draftLot" type="button">' + (draftId ? 'Update draft' : 'Save as draft') + '</button>' : '') + '</div>' +
         (draftId ? '<div class="rc-notes" style="color:var(--ink-3);margin-top:12px">Working on a saved draft. No token has been used yet; publishing spends one.</div>' : '');
       setCard(html, false);
+      editing = false;
+      if (c.compsPending) bindCompWait();
       document.getElementById('editLot').addEventListener('click', editMode);
       card.querySelectorAll('.sale-toggle button').forEach(b => b.addEventListener('click', () => { const st = b.dataset.sale; if (st === (current.saleType || 'auction')) return; if (st === 'fixed' && !current.buyNow) current.buyNow = current.startingBid; current.saleType = st; viewMode(); }));
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
@@ -3530,6 +3667,7 @@
     }
 
     function editMode(){
+      editing = true;
       const c = current;
       const html =
         '<div class="ef-top"><div class="rc-sub">Edit curation</div>' +
