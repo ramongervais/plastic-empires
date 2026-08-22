@@ -2802,6 +2802,8 @@
   .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
   .zoom-x,.zoom-nav{ position:absolute; z-index:2; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.4); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
   .zoom-x{ top:18px; right:20px; width:44px; height:44px; border-radius:50%; font-size:16px; }
+  .zoom-dl{ position:absolute; z-index:2; top:18px; right:74px; width:44px; height:44px; border-radius:50%; font-size:19px; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.4); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .zoom-dl:hover{ background:rgba(255,255,255,.16); }
   .zoom-nav{ top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:50%; font-size:28px; line-height:0; }
   .zoom-nav.prev{ left:20px; } .zoom-nav.next{ right:20px; }
   .zoom-x:hover,.zoom-nav:hover{ background:rgba(255,255,255,.16); }
@@ -4794,6 +4796,102 @@
   }
 
   // ----- Fullscreen zoom + pan lightbox (mouse wheel, double-click, drag, pinch) -----
+
+  // ----- Watermark on save -----
+  // The image on screen stays clean, and the file that leaves the site carries
+  // the mark. Supabase serves the photos with access-control-allow-origin: *, so
+  // canvas can read the pixels and re-encode them; without that header this
+  // would be impossible in the browser at all.
+  //
+  // Be clear about what this does and does not do. It covers the two routes
+  // someone actually uses to take an image: right-click save, and dragging it to
+  // the desktop. It does not stop a screenshot, and it does not stop anyone who
+  // opens devtools and reads the URL, because at that point the bytes are
+  // already on their machine. Making that impossible means never serving a clean
+  // image at all, which is a different decision.
+  const WM_TEXT = 'HAMMER & MOLD';
+  const WM_SITE = 'hammerandmold.com';
+
+  async function watermarkBlob(src, caption){
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error('could not read the image')); img.src = src; });
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const x = c.getContext('2d');
+    x.drawImage(img, 0, 0, w, h);
+
+    // Scaled to the image, so a 400px card and a 1600px original both look right
+    const u = Math.max(w, h) / 100;
+
+    // A repeated diagonal wordmark, faint enough to read the toy through it and
+    // heavy enough that cropping it out costs you the picture.
+    x.save();
+    x.globalAlpha = 0.085;
+    x.fillStyle = '#000';
+    x.font = '700 ' + (u * 3.2).toFixed(1) + 'px Helvetica, Arial, sans-serif';
+    x.textAlign = 'center';
+    x.textBaseline = 'middle';
+    x.translate(w / 2, h / 2);
+    x.rotate(-Math.PI / 6);
+    // Tight enough that cropping the subject out still crops the mark in.
+    const step = u * 17, reach = Math.hypot(w, h);
+    for (let ry = -reach; ry < reach; ry += step){
+      for (let rx = -reach; rx < reach; rx += step * 1.55){
+        x.fillText(WM_TEXT, rx, ry);
+      }
+    }
+    x.restore();
+
+    // And one legible line, so the file says where it came from
+    const barH = u * 7;
+    x.save();
+    x.fillStyle = 'rgba(0,0,0,0.62)';
+    x.fillRect(0, h - barH, w, barH);
+    x.fillStyle = '#fff';
+    x.textBaseline = 'middle';
+    x.font = '700 ' + (u * 2.5).toFixed(1) + 'px Helvetica, Arial, sans-serif';
+    x.textAlign = 'left';
+    x.fillText(WM_TEXT, u * 2, h - barH / 2);
+    x.font = '400 ' + (u * 2.1).toFixed(1) + 'px Helvetica, Arial, sans-serif';
+    x.textAlign = 'right';
+    x.fillText((caption ? caption + '  ·  ' : '') + WM_SITE, w - u * 2, h - barH / 2);
+    x.restore();
+
+    return new Promise(res => c.toBlob(res, 'image/jpeg', 0.9));
+  }
+
+  const wmName = (caption) => (String(caption || 'lot').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'lot') + '-hammerandmold.jpg';
+
+  async function saveWatermarked(src, caption){
+    try {
+      const blob = await watermarkBlob(src, caption);
+      if (!blob) throw new Error('could not encode the image');
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = wmName(caption);
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (e) {
+      openModal('Could not prepare the file', 'Save did not complete.', String(e.message || e));
+    }
+  }
+
+  // The two routes people actually use. Delegated, so it covers the lot page,
+  // the fullscreen viewer and the shop cards without wiring each one.
+  const WM_SEL = '.lot-main img, .zoom-img, .cardimg, .lot-thumbs img';
+  document.addEventListener('contextmenu', e => {
+    const img = e.target.closest && e.target.closest(WM_SEL);
+    if (!img || !img.src) return;
+    e.preventDefault();
+    saveWatermarked(img.dataset.full || img.src, document.querySelector('.art-title') ? document.querySelector('.art-title').textContent : '');
+  });
+  document.addEventListener('dragstart', e => {
+    const img = e.target.closest && e.target.closest(WM_SEL);
+    if (img) e.preventDefault();
+  });
+
   function openZoom(images, index){
     images = (images || []).filter(Boolean);
     if (!images.length) return;
@@ -4802,13 +4900,20 @@
     ov.className = 'zoom-ov';
     ov.innerHTML =
       '<button class="zoom-x" type="button" aria-label="Close">&#10005;</button>' +
+      '<button class="zoom-dl" type="button" aria-label="Download this image">&#8659;</button>' +
       (images.length > 1 ? '<button class="zoom-nav prev" type="button" aria-label="Previous">&#8249;</button><button class="zoom-nav next" type="button" aria-label="Next">&#8250;</button>' : '') +
       '<div class="zoom-stage"><img class="zoom-img" alt="" draggable="false"></div>' +
       (images.length > 1 ? '<div class="zoom-count"></div>' : '') +
-      '<div class="zoom-hint">Scroll or double-click to zoom &middot; drag to pan' + (images.length > 1 ? ' &middot; &#8249; &#8250; to browse' : '') + '</div>';
+      '<div class="zoom-hint">Scroll or double-click to zoom &middot; drag to pan &middot; saved images are watermarked' + (images.length > 1 ? ' &middot; &#8249; &#8250; to browse' : '') + '</div>';
     document.body.appendChild(ov);
     document.body.style.overflow = 'hidden';
     const img = ov.querySelector('.zoom-img');
+    const dl = ov.querySelector('.zoom-dl');
+    if (dl) dl.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const t = document.querySelector('.art-title');
+      saveWatermarked(images[i], t ? t.textContent : '');
+    });
     const stage = ov.querySelector('.zoom-stage');
     const count = ov.querySelector('.zoom-count');
     let scale = 1, tx = 0, ty = 0;
