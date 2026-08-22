@@ -4282,9 +4282,16 @@
     const myBidByLot = {}; myBids.forEach(b => { const a = Number(b.amount); if (!myBidByLot[b.lot_id] || a > myBidByLot[b.lot_id]) myBidByLot[b.lot_id] = a; });
     const stat = (n, k) => '<div class="acct-stat"><div class="n">' + n + '</div><div class="k">' + k + '</div></div>';
     const tog = (key, label, on) => '<div class="acct-toggle" data-pref="' + key + '"><span class="lbl">' + label + '</span><span class="sw' + (on !== false ? ' on' : '') + '"></span></div>';
-    const stateOf = l => l.status === 'sold' ? 'Sold' : (isEnded(l) ? 'Ended' : 'Live');
+    const stateOf = l => l.status === 'sold' ? 'Sold' : (l.status === 'unsold' ? 'Not sold' : (isEnded(l) ? 'Awaiting payment' : 'Live'));
     const row = (l, right, sub) => '<div class="acct-row"><div class="th" data-nav="lot" data-lot="' + e(l.id) + '"' + (l.image_urls && l.image_urls[0] ? ' style="background-image:url(' + l.image_urls[0] + ')"' : '') + '></div><div class="info" data-nav="lot" data-lot="' + e(l.id) + '"><div class="t">' + e(l.toy) + '</div><div class="s">' + e(sub) + '</div></div>' + right + '</div>';
-    const listingsHtml = lots.length ? lots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
+    const listingsHtml = lots.length ? lots.map(l => {
+      // An unsold lot is out of the public shop and sits here instead, with the
+      // one action that matters. A price would be meaningless: nobody paid it.
+      const right = l.status === 'unsold'
+        ? '<div style="text-align:right"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 token</div></div>'
+        : '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>';
+      return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
+    }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = bidTop[l.id] && bidTop[l.id].bidder_id === uid; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
@@ -4337,6 +4344,23 @@
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
+    // Relist. The RPC checks ownership, charges the token and clears the bids
+    // from the auction that failed, so there is nothing to verify here beyond
+    // asking once: it costs a token and the previous bids go.
+    body.querySelectorAll('[data-relist]').forEach(b => b.addEventListener('click', async () => {
+      if (!confirm('Relist ' + (b.dataset.label || 'this lot') + '?\n\nIt uses one listing token, and the bids from the auction that did not sell are cleared.')) return;
+      b.disabled = true; b.textContent = 'Relisting…';
+      const { error } = await SB.rpc('relist_lot', { target: b.dataset.relist, days: 7 });
+      if (error){
+        b.disabled = false; b.textContent = 'Relist';
+        if (/NO_TOKENS/.test(error.message || '')) openModal('Out of tokens', 'No listing tokens left.', 'Relisting uses one token. Buy a token pack from your account, or upgrade to Premium for 50 tokens a month.');
+        else if (/relist_lot/.test(error.message || '')) openModal('Not available yet', 'The relist function is missing.', 'Run section 11 of admin/schema.sql, then try again.');
+        else openModal('Could not relist', 'Something went wrong.', error.message || String(error));
+        return;
+      }
+      openModal('Relisted', (b.dataset.label || 'Your lot') + ' is back on.', 'It runs for another 7 days from now, with the previous bids cleared. One listing token was used.');
+      renderAccount();
+    }));
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
     const mUp = document.getElementById('mUpgrade'); if (mUp) mUp.addEventListener('click', () => goCheckout(SUBSCRIBE_URL));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
@@ -4470,12 +4494,20 @@
     if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
     const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
     if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
+    // An unsold lot is the seller's business, not a public record of a sale
+    // that did not happen. Only its owner sees the page. This is a courtesy in
+    // the interface, not a security boundary: the row is still world-readable
+    // over the API until the RLS note in section 11 of the schema is acted on.
+    if (lot.status === 'unsold' && !(authUser && authUser.id === lot.seller_id)){
+      body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is not currently listed.</p>';
+      return;
+    }
     const { data: bidRows } = await SB.from('bids').select('amount,created_at,bidder_id').eq('lot_id', id).order('amount', { ascending: false });
     let seller = null;
     if (lot.seller_id){ const { data: sp } = await SB.from('seller_public').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
     const bids = bidRows || [];
     const cur = bids.length ? Number(bids[0].amount) : Number(lot.starting_bid || 0);
-    const ended = lot.status === 'ended' || lot.status === 'sold' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
+    const ended = lot.status === 'ended' || lot.status === 'sold' || lot.status === 'unsold' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
     const topBid = bids.length ? bids[0] : null;
     const reserve = Number(lot.reserve || 0);
     const reserveMet = !reserve || (topBid && cur >= reserve);
