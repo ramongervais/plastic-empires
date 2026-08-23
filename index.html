@@ -386,7 +386,6 @@
   .auc-card { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; padding-top:10px; border-top:1px solid var(--line-2); }
   .auc-card .amt { font-family:var(--body); font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; }
   .auc-card .sub { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-left:6px; }
-  .card-del { font-family:var(--body); font-size:12.5px; color:var(--ink-3); margin-top:4px; font-variant-numeric:tabular-nums; }
   .auc-del { font-family:var(--body); font-size:14px; color:var(--ink-3); margin-top:6px; font-variant-numeric:tabular-nums; }
   .auc-del-more { font:inherit; color:var(--ink-3); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
   .auc-del-more:hover { color:var(--ink); }
@@ -1066,7 +1065,7 @@
           </div>
           <div class="carousel-ui">
             <button class="carousel-arrow" data-dir="-1" aria-label="Previous photo">&larr;</button>
-            <div class="carousel-dots" id="carouselDots"></div>
+            <div class="carousel-dots"></div>
             <button class="carousel-arrow" data-dir="1" aria-label="Next photo">&rarr;</button>
           </div>
           <div class="vcap" style="text-align:left">Kenner Street, Cincinnati. The street that gave the company its name.</div>
@@ -1805,10 +1804,23 @@
           <p>The company went to New York the following month, presented its ideas to Disney's American team and secured the master toy licence for Toy Story. By August, Woody and Buzz were real toys. By November, the world knew exactly who they were.</p>
         </div>
         <div class="scale-visual">
-          <div class="ey" style="margin-bottom:18px">Thinkway · 1995</div>
-          <div class="scale-photo">
-            <span class="ph">Toy Story · 1995</span>
-            <img src="Empires/Thinkway/toystory.jpg" alt="Thinkway Toy Story Woody and Buzz Lightyear figures, 1995" loading="lazy" onerror="this.remove()">
+          <div class="ey" style="margin-bottom:18px">Thinkway · Toy Story</div>
+          <!-- Not dated 1995. Bullseye is standing in these photos and he does not
+               exist until Toy Story 2 in 1999, so a 1995 caption would be wrong on
+               its own evidence. Thinkway held the master licence across both films,
+               which is why the maker is safe to name and the year is not. -->
+          <div class="carousel">
+            <div class="carousel-viewport">
+              <div class="carousel-track">
+                <figure class="slide"><div class="slide-img"><span class="ph">Toy Story cast · 01</span><img src="Empires/Thinkway/toystory-cast-a.jpg" alt="Thinkway Toy Story figures together: Rex, Bullseye, Mr. Potato Head, Buzz Lightyear and Woody" loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><span class="ph">Toy Story cast · 02</span><img src="Empires/Thinkway/toystory-cast-b.jpg" alt="The same Thinkway Toy Story figures, with Rex and Bullseye in focus" loading="lazy" onerror="this.remove()"></div></figure>
+              </div>
+            </div>
+            <div class="carousel-ui">
+              <button class="carousel-arrow" data-dir="-1" aria-label="Previous photo">&larr;</button>
+              <div class="carousel-dots"></div>
+              <button class="carousel-arrow" data-dir="1" aria-label="Next photo">&rarr;</button>
+            </div>
           </div>
           <div class="vcap" style="text-align:left">The biggest toy companies saw a risk. Thinkway saw two great toys.</div>
         </div>
@@ -3062,13 +3074,15 @@
     apply();
   })();
 
-  // ----- Kenner photo carousel -----
-  (function(){
-    const root = document.getElementById('kennerCarousel');
-    if (!root) return;
+  // ----- Photo carousels on the Molder pages -----
+  // Was wired to #kennerCarousel and #carouselDots by id, so a second Molder
+  // page with photos would have silently stolen Kenner's dots. Every .carousel
+  // now runs its own, and each one finds its dots inside itself.
+  document.querySelectorAll('.carousel').forEach(root => {
     const track = root.querySelector('.carousel-track');
     const slides = root.querySelectorAll('.slide');
-    const dotsWrap = document.getElementById('carouselDots');
+    const dotsWrap = root.querySelector('.carousel-dots');
+    if (!track || !slides.length || !dotsWrap) return;
     let i = 0;
     slides.forEach((_, n) => {
       const d = document.createElement('button');
@@ -3085,7 +3099,7 @@
     }
     root.querySelectorAll('.carousel-arrow').forEach(a =>
       a.addEventListener('click', () => go(i + (+a.dataset.dir))));
-  })();
+  });
 
   // ----- Modal: bids / buy now / sell / info -----
   const modal = document.getElementById('modal');
@@ -4055,7 +4069,6 @@
     const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
-    fillCardDelivery(grid);
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
     show('seller');
   }
@@ -4129,11 +4142,11 @@
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
-        // Filled in by fillCardDelivery once the carriers have answered, which is
-        // why it starts as the bare word: an amount written here would have to come
-        // from the stored estimate, and a wrong number beats no number only if you
-        // are not the one paying it.
-        (isClosed ? '' : '<div class="card-del"' + (l.id ? ' data-del="' + e(l.id) + '"' : '') + '>+ delivery</div>') +
+        // No delivery figure on a card, on Ramon's call. Sixteen of them down a
+        // grid is sixteen small numbers competing with the one that matters, and
+        // a shopper scanning a wall of toys is choosing what to look at, not what
+        // to pay. It belongs on the lot page, where someone has already decided
+        // to consider this piece and the postage is part of the real total.
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 October</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
@@ -4195,36 +4208,11 @@
   // yet, so that is one line of SQL and one line here, not a redesign.
   const SELLER_HOME = 'the Netherlands';
 
-  // The number on a shop card, filled in after the grid has rendered. The three
-  // shipping_*_eur columns used to supply it and no longer do: they were written
-  // from a table of estimates and the carriers disagree with all of them, by as
-  // much as 3.10 on a wrestler. So the card ships with the bare word "+ delivery"
-  // and gains its amount when Sendcloud answers, rather than showing a figure
-  // that is already wrong at render time.
-  //
-  // One request for the whole grid, and a failure is silent by design: the card
-  // keeps saying "+ delivery", which is true, and the lot page quotes properly.
-  async function fillCardDelivery(root){
-    if (!PAY_URL) return;
-    const cells = [...(root || document).querySelectorAll('.card-del[data-del]')]
-      .filter(el => !el.dataset.filled);
-    if (!cells.length) return;
-    const ids = [...new Set(cells.map(el => el.dataset.del))];
-    let quotes = {};
-    try {
-      const r = await fetch(PAY_URL.replace(/\/checkout$/, '') + '/shipping-quotes', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lotIds: ids, country: 'NL' }),
-      });
-      quotes = ((await r.json()) || {}).quotes || {};
-    } catch (err) { return; }
-    for (const el of cells){
-      const p = quotes[el.dataset.del];
-      if (!(Number(p) > 0)) continue;
-      el.dataset.filled = '1';
-      el.textContent = '+ ' + SHIPPING.eur(p) + ' delivery';
-    }
-  }
+  // A fillCardDelivery lived here and quoted every card in the grid from the
+  // carriers in one request. It worked, and the grid read better without it, so
+  // the delivery figure now appears only on a lot page. The /shipping-quotes
+  // endpoint it called stays on the pay worker: it answers correctly and costs
+  // nothing unqueried, and it is what a card would need if that changes back.
 
   const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
 
@@ -4236,9 +4224,9 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [], activeTotal = 0, activeShown = 0;
     if (SB) {
-      // No shipping column here on purpose. The card's delivery figure comes from
-      // the carriers via fillCardDelivery, not from the table, so selecting a
-      // stored amount would only give the render something wrong to reach for.
+      // No shipping column here on purpose. A card names no delivery figure at
+      // all now, and if it ever does again it will come from the carriers rather
+      // than from a stored estimate that was wrong on every lot.
       const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type';
       const since = new Date(Date.now() - 86400000).toISOString();
       // ilike patterns go inside an or() string, so strip what would break it
@@ -4321,10 +4309,6 @@
 
     document.querySelectorAll('#collection .card-bid.draft-bid').forEach(b => { if (b.dataset.w) return; b.dataset.w = '1'; b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }); });
 
-    // Not awaited: the grid is already on screen and the delivery figures land a
-    // moment later. Blocking the render on a carrier lookup would trade a page
-    // that is complete for a page that is late.
-    fillCardDelivery();
 
     // Count what is really there, and offer the rest rather than silently
     // dropping it the way the old fixed limit of 48 did.
