@@ -326,7 +326,13 @@
             <select class="f" id="le_shipPick"></select>
             <div class="s" id="le_shipHint" style="margin-top:8px"></div>
           </div>
-          <div id="le_shipCustomWrap" hidden><label class="f" for="le_ship">Shipping &euro;</label><input class="f" id="le_ship" type="number" step="0.01" min="0"></div>
+          <div id="le_shipCustomWrap" class="wide" hidden>
+            <div class="fgrid">
+              <div><label class="f" for="le_shipNl">Netherlands &euro;</label><input class="f" id="le_shipNl" type="number" step="0.01" min="0"></div>
+              <div><label class="f" for="le_ship">EU &euro;</label><input class="f" id="le_ship" type="number" step="0.01" min="0"></div>
+              <div><label class="f" for="le_shipRow">Rest of world &euro;</label><input class="f" id="le_shipRow" type="number" step="0.01" min="0"></div>
+            </div>
+          </div>
           <div><label class="f" for="le_weight">Weight kg</label><input class="f" id="le_weight" type="number" step="0.1" min="0"></div>
           <div><label class="f" for="le_start">Starting bid &euro;</label><input class="f" id="le_start" type="number" step="1" min="0"></div>
           <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
@@ -813,7 +819,7 @@
 
   async function loadLots(){
     const cols = 'id,toy,maker,line,year,condition,completeness,notes,blurb,status,starting_bid,reserve,buy_now,' +
-                 'shipping_eur,weight_kg,stamp_shown,ends_at,seller_id,created_at';
+                 'shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,weight_kg,stamp_shown,ends_at,seller_id,created_at';
     const res = await SB.from('lots').select(cols).order('created_at', { ascending: false });
     if (res.error){ say('lMsg', explain(res.error), 'err'); $('lotsBody').innerHTML = ''; $('lotsEmpty').hidden = false; return; }
     allLots = res.data || [];
@@ -844,7 +850,9 @@
         '<td><span class="badge ' + cls + '">' + esc(label) + '</span></td>' +
         '<td class="num">' + b.n + '</td>' +
         '<td class="num">' + eur(b.n ? b.max : l.starting_bid) + '</td>' +
-        '<td class="sub">' + (Number(l.shipping_eur || 0) > 0 ? eur(l.shipping_eur) : 'included') + '</td>' +
+        '<td class="sub">' + (Number(l.shipping_eur || 0) > 0
+            ? eur(l.shipping_nl_eur || 0) + ' / ' + eur(l.shipping_eur) + ' / ' + eur(l.shipping_row_eur || 0)
+            : 'free') + '</td>' +
         '<td class="sub">' + (l.stamp_shown === false ? 'not shown' : (l.stamp_shown === true ? 'yes' : '—')) + '</td>' +
         '<td><button class="btn ghost sm" type="button" data-editlot="' + esc(l.id) + '">Edit</button></td>' +
       '</tr>';
@@ -861,8 +869,8 @@
     const cur = Number(l.shipping_eur || 0);
     const opts = [{ v: 'free', label: 'Free, the seller pays the postage' }];
     SIZE_CLASSES.forEach(sc => {
-      const b = bandFor(chargeableKg(l.weight_kg, sc.id));
-      opts.push({ v: sc.id, label: sc.label + ' (' + sc.hint + ') — ' + eur(b.eu) + ' to the EU', amount: b.eu });
+      const q = shipQuote(l.weight_kg, sc.id);
+      opts.push({ v: sc.id, label: sc.label + ' (' + sc.hint + ') — ' + eur(q.nl) + ' NL / ' + eur(q.eu) + ' EU / ' + eur(q.row) + ' rest', amount: q.eu });
     });
     opts.push({ v: 'custom', label: 'Custom amount…' });
     // What is selected: the stored class if there is one, otherwise whichever
@@ -883,19 +891,19 @@
     const v = sel.value;
     wrap.hidden = v !== 'custom';
     const sc = SIZE_CLASSES.find(x => x.id === v);
+    const nl = $('le_shipNl'), row = $('le_shipRow');
     if (v === 'free'){
-      amt.value = 0;
-      hint.textContent = 'The buyer pays nothing for postage and it comes out of what you receive. On an auction that is measured against the hammer price, which you do not know yet, so it is worth being sure.';
+      amt.value = 0; if (nl) nl.value = 0; if (row) row.value = 0;
+      hint.textContent = 'The buyer pays nothing for postage, anywhere, and it comes out of what you receive. On an auction that is measured against the hammer price, which you do not know yet, so it is worth being sure.';
     } else if (sc){
       const kg = parseFloat($('le_weight').value) || 0;
-      const billed = chargeableKg(kg, sc.id);
-      const b = bandFor(billed);
-      amt.value = b.eu;
-      hint.textContent = 'A ' + sc.label.toLowerCase() + ' parcel is about ' + sc.box + ' cm, which bills as ' + billed + ' kg' +
-        (sc.vol > kg ? ' on space rather than weight' : '') + ': ' + eur(b.nl) + ' within the Netherlands, ' + eur(b.eu) +
-        ' to the EU. The buyer is charged ' + eur(b.eu) + ' once at checkout, and commission is on the total, so this costs you nothing extra.';
+      const q = shipQuote(kg, sc.id);
+      amt.value = q.eu; if (nl) nl.value = q.nl; if (row) row.value = q.row;
+      hint.textContent = 'A ' + sc.label.toLowerCase() + ' parcel is about ' + sc.box + ' cm, which bills as ' + chargeableKg(kg, sc.id) + ' kg' +
+        (sc.vol > kg ? ' on space rather than weight' : '') + '. The buyer is charged once at checkout for their own destination: ' +
+        eur(q.nl) + ' within the Netherlands, ' + eur(q.eu) + ' to the EU, ' + eur(q.row) + ' beyond it. Commission is on the total, so this costs you nothing extra.';
     } else {
-      hint.textContent = 'Type what posting it actually costs you. Commission is charged on the item plus the postage, so there is nothing to gain by inflating it.';
+      hint.textContent = 'Type what posting it actually costs you to each destination. Commission is charged on the item plus the postage, so there is nothing to gain by inflating it.';
     }
   }
 
@@ -906,6 +914,7 @@
     const v = (f, val) => { const el = $(f); if (el) el.value = val == null ? '' : val; };
     v('le_toy', l.toy); v('le_maker', l.maker); v('le_line', l.line); v('le_year', l.year);
     v('le_condition', l.condition || ''); v('le_ship', l.shipping_eur); v('le_weight', l.weight_kg);
+    v('le_shipNl', l.shipping_nl_eur); v('le_shipRow', l.shipping_row_eur);
     shipOptions(l);
     v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
     v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
@@ -949,6 +958,8 @@
       notes: g('le_notes') || null,
       blurb: g('le_blurb') || null,
       shipping_eur: num('le_ship') || 0,
+      shipping_nl_eur: num('le_shipNl'),
+      shipping_row_eur: num('le_shipRow'),
       weight_kg: num('le_weight'),
       size_class: (function(){ const v = $('le_shipPick').value; return SIZE_CLASSES.some(x => x.id === v) ? v : null; })(),
     };

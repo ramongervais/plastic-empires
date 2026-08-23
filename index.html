@@ -3395,6 +3395,8 @@
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
         auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
         shipping_eur: Number(current.shipping || 0),
+        shipping_nl_eur: current.shippingNl == null ? null : Number(current.shippingNl),
+        shipping_row_eur: current.shippingRow == null ? null : Number(current.shippingRow),
         weight_kg: current.weightKg == null ? null : Number(current.weightKg),
         size_class: current.sizeClass || null,
       };
@@ -3848,16 +3850,15 @@
           const sid = sel ? sel.dataset.size : null;
           const sc = sizeClass(sid);
           if (!kg && !sc){ hint.innerHTML = 'Enter a packed weight and pick a parcel size, and we will tell you what postage costs.'; return; }
-          const billed = chargeableKg(kg, sid);
-          const b = bandFor(billed);
+          const q = shipQuote(kg, sid);
           // Say plainly which of the two is driving the price, because a seller
           // who is charged on volume and never told will think we got it wrong.
           const why = (sc && sc.vol > kg)
             ? 'A ' + sc.label.toLowerCase() + ' parcel bills as <b>' + sc.vol + ' kg</b> of space even at ' + (kg || 0) + ' kg on the scales'
             : 'At ' + kg + ' kg on the scales';
-          hint.innerHTML = why + ', which is <b>' + b.label.toLowerCase() + '</b>: about ' + eur(b.nl) +
-            ' within the Netherlands and ' + eur(b.eu) + ' to the EU. You charge one amount for both, so ' +
-            '<button type="button" class="hint-apply" data-v="' + b.eu + '">use ' + eur(b.eu) + '</button> to stay whole.';
+          hint.innerHTML = why + ', which is <b>' + q.band.toLowerCase() + '</b>: ' +
+            eur(q.nl) + ' within the Netherlands, ' + eur(q.eu) + ' to the EU, ' + eur(q.row) + ' beyond it. ' +
+            '<button type="button" class="hint-apply" data-nl="' + q.nl + '" data-eu="' + q.eu + '" data-row="' + q.row + '">Use these three</button>';
         }
         if (sizeBox) sizeBox.addEventListener('click', e => {
           const b = e.target.closest('.sizebtn'); if (!b) return;
@@ -3867,7 +3868,10 @@
         w.addEventListener('input', draw);
         hint.addEventListener('click', function(e){
           const btn = e.target.closest('.hint-apply'); if (!btn) return;
-          sh.value = btn.dataset.v; draw();
+          sh.value = btn.dataset.eu;
+          current.shippingNl = Number(btn.dataset.nl);
+          current.shippingRow = Number(btn.dataset.row);
+          draw();
         });
         draw();
       })();
@@ -4122,7 +4126,18 @@
       if (Number(n || 0) > 0) return this.eur(n);
       return saleType === 'fixed' ? 'Included in the price' : 'Free, paid by the seller';
     },
-    line: function(n, saleType){ return this.label(n, saleType) + ' · ' + this.detail + ' · ' + this.zones; }
+    // All three destinations, named. A buyer should not have to work out which
+    // rate applies to them, and quoting only one means quoting the wrong one to
+    // most of this market.
+    line: function(lot){
+      const nl = Number(lot.shipping_nl_eur), eu = Number(lot.shipping_eur), row = Number(lot.shipping_row_eur);
+      const any = (nl > 0) || (eu > 0) || (row > 0);
+      if (!any) return this.label(0, lot.sale_type) + ' · ' + this.detail;
+      const part = (label, v) => label + ' ' + (Number(v) > 0 ? this.eur(v) : 'free');
+      const bits = [part('Netherlands', nl), part('EU', eu)];
+      if (row > 0) bits.push(part('Rest of world', row));
+      return bits.join(' · ') + ' · ' + this.detail;
+    }
   };
 
   const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
@@ -4690,7 +4705,7 @@
           ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
           (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
-          row('Shipping', SHIPPING.line(lot.shipping_eur, lot.sale_type)) +
+          row('Shipping', SHIPPING.line(lot)) +
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +

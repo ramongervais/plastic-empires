@@ -49,3 +49,31 @@ function chargeableKg(kg, sizeId){
 
 // the band a given weight falls into, clamped to the heaviest
 const bandFor = kg => SHIP_BANDS.filter(b => Number(kg) <= b.max)[0] || SHIP_BANDS[SHIP_BANDS.length - 1];
+
+// Three destinations, three prices. One amount per lot meant a Dutch buyer paid
+// the EU rate: EUR 8.05 too much on a medium parcel, EUR 18.05 on an oversize
+// one, on a marketplace whose buyers are mostly Dutch. Note that UK sits in
+// "rest of world" for POSTAGE even though the help page treats it separately for
+// CUSTOMS. Those are two different questions: what a carrier charges, and who
+// clears the parcel.
+const SHIP_ZONES = [
+  { key: 'nl',  id: 'nl',  label: 'Netherlands' },
+  { key: 'eu',  id: 'eu',  label: 'EU' },
+  { key: 'row', id: 'row', label: 'Rest of world' },
+];
+
+// The three amounts a size class implies, so every screen quotes the same thing.
+function shipQuote(kg, sizeId){
+  const b = bandFor(chargeableKg(kg, sizeId));
+  return { band: b.label, nl: b.nl, eu: b.eu, row: b.row };
+}
+
+// Which of the three a delivery address falls into. EU membership as of 2026,
+// and anything not listed is rest of world, which is the conservative answer:
+// a seller is never left short on a destination we failed to anticipate.
+const EU_CC = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','PL','PT','RO','SK','SI','ES','SE'];
+function zoneForCountry(cc){
+  const c = String(cc || '').toUpperCase();
+  if (c === 'NL') return 'nl';
+  return EU_CC.includes(c) ? 'eu' : 'row';
+}
