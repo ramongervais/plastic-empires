@@ -3692,7 +3692,7 @@
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
           (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
-          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) + row('Shipping', Number(c.shipping||0) > 0 ? eur(c.shipping) + ' added at checkout' : 'Included in your price') : 'None')) + '</div>' +
+          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) + row('Shipping', Number(c.shipping||0) > 0 ? eur(c.shipping) + ' added at checkout' : (fixed ? 'Included in your price' : 'Free, you pay the postage')) : 'None')) + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
@@ -3824,6 +3824,20 @@
     function priceWarning(c){
       if (c.saleType === 'fixed') return null;
       const bid = Number(c.startingBid || 0), hi = Number(c.estimateHigh || 0);
+      // Free postage on an auction is a real choice, but it has to be made with
+      // the numbers in view: at the opening bid the postage comes out of a much
+      // smaller amount than the seller is imagining.
+      if (bid > 0 && !Number(c.shipping || 0)){
+        const billed = chargeableKg(c.weightKg, c.sizeClass);
+        const cost = billed ? bandFor(billed).eu : 0;
+        if (cost){
+          const net = bid - bid * 0.15 - cost;
+          return { title: 'You are paying the postage on this one.',
+                   body: 'Posting this costs about ' + eur(cost) + ' to the EU. If it sells at your opening bid of ' + eur(bid) +
+                         ', commission and postage leave you ' + eur(Math.round(net)) + '. That is fine if you meant it, and free postage does attract bidders. ' +
+                         'If you did not mean it, set the shipping amount instead: it is added once at checkout and commission is charged on the total, so putting it there costs you nothing extra.' };
+        }
+      }
       if (hi > 0 && bid > hi)
         return { title: 'The opening bid is above the estimate.',
                  body: 'You are starting at ' + eur(bid) + ' while the estimate tops out at ' + eur(hi) + '. That is allowed, but a high opening price is the usual reason a lot gets no bids at all. A low start with competition tends to finish higher.' };
@@ -4135,8 +4149,18 @@
     MAX: 60,                          // sanity cap; postage is not a hidden fee
     eur: function(n){ return '€ ' + Number(n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
     // A lot with no amount set ships free, so nothing changes for existing lots.
-    label: function(n){ return Number(n || 0) > 0 ? this.eur(n) : 'Included in the price'; },
-    line: function(n){ return this.label(n) + ' · ' + this.detail + ' · ' + this.zones; }
+    // Zero does not mean the same thing in both places, and the difference
+    // matters. On a fixed price the price is known, so postage can genuinely be
+    // inside it. On an auction there is no price yet: at the moment a lot is
+    // listed nobody knows whether it will fetch 18 or 80, so "included in the
+    // price" claims something that does not exist. What zero actually means
+    // there is that the seller pays the postage whatever the hammer comes to,
+    // which is a legitimate choice and a completely different sentence.
+    label: function(n, saleType){
+      if (Number(n || 0) > 0) return this.eur(n);
+      return saleType === 'fixed' ? 'Included in the price' : 'Free, paid by the seller';
+    },
+    line: function(n, saleType){ return this.label(n, saleType) + ' · ' + this.detail + ' · ' + this.zones; }
   };
 
   const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
@@ -4665,7 +4689,15 @@
         '<div class="vcap" style="text-align:left">' + (imgs.length ? imgs.length + ' photo' + (imgs.length > 1 ? 's' : '') + ' from the seller.' : 'No photos yet.') + '</div>' +
       '</div>';
     const isOwner = authUser && lot.seller_id && authUser.id === lot.seller_id;
-    const ownerHtml = isOwner ? '<div class="lot-owner"><span>This is your lot.</span><button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>' : '';
+    // Edit sits next to Remove, because this is where an owner looks for it. It
+    // is only offered to an admin: the editor itself lives in the console, and
+    // sending a seller to a gate they cannot pass is worse than not offering it.
+    // A seller-facing editor is still to build.
+    const ownerHtml = isOwner
+      ? '<div class="lot-owner"><span>This is your lot.</span>' +
+        '<button class="lot-remove" id="lotEditLive" type="button" hidden>Edit this lot</button>' +
+        '<button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>'
+      : '';
     const s = lot.ship_to;
     const shipHtml = (isOwner && s) ? '<div class="won-box"><div class="won-h">Ship to</div><div class="won-sub" style="white-space:pre-line">' + [s.name, s.line1, s.line2, [s.postal_code, s.city].filter(Boolean).join(' '), s.state, s.country].filter(Boolean).map(e).join('\n') + (s.phone ? '\n' + e(s.phone) : '') + (s.email ? '\n' + e(s.email) : '') + '</div></div>' : '';
     const isBuyer = authUser && s && s.email && authUser.email && s.email.toLowerCase() === authUser.email.toLowerCase();
@@ -4696,7 +4728,7 @@
           ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
           (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
-          row('Shipping', SHIPPING.line(lot.shipping_eur)) +
+          row('Shipping', SHIPPING.line(lot.shipping_eur, lot.sale_type)) +
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
@@ -4840,6 +4872,11 @@
       document.querySelectorAll('[data-watch="' + lot.id + '"]').forEach(b => { b.classList.toggle('on', on); b.innerHTML = watchStarSvg(on); });
       try { if (SB){ if (on) await SB.from('watchlist').insert({ user_id: authUser.id, lot_id: lot.id }); else await SB.from('watchlist').delete().eq('user_id', authUser.id).eq('lot_id', lot.id); } } catch (e) {}
     });
+    const ed = document.getElementById('lotEditLive');
+    if (ed && SB) {
+      SB.rpc('is_admin').then(r => { if (!r.error && r.data === true) ed.hidden = false; }).catch(() => {});
+      ed.addEventListener('click', () => { location.href = 'admin/#lot=' + encodeURIComponent(lot.id); });
+    }
     const rm = document.getElementById('lotRemove'); if (rm) rm.addEventListener('click', async () => {
       if (!window.confirm('Remove this lot? This cannot be undone.')) return;
       rm.disabled = true;

@@ -796,6 +796,15 @@
   const LOT_MONEY = ['starting_bid', 'reserve', 'buy_now'];
   let allLots = [], lotBids = {}, editingLot = null;
 
+  // Deep link from the lot page: admin/#lot=<id> opens that lot's editor.
+  function openLotFromHash(){
+    const m = /[#&]lot=([0-9a-f-]{36})/i.exec(location.hash || '');
+    if (!m) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.sec === 'lots'));
+    document.querySelectorAll('.sec').forEach(x => { x.hidden = x.id !== 'sec-lots'; });
+    openLotEdit(m[1]);
+  }
+
   async function loadLots(){
     const cols = 'id,toy,maker,line,year,condition,completeness,notes,blurb,status,starting_bid,reserve,buy_now,' +
                  'shipping_eur,weight_kg,stamp_shown,ends_at,seller_id,created_at';
@@ -834,6 +843,7 @@
         '<td><button class="btn ghost sm" type="button" data-editlot="' + esc(l.id) + '">Edit</button></td>' +
       '</tr>';
     }).join('');
+    openLotFromHash();
   }
 
   function openLotEdit(id){
