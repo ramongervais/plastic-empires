@@ -4122,7 +4122,7 @@
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
-        (isClosed ? '' : '<div class="card-del">' + e(Number(l.delivery) > 0 ? '+ ' + SHIPPING.eur(l.delivery) + ' delivery' : '+ delivery, from € 3,85') + '</div>') +
+        (isClosed ? '' : '<div class="card-del">+ delivery</div>') +
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 October</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
@@ -4968,14 +4968,13 @@
           ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
           (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
-          row('Shipping', SHIPPING.line(lot)) +
+          row('Shipping', '<span id="lotShip">Quoted for your address at checkout</span>') +
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
             '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '—'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
-              (ended ? '' : '<div class="auc-del">' + e(deliveryLine(lot)) +
-                 ' &middot; <button type="button" class="auc-del-more" id="delMore" aria-expanded="false">more options</button></div>' +
-                 '<div class="del-panel" id="delPanel" hidden>' + deliveryRows(lot) + '</div>') + '</div>' +
+              (ended ? '' : '<div class="auc-del" id="lotDel">Working out delivery\u2026</div>' +
+                 '<div class="del-panel" id="delPanel" hidden></div>') + '</div>' +
             '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Oct 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
           '</div>' +
           ((!ended && !isPreview && !isFixed && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
@@ -5115,13 +5114,37 @@
       document.querySelectorAll('[data-watch="' + lot.id + '"]').forEach(b => { b.classList.toggle('on', on); b.innerHTML = watchStarSvg(on); });
       try { if (SB){ if (on) await SB.from('watchlist').insert({ user_id: authUser.id, lot_id: lot.id }); else await SB.from('watchlist').delete().eq('user_id', authUser.id).eq('lot_id', lot.id); } } catch (e) {}
     });
-    const dm = document.getElementById('delMore'), dp = document.getElementById('delPanel');
-    if (dm && dp) dm.addEventListener('click', () => {
-      const open = dp.hidden;
-      dp.hidden = !open;
-      dm.setAttribute('aria-expanded', open ? 'true' : 'false');
-      dm.textContent = open ? 'fewer options' : 'more options';
-    });
+    (async function quoteLot(){
+      const del = document.getElementById('lotDel'), dp = document.getElementById('delPanel'), sh = document.getElementById('lotShip');
+      if (!del || !PAY_URL) return;
+      let opts = [];
+      try {
+        const r = await fetch(PAY_URL.replace(/\/checkout$/, '') + '/shipping-quote', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lotId: lot.id, country: 'NL' }),
+        });
+        const d = await r.json();
+        opts = (d && d.options) || [];
+      } catch (e) { opts = []; }
+      if (!opts.length){
+        del.textContent = 'Delivery quoted for your address at checkout';
+        return;
+      }
+      const cheapest = opts[0];
+      del.innerHTML = '+ ' + e(SHIPPING.eur(cheapest.price)) + ' delivery within ' + e(SELLER_HOME) +
+        ' &middot; <button type="button" class="auc-del-more" id="delMore" aria-expanded="false">more options</button>';
+      if (sh) sh.textContent = opts.map(o => o.label + ' ' + SHIPPING.eur(o.price)).join(' \u00b7 ') + ' \u00b7 Tracked';
+      dp.innerHTML = opts.map(o =>
+        '<div class="del-row"><span>' + e(o.label) + '</span><span>' + e(SHIPPING.eur(o.price)) + '</span></div>').join('') +
+        '<div class="del-note">Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.</div>';
+      const dm = document.getElementById('delMore');
+      if (dm) dm.addEventListener('click', () => {
+        const open = dp.hidden;
+        dp.hidden = !open;
+        dm.setAttribute('aria-expanded', open ? 'true' : 'false');
+        dm.textContent = open ? 'fewer options' : 'more options';
+      });
+    })();
     const ed = document.getElementById('lotEditLive');
     if (ed && SB) {
       SB.rpc('is_admin').then(r => { if (!r.error && r.data === true) ed.hidden = false; }).catch(() => {});
