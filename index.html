@@ -386,6 +386,15 @@
   .auc-card { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; padding-top:10px; border-top:1px solid var(--line-2); }
   .auc-card .amt { font-family:var(--body); font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; }
   .auc-card .sub { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-left:6px; }
+  .card-del { font-family:var(--body); font-size:12.5px; color:var(--ink-3); margin-top:4px; font-variant-numeric:tabular-nums; }
+  .auc-del { font-family:var(--body); font-size:14px; color:var(--ink-3); margin-top:6px; font-variant-numeric:tabular-nums; }
+  .auc-del-more { font:inherit; color:var(--ink-3); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .auc-del-more:hover { color:var(--ink); }
+  .del-panel { margin-top:12px; border:1px solid var(--line); border-radius:4px; padding:12px 14px; }
+  .del-panel[hidden] { display:none; }
+  .del-row { display:flex; justify-content:space-between; gap:16px; font-family:var(--body); font-size:13.5px; padding:6px 0; border-bottom:1px solid var(--line-2); font-variant-numeric:tabular-nums; }
+  .del-row:last-of-type { border-bottom:0; }
+  .del-note { font-family:var(--body); font-size:12px; line-height:1.6; color:var(--ink-3); margin-top:10px; }
   .auc-card .cd { font-family:var(--label); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
@@ -4088,6 +4097,9 @@
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
         '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
+        // Under the price, not beside it, so the number a buyer actually pays
+        // reads as one thought. Closed lots leave it out: nothing is shipping.
+        (isClosed ? '' : '<div class="card-del">' + e(Number(l.delivery) > 0 ? '+ ' + SHIPPING.eur(l.delivery) + ' delivery' : 'Free delivery') + '</div>') +
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 October</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
@@ -4144,6 +4156,46 @@
     }
   };
 
+  // The delivery figure that sits under a price, the way eBay puts "+ $29.64
+  // delivery" under "$40.00". One number, not three: the Netherlands rate,
+  // because that is this market. The other destinations stay in the spec table
+  // lower down the lot page, which is where eBay puts them too.
+  //
+  // Falls back to the EU amount when no Netherlands amount is set, because a
+  // missing figure is an unset price, not free delivery.
+  // The headline figure is the seller's OWN country, because that is where most
+  // of a lot's bidders are and it is the price most buyers will actually pay.
+  // Quoting the cross-border rate up front would overstate it for the majority.
+  //
+  // Every seller today posts from the Netherlands, so this is the nl column.
+  // When the first non-Dutch seller signs up, that column is the DOMESTIC rate
+  // and the label wants their country: seller_public does not expose country
+  // yet, so that is one line of SQL and one line here, not a redesign.
+  const SELLER_HOME = 'the Netherlands';
+
+  function deliveryEur(lot){
+    const eu = Number(lot.shipping_eur) || 0;
+    // A missing per-zone amount is an unset price, not free delivery.
+    return lot.shipping_nl_eur == null ? eu : (Number(lot.shipping_nl_eur) || 0);
+  }
+  // The other two destinations, revealed on request rather than shouted. Same
+  // fallback rule: an unset zone shows the amount the seller did set, never free.
+  function deliveryRows(lot){
+    const eu = Number(lot.shipping_eur) || 0;
+    const nl = lot.shipping_nl_eur == null ? eu : (Number(lot.shipping_nl_eur) || 0);
+    const row = lot.shipping_row_eur == null ? eu : (Number(lot.shipping_row_eur) || 0);
+    const amt = v => Number(v) > 0 ? SHIPPING.eur(v) : 'Free';
+    return [['Netherlands', nl], ['Rest of the EU', eu], ['Rest of the world', row]]
+      .map(([label, v]) => '<div class="del-row"><span>' + label + '</span><span>' + amt(v) + '</span></div>').join('') +
+      '<div class="del-note">' + SHIPPING.detail + '. Added once at checkout, never invoiced afterwards. ' +
+      'Outside the EU a parcel may attract import VAT and duty on arrival, which the buyer pays to the carrier.</div>';
+  }
+
+  const deliveryLine = lot => {
+    const d = deliveryEur(lot);
+    return (d > 0 ? '+ ' + SHIPPING.eur(d) + ' delivery' : 'Free delivery') + ' within ' + SELLER_HOME;
+  };
+
   const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
 
   async function injectDraftLots(){
@@ -4154,7 +4206,10 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [], activeTotal = 0, activeShown = 0;
     if (SB) {
-      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type';
+      // shipping_nl_eur is deliberately absent: naming a column that the pending
+      // migration has not created yet fails the whole SELECT and takes the shop
+      // down. deliveryEur falls back to this one until it exists.
+      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,shipping_eur';
       const since = new Date(Date.now() - 86400000).toISOString();
       // ilike patterns go inside an or() string, so strip what would break it
       const q = shopQuery.replace(/[,()*%\\]/g, ' ').trim();
@@ -4207,7 +4262,7 @@
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0 };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, delivery: deliveryEur(r), featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0 };
       });
     } else {
       lots = loadDraftLots();
@@ -4713,7 +4768,10 @@
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
-            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '—'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div></div>' +
+            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '—'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
+              (ended ? '' : '<div class="auc-del">' + e(deliveryLine(lot)) +
+                 ' &middot; <button type="button" class="auc-del-more" id="delMore" aria-expanded="false">more options</button></div>' +
+                 '<div class="del-panel" id="delPanel" hidden>' + deliveryRows(lot) + '</div>') + '</div>' +
             '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Oct 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
           '</div>' +
           ((!ended && !isPreview && !isFixed && lot.extended) ? '<div class="ext-note">Anti-snipe · extended by 2 minutes after a late bid</div>' : '') +
@@ -4852,6 +4910,13 @@
       lwatch.innerHTML = on ? 'Watching &check;' : 'Watch this lot';
       document.querySelectorAll('[data-watch="' + lot.id + '"]').forEach(b => { b.classList.toggle('on', on); b.innerHTML = watchStarSvg(on); });
       try { if (SB){ if (on) await SB.from('watchlist').insert({ user_id: authUser.id, lot_id: lot.id }); else await SB.from('watchlist').delete().eq('user_id', authUser.id).eq('lot_id', lot.id); } } catch (e) {}
+    });
+    const dm = document.getElementById('delMore'), dp = document.getElementById('delPanel');
+    if (dm && dp) dm.addEventListener('click', () => {
+      const open = dp.hidden;
+      dp.hidden = !open;
+      dm.setAttribute('aria-expanded', open ? 'true' : 'false');
+      dm.textContent = open ? 'fewer options' : 'more options';
     });
     const ed = document.getElementById('lotEditLive');
     if (ed && SB) {
