@@ -4153,7 +4153,11 @@
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
-        '<div class="meta">' + e([l.line, l.maker, l.year].filter(Boolean).join(' · ')) + '</div>' +
+        // makerLabel, not the raw maker. The curation writes free text and the
+        // bracketed half is provenance for the lot page, not for a card: today
+        // that already puts "HASBRO (TITAN SPORTS INC.)" on a card next to a line
+        // that says the same thing, and a longer note would push the year off.
+        '<div class="meta">' + e([l.line, makerLabel(l.maker), l.year].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
@@ -4379,7 +4383,11 @@
   // lead to an empty shop. The curation writes maker as free text ("Hasbro
   // (Titan Sports)"), so the chip label is the part before the first bracket or
   // comma and the filter matches on that.
-  const makerLabel = m => String(m || '').split(/[(,]/)[0].trim();
+  // A declaration rather than a const, so it is hoisted. lotCardHtml calls it
+  // several hundred lines above this point and only gets away with it because
+  // nothing renders a card during evaluation. A const would put that on a
+  // temporal dead zone; a function makes the order not matter.
+  function makerLabel(m){ return String(m || '').split(/[(,]/)[0].trim(); }
   // Local, because esc() lives inside the sell closure. Quotes matter here: the
   // label goes into a data attribute and it comes from the database.
   const mkEsc = t => String(t == null ? '' : t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
