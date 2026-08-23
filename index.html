@@ -394,6 +394,12 @@
   .del-panel[hidden] { display:none; }
   .del-row { display:flex; justify-content:space-between; gap:16px; font-family:var(--body); font-size:13.5px; padding:6px 0; border-bottom:1px solid var(--line-2); font-variant-numeric:tabular-nums; }
   .del-row:last-of-type { border-bottom:0; }
+  .so-head { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:8px; }
+  .ship-opt { display:block; border:1px solid var(--line); border-radius:4px; padding:10px 12px; margin-bottom:8px; cursor:pointer; }
+  .ship-opt.on { border-color:var(--ink); }
+  .ship-opt input { margin-right:8px; }
+  .ship-opt .so-t { font-family:var(--body); font-size:14px; display:flex; justify-content:space-between; gap:12px; font-variant-numeric:tabular-nums; }
+  .ship-opt .so-n { display:block; font-family:var(--body); font-size:12px; line-height:1.5; color:var(--ink-3); margin-top:4px; }
   .del-note { font-family:var(--body); font-size:12px; line-height:1.6; color:var(--ink-3); margin-top:10px; }
   .auc-card .cd { font-family:var(--label); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
@@ -4099,7 +4105,7 @@
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
-        (isClosed ? '' : '<div class="card-del">' + e(Number(l.delivery) > 0 ? '+ ' + SHIPPING.eur(l.delivery) + ' delivery' : 'Free delivery') + '</div>') +
+        (isClosed ? '' : '<div class="card-del">' + e(Number(l.delivery) > 0 ? '+ ' + SHIPPING.eur(l.delivery) + ' delivery' : '+ delivery, from € 3,85') + '</div>') +
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 October</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
@@ -4184,16 +4190,21 @@
     const eu = Number(lot.shipping_eur) || 0;
     const nl = lot.shipping_nl_eur == null ? eu : (Number(lot.shipping_nl_eur) || 0);
     const row = lot.shipping_row_eur == null ? eu : (Number(lot.shipping_row_eur) || 0);
-    const amt = v => Number(v) > 0 ? SHIPPING.eur(v) : 'Free';
+    const amt = v => Number(v) > 0 ? SHIPPING.eur(v) : 'quoted at checkout';
     return [['Netherlands', nl], ['Rest of the EU', eu], ['Rest of the world', row]]
       .map(([label, v]) => '<div class="del-row"><span>' + label + '</span><span>' + amt(v) + '</span></div>').join('') +
       '<div class="del-note">' + SHIPPING.detail + '. Added once at checkout, never invoiced afterwards. ' +
       'Outside the EU a parcel may attract import VAT and duty on arrival, which the buyer pays to the carrier.</div>';
   }
 
+  // Zero stored no longer means free: postage is quoted live at checkout from the
+  // carriers, for the buyer's own country. Saying "free" here while checkout
+  // charges EUR 3.85 would be the site contradicting itself on the one number
+  // that decides whether someone buys.
   const deliveryLine = lot => {
     const d = deliveryEur(lot);
-    return (d > 0 ? '+ ' + SHIPPING.eur(d) + ' delivery' : 'Free delivery') + ' within ' + SELLER_HOME;
+    return d > 0 ? '+ ' + SHIPPING.eur(d) + ' delivery within ' + SELLER_HOME
+                 : 'Delivery calculated for your address';
   };
 
   const FEATURED_MAX = 8;   // the shop grid is 4-up, so at most two rows of promoted lots
@@ -4639,30 +4650,68 @@
       '<div class="bidhint" id="ckHint"></div>';
     body.parentNode.insertBefore(f, body.nextSibling);
 
-    const zoneAmt = cc => {
-      const eu = Number(lot.shipping_eur) || 0;
-      if (cc === 'NL') return lot.shipping_nl_eur == null ? eu : (Number(lot.shipping_nl_eur) || 0);
-      return eu;   // the picker only offers EU countries, so this is the EU rate
-    };
+    // Postage is quoted live for the country chosen, because within the EU the
+    // same product runs from EUR 8.24 to Austria to EUR 27.73 to Finland. No
+    // single stored figure can be right for both, and a buyer should not be
+    // charged the average of a spread they are not in.
+    let chosen = null, quoted = [];
     const drawTotal = () => {
-      const ship = zoneAmt(document.getElementById('ckCountry').value);
-      document.getElementById('ckTotal').innerHTML =
+      const ship = chosen ? Number(chosen.price) : 0;
+      const box = document.getElementById('ckTotal');
+      const opt = (o) =>
+        '<label class="ship-opt' + (chosen && chosen.id === o.id ? ' on' : '') + '">' +
+          '<input type="radio" name="shipopt" value="' + esc(o.id) + '"' + (chosen && chosen.id === o.id ? ' checked' : '') + '>' +
+          '<span class="so-t">' + esc(o.label) + '<b>' + money(o.price) + '</b></span>' +
+          '<span class="so-n">' + esc(o.note) + '</span>' +
+        '</label>';
+      box.innerHTML =
+        (quoted.length > 1 ? '<div class="so-head">How it travels</div>' + quoted.map(opt).join('') : '') +
         '<div class="del-row"><span>' + esc(opts.label || 'Lot') + '</span><span>' + money(opts.amount) + '</span></div>' +
-        '<div class="del-row"><span>Delivery</span><span>' + (ship > 0 ? money(ship) : 'Free') + '</span></div>' +
-        '<div class="del-row"><span><b>Total</b></span><span><b>' + money(Number(opts.amount) + ship) + '</b></span></div>' +
+        '<div class="del-row"><span>Delivery' + (chosen && quoted.length === 1 ? ', ' + esc(chosen.label.toLowerCase()) : '') + '</span><span>' + (chosen ? money(ship) : '\u2014') + '</span></div>' +
+        '<div class="del-row"><span><b>Total</b></span><span><b>' + (chosen ? money(Number(opts.amount) + ship) : '\u2014') + '</b></span></div>' +
         '<div class="del-note">Charged once, at Stripe. Nothing is invoiced afterwards.</div>';
+      box.querySelectorAll('input[name=shipopt]').forEach((r) => r.addEventListener('change', () => {
+        chosen = quoted.find((o) => o.id === r.value) || chosen;
+        drawTotal();
+      }));
     };
-    document.getElementById('ckCountry').addEventListener('change', drawTotal);
-    drawTotal();
+
+    async function quote(){
+      const cc = document.getElementById('ckCountry').value;
+      const box = document.getElementById('ckTotal');
+      box.innerHTML = '<div class="del-note">Asking the carriers what this costs to ' + esc(cc) + '\u2026</div>';
+      try {
+        const r = await fetch(PAY_URL.replace(/\/checkout$/, '') + '/shipping-quote', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lotId: opts.lotId, country: cc }),
+        });
+        const d = await r.json();
+        quoted = (d && d.options) || [];
+        // No carrier account wired up yet: fall back to whatever the seller set,
+        // so a missing secret cannot stop somebody buying.
+        if (!quoted.length && d && typeof d.fallback === 'number'){
+          quoted = [{ id: 'seller', label: 'Tracked and insured', note: 'Posted by the seller.', price: d.fallback }];
+        }
+        chosen = quoted[0] || null;
+      } catch (e) { quoted = []; chosen = null; }
+      if (!quoted.length){
+        box.innerHTML = '<div class="del-note">We cannot post this lot to that country. Pick another destination, or message the seller.</div>';
+        return;
+      }
+      drawTotal();
+    }
+    document.getElementById('ckCountry').addEventListener('change', quote);
+    quote();
 
     document.getElementById('ckGo').addEventListener('click', () => {
       const g = id => document.getElementById(id).value.trim();
       const hint = document.getElementById('ckHint');
-      const addr = { name: g('ckName'), line1: g('ckLine1'), line2: g('ckLine2'), postal_code: g('ckZip'), city: g('ckCity'), country: g('ckCountry') };
+      const addr = { name: g('ckName'), line1: g('ckLine1'), line2: g('ckLine2'), postal_code: g('ckZip'), city: g('ckCity'), country: g('ckCountry'), shipLevel: chosen ? chosen.id : null };
       if (!addr.name || !addr.line1 || !addr.postal_code || !addr.city){
         hint.textContent = 'Name, street, postcode and city are all needed before we can post it.';
         return;
       }
+      if (!chosen){ hint.textContent = 'Pick how it should travel first.'; return; }
       hint.textContent = 'Taking you to Stripe…';
       goToStripe(opts, addr);
     });
@@ -4673,7 +4722,7 @@
       const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '',
           buyerId: authUser ? authUser.id : '', origin: location.origin,
-          country: addr.country, address: addr }) });
+          country: addr.country, address: addr, shipLevel: addr.shipLevel }) });
       const d = await r.json();
       if (d && d.url) location.href = d.url;
       else openModal('Checkout error', 'Could not start payment', (d && d.error) || 'Please try again.');
