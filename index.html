@@ -500,6 +500,8 @@
   .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
   .sell-tokens b { color:var(--ink); font-size:13px; }
   .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
+  .lb-check { display:flex; align-items:flex-start; gap:9px; font-family:var(--body); font-size:14px; line-height:1.5; cursor:pointer; }
+  .lb-check input { margin-top:3px; }
   .stamp-btn { display:block; margin-top:10px; font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid rgba(181,138,63,.55); color:#8a6a2e; border-radius:3px; padding:7px 11px; cursor:pointer; }
   .stamp-btn:hover { border-color:#8a6a2e; }
   .stamp-warn { font-family:var(--body); font-size:13px; color:#8a6a2e; background:rgba(181,138,63,.12); border:1px solid rgba(181,138,63,.4); border-radius:4px; padding:12px 14px; margin:16px 0 4px; line-height:1.5; }
@@ -3414,6 +3416,7 @@
         shipping_row_eur: current.shippingRow == null ? null : Number(current.shippingRow),
         weight_kg: current.weightKg == null ? null : Number(current.weightKg),
         size_class: current.sizeClass || null,
+        letterbox: current.letterbox === true,
       };
     }
 
@@ -3843,6 +3846,10 @@
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
         '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
         '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
+        '<div class="ef"><label class="ef-l">Fits through a letterbox</label>' +
+          '<label class="lb-check"><input type="checkbox" id="e_letterbox"' + (c.letterbox ? ' checked' : '') + '>' +
+          '<span>Yes, it lies flat in an envelope under about 3.2 cm</span></label>' +
+          '<div class="ef-h">Only tick this after actually laying it in an envelope. Postage is quoted from a carrier that checks weight and never thickness, so it will offer the cheapest letterbox rate for something that cannot go through a door. Ticked, a buyer can pick it and pay less. Unticked, they cannot.</div></div>' +
         '<div class="ef"><label class="ef-l" for="e_size">Parcel size</label>' +
           '<div class="sizepick" id="e_size">' +
           SIZE_CLASSES.map(sc => '<button type="button" class="sizebtn' + (c.sizeClass === sc.id ? ' on' : '') + '" data-size="' + sc.id + '">' +
@@ -3899,6 +3906,7 @@
           startingBid: num('e_bid'),
           reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'), weightKg: num('e_weight'),
           sizeClass: (function(){ const b = document.querySelector('#e_size .sizebtn.on'); return b ? b.dataset.size : (current.sizeClass || null); })(),
+          letterbox: (function(){ const el = document.getElementById('e_letterbox'); return el ? el.checked === true : (current.letterbox === true); })(),
           blurb: g('e_blurb'), notes: g('e_notes'),
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
