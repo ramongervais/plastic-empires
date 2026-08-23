@@ -4594,6 +4594,92 @@
       if (d && d.url) location.href = d.url; else openModal('Something went wrong', 'Could not start', (d && d.error) || 'Please try again.');
     } catch (err){ openModal('Something went wrong', 'Could not start', err.message); }
   }
+  // Our own checkout step, before Stripe. Two reasons, and the second matters
+  // more. A buyer sees the real total for their own address instead of finding
+  // the postage at the last screen. And the destination is known BEFORE the
+  // session is created, so the Worker can price the right zone and lock the
+  // country: without it, someone quoted Dutch postage could enter a Portuguese
+  // address at Stripe's address step and pay the Dutch rate for it.
+  //
+  // Card details are still Stripe's. Taking those here would put this site in
+  // PCI scope and make SCA our problem, which is a compliance project rather
+  // than a design choice. Stripe's Payment Element is the way to bring the card
+  // step onto our own page later without owning the card data.
+  const DEST = [
+    ['NL', 'Netherlands'], ['BE', 'Belgium'], ['DE', 'Germany'], ['FR', 'France'],
+    ['LU', 'Luxembourg'], ['IE', 'Ireland'], ['ES', 'Spain'], ['IT', 'Italy'],
+    ['PT', 'Portugal'], ['AT', 'Austria'], ['DK', 'Denmark'], ['SE', 'Sweden'],
+    ['FI', 'Finland'], ['PL', 'Poland'], ['CZ', 'Czechia'], ['SK', 'Slovakia'],
+    ['SI', 'Slovenia'], ['HU', 'Hungary'], ['RO', 'Romania'], ['BG', 'Bulgaria'],
+    ['HR', 'Croatia'], ['GR', 'Greece'], ['EE', 'Estonia'], ['LV', 'Latvia'],
+    ['LT', 'Lithuania'], ['MT', 'Malta'], ['CY', 'Cyprus'],
+  ];
+
+  function askAddress(opts, lot){
+    const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    openModal('Delivery', opts.label || 'Where should it go?', 'We need the delivery address before payment, so the postage you are charged is the postage for your own country and not an estimate.');
+    const body = document.getElementById('modalBody');
+    const f = document.createElement('div');
+    f.className = 'bidform';
+    f.style.marginTop = '14px';
+    f.innerHTML =
+      '<label class="bidlabel" for="ckName">Full name</label><input class="bidinput" id="ckName" autocomplete="name">' +
+      '<label class="bidlabel" for="ckLine1" style="margin-top:10px">Street and number</label><input class="bidinput" id="ckLine1" autocomplete="address-line1">' +
+      '<label class="bidlabel" for="ckLine2" style="margin-top:10px">Addition (optional)</label><input class="bidinput" id="ckLine2" autocomplete="address-line2">' +
+      '<div style="display:flex;gap:10px;margin-top:10px">' +
+        '<div style="flex:0 0 40%"><label class="bidlabel" for="ckZip">Postcode</label><input class="bidinput" id="ckZip" autocomplete="postal-code"></div>' +
+        '<div style="flex:1"><label class="bidlabel" for="ckCity">City</label><input class="bidinput" id="ckCity" autocomplete="address-level2"></div>' +
+      '</div>' +
+      '<label class="bidlabel" for="ckCountry" style="margin-top:10px">Country</label>' +
+      '<select class="bidinput" id="ckCountry" autocomplete="country">' +
+        DEST.map(([c, n]) => '<option value="' + c + '"' + (c === 'NL' ? ' selected' : '') + '>' + n + '</option>').join('') +
+      '</select>' +
+      '<div class="del-panel" id="ckTotal" style="margin-top:14px"></div>' +
+      '<button class="btn accent" id="ckGo" type="button" style="margin-top:14px;width:100%">Continue to payment</button>' +
+      '<div class="bidhint" id="ckHint"></div>';
+    body.parentNode.insertBefore(f, body.nextSibling);
+
+    const zoneAmt = cc => {
+      const eu = Number(lot.shipping_eur) || 0;
+      if (cc === 'NL') return lot.shipping_nl_eur == null ? eu : (Number(lot.shipping_nl_eur) || 0);
+      return eu;   // the picker only offers EU countries, so this is the EU rate
+    };
+    const drawTotal = () => {
+      const ship = zoneAmt(document.getElementById('ckCountry').value);
+      document.getElementById('ckTotal').innerHTML =
+        '<div class="del-row"><span>' + esc(opts.label || 'Lot') + '</span><span>' + money(opts.amount) + '</span></div>' +
+        '<div class="del-row"><span>Delivery</span><span>' + (ship > 0 ? money(ship) : 'Free') + '</span></div>' +
+        '<div class="del-row"><span><b>Total</b></span><span><b>' + money(Number(opts.amount) + ship) + '</b></span></div>' +
+        '<div class="del-note">Charged once, at Stripe. Nothing is invoiced afterwards.</div>';
+    };
+    document.getElementById('ckCountry').addEventListener('change', drawTotal);
+    drawTotal();
+
+    document.getElementById('ckGo').addEventListener('click', () => {
+      const g = id => document.getElementById(id).value.trim();
+      const hint = document.getElementById('ckHint');
+      const addr = { name: g('ckName'), line1: g('ckLine1'), line2: g('ckLine2'), postal_code: g('ckZip'), city: g('ckCity'), country: g('ckCountry') };
+      if (!addr.name || !addr.line1 || !addr.postal_code || !addr.city){
+        hint.textContent = 'Name, street, postcode and city are all needed before we can post it.';
+        return;
+      }
+      hint.textContent = 'Taking you to Stripe…';
+      goToStripe(opts, addr);
+    });
+  }
+
+  async function goToStripe(opts, addr){
+    try {
+      const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '',
+          buyerId: authUser ? authUser.id : '', origin: location.origin,
+          country: addr.country, address: addr }) });
+      const d = await r.json();
+      if (d && d.url) location.href = d.url;
+      else openModal('Checkout error', 'Could not start payment', (d && d.error) || 'Please try again.');
+    } catch (err){ openModal('Checkout error', 'Could not start payment', err.message); }
+  }
+
   async function startCheckout(opts){
     opts = opts || {};
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -4602,12 +4688,13 @@
       openModal('Secure checkout', opts.label || 'Payment', (opts.kind === 'win' ? 'This will take you to a secure Stripe checkout to pay ' + money(opts.amount) + ' for the lot you won.' : 'This will take you to a secure Stripe checkout to buy this lot now for ' + money(opts.amount) + '.') + ' Payments are being wired up and go live shortly.');
       return;
     }
-    try {
-      const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '', buyerId: authUser ? authUser.id : '', origin: location.origin }) });
-      const d = await r.json();
-      if (d && d.url) location.href = d.url;
-      else openModal('Checkout error', 'Could not start payment', (d && d.error) || 'Please try again.');
-    } catch (err){ openModal('Checkout error', 'Could not start payment', err.message); }
+    // The lot's own postage columns, so the total shown is the total charged.
+    let lot = { shipping_eur: 0 };
+    if (SB && opts.lotId){
+      const { data } = await SB.from('lots').select('*').eq('id', opts.lotId).single();
+      if (data) lot = data;
+    }
+    askAddress(opts, lot);
   }
 
   // ----- Message a seller (privacy-safe relay via Resend; email never exposed) -----
