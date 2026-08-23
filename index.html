@@ -2547,6 +2547,8 @@
         <p>Listings are prepared with AI-assisted curation and this is not guaranteed to be accurate. The Seller is solely responsible for reviewing and confirming every listing (identification, variant, condition, completeness, authenticity) before it goes live. Only genuine collectible toys, models and related memorabilia may be listed; items that are not collectibles, or that are prohibited (including adult, sexual, weapon or illegal content) are refused automatically, and we may edit, refuse or remove any listing at our discretion. Each published listing uses one listing token from the Seller's balance.</p>
         <p>Suggested starting bids, estimate ranges and any comparable sales shown to the Seller are indicative market research, not a valuation, an appraisal or a guarantee of value. Comparable listings are third-party data collected automatically from public sources: they may be inaccurate, out of date, mis-converted between currencies or not genuinely comparable to the lot. The Seller sets the final price and is responsible for it. Nothing in a curation is investment or resale advice.</p>
 
+        <p><b>Returns and who pays the postage.</b> Two different situations, and the difference decides who is out of pocket. If an item arrives materially different from its listing, damaged, or not as described, return it and you are refunded in full including what you paid for postage, and we cover the cost of sending it back. If you change your mind, you may return an item within 14 days of receiving it, but you pay the return postage yourself and the refund covers the item rather than the original delivery. Tell us before you send anything back so the return is recorded and reaches the right address. This is stated here in advance deliberately: a buyer who is not told beforehand that a change-of-mind return is at their own cost cannot be charged for it.</p>
+
         <div class="terms-h">5 · Bidding and winning</div>
         <p>A placed bid is a binding, irrevocable offer, subject to any hidden reserve. The highest valid bid at close, or acceptance of a Buy-now price, wins. We may extend, void or re-open an auction in case of a fault, error or suspected manipulation.</p>
 
@@ -2908,6 +2910,35 @@
     { label: '5 to 10 kg', max: 10, nl: 6.95,  eu: 25, uk: 33, row: 50 },
     { label: '10 to 20 kg', max: 20, nl: 16.95, eu: 35, uk: 45, row: 70 }
   ];
+  // Carriers charge on whichever is greater: what a parcel weighs, or what it
+  // takes up. Volumetric weight is length x width x height / 5000, and for the
+  // things sold here it wins almost every time: a 13 inch hollow vinyl kaiju
+  // weighs half a kilo and bills as four. Pricing on weight alone under-charges
+  // by around EUR 10 a lot on exactly this catalogue's biggest items, which is
+  // why an eBay seller in Kansas asks $54 to post a $56 Godzilla.
+  //
+  // Three dimensions is three more fields a seller has to measure. A size class
+  // is one tap and gets within a band, which is all the precision a band needs.
+  // These four volumetric figures are the assumption in the whole calculation:
+  // each is its box divided by 5000, the divisor DHL and UPS use. PostNL prices
+  // domestic parcels by size class rather than volumetric kilos, so the penalty
+  // bites hardest on EU and courier shipments. Check them against a real tariff
+  // sheet before launch; they are deliberately in one table so that is a
+  // four-number edit.
+  const SIZE_CLASSES = [
+    { id: 'S',  label: 'Small',    hint: 'a loose 3-4 inch figure, padded envelope or small box', box: '25 x 18 x 8',   vol: 1 },
+    { id: 'M',  label: 'Medium',   hint: 'a loose 8 inch figure, a shoebox',                     box: '32 x 20 x 12', vol: 1.5 },
+    { id: 'L',  label: 'Large',    hint: 'a big vinyl kaiju, a boxed or carded figure',          box: '40 x 30 x 20', vol: 5 },
+    { id: 'XL', label: 'Oversize', hint: 'a playset, a vehicle, a multi-figure lot',             box: '55 x 40 x 30', vol: 13 },
+  ];
+  const sizeClass = id => SIZE_CLASSES.find(c => c.id === id) || null;
+
+  // What the carrier will actually bill for.
+  function chargeableKg(kg, sizeId){
+    const c = sizeClass(sizeId);
+    return Math.max(Number(kg) || 0, c ? c.vol : 0);
+  }
+
   // the band a given weight falls into, clamped to the heaviest
   const bandFor = kg => SHIP_BANDS.filter(b => Number(kg) <= b.max)[0] || SHIP_BANDS[SHIP_BANDS.length - 1];
 
@@ -3403,6 +3434,7 @@
         auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
         shipping_eur: Number(current.shipping || 0),
         weight_kg: current.weightKg == null ? null : Number(current.weightKg),
+        size_class: current.sizeClass || null,
       };
     }
 
@@ -3817,7 +3849,13 @@
         '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
         '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
-        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding. We use it to suggest what postage will cost you, so you are not guessing.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
+        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
+        '<div class="ef"><label class="ef-l" for="e_size">Parcel size</label>' +
+          '<div class="sizepick" id="e_size">' +
+          SIZE_CLASSES.map(sc => '<button type="button" class="sizebtn' + (c.sizeClass === sc.id ? ' on' : '') + '" data-size="' + sc.id + '">' +
+            '<b>' + sc.label + '</b><span>' + esc(sc.hint) + '</span><i>' + sc.box + ' cm</i></button>').join('') +
+          '</div>' +
+          '<div class="ef-h">Postage is charged on whichever is greater, the weight or the space it takes up. A big hollow toy weighs almost nothing and still fills a box, so without this a large lot costs you more to post than you charged.</div></div>' +
         '<div class="ship-hint" id="shipHint"></div>' +
         efArea('Opening paragraph', 'e_blurb', c.blurb, 'The first thing a buyer reads. Two or three sentences on what this is and why this release. Keep the stamp and the measurements out of it, they live in Notes.') +
         efArea('Notes', 'e_notes', c.notes, 'The evidence, shown under Curator\'s notes: the moulded stamp, how it was dated, variants, repairs, repaints, replaced parts, provenance. This is where trust is won.') +
@@ -3826,15 +3864,30 @@
       setCard(html, false);
       (function(){
         const w = document.getElementById('e_weight'), sh = document.getElementById('e_ship'), hint = document.getElementById('shipHint');
+        const sizeBox = document.getElementById('e_size');
         if (!w || !hint) return;
         function draw(){
-          const kg = parseFloat(w.value);
-          if (!kg || kg <= 0){ hint.innerHTML = 'Enter a packed weight and we will suggest what postage costs.'; return; }
-          const b = bandFor(kg);
-          hint.innerHTML = 'At ' + kg + ' kg that is <b>' + b.label.toLowerCase() + '</b>: about ' + eur(b.nl) +
+          const kg = parseFloat(w.value) || 0;
+          const sel = sizeBox && sizeBox.querySelector('.sizebtn.on');
+          const sid = sel ? sel.dataset.size : null;
+          const sc = sizeClass(sid);
+          if (!kg && !sc){ hint.innerHTML = 'Enter a packed weight and pick a parcel size, and we will tell you what postage costs.'; return; }
+          const billed = chargeableKg(kg, sid);
+          const b = bandFor(billed);
+          // Say plainly which of the two is driving the price, because a seller
+          // who is charged on volume and never told will think we got it wrong.
+          const why = (sc && sc.vol > kg)
+            ? 'A ' + sc.label.toLowerCase() + ' parcel bills as <b>' + sc.vol + ' kg</b> of space even at ' + (kg || 0) + ' kg on the scales'
+            : 'At ' + kg + ' kg on the scales';
+          hint.innerHTML = why + ', which is <b>' + b.label.toLowerCase() + '</b>: about ' + eur(b.nl) +
             ' within the Netherlands and ' + eur(b.eu) + ' to the EU. You charge one amount for both, so ' +
             '<button type="button" class="hint-apply" data-v="' + b.eu + '">use ' + eur(b.eu) + '</button> to stay whole.';
         }
+        if (sizeBox) sizeBox.addEventListener('click', e => {
+          const b = e.target.closest('.sizebtn'); if (!b) return;
+          sizeBox.querySelectorAll('.sizebtn').forEach(x => x.classList.toggle('on', x === b));
+          draw();
+        });
         w.addEventListener('input', draw);
         hint.addEventListener('click', function(e){
           const btn = e.target.closest('.hint-apply'); if (!btn) return;
@@ -3850,6 +3903,7 @@
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'),
           reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'), weightKg: num('e_weight'),
+          sizeClass: (function(){ const b = document.querySelector('#e_size .sizebtn.on'); return b ? b.dataset.size : (current.sizeClass || null); })(),
           blurb: g('e_blurb'), notes: g('e_notes'),
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
@@ -4066,7 +4120,7 @@
   const PROTECTION = [
     ['Checked before it is listed', 'Every lot is identified, dated and condition-graded, with the maker\u2019s stamp photographed. Nothing goes up unexamined.'],
     ['It arrives, or your money back', 'Posted tracked. If it never reaches you, you are refunded in full.'],
-    ['It matches the listing, or your money back', 'If what arrives is materially different from the description, send it back and you are refunded.'],
+    ['It matches the listing, or your money back', 'If what arrives is materially different from the description, send it back and you are refunded, and we pay the return postage. If you simply change your mind, the return is on you: send it back within 14 days at your own cost and you are refunded for the item.'],
     ['Transit damage is insured', 'Every parcel is insured. Tell us within 48 hours with photos, keep the packaging, and we handle the carrier claim for you.'],
     ['You pay us, not a stranger', 'Card payment through Stripe. Your card details never reach the seller or us.']
   ];
@@ -4812,7 +4866,7 @@
   const WM_TEXT = 'HAMMER & MOLD';
   const WM_SITE = 'hammerandmold.com';
 
-  async function watermarkBlob(src, caption){
+  async function watermarkBlob(src){
     const img = new Image();
     img.crossOrigin = 'anonymous';
     await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error('could not read the image')); img.src = src; });
@@ -4856,21 +4910,24 @@
     x.fillText(WM_TEXT, u * 2, h - barH / 2);
     x.font = '400 ' + (u * 2.1).toFixed(1) + 'px Helvetica, Arial, sans-serif';
     x.textAlign = 'right';
-    x.fillText((caption ? caption + '  ·  ' : '') + WM_SITE, w - u * 2, h - barH / 2);
+    x.fillText(WM_SITE, w - u * 2, h - barH / 2);
     x.restore();
 
     return new Promise(res => c.toBlob(res, 'image/jpeg', 0.9));
   }
 
-  const wmName = (caption) => (String(caption || 'lot').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'lot') + '-hammerandmold.jpg';
+  const wmName = (src) => {
+    const base = String(src || '').split('?')[0].split('/').pop().replace(/\.[a-z]+$/i, '').replace(/[^a-zA-Z0-9]+/g, '').slice(0, 24);
+    return 'hammerandmold' + (base ? '-' + base : '') + '.jpg';
+  };
 
-  async function saveWatermarked(src, caption){
+  async function saveWatermarked(src){
     try {
-      const blob = await watermarkBlob(src, caption);
+      const blob = await watermarkBlob(src);
       if (!blob) throw new Error('could not encode the image');
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = wmName(caption);
+      a.href = url; a.download = wmName(src);
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (e) {
@@ -4885,7 +4942,7 @@
     const img = e.target.closest && e.target.closest(WM_SEL);
     if (!img || !img.src) return;
     e.preventDefault();
-    saveWatermarked(img.dataset.full || img.src, document.querySelector('.art-title') ? document.querySelector('.art-title').textContent : '');
+    saveWatermarked(img.dataset.full || img.src);
   });
   document.addEventListener('dragstart', e => {
     const img = e.target.closest && e.target.closest(WM_SEL);
@@ -4911,8 +4968,7 @@
     const dl = ov.querySelector('.zoom-dl');
     if (dl) dl.addEventListener('click', ev => {
       ev.stopPropagation();
-      const t = document.querySelector('.art-title');
-      saveWatermarked(images[i], t ? t.textContent : '');
+      saveWatermarked(images[i]);
     });
     const stage = ov.querySelector('.zoom-stage');
     const count = ov.querySelector('.zoom-count');
