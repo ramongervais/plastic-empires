@@ -321,7 +321,12 @@
               <option>Excellent</option><option>Good</option><option>Fair</option><option>Poor</option>
             </select>
           </div>
-          <div><label class="f" for="le_ship">Shipping &euro;</label><input class="f" id="le_ship" type="number" step="0.01" min="0"></div>
+          <div class="wide">
+            <label class="f" for="le_shipPick">Shipping</label>
+            <select class="f" id="le_shipPick"></select>
+            <div class="s" id="le_shipHint" style="margin-top:8px"></div>
+          </div>
+          <div id="le_shipCustomWrap" hidden><label class="f" for="le_ship">Shipping &euro;</label><input class="f" id="le_ship" type="number" step="0.01" min="0"></div>
           <div><label class="f" for="le_weight">Weight kg</label><input class="f" id="le_weight" type="number" step="0.1" min="0"></div>
           <div><label class="f" for="le_start">Starting bid &euro;</label><input class="f" id="le_start" type="number" step="1" min="0"></div>
           <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
@@ -458,6 +463,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shipping.js"></script>
 <script>
 (function(){
   'use strict';
@@ -846,6 +852,53 @@
     openLotFromHash();
   }
 
+  // One pulldown does the whole job: picking a parcel size sets both the size
+  // class and the amount, because a seller staring at an empty euro field has no
+  // way to know what posting actually costs. Custom stays available, because
+  // real postage does not always match a band.
+  function shipOptions(l){
+    const sel = $('le_shipPick');
+    const cur = Number(l.shipping_eur || 0);
+    const opts = [{ v: 'free', label: 'Free, the seller pays the postage' }];
+    SIZE_CLASSES.forEach(sc => {
+      const b = bandFor(chargeableKg(l.weight_kg, sc.id));
+      opts.push({ v: sc.id, label: sc.label + ' (' + sc.hint + ') — ' + eur(b.eu) + ' to the EU', amount: b.eu });
+    });
+    opts.push({ v: 'custom', label: 'Custom amount…' });
+    // What is selected: the stored class if there is one, otherwise whichever
+    // band matches the stored amount, otherwise custom, otherwise free.
+    let pick = 'free';
+    if (l.size_class && SIZE_CLASSES.some(sc => sc.id === l.size_class)) pick = l.size_class;
+    else if (cur > 0){
+      const match = opts.find(o => o.amount === cur);
+      pick = match ? match.v : 'custom';
+    }
+    sel.innerHTML = opts.map(o => '<option value="' + o.v + '"' + (o.v === pick ? ' selected' : '') + '>' + esc(o.label) + '</option>').join('');
+    drawShip();
+  }
+
+  function drawShip(){
+    const sel = $('le_shipPick'), hint = $('le_shipHint'), wrap = $('le_shipCustomWrap'), amt = $('le_ship');
+    if (!sel) return;
+    const v = sel.value;
+    wrap.hidden = v !== 'custom';
+    const sc = SIZE_CLASSES.find(x => x.id === v);
+    if (v === 'free'){
+      amt.value = 0;
+      hint.textContent = 'The buyer pays nothing for postage and it comes out of what you receive. On an auction that is measured against the hammer price, which you do not know yet, so it is worth being sure.';
+    } else if (sc){
+      const kg = parseFloat($('le_weight').value) || 0;
+      const billed = chargeableKg(kg, sc.id);
+      const b = bandFor(billed);
+      amt.value = b.eu;
+      hint.textContent = 'A ' + sc.label.toLowerCase() + ' parcel is about ' + sc.box + ' cm, which bills as ' + billed + ' kg' +
+        (sc.vol > kg ? ' on space rather than weight' : '') + ': ' + eur(b.nl) + ' within the Netherlands, ' + eur(b.eu) +
+        ' to the EU. The buyer is charged ' + eur(b.eu) + ' once at checkout, and commission is on the total, so this costs you nothing extra.';
+    } else {
+      hint.textContent = 'Type what posting it actually costs you. Commission is charged on the item plus the postage, so there is nothing to gain by inflating it.';
+    }
+  }
+
   function openLotEdit(id){
     const l = allLots.find(x => x.id === id); if (!l) return;
     editingLot = l;
@@ -853,6 +906,7 @@
     const v = (f, val) => { const el = $(f); if (el) el.value = val == null ? '' : val; };
     v('le_toy', l.toy); v('le_maker', l.maker); v('le_line', l.line); v('le_year', l.year);
     v('le_condition', l.condition || ''); v('le_ship', l.shipping_eur); v('le_weight', l.weight_kg);
+    shipOptions(l);
     v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
     v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
 
@@ -876,6 +930,8 @@
     openLotEdit(b.dataset.editlot);
   });
   $('lotCancel').addEventListener('click', closeLotEdit);
+  $('le_shipPick').addEventListener('change', drawShip);
+  $('le_weight').addEventListener('input', () => { if (editingLot) shipOptions(Object.assign({}, editingLot, { weight_kg: $('le_weight').value, size_class: $('le_shipPick').value })); });
 
   $('lotSave').addEventListener('click', async () => {
     if (!editingLot) return;
@@ -894,6 +950,7 @@
       blurb: g('le_blurb') || null,
       shipping_eur: num('le_ship') || 0,
       weight_kg: num('le_weight'),
+      size_class: (function(){ const v = $('le_shipPick').value; return SIZE_CLASSES.some(x => x.id === v) ? v : null; })(),
     };
     // Money only travels when nobody has bid. Not merely disabled in the form:
     // a disabled input is a hint, and the rule has to hold even if it is bypassed.
