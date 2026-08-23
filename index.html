@@ -4130,7 +4130,11 @@
     // rate applies to them, and quoting only one means quoting the wrong one to
     // most of this market.
     line: function(lot){
-      const nl = Number(lot.shipping_nl_eur), eu = Number(lot.shipping_eur), row = Number(lot.shipping_row_eur);
+      const eu = Number(lot.shipping_eur) || 0;
+      // A missing per-zone amount is not free delivery, it is an amount nobody
+      // has set yet, so it falls back to the one the seller did set.
+      const nl = lot.shipping_nl_eur == null ? eu : Number(lot.shipping_nl_eur);
+      const row = lot.shipping_row_eur == null ? eu : Number(lot.shipping_row_eur);
       const any = (nl > 0) || (eu > 0) || (row > 0);
       if (!any) return this.label(0, lot.sale_type) + ' · ' + this.detail;
       const part = (label, v) => label + ' ' + (Number(v) > 0 ? this.eur(v) : 'free');

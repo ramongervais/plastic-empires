@@ -818,9 +818,7 @@
   }
 
   async function loadLots(){
-    const cols = 'id,toy,maker,line,year,condition,completeness,notes,blurb,status,starting_bid,reserve,buy_now,' +
-                 'shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,weight_kg,stamp_shown,ends_at,seller_id,created_at';
-    const res = await SB.from('lots').select(cols).order('created_at', { ascending: false });
+    const res = await SB.from('lots').select('*').order('created_at', { ascending: false });
     if (res.error){ say('lMsg', explain(res.error), 'err'); $('lotsBody').innerHTML = ''; $('lotsEmpty').hidden = false; return; }
     allLots = res.data || [];
     lotBids = {};
