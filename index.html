@@ -3683,7 +3683,13 @@
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
           (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
-          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) + row('Shipping', Number(c.shipping||0) > 0 ? eur(c.shipping) + ' added at checkout' : (fixed ? 'Included in your price' : 'Free, you pay the postage')) : 'None')) + '</div>' +
+          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None')) +
+          // Its own row. It used to be concatenated into the price value above,
+          // where row() escaped it into visible markup and it only appeared on an
+          // auction that also had a Buy-now price.
+          row('Shipping', Number(c.shipping || 0) > 0
+            ? eur(c.shipping) + ' added at checkout'
+            : (fixed ? 'Included in your price' : 'Free, you pay the postage')) + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
@@ -4968,7 +4974,9 @@
           ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
           (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
           (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
-          row('Shipping', '<span id="lotShip">Quoted for your address at checkout</span>') +
+          // Written out rather than passed through row(), which escapes its value:
+          // this one needs a real element for the live quote to write into.
+          '<div class="row col"><span class="k">Shipping</span><span class="v" id="lotShip">Quoted for your address at checkout</span></div>' +
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
