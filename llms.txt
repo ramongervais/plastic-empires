@@ -25,7 +25,7 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, and featured placement included (one lot promoted at the top of the shop at a time, up to 7 days per lot). Early-bird pricing for the first six months.
 - Featured placement is advertising and is always labelled as a paid promotion. It changes only where a lot appears, never the bidding, the commission or the outcome. Outside the promoted strip, payment does not influence ranking.
 - One token = one listing. Identifying a toy costs no token. Extra token packs can be bought at any time.
-- Sellers are paid from a balance once a month, on a fixed date, so nothing waits longer than thirty days. A balance under EUR 10 rolls to the next month, because a payout carries a fixed provider cost and sending EUR 4 would spend half of it on the transfer; small balances can be released on request.
+- Sellers are paid from a balance on the same date every month whenever it stands at EUR 25 or more. A smaller balance rolls over and is paid out regardless of size at least once every three months, so nothing sits with the platform indefinitely. The minimum exists because each payout carries a fixed provider cost; balances can be released on request at any time.
 
 ## Shipping
 - Postage is quoted live from the carrier, not set by the seller. At checkout the buyer gives a delivery address and the parcel is priced for that country from the lot's packed weight.
