@@ -20,12 +20,16 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - Thinkway Toys - Toy Story 1995
 - Each maker has its own documentary page; each toy links back to its Molder.
 
-## Seller plans
-- Starter (free): 3 listing tokens per month, 15% commission on sold lots, AI curation and validation.
-- Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, and featured placement included (one lot promoted at the top of the shop at a time, up to 7 days per lot). Early-bird pricing for the first six months.
+## Seller packages
+- Three packages. Starter is free with the standard commission; Trader and Dealer are paid monthly memberships with a larger listing allowance and a lower commission. Dealer includes featured placement.
+- The current price, listing allowance and commission of each package are published on the packages page and in the seller's account, and are the authoritative figures. They are not restated here so they cannot go stale.
+- The packages are priced so that the one matching a seller's volume is always the cheapest of the three: at the point a seller's listing allowance runs out, moving up does not cost more than staying put.
+- A chooser on the packages page takes the seller's own monthly sales and average price and names the package that costs them least, including telling them to stay on the free one when that is the answer.
+- Moving up takes effect immediately and is prorated. Moving down takes effect at the end of the period already paid for, and can be cancelled until then. Unused tokens roll over up to twice the monthly allowance and are never removed by moving down.
+- Identification is free and unlimited on every package. One token = one listing. Extra token packs can be bought at any time.
 - Featured placement is advertising and is always labelled as a paid promotion. It changes only where a lot appears, never the bidding, the commission or the outcome. Outside the promoted strip, payment does not influence ranking.
-- One token = one listing. Identifying a toy costs no token. Extra token packs can be bought at any time.
 - Sellers are paid from a balance on the same date every month whenever it stands at EUR 25 or more. A smaller balance rolls over and is paid out regardless of size at least once every three months, so nothing sits with the platform indefinitely. The minimum exists because each payout carries a fixed provider cost; balances can be released on request at any time.
+- Commission is charged on the total the buyer pays, postage included, because the total is what the platform processes. Postage is passed to the carrier at the price quoted.
 
 ## Shipping
 - Postage is quoted live from the carrier, not set by the seller. At checkout the buyer gives a delivery address and the parcel is priced for that country from the lot's packed weight.

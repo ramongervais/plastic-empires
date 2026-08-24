@@ -630,6 +630,33 @@
   .t-list li::before { content:"—"; position:absolute; left:0; color:var(--ink-3); }
   .t-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:16px; line-height:1.6; }
   @media (max-width:700px){ .tiers { grid-template-columns:1fr; } }
+  /* Three packages, so the grid is three wide. The sell page keeps two columns
+     for its own summary; only the plans page asks for three. */
+  .tiers.three { grid-template-columns:repeat(3,1fr); }
+  @media (max-width:900px){ .tiers.three { grid-template-columns:1fr; } }
+  .tier.on { outline:2px solid var(--ink); outline-offset:-1px; }
+  .t-fit { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  .t-cta { margin-top:18px; width:100%; }
+  /* The chooser. A seller types what they sell in a month and the page answers
+     with a package and a number, instead of leaving them to work it out. */
+  .chooser { border:1px solid var(--ink); padding:26px; margin:32px 0; }
+  .ch-row { display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px; }
+  .ch-field { flex:1 1 190px; }
+  .ch-field label { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin-bottom:7px; }
+  .ch-field input { width:100%; font-family:var(--body); font-size:16px; padding:11px 12px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:3px; }
+  .ch-out { margin-top:22px; padding-top:20px; border-top:1px solid var(--line); }
+  .ch-verdict { font-family:var(--body); font-weight:700; font-size:21px; letter-spacing:-.01em; margin-bottom:14px; }
+  .ch-table { width:100%; border-collapse:collapse; font-size:14px; font-variant-numeric:tabular-nums; }
+  .ch-table th { font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); text-align:left; padding:0 12px 7px 0; border-bottom:1px solid var(--ink); }
+  .ch-table td { padding:9px 12px 9px 0; border-bottom:1px solid var(--line-2); }
+  .ch-table td.n, .ch-table th.n { text-align:right; padding-right:0; }
+  .ch-table tr.best td { font-weight:700; }
+  .ch-note { font-family:var(--label); font-size:11px; color:var(--ink-3); margin-top:14px; line-height:1.6; }
+  .cmp { width:100%; border-collapse:collapse; font-size:14.5px; font-variant-numeric:tabular-nums; }
+  .cmp th { font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); text-align:left; padding:0 14px 8px 0; border-bottom:1px solid var(--ink); }
+  .cmp td { padding:11px 14px 11px 0; border-bottom:1px solid var(--line-2); }
+  .cmp td.n, .cmp th.n { text-align:right; padding-right:0; }
+  .cmp-scroll { overflow-x:auto; }
   .terms-draft { background:var(--ink); color:var(--paper); border-radius:3px; padding:16px 20px; font-size:13.5px; line-height:1.6; margin:0 0 28px; }
   .terms-h { font-family:var(--label); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); margin:34px 0 0; }
   .terms-h + p { margin-top:8px; }
@@ -733,6 +760,7 @@
     <a href="#empires" data-nav="home">The Molders</a>
     <a href="#collection" data-nav="home">Shop</a>
     <a data-nav="sell">Sell</a>
+    <a data-nav="plans">Packages</a>
     <a id="authLinkM" data-auth-label>Sign in</a>
   </div>
 </header>
@@ -2356,34 +2384,91 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">Selling plans</div><h2>What it costs to sell</h2></div>
-        <p><b>Identifying a toy is free and unlimited.</b> Photograph anything and we will tell you what it is, who made it, what year, what it originally shipped with and what condition it is in. A token is only spent when you decide to list it. Start free, or go Premium for more tokens and lower commission.</p>
+        <div><div class="ey">Selling packages</div><h2>What it costs to sell</h2></div>
+        <p><b>Identifying a toy is free and unlimited.</b> Photograph anything and we will tell you what it is, who made it, what year, what it originally shipped with and what condition it is in. A token is only spent when you decide to list it. Three packages, and the one that matches what you sell is always the cheapest of the three.</p>
       </div>
-      <div class="tiers">
-        <div class="tier">
-          <div class="t-name">Starter</div>
-          <div class="t-price">Free</div>
-          <ul class="t-list">
-            <li>Unlimited free identification, no token spent</li>
-            <li>3 listing tokens per month</li>
-            <li>15% seller commission on sold lots</li>
-            <li>AI curation and validation on every lot</li>
-            <li>Standard placement</li>
-          </ul>
-          <div class="t-note">No monthly fee. You only pay commission when an item sells.</div>
+      <!-- No prices written here. They come from the pay worker's package table,
+           which is the only place a price exists. This block used to name EUR 15
+           and 3 tokens, both of which had stopped being true. -->
+      <div class="tiers three" id="sellPlanCards"></div>
+      <div style="margin-top:26px;display:flex;gap:14px;flex-wrap:wrap">
+        <button class="btn accent" type="button" data-nav="plans">Compare the packages</button>
+        <button class="btn ghost" type="button" data-nav="plans">Work out which one fits</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================ PLANS ============================ -->
+<main class="view" id="view-plans" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a data-nav="sell">Sell</a><span class="sep">/</span><span class="here">Packages</span></div>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Selling packages</div><h2>Pick the one that fits what you sell</h2></div>
+        <p><b>Identifying a toy is free and unlimited</b>, whichever package you are on: photograph anything and we will tell you what it is, who made it, what year and what condition. A listing is what costs a token. Every package includes the price research, buyer protection on every lot, and postage quoted live from the carrier.</p>
+      </div>
+
+      <!-- Filled from the pay worker's /plans so a price cannot exist in two places -->
+      <div class="tiers three" id="planCards"></div>
+
+      <div class="chooser">
+        <div class="ey">Which one, exactly</div>
+        <h3 style="font-family:var(--body);font-weight:700;font-size:21px;letter-spacing:-.01em;margin:8px 0 6px">Tell us what you sell in a month and we will do the arithmetic</h3>
+        <p style="font-family:var(--body);font-size:15px;color:var(--ink-2);max-width:60ch;margin:0 0 20px">
+          A package is only worth buying if it costs you less than the one below it. This works that out on your own numbers rather than leaving you to guess, and it will tell you to stay on the free one if that is the answer.
+        </p>
+        <div class="ch-row">
+          <div class="ch-field">
+            <label for="chSales">Items you sell a month</label>
+            <input id="chSales" type="number" min="0" step="1" inputmode="numeric" placeholder="10">
+          </div>
+          <div class="ch-field">
+            <label for="chPrice">Average selling price</label>
+            <input id="chPrice" type="number" min="0" step="1" inputmode="numeric" placeholder="14">
+          </div>
         </div>
-        <div class="tier feat">
-          <div class="t-tag">For dealers</div>
-          <div class="t-name">Premium</div>
-          <div class="t-price">€15<span>/month</span></div>
-          <ul class="t-list">
-            <li>50 listing tokens per month, rolls over to 100</li>
-            <li>10% seller commission on sold lots</li>
-            <li>Featured placement included: one lot promoted at the top of the shop at a time, up to 7 days per lot</li>
-            <li>Buy extra token packs anytime (25 for €18)</li>
-          </ul>
-          <div class="t-note">Early-bird price for the first 6 months, then €30/month.</div>
-        </div>
+        <div class="ch-out" id="chOut" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">The number that matters</div><h2>What the platform takes out of a sale</h2></div>
+        <p>Compare total cost, not seller commission. Catawiki charges the seller 12.5% and then charges the buyer another 9% on top, and in an auction that buyer fee comes straight out of what anyone is willing to bid. We charge the seller only, and the buyer pays the hammer price.</p>
+      </div>
+      <div class="cmp-scroll">
+        <table class="cmp">
+          <thead>
+            <tr><th>On a &euro;100 hammer</th><th class="n">Buyer pays</th><th class="n">Seller receives</th><th class="n">Platform takes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Catawiki</td><td class="n">&euro; 109,00</td><td class="n">&euro; 87,50</td><td class="n">21,5%</td></tr>
+            <tr><td>Hammer &amp; Mold, Starter</td><td class="n">&euro; 100,00</td><td class="n">&euro; 85,00</td><td class="n">15,0%</td></tr>
+            <tr><td>Hammer &amp; Mold, Trader</td><td class="n">&euro; 100,00</td><td class="n">&euro; 88,00</td><td class="n">12,0%</td></tr>
+            <tr><td>Hammer &amp; Mold, Dealer</td><td class="n">&euro; 100,00</td><td class="n">&euro; 92,00</td><td class="n">8,0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="ch-note" style="max-width:70ch">Monthly package fees are on top of the commission and are not in this table, which is why the chooser above works on your own volume: on a &euro;100 lot the fee matters, on fifty of them it does not. Catawiki figures from their published seller commission and buyer protection fee, August 2026.</div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Changing your mind</div><h2>Moving up, and moving down</h2></div>
+      </div>
+      <div class="story" style="max-width:70ch">
+        <p><b>Moving up happens straight away.</b> Your new listing allowance is there the moment you pay, and the card is charged only the difference for the rest of the month, not a second full month.</p>
+        <p><b>Moving down happens at the end of the month you have paid for.</b> You keep the package you bought until then, because taking it away mid-month after charging for it would not be right. Your account shows the date it changes and you can cancel the change until it happens.</p>
+        <p><b>Unused tokens stay yours.</b> They roll over up to twice your monthly allowance. Moving down does not take tokens away; it only lowers what you are topped up to next month.</p>
+        <p>There is no minimum term and nothing to phone about. If a package turns out to be wrong for you, the chooser above will say so with your own numbers, and you can move on the same day.</p>
       </div>
     </div>
   </section>
@@ -2607,10 +2692,12 @@
         <p>A placed bid is a binding, irrevocable offer, subject to any hidden reserve. The highest valid bid at close, or acceptance of a Buy-now price, wins. We may extend, void or re-open an auction in case of a fault, error or suspected manipulation.</p>
 
         <div class="terms-h">6 · Payments, commission and seller plans</div>
-        <p>Payments are handled by our provider (Stripe); by transacting you accept their terms. The Platform deducts a seller commission on <b>the total the Buyer pays, postage included</b> (currently 15% on the Starter plan and 10% on Premium), plus applicable fees. We charge on the total because the total is what we process; postage is passed to the carrier at the price quoted and is not a margin.</p>
+        <p>Payments are handled by our provider (Stripe); by transacting you accept their terms. The Platform deducts a seller commission on <b>the total the Buyer pays, postage included</b>, at the rate of the package you are on, plus applicable fees. We charge on the total because the total is what we process; postage is passed to the carrier at the price quoted and is not a margin.</p>
         <p><b>When you are paid.</b> Your share of a completed sale is credited to your seller balance once the sale completes and, where applicable, once the Buyer has received the item. <b>We pay out on the same date every month, whenever your balance is €25 or more.</b> A balance below that rolls into the following month, and <b>we pay it out regardless of size at least once every three months</b>, so nothing sits with us indefinitely. Your balance and the date of your next payout are shown in your account.</p>
         <p>The minimum exists because every payout carries a fixed cost from our payment provider. Sending €4 would spend a large part of what you earned on the transfer itself, which is worse for you than waiting a few weeks. It is not a way of holding your money: the three-month rule pays the full balance whatever it comes to, and you can ask us to release a balance at any time at no charge, for example if you are closing your account.</p>
-        <p>Listing uses tokens. <b>Identifying a toy is free and unlimited</b> and spends no token; a token is used only when you list a lot. Starter includes a small monthly allowance, Premium is a paid monthly membership (currently €15/month as an introductory price for the first six months, then €30/month) that includes more tokens, a lower commission and featured placement as set out in clause 7. The membership renews automatically until cancelled; you may cancel at any time and keep access until the end of the paid period, and partial periods, tokens and token top-ups are non-refundable. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
+        <p>Listing uses tokens. <b>Identifying a toy is free and unlimited</b> and spends no token; a token is used only when you list a lot. There are three packages. <b>Starter</b> is free and carries the standard commission. <b>Trader</b> and <b>Dealer</b> are paid monthly memberships with a larger listing allowance and a lower commission; Dealer also includes featured placement as set out in clause 7. The current price, allowance and commission of each package are shown on the packages page and in your account, and are the ones that apply.</p>
+        <p><b>Moving between packages.</b> Moving up takes effect immediately and your card is charged only the difference for the remainder of the period, not a further full period. Moving down takes effect at the end of the period you have already paid for: until then you keep the package you bought, and you may cancel the change before it takes effect. Unused tokens remain yours and roll over up to twice your monthly allowance; moving down does not remove tokens you already hold, it only reduces what you are topped up to afterwards.</p>
+        <p>A membership renews automatically until cancelled; you may cancel at any time and keep access until the end of the paid period. Partial periods, tokens and token top-ups are non-refundable. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
 
         <div class="terms-h">7 · Featured placement and ranking</div>
         <p>Featured placement is advertising. A featured lot is shown in a promoted strip above the shop grid, labelled as a paid promotion. It is included in the Premium membership: while your membership is active you may have one lot promoted at a time, for up to seven days per lot, subject to fair use and to available slots (currently eight). Placement may also be bought separately at the price quoted at the time.</p>
@@ -2915,7 +3002,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -2925,6 +3012,8 @@
     window.scrollTo({ top:0, behavior: reduce ? 'auto':'smooth' });
     requestAnimationFrame(paintStars);
     if (v === 'sell' && typeof refreshSellTokens === 'function') refreshSellTokens();
+    if (v === 'sell' && typeof renderPlans === 'function') renderPlans();
+    if (v === 'plans' && typeof renderPlans === 'function') renderPlans();
   }
   document.addEventListener('click', e => {
     const wb = e.target.closest('[data-watch]');
@@ -4474,7 +4563,51 @@
   }
 
   // ----- Account / dashboard (owner's own activity) -----
+  // The membership block. Reads the package table rather than naming a price, so
+  // the account page cannot show EUR 15 while the checkout charges EUR 7. If the
+  // table has not loaded yet it says the plan without the numbers rather than
+  // guessing them, and loadPlans() triggers a re-render.
+  function membershipHtml(prefs){
+    PLAN_NOW = prefs.plan || 'starter';
+    const key = currentPlanKey() || 'starter';
+    const plans = PLAN_CACHE;
+    const mine = plans ? plans.find(p => p.key === key) : null;
+    const pendingKey = prefs.plan_pending || null;
+    const pending = (plans && pendingKey) ? plans.find(p => p.key === pendingKey) : null;
+    const tokens = prefs.tokens != null ? prefs.tokens : 0;
+    const paying = !!mine && mine.cents > 0;
+
+    const allowance = mine
+      ? mine.listings + '/month' + (mine.cap > mine.listings ? ', rolls over to ' + mine.cap : '')
+      : 'monthly allowance';
+
+    // Where the buttons go. Anything paid routes through data-plan, which the
+    // one click handler turns into a purchase or a move as appropriate.
+    const others = (plans || []).filter(p => p.key !== key);
+    const btns = others.map(p =>
+      '<button class="' + (p.cents > (mine ? mine.cents : 0) ? 'acct-pay' : 'acct-signout') + '" type="button" data-plan="' + mkEsc(p.key) + '">' +
+      (p.cents === 0 ? 'Move to Starter' : (p.cents > (mine ? mine.cents : 0) ? 'Move up to ' : 'Move down to ') + mkEsc(p.name)) + '</button>').join('');
+
+    return '<div class="mship"><div class="mship-l">' +
+        '<div class="mship-plan">' + mkEsc(mine ? mine.name : (key.charAt(0).toUpperCase() + key.slice(1))) +
+          (paying ? '<span class="mship-badge">Active</span>' : '') + '</div>' +
+        '<div class="mship-tok">' + tokens + ' listing token' + (tokens === 1 ? '' : 's') + ' left &middot; ' + allowance +
+          (mine ? ' &middot; ' + (mine.commission * 100).toFixed(0) + '% commission' : '') + '</div>' +
+      '</div>' +
+      '<div class="mship-r">' + btns +
+        (paying ? '<button class="acct-signout" id="mManage" type="button">Billing</button>' : '') +
+        '<button class="acct-signout" id="mBuy" type="button">Buy 25 tokens &middot; € 18</button></div>' +
+    '</div>' +
+    (pending
+      ? '<div class="acct-empty"><b>You move to ' + mkEsc(pending.name) + ' at the end of this billing period.</b> Until then you keep ' +
+        mkEsc(mine ? mine.name : 'your package') + ' and your tokens stay yours. Choose ' + mkEsc(mine ? mine.name : 'it') + ' again to cancel the change.</div>'
+      : '') +
+    '<div class="acct-empty">A token is spent when you list, never when you identify a toy. Unused tokens roll over. ' +
+      '<a data-nav="plans" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare the packages</a> to see which one is cheapest at what you actually sell.</div>';
+  }
+
   async function renderAccount(){
+    await loadPlans();   // the block below prices itself from the table; render once, with numbers
     const body = document.getElementById('accountBody');
     show('account');
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -4488,7 +4621,7 @@
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
-      SB.from('profiles').select('notify_outbid,notify_won,notify_sold,notify_ending,plan,tokens,country').eq('id', uid).single(),
+      SB.from('profiles').select('*').eq('id', uid).single(),   // '*' so a column added by a pending migration cannot fail the whole account page
       SB.from('watchlist').select('lot_id').eq('user_id', uid),
       SB.from('lots').select(sel).eq('buyer_id', uid).order('created_at', { ascending: false }),
       SB.from('reviews').select('lot_id').eq('reviewer_id', uid),
@@ -4553,10 +4686,7 @@
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Tokens left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
       '<div class="acct-sec"><div class="h">Membership</div>' +
-        '<div class="mship"><div class="mship-l"><div class="mship-plan">' + (prefs.plan === 'premium' ? 'Premium' : 'Starter') + (prefs.plan === 'premium' ? '<span class="mship-badge">Active</span>' : '') + '</div><div class="mship-tok">' + (prefs.tokens != null ? prefs.tokens : 0) + ' listing token' + (prefs.tokens === 1 ? '' : 's') + ' left &middot; ' + (prefs.plan === 'premium' ? '50/month, rolls over to 100' : '3/month, resets monthly') + '</div></div>' +
-          '<div class="mship-r">' + (prefs.plan === 'premium' ? '<button class="acct-signout" id="mManage" type="button">Manage subscription</button>' : '<button class="acct-pay" id="mUpgrade" type="button">Upgrade to Premium &middot; € 15/mo</button>') + '<button class="acct-signout" id="mBuy" type="button">Buy 25 tokens &middot; € 18</button></div>' +
-        '</div>' +
-        '<div class="acct-empty">1 token = 1 listing. Starter: 3 tokens/month. Premium: 50/month (rollover to 100) + lower commission. Early-bird € 15/mo.</div>' +
+        membershipHtml(prefs) +
       '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
@@ -4598,7 +4728,6 @@
       renderAccount();
     }));
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
-    const mUp = document.getElementById('mUpgrade'); if (mUp) mUp.addEventListener('click', () => goCheckout(SUBSCRIBE_URL));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
     var cSel = document.getElementById('acctCountry');
     if (cSel) cSel.addEventListener('change', async function(){
@@ -4633,14 +4762,176 @@
   const SUBSCRIBE_URL = 'https://plasticempires-pay.ramongervais.workers.dev/subscribe';
   const TOKENS_URL = 'https://plasticempires-pay.ramongervais.workers.dev/buy-tokens';
   const PORTAL_URL = 'https://plasticempires-pay.ramongervais.workers.dev/portal';
-  async function goCheckout(endpoint){
+  const PLANS_URL = 'https://plasticempires-pay.ramongervais.workers.dev/plans';
+  const CHANGE_URL = 'https://plasticempires-pay.ramongervais.workers.dev/change-plan';
+
+  async function goCheckout(endpoint, extra){
     if (SB && !authUser){ openAuth(); return; }
     try {
-      const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser ? authUser.id : '', email: authUser ? authUser.email : '', origin: location.origin }) });
+      const body = Object.assign({ userId: authUser ? authUser.id : '', email: authUser ? authUser.email : '', origin: location.origin }, extra || {});
+      const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await r.json();
       if (d && d.url) location.href = d.url; else openModal('Something went wrong', 'Could not start', (d && d.error) || 'Please try again.');
     } catch (err){ openModal('Something went wrong', 'Could not start', err.message); }
   }
+
+  // ----- Seller packages -----
+  // The table comes from the worker, never from here. A price written into this
+  // file is a price that will one day disagree with the one being charged.
+  let PLAN_CACHE = null;
+  async function loadPlans(){
+    if (PLAN_CACHE) return PLAN_CACHE;
+    try {
+      const r = await fetch(PLANS_URL);
+      const d = await r.json();
+      if (d && Array.isArray(d.plans) && d.plans.length) PLAN_CACHE = d.plans;
+    } catch (e) {}
+    return PLAN_CACHE;
+  }
+  const planFee = p => p.cents === 0 ? 'Free' : '€' + (p.cents / 100).toFixed(0);
+  // What a seller pays us in a month at this volume: commission plus the fee.
+  const planCost = (p, monthly) => monthly * p.commission + p.cents / 100;
+  // What the listing allowance can carry, at their own average price. Used to say
+  // "this package cannot hold your volume" rather than quoting a cost for a
+  // package that would run out of tokens halfway through the month.
+  // Deliberately generous: a package "fits" if its allowance is at least the
+  // number of sales. In reality a seller needs more listings than sales, because
+  // not everything sells first time, and by how much is unknown until we have run
+  // real auctions. So the chooser says this out loud rather than inventing a
+  // sell-through rate and quietly recommending a package that runs out of tokens.
+  const planFits = (p, sales) => p.listings >= sales;
+
+  const PLAN_FIT = {
+    starter: 'For 1 to 7 sales a month',
+    trader:  'For 8 to 30 sales a month',
+    dealer:  'For 30 sales a month and up',
+  };
+
+  async function renderPlans(){
+    // Two containers, one on the packages page and one on the sell page, so the
+    // sell page never has to carry its own copy of a price.
+    const boxes = ['planCards', 'sellPlanCards'].map(id => document.getElementById(id)).filter(Boolean);
+    if (!boxes.length) return;
+    const plans = await loadPlans();
+    if (!plans){ boxes.forEach(b => { b.innerHTML = '<div class="acct-empty">Packages could not be loaded. Reload the page, or write to us.</div>'; }); return; }
+    const mine = (currentPlanKey() || 'starter');
+    const html = plans.map(p => {
+      const isMine = p.key === mine;
+      const cta = isMine
+        ? '<button class="btn ghost t-cta" type="button" disabled>Your package</button>'
+        : '<button class="btn accent t-cta" type="button" data-plan="' + mkEsc(p.key) + '">' + (p.cents === 0 ? 'Move to Starter' : 'Choose ' + mkEsc(p.name)) + '</button>';
+      return '<div class="tier' + (isMine ? ' on' : '') + '">' +
+        (p.key === 'trader' ? '<div class="t-tag">Most sellers</div>' : '') +
+        '<div class="t-name">' + mkEsc(p.name) + '</div>' +
+        '<div class="t-price">' + planFee(p) + (p.cents ? '<span>/month</span>' : '') + '</div>' +
+        '<div class="t-fit">' + (PLAN_FIT[p.key] || '') + '</div>' +
+        '<ul class="t-list">' +
+          '<li><b>' + (p.commission * 100).toFixed(0) + '%</b> commission on the buyer’s total</li>' +
+          '<li><b>' + p.listings + '</b> listings a month' + (p.cap > p.listings ? ', rolling over to ' + p.cap : '') + '</li>' +
+          '<li>Free unlimited identification</li>' +
+          '<li>Buyer protection on every lot</li>' +
+          (p.key === 'dealer' ? '<li>Featured placement included</li>' : '') +
+        '</ul>' + cta + '</div>';
+    }).join('');
+    boxes.forEach(b => { b.innerHTML = html; });
+  }
+
+  // The plan on the account, read from whatever the last account render fetched.
+  // 'premium' is the old paid tier and reads as Trader, which is what the worker
+  // does too: never show someone who is paying that they are on the free one.
+  let PLAN_NOW = null;
+  const currentPlanKey = () => {
+    const v = String(PLAN_NOW || '').toLowerCase();
+    return v === 'premium' ? 'trader' : (v || null);
+  };
+
+  // ----- The chooser -----
+  // Answers on the seller's own numbers, and says "stay where you are" when that
+  // is the answer. A package that costs more than the one below it is not an
+  // upgrade, and this is the page that has to admit it.
+  function runChooser(){
+    const out = document.getElementById('chOut');
+    const sEl = document.getElementById('chSales'), pEl = document.getElementById('chPrice');
+    if (!out || !sEl || !pEl) return;
+    const sales = Math.max(0, parseInt(sEl.value, 10) || 0);
+    const price = Math.max(0, parseFloat(pEl.value) || 0);
+    if (!sales || !price){ out.hidden = true; return; }
+    const plans = PLAN_CACHE;
+    if (!plans) return;
+    const monthly = sales * price;
+
+    const rows = plans.map(p => ({ p, fits: planFits(p, sales), cost: planCost(p, monthly) }));
+    const usable = rows.filter(r => r.fits);
+    const best = (usable.length ? usable : [rows[rows.length - 1]])
+      .reduce((a, b) => b.cost < a.cost ? b : a);
+
+    const eur = n => '€ ' + n.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    out.hidden = false;
+    out.innerHTML =
+      '<div class="ch-verdict">' + mkEsc(best.p.name) + ' &middot; ' + eur(best.cost) + ' a month</div>' +
+      '<table class="ch-table"><thead><tr><th>Package</th><th class="n">Costs you</th><th class="n">Share of your ' + eur(monthly) + '</th><th>Fits your volume</th></tr></thead><tbody>' +
+      rows.map(r => '<tr' + (r.p.key === best.p.key ? ' class="best"' : '') + '>' +
+        '<td>' + mkEsc(r.p.name) + '</td>' +
+        '<td class="n">' + eur(r.cost) + '</td>' +
+        '<td class="n">' + (monthly ? (r.cost / monthly * 100).toFixed(1) + '%' : '—') + '</td>' +
+        '<td>' + (r.fits ? 'Yes' : 'No, only ' + r.p.listings + ' listings') + '</td></tr>').join('') +
+      '</tbody></table>' +
+      '<div class="ch-note">' +
+        (best.p.cents === 0
+          ? 'At this volume the free package is the cheapest thing we have. Come back when you are selling more; nothing here gets better by paying sooner.'
+          : 'On Starter the same month would cost you ' + eur(planCost(plans[0], monthly)) + ', so ' + mkEsc(best.p.name) + ' saves you ' + eur(planCost(plans[0], monthly) - best.cost) + ' a month.') +
+        ' Catawiki would take ' + eur(monthly * 0.197) + ' of it, counting the 9% they charge your buyer.' +
+      '</div>' +
+      '<div class="ch-note">This counts one listing per sale. Not everything sells the first time it is listed, so if you relist much, pick the package with room above your number rather than the one that exactly matches it. Tokens roll over, so headroom is not wasted.</div>' +
+      (best.p.key === currentPlanKey()
+        ? '<div class="ch-note">You are already on ' + mkEsc(best.p.name) + '.</div>'
+        : '<button class="btn accent" type="button" style="margin-top:18px" data-plan="' + mkEsc(best.p.key) + '">' + (best.p.cents === 0 ? 'Move to Starter' : 'Choose ' + mkEsc(best.p.name)) + '</button>');
+  }
+  ['chSales', 'chPrice'].forEach(id => {
+    document.addEventListener('input', e => { if (e.target && e.target.id === id) runChooser(); });
+  });
+
+  // One handler for every package button on the site: the cards, the chooser and
+  // the account page all use data-plan.
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-plan]');
+    if (!b) return;
+    const key = b.dataset.plan;
+    if (SB && !authUser){ openAuth(); return; }
+    const plans = await loadPlans();
+    const target = (plans || []).find(p => p.key === key);
+    if (!target) return;
+    const now = currentPlanKey();
+
+    // No subscription yet and a paid package chosen: that is a purchase, so it
+    // goes through Stripe Checkout.
+    if (!now || now === 'starter'){
+      if (target.cents === 0) return;
+      goCheckout(SUBSCRIBE_URL, { plan: key });
+      return;
+    }
+    // Already paying: this is a move, which the worker does on the existing
+    // subscription so nobody gets billed twice.
+    const going_down = (plans.findIndex(p => p.key === key) < plans.findIndex(p => p.key === now));
+    b.disabled = true;
+    try {
+      const r = await fetch(CHANGE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser.id, plan: key }) });
+      const d = await r.json();
+      if (d && d.error === 'no_subscription'){ goCheckout(SUBSCRIBE_URL, { plan: key }); return; }
+      if (!d || d.error){ openModal('Could not change package', 'Something went wrong', (d && d.error) || 'Please try again.'); return; }
+      if (going_down){
+        const when = d.at ? new Date(d.at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'the end of the period you have paid for';
+        openModal('Change booked', 'You move to ' + target.name + ' on ' + when + '.',
+          'Nothing changes before then: you keep the package you paid for, and your tokens stay yours. You can cancel this from your account until it happens.');
+      } else {
+        openModal('You are on ' + target.name, target.listings + ' listings a month and ' + (target.commission * 100).toFixed(0) + '% commission, from now.',
+          'Your card was charged only the difference for the rest of this month, not a second full month.');
+      }
+      if (typeof renderAccount === 'function') renderAccount();
+      renderPlans();
+    } catch (err){ openModal('Could not change package', 'Something went wrong', err.message); }
+    finally { b.disabled = false; }
+  });
   // Our own checkout step, before Stripe. Two reasons, and the second matters
   // more. A buyer sees the real total for their own address instead of finding
   // the postage at the last screen. And the destination is known BEFORE the
@@ -5428,7 +5719,15 @@
     if (account){
       // the webhook that updates plan/tokens lands a moment after the redirect, so re-render a few times
       if (typeof renderAccount === 'function'){ renderAccount(); [1500, 3500, 6000].forEach(t => setTimeout(() => renderAccount(), t)); }
-      if (account === 'premium') openModal('Welcome to Premium', 'You are now a Premium seller.', 'Your monthly listing tokens and lower commission are active. Your account updates in a moment. Manage your subscription anytime from here.');
+      if (account && account !== 'cancel'){
+        // Whatever package the checkout was for. The name comes from the table
+        // so this line cannot welcome someone to a tier that no longer exists.
+        const p = (PLAN_CACHE || []).find(x => x.key === account) || null;
+        const nm = p ? p.name : (account.charAt(0).toUpperCase() + account.slice(1));
+        openModal('You are on ' + nm, 'Your package is active.',
+          (p ? p.listings + ' listings a month and ' + (p.commission * 100).toFixed(0) + '% commission. ' : '') +
+          'Your account updates in a moment. You can move up or down at any time, and billing is in your account.');
+      }
       else if (account === 'tokens') openModal('Tokens added', 'Your top-up is complete.', '25 listing tokens are being added to your account, it updates in a moment.');
       return;
     }
