@@ -6,6 +6,7 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 
 ## How it works
 - Sellers upload a few clear photos, including a close-up of the maker's stamp (molded year, country and factory markings).
+- Identification is free and unlimited: anyone can photograph a toy and be told what it is, who made it, what year, what it originally shipped with and what condition it is in. A listing token is spent only when the seller decides to list it.
 - AI curation writes the listing, dates the year and line, grades condition and flags variants.
 - Pricing is then researched, not guessed: a second step searches public listings for recent sales of the same toy and prices the lot from those comparables, showing the seller each comparable with its source link, whether it sold or is only being asked, and how close a match it is. Sold prices outweigh asking prices. When nothing comparable is found we say so rather than inventing a number.
 - Lots run as live auctions with bidding, hidden reserves, anti-snipe extension and Buy-now. Buyers pay securely. Shipping is included in the price shown, tracked, to the Netherlands and the EU. Buyers can review sellers after a purchase.
@@ -23,12 +24,15 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - Starter (free): 3 listing tokens per month, 15% commission on sold lots, AI curation and validation.
 - Premium (paid membership): 50 listing tokens per month with rollover, 10% commission, and featured placement included (one lot promoted at the top of the shop at a time, up to 7 days per lot). Early-bird pricing for the first six months.
 - Featured placement is advertising and is always labelled as a paid promotion. It changes only where a lot appears, never the bidding, the commission or the outcome. Outside the promoted strip, payment does not influence ranking.
-- One token = one listing. Extra token packs can be bought at any time.
+- One token = one listing. Identifying a toy costs no token. Extra token packs can be bought at any time.
+- Sellers are paid from a balance rather than per sale: paid out at EUR 100 or within 90 days, whichever comes first, and at EUR 25 or 30 days on Premium. Each payout carries a fixed provider cost that would otherwise consume the whole commission on a low-value lot.
 
 ## Shipping
-- Every lot states its shipping cost. A lot either includes postage in its price or shows an amount, added once at checkout in the same payment. The checkout total is the total; postage is never added afterwards or invoiced separately.
+- Postage is quoted live from the carrier, not set by the seller. At checkout the buyer gives a delivery address and the parcel is priced for that country from the lot's packed weight.
+- The buyer chooses the service: through the letterbox where the item fits, collection from a pickup point, or delivery to the door. Domestic rates currently run from EUR 3.85 to EUR 7.13.
+- The checkout total is the total; postage is never added afterwards or invoiced separately, and a seller cannot change it.
 - Tracked, to the Netherlands and the EU. Buyers elsewhere should ask before bidding.
-- Sellers set the amount to what posting actually costs them, up to a cap. Commission is charged on the total including shipping, so inflating postage gains a seller nothing.
+- Commission is charged on the total the buyer pays, postage included, because the total is what the platform processes. Postage is passed to the carrier at the price quoted.
 
 ## Launch
 - The public auctions open on 1 October 2026. Before then, lots appear in Preview and early sign-ups are welcome.

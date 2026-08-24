@@ -2357,13 +2357,14 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Selling plans</div><h2>What it costs to sell</h2></div>
-        <p>1 token = 1 listing. Start free, or go Premium for more tokens and lower commission.</p>
+        <p><b>Identifying a toy is free and unlimited.</b> Photograph anything and we will tell you what it is, who made it, what year, what it originally shipped with and what condition it is in. A token is only spent when you decide to list it. Start free, or go Premium for more tokens and lower commission.</p>
       </div>
       <div class="tiers">
         <div class="tier">
           <div class="t-name">Starter</div>
           <div class="t-price">Free</div>
           <ul class="t-list">
+            <li>Unlimited free identification, no token spent</li>
             <li>3 listing tokens per month</li>
             <li>15% seller commission on sold lots</li>
             <li>AI curation and validation on every lot</li>
@@ -2606,7 +2607,10 @@
         <p>A placed bid is a binding, irrevocable offer, subject to any hidden reserve. The highest valid bid at close, or acceptance of a Buy-now price, wins. We may extend, void or re-open an auction in case of a fault, error or suspected manipulation.</p>
 
         <div class="terms-h">6 · Payments, commission and seller plans</div>
-        <p>Payments are handled by our provider (Stripe); by transacting you accept their terms. The Platform deducts a seller commission on the hammer price (currently 15% on the Starter plan and 10% on Premium) plus applicable fees; the balance is paid to the Seller after the sale completes and, where applicable, after the Buyer receives the item. Listing uses tokens: Starter includes a small monthly allowance, Premium is a paid monthly membership (currently €15/month as an introductory price for the first six months, then €30/month) that includes more tokens, a lower commission and featured placement as set out in clause 7. The membership renews automatically until cancelled; you may cancel at any time and keep access until the end of the paid period, and partial periods, tokens and token top-ups are non-refundable. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
+        <p>Payments are handled by our provider (Stripe); by transacting you accept their terms. The Platform deducts a seller commission on <b>the total the Buyer pays, postage included</b> (currently 15% on the Starter plan and 10% on Premium), plus applicable fees. We charge on the total because the total is what we process; postage is passed to the carrier at the price quoted and is not a margin.</p>
+        <p><b>When you are paid.</b> Your share of a completed sale is credited to your seller balance once the sale completes and, where applicable, once the Buyer has received the item. We pay a balance out when it reaches <b>€100</b>, or within <b>90 days</b> of the oldest sale in it, whichever comes first. On Premium the threshold is €25 or 30 days. Your balance and the next payout are shown in your account.</p>
+        <p>A threshold exists because every payout carries a fixed cost from our payment provider that would otherwise consume the entire commission on a low-value lot. It is not a way of holding your money: when the backstop period ends we pay the whole balance, including any part below the threshold, and you may ask us to pay out early once per calendar quarter at no charge.</p>
+        <p>Listing uses tokens. <b>Identifying a toy is free and unlimited</b> and spends no token; a token is used only when you list a lot. Starter includes a small monthly allowance, Premium is a paid monthly membership (currently €15/month as an introductory price for the first six months, then €30/month) that includes more tokens, a lower commission and featured placement as set out in clause 7. The membership renews automatically until cancelled; you may cancel at any time and keep access until the end of the paid period, and partial periods, tokens and token top-ups are non-refundable. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
 
         <div class="terms-h">7 · Featured placement and ranking</div>
         <p>Featured placement is advertising. A featured lot is shown in a promoted strip above the shop grid, labelled as a paid promotion. It is included in the Premium membership: while your membership is active you may have one lot promoted at a time, for up to seven days per lot, subject to fair use and to available slots (currently eight). Placement may also be bought separately at the price quoted at the time.</p>
@@ -2614,8 +2618,9 @@
         <p><b>How lots are ranked.</b> In the shop, lots are ordered by the sort you choose (newest, ending soon, or price), and within the promoted strip by the order we set. Apart from the promoted strip, payment does not influence ranking: no plan, fee or membership moves a lot up the normal listings. The promoted strip is the only placement that can be paid for, and it is always labelled as such.</p>
         <div class="terms-h">8 · Shipping, loss and damage</div>
         <p><b>Every lot states its shipping cost, and the checkout total is what you pay.</b> A lot either includes postage in its price or shows a shipping amount, which is added once at checkout as part of the same payment. We never add postage afterwards and never invoice it separately. We currently ship to the Netherlands and the EU only, tracked. If you are outside that area, contact us before bidding.</p>
-        <p>Sellers set the shipping amount to what posting the item actually costs them, up to a cap. <b>Commission is charged on the total including shipping</b>, so inflating postage to lower a headline price gains a Seller nothing, and doing so is fee circumvention under clause 13.</p>
-        <p>The Seller packs and dispatches promptly after payment, using a tracked service. Sellers should account for postage when setting a starting bid or a fixed price, since it cannot be charged on top.</p>
+        <p><b>We quote the postage, not the Seller.</b> At checkout we ask the Buyer for a delivery address and price the parcel live with the carrier for that country, using the lot's packed weight. The Buyer chooses the service: through the letterbox where the item fits, collection from a pickup point, or delivery to the door. A Seller cannot set or change that amount.</p>
+        <p><b>Commission is charged on the total the Buyer pays, postage included.</b> We charge on the total because the total is what we process, and we say so here rather than in a footnote. Postage is not a margin: it is passed to the carrier at the price quoted.</p>
+        <p>The Seller packs and dispatches promptly after payment, using the service the Buyer paid for, and must send with a valid tracking code.</p>
         <p><b>Risk in transit.</b> Where you buy as a consumer, the risk of loss or damage in transit stays with us until you take physical possession of the item, as Dutch and EU consumer law requires. That risk is ours whether or not a carrier pays anything out, and it is not something we could disclaim to a consumer. If an item arrives damaged, tell us <b>within 48 hours</b> with photographs and keep the packaging: a carrier claim needs both, and we cannot pursue one afterwards without them. If an item does not arrive at all, you are refunded in full. Between businesses, risk passes on dispatch.</p>
 
         <div class="terms-h">9 · Authenticity and "as-is"</div>
@@ -3889,7 +3894,7 @@
         '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
         '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs once live. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
-        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "What you will actually pay to post it, added to the buyer's total at checkout as one payment. Leave at 0 to include postage in your price. Commission is charged on the total including shipping, so inflating this earns you nothing.") + '</div>' +
+        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "Fallback only. The buyer is normally quoted live from the carrier for their own country, so this amount is not what they see. It is used if the carrier cannot be reached. Leave it at 0 unless you know why you are setting it.") + '</div>' +
         '<div class="ef"><label class="ef-l">Fits through a letterbox</label>' +
           '<label class="lb-check"><input type="checkbox" id="e_letterbox"' + (c.letterbox ? ' checked' : '') + '>' +
           '<span>Yes, it lies flat in an envelope under about 3.2 cm</span></label>' +
@@ -4853,13 +4858,20 @@
   // ----- Sell page token counter -----
   async function refreshSellTokens(){
     const el = document.getElementById('sellTokens'); if (!el) return;
-    if (!SB || !authUser){ el.innerHTML = ''; return; }
+    // Said first, and said to everyone. Identifying a toy costs a few cents and
+    // no token, and a seller looking at a token counter has no way of knowing
+    // that: the line used to read "each listing uses 1" and stop, which invites
+    // exactly the wrong conclusion. Someone not signed in used to see nothing at
+    // all, and they are the person who most needs to hear it.
+    const free = 'Identifying is free &middot; a token is only spent when you list';
+    if (!SB || !authUser){ el.innerHTML = free; return; }
     try {
       const { data } = await SB.from('profiles').select('tokens').eq('id', authUser.id).single();
       const t = data ? data.tokens : null;
-      if (t == null){ el.innerHTML = ''; return; }
-      el.innerHTML = '<b>' + t + '</b> listing token' + (t === 1 ? '' : 's') + ' left &middot; each listing uses 1' + (t <= 0 ? ' &middot; <a data-nav="account">buy more</a>' : '');
-    } catch (e){ el.innerHTML = ''; }
+      if (t == null){ el.innerHTML = free; return; }
+      el.innerHTML = free + ' &middot; <b>' + t + '</b> left'
+        + (t <= 0 ? ' &middot; <a data-nav="account">buy more</a>' : '');
+    } catch (e){ el.innerHTML = free; }
   }
 
   // ----- Leave a seller review (buyer only, one per purchase) -----
