@@ -609,6 +609,25 @@
   .ei { width:100%; box-sizing:border-box; font-family:var(--body); font-size:14px; padding:9px 11px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); }
   .ei:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
   textarea.ei { resize:vertical; line-height:1.5; }
+  /* .ei is shared by input and select. On a select the browser draws its own
+     chevron inside the right padding, and 11px is not enough room, so the arrow
+     ends up hard against the border while the text sits 11px off the left: it
+     reads as a mistake because it is asymmetric. Ours instead, with real inset,
+     the same treatment .shop-sort already uses. Fixes all five at once. */
+  select.ei {
+    -webkit-appearance:none; appearance:none;
+    padding-right:36px; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23131313' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 13px center; background-size:11px 8px;
+  }
+  :root[data-theme="dark"] select.ei {
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) select.ei {
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+  }
   .ef-row { display:flex; gap:12px; }
   .ef-row .ef { flex:1; min-width:0; }
   .variants { margin-top:20px; padding-top:18px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:14px; }
@@ -633,6 +652,12 @@
   /* Three packages, so the grid is three wide. The sell page keeps two columns
      for its own summary; only the plans page asks for three. */
   .tiers.three { grid-template-columns:repeat(3,1fr); }
+  /* Dealer carries one bullet more than the others, so without this the three
+     buttons sit at three different heights and the row reads as unfinished.
+     The card becomes a column and the button is pushed to the floor of it. */
+  .tiers.three .tier { display:flex; flex-direction:column; }
+  .tiers.three .tier .t-list { flex:1 1 auto; }
+  .tiers.three .tier .t-cta { margin-top:auto; }
   @media (max-width:900px){ .tiers.three { grid-template-columns:1fr; } }
   .tier.on { outline:2px solid var(--ink); outline-offset:-1px; }
   .t-fit { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
@@ -761,6 +786,7 @@
     <a href="#collection" data-nav="home">Shop</a>
     <a data-nav="sell">Sell</a>
     <a data-nav="plans">Packages</a>
+    <a data-nav="buy">We buy</a>
     <a id="authLinkM" data-auth-label>Sign in</a>
   </div>
 </header>
@@ -2325,8 +2351,8 @@
         <p>We are drawn to the weird ones. Toys that were played with, loved and actually handled, over the pristine pieces sealed and graded never to be opened again. A toy locked in plastic, never to be read or felt, becomes a frozen artifact. We would rather keep them alive.</p>
         <p>Have a collection of your own? We buy and take on whole collections and single pieces. Tell us what you have, send a few photos, and we will look after it.</p>
         <div class="buy-row" style="margin-top:8px; max-width:520px">
-          <button class="btn accent" data-nav="sell">Sell your collection</button>
-          <a class="btn ghost" href="mailto:hello@hammerandmold.com">Reach out</a>
+          <button class="btn accent" data-nav="buy">Sell your collection to us</button>
+          <button class="btn ghost" data-nav="sell">Or list it yourself</button>
         </div>
       </div>
     </div>
@@ -2394,6 +2420,122 @@
       <div style="margin-top:26px;display:flex;gap:14px;flex-wrap:wrap">
         <button class="btn accent" type="button" data-nav="plans">Compare the packages</button>
         <button class="btn ghost" type="button" data-nav="plans">Work out which one fits</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============================ BUY ============================ -->
+<main class="view" id="view-buy" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">We buy</span></div>
+    <section class="empire-hero">
+      <div class="ey">Sell it to us</div>
+      <h1 class="empire-title">Or skip the auction and take the money today.</h1>
+      <div class="empire-dek">Whole collections and single pieces</div>
+      <p class="empire-lede">You do not have to run an auction to get rid of a box of toys. Send us photographs, we tell you what it is worth, and we make you an offer for the lot. You post one parcel and we pay. No listing, no waiting, no wondering whether it sells.</p>
+    </section>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Two ways, and one of them is better for you</div><h2>Sell it to us, or sell it through us</h2></div>
+        <p>We would rather you picked the right one than the one that suits us, so here is the arithmetic on a toy we think will fetch &euro;30.</p>
+      </div>
+      <div class="cmp-scroll">
+        <table class="cmp">
+          <thead>
+            <tr><th>On a toy worth about &euro;30</th><th class="n">Sell it to us</th><th class="n">Sell it through us</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>You receive</td><td class="n">&euro; 15,00</td><td class="n">&euro; 25,50</td></tr>
+            <tr><td>When</td><td class="n">Within a week</td><td class="n">After it sells</td></tr>
+            <tr><td>If it does not sell</td><td class="n">Our problem</td><td class="n">You still have it</td></tr>
+            <tr><td>Photographs, listing, packing</td><td class="n">We do it</td><td class="n">You do it</td></tr>
+            <tr><td>If it turns out to be rare</td><td class="n">We keep the upside</td><td class="n">You keep it</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="ch-note" style="max-width:70ch"><b>We pay about half of what we think a piece will fetch, and we say so up front.</b> That is what buying it outright costs us: we take the risk that it does not sell, we do the photographing and grading and packing, and we wait for our money instead of you. If you would rather have the other &euro;10,50 and do the work yourself, list it and keep 85%. Both offers are real and the page for the other one is <a data-nav="sell" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">here</a>.</div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">What we take</div><h2>Bring the box, not the figure</h2></div>
+        <p>The honest reason: assessing one toy and assessing forty costs us nearly the same in setup, so a whole collection is worth far more of our attention than a single common figure.</p>
+      </div>
+      <div class="tiers">
+        <div class="tier">
+          <div class="t-name">Yes, gladly</div>
+          <ul class="t-list">
+            <li>Whole collections, boxes, attic finds, shop stock</li>
+            <li>Single pieces we think will fetch <b>&euro;25 or more</b></li>
+            <li>Played-with condition. Paint loss and loose joints are fine</li>
+            <li>Incomplete figures, spares, accessories and weapons in a bag</li>
+            <li>Anything with a moulded maker's stamp, even a worn one</li>
+          </ul>
+          <div class="t-note">A collection has no minimum per piece. Send the lot and we price it as a lot.</div>
+        </div>
+        <div class="tier">
+          <div class="t-name">Not for us</div>
+          <ul class="t-list">
+            <li>Single common figures under about &euro;25</li>
+            <li>Modern reissues and toys still on shop shelves</li>
+            <li>Broken beyond display: melted, snapped, missing limbs</li>
+            <li>Bootlegs presented as the licensed original</li>
+            <li>Anything that is not a toy, model or related memorabilia</li>
+          </ul>
+          <div class="t-note">A single cheap figure is not worth what it costs either of us to move it. List it yourself, or put it in with a box of others.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">How it goes</div><h2>Photographs, an offer, a parcel</h2></div>
+      </div>
+      <div class="story" style="max-width:70ch">
+        <p><b>1. You send photographs.</b> A few clear shots of what you have, laid out. For anything you think is worth something, add a close-up of the moulded stamp on the feet or the lower back: that text is what lets us date it and find what it really sells for.</p>
+        <p><b>2. We tell you what it is, before we make an offer.</b> You get the identification either way, and you keep it whether you sell to us or not. If we think a piece is worth more than we would pay for it, we will say so and tell you to list it yourself.</p>
+        <p><b>3. We make one offer for the lot.</b> Within two working days, with the reasoning attached: what we think each piece fetches and what we are paying for it. No haggling and no fishing.</p>
+        <p><b>4. You post it, we pay.</b> We send you a prepaid label. Payment goes out the day the parcel arrives and matches the photographs. If something is not as described you get the parcel back at our cost, not a lower offer.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Show us</div><h2>What have you got?</h2></div>
+        <p>Photographs and a way to reach you. Nothing else needed, and nothing is committed by sending it.</p>
+      </div>
+      <div class="chooser">
+        <div class="ch-row" style="margin-bottom:18px">
+          <div class="ch-field" style="flex:1 1 260px">
+            <label for="ofEmail">Your email</label>
+            <input id="ofEmail" type="email" autocomplete="email" placeholder="you@example.com">
+          </div>
+          <div class="ch-field" style="flex:1 1 160px">
+            <label for="ofCount">Roughly how many pieces</label>
+            <input id="ofCount" type="number" min="1" step="1" inputmode="numeric" placeholder="20">
+          </div>
+        </div>
+        <div class="ch-field" style="margin-bottom:18px">
+          <label for="ofNotes">Anything worth knowing</label>
+          <input id="ofNotes" type="text" maxlength="400" placeholder="Loft find, mostly 1980s. One box still has its lid.">
+        </div>
+        <div class="ch-field" style="margin-bottom:6px">
+          <label for="ofFiles">Photographs, up to eight</label>
+          <input id="ofFiles" type="file" accept="image/*" multiple>
+        </div>
+        <div id="ofThumbs" class="thumbs" style="margin-top:14px"></div>
+        <button class="btn accent" type="button" id="ofSend" style="margin-top:20px">Send it to us</button>
+        <div class="ch-note" id="ofStatus">We reply within two working days. Your photographs are used to make you an offer and for nothing else.</div>
       </div>
     </div>
   </section>
@@ -3002,7 +3144,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy') };
   function show(view){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -4814,6 +4956,7 @@
     if (!boxes.length) return;
     const plans = await loadPlans();
     if (!plans){ boxes.forEach(b => { b.innerHTML = '<div class="acct-empty">Packages could not be loaded. Reload the page, or write to us.</div>'; }); return; }
+    await loadMyPlan();
     const mine = (currentPlanKey() || 'starter');
     const html = plans.map(p => {
       const isMine = p.key === mine;
@@ -4840,6 +4983,18 @@
   // 'premium' is the old paid tier and reads as Trader, which is what the worker
   // does too: never show someone who is paying that they are on the free one.
   let PLAN_NOW = null;
+  // Fetched on its own rather than waiting for the account page to render. The
+  // packages page marked Starter as "your package" for a paying Trader because
+  // PLAN_NOW was only ever set by membershipHtml, which runs on a page the seller
+  // was not looking at.
+  async function loadMyPlan(){
+    if (PLAN_NOW || !SB || !authUser) return PLAN_NOW;
+    try {
+      const { data } = await SB.from('profiles').select('plan').eq('id', authUser.id).single();
+      if (data && data.plan) PLAN_NOW = data.plan;
+    } catch (e) {}
+    return PLAN_NOW;
+  }
   const currentPlanKey = () => {
     const v = String(PLAN_NOW || '').toLowerCase();
     return v === 'premium' ? 'trader' : (v || null);
@@ -4907,19 +5062,45 @@
     // goes through Stripe Checkout.
     if (!now || now === 'starter'){
       if (target.cents === 0) return;
-      goCheckout(SUBSCRIBE_URL, { plan: key });
+      b.disabled = true;
+      try {
+        const r = await fetch(SUBSCRIBE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser.id, email: authUser.email, origin: location.origin, plan: key }) });
+        const d = await r.json();
+        if (d && d.url){ location.href = d.url; return; }
+        // A subscription exists after all, so this is a move and not a purchase.
+        // The plan column can be stale where the subscription is not: that is
+        // how a paying Trader was shown Starter as their package.
+        if (d && d.error === 'already_subscribed'){ PLAN_NOW = null; await changePlan(key, target); return; }
+        openModal('Could not start', 'Something went wrong', (d && d.error) || 'Please try again.');
+      } catch (err){ openModal('Could not start', 'Something went wrong', err.message); }
+      finally { b.disabled = false; }
       return;
     }
     // Already paying: this is a move, which the worker does on the existing
     // subscription so nobody gets billed twice.
-    const going_down = (plans.findIndex(p => p.key === key) < plans.findIndex(p => p.key === now));
     b.disabled = true;
+    try { await changePlan(key, target); }
+    finally { b.disabled = false; }
+  });
+
+  // Extracted so both entry points reach it: the button on a seller who is known
+  // to be paying, and the /subscribe attempt that comes back already_subscribed.
+  async function changePlan(key, target){
+    const plans = await loadPlans();
+    const now = currentPlanKey() || (await loadMyPlan(), currentPlanKey()) || 'starter';
+    const going_down = plans.findIndex(p => p.key === key) < plans.findIndex(p => p.key === now);
     try {
       const r = await fetch(CHANGE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser.id, plan: key }) });
       const d = await r.json();
       if (d && d.error === 'no_subscription'){ goCheckout(SUBSCRIBE_URL, { plan: key }); return; }
-      if (!d || d.error){ openModal('Could not change package', 'Something went wrong', (d && d.error) || 'Please try again.'); return; }
-      if (going_down){
+      if (!d || d.error){
+        openModal('Could not change package', 'Something went wrong',
+          d && d.error === 'already_subscribed' ? 'Your subscription could not be read. Reload the page and try again, or open Billing from your account.' : ((d && d.error) || 'Please try again.'));
+        return;
+      }
+      if (d.unchanged){
+        openModal('Already on ' + target.name, 'Nothing to change.', 'You are on this package and it is billing correctly.');
+      } else if (going_down){
         const when = d.at ? new Date(d.at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'the end of the period you have paid for';
         openModal('Change booked', 'You move to ' + target.name + ' on ' + when + '.',
           'Nothing changes before then: you keep the package you paid for, and your tokens stay yours. You can cancel this from your account until it happens.');
@@ -4927,11 +5108,11 @@
         openModal('You are on ' + target.name, target.listings + ' listings a month and ' + (target.commission * 100).toFixed(0) + '% commission, from now.',
           'Your card was charged only the difference for the rest of this month, not a second full month.');
       }
+      PLAN_NOW = null;                        // the plan just moved, so re-read it
       if (typeof renderAccount === 'function') renderAccount();
       renderPlans();
     } catch (err){ openModal('Could not change package', 'Something went wrong', err.message); }
-    finally { b.disabled = false; }
-  });
+  }
   // Our own checkout step, before Stripe. Two reasons, and the second matters
   // more. A buyer sees the real total for their own address instead of finding
   // the postage at the last screen. And the destination is known BEFORE the
