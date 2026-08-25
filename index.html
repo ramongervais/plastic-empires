@@ -1028,7 +1028,7 @@
             <button class="btn ghost" data-buynow-btn data-name="Millennium Falcon" data-buynow="520">Buy now · € 520</button>
           </div>
           <div class="trust">
-            Bidding is binding and a hidden reserve may apply. We confirm condition, photos and shipping before any payment, and every piece is hand-inspected and covered in transit. Layout preview, so no real bids are placed.
+            Bidding is binding and a hidden reserve may apply. We confirm condition, photos and shipping before any payment, every piece is hand-inspected, and the risk in transit is ours until it reaches you. Layout preview, so no real bids are placed.
           </div>
         </div>
       </div>
@@ -4407,10 +4407,20 @@
   }
 
   // Buyer protection. Every line is something we can actually do ourselves,
-  // because a promise we cannot keep is worse than no promise. Transit damage is
-  // framed as a carrier claim we handle rather than a refund we fund: under CRD
-  // Art. 20 the risk stays with the seller until the buyer has the goods, so it
-  // cannot be disclaimed to a consumer, but the insurance is what pays for it.
+  // because a promise we cannot keep is worse than no promise.
+  //
+  // Transit damage is NOT framed as an insurance claim, and that is deliberate.
+  // Sendcloud were asked in writing on 24 Aug 2026 whether vintage collectible
+  // toys fall under their "antiques and artwork" exclusion, and their answer was
+  // that they cannot say: read the policy for the chosen service, and ask the
+  // carrier. A promise that rests on someone else deciding, per claim, whether a
+  // 1991 Hasbro wrestler counts as an antique is not a promise.
+  //
+  // So the wording rests on nothing external. Under CRD Art. 20 the risk stays
+  // with us until the buyer has the goods, which cannot be disclaimed to a
+  // consumer anyway. We say that, we pay it, and whether a carrier reimburses us
+  // afterwards is our problem and never the buyer's. The word "insured" appears
+  // nowhere on the site for the same reason.
   const PROTECTION = [
     ['Checked before it is listed', 'Every lot is identified, dated and condition-graded, with the maker\u2019s stamp photographed. Nothing goes up unexamined.'],
     ['It arrives, or your money back', 'Posted tracked. If it never reaches you, you are refunded in full.'],
@@ -5496,7 +5506,7 @@
           // filled from an estimated table before the carriers were wired up, and
           // it printed EUR 15.00 under the buy button while the live quote three
           // rows above said EUR 3.85. One number, from the carrier, or none.
-          '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 October 2026.' : 'This lot goes live on 1 October 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected and covered in transit.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected and covered in transit.'))) + '</div>' +
+          '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 October 2026.' : 'This lot goes live on 1 October 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected, and the risk in transit is ours until it reaches you.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected, and the risk in transit is ours until it reaches you.'))) + '</div>' +
           '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
             '<span>Buyer protection</span><span class="protect-x">+</span></button>' +
             '<ul class="protect-list" hidden>' + PROTECTION.map(function(x){ return '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>'; }).join('') +

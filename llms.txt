@@ -36,6 +36,7 @@ Hammer & Mold is a curated, auction-first marketplace for genuine vintage collec
 - The buyer chooses the service: through the letterbox where the item fits, collection from a pickup point, or delivery to the door. Domestic rates currently run from EUR 3.85 to EUR 7.13.
 - The checkout total is the total; postage is never added afterwards or invoiced separately, and a seller cannot change it.
 - Tracked, to the Netherlands and the EU. Buyers elsewhere should ask before bidding.
+- Risk in transit stays with the platform until the buyer takes physical possession, as EU consumer law requires, and that holds whether or not a carrier pays anything out. The site does not describe parcels as "insured": a promise that depends on an insurer deciding per claim whether a vintage toy counts as an antique is not a promise, so the platform carries the risk itself instead.
 - Commission is charged on the total the buyer pays, postage included, because the total is what the platform processes. Postage is passed to the carrier at the price quoted.
 
 ## Launch
