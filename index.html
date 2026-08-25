@@ -14,7 +14,19 @@
 <meta property="og:description" content="Original vintage toys, identified, graded and told. Shipping included, tracked, across the EU.">
 <meta property="og:url" content="https://hammerandmold.com/">
 <meta property="og:locale" content="en">
-<meta name="twitter:card" content="summary">
+<meta property="og:see_also" content="https://www.instagram.com/meetthemolders/">
+<meta property="og:see_also" content="https://x.com/meetthemolders">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@meetthemolders">
+<meta name="twitter:creator" content="@meetthemolders">
+<!-- Shares had no picture at all. Every link to this site landed in a chat as a
+     grey box with a line of text, which for a shop selling photographs of toys is
+     the worst possible first impression. -->
+<meta property="og:image" content="https://hammerandmold.com/Empires/Brandedimages/og-default.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A vintage vinyl King Kong figure beside an Agfa film projector">
+<meta name="twitter:image" content="https://hammerandmold.com/Empires/Brandedimages/og-default.jpg">
 <meta name="twitter:title" content="Hammer &amp; Mold · Know the toy. Then own it.">
 <meta name="twitter:description" content="Original vintage toys, identified, graded and told. Shipping included, tracked, across the EU.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23131313'/%3E%3Ctext x='16' y='22' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='700' fill='white' text-anchor='middle'%3EHM%3C/text%3E%3C/svg%3E">
@@ -26,7 +38,7 @@
 <meta name="apple-mobile-web-app-title" content="Hammer &amp; Mold">
 <link rel="apple-touch-icon" href="/icon.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://hammerandmold.com/#org","name":"Hammer & Mold","url":"https://hammerandmold.com/","description":"Auction house for original vintage toys, Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told.","areaServed":"EU","slogan":"Know the toy. Then own it."},{"@type":"WebSite","@id":"https://hammerandmold.com/#website","url":"https://hammerandmold.com/","name":"Hammer & Mold","inLanguage":"en","publisher":{"@id":"https://hammerandmold.com/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://hammerandmold.com/?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}
+{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://hammerandmold.com/#org","name":"Hammer & Mold","url":"https://hammerandmold.com/","description":"Auction house for original vintage toys, Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told.","areaServed":"EU","slogan":"Know the toy. Then own it.","sameAs":["https://www.instagram.com/meetthemolders/","https://x.com/meetthemolders"]},{"@type":"WebSite","@id":"https://hammerandmold.com/#website","url":"https://hammerandmold.com/","name":"Hammer & Mold","inLanguage":"en","publisher":{"@id":"https://hammerandmold.com/#org"},"potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://hammerandmold.com/?q={search_term_string}"},"query-input":"required name=search_term_string"}}]}
 </script>
 <style>
   :root {
@@ -660,6 +672,16 @@
   .tiers.three .tier .t-cta { margin-top:auto; }
   @media (max-width:900px){ .tiers.three { grid-template-columns:1fr; } }
   .tier.on { outline:2px solid var(--ink); outline-offset:-1px; }
+  /* Share row on a lot. Quiet by default: this is a catalogue, not a growth
+     funnel, so it sits as a line of small type rather than a wall of buttons. */
+  .share { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:22px; padding-top:18px; border-top:1px solid var(--line); }
+  .share .sl { font-family:var(--label); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-right:4px; }
+  .share button, .share a { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    background:transparent; border:1px solid var(--line); color:var(--ink); padding:8px 13px; border-radius:3px;
+    cursor:pointer; text-decoration:none; line-height:1; transition:border-color .15s ease, background .15s ease; }
+  .share button:hover, .share a:hover { border-color:var(--ink); background:var(--paper-2); }
+  .share button:focus-visible, .share a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .share .done { border-color:var(--ink); background:var(--ink); color:var(--paper); }
   .t-fit { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
   .t-cta { margin-top:18px; width:100%; }
   /* The chooser. A seller types what they sell in a month and the page answers
@@ -787,6 +809,8 @@
     <a data-nav="sell">Sell</a>
     <a data-nav="plans">Packages</a>
     <a data-nav="buy">We buy</a>
+    <a href="https://www.instagram.com/meetthemolders/" target="_blank" rel="noopener">Instagram</a>
+    <a href="https://x.com/meetthemolders" target="_blank" rel="noopener">X</a>
     <a id="authLinkM" data-auth-label>Sign in</a>
   </div>
 </header>
@@ -3145,7 +3169,94 @@
 
   // ----- View router -----
   const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy') };
-  function show(view){
+  // ---- Paths ----
+  // Every view had the same URL, hammerandmold.com/, because nothing ever wrote
+  // to the address bar. Three things were broken by that and only one of them is
+  // analytics: no lot could be linked to a friend, Google saw a single page, and
+  // any measurement tool would have reported one pageview per visit with nothing
+  // to compare. One path per view fixes all three at once.
+  const PATHS = {
+    home: '/', about: '/about', sell: '/sell', plans: '/packages', buy: '/we-buy',
+    sold: '/results', account: '/account', terms: '/terms', privacy: '/privacy',
+    help: '/help', artifact: '/preview',
+    empire: '/molders/kenner', tmnt: '/molders/playmates', ljn: '/molders/ljn',
+    galoob: '/molders/galoob', thinkway: '/molders/thinkway',
+    kaiju: '/molders/kaiju', imperial: '/molders/imperial',
+    lot: '/lot', seller: '/seller',
+  };
+  const VIEW_BY_PATH = Object.keys(PATHS).reduce((m, k) => { m[PATHS[k]] = k; return m; }, {});
+
+  // ---- What each path tells a crawler and a share preview ----
+  // The head was one title, one description and one canonical for the entire
+  // site, hardcoded and never touched. Correct for a one-page site, wrong for a
+  // site pretending to be many: Google indexed a single page with everything on
+  // it, so a search for "Thinkway Toy Story" could never reach the Thinkway page
+  // because there was no Thinkway page. And every share preview looked identical
+  // whatever you shared, because og:url and og:title never moved off the home
+  // page. This is the part that made the SEO work do nothing.
+  const META = {
+    home:      ['Hammer & Mold \u00b7 Know the toy. Then own it.', 'Auction house for original vintage toys. Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told.'],
+    about:     ['About \u00b7 Hammer & Mold', 'A private collection that grew into an auction house. What we hunt for, and why we prefer the toys that were actually played with.'],
+    sell:      ['Sell your vintage toys \u00b7 Hammer & Mold', 'Photograph a toy and our AI identifies it, dates the line, grades the condition and researches what it really sells for. Identification is free and unlimited.'],
+    plans:     ['Selling packages \u00b7 Hammer & Mold', 'Three packages for sellers, priced so the one that matches what you sell is always the cheapest. Starter is free. Work out which one fits your volume.'],
+    buy:       ['We buy vintage toy collections \u00b7 Hammer & Mold', 'Skip the auction and take the money today. Send photographs of a collection and we make one offer for the lot, with the reasoning attached.'],
+    sold:      ['Past results \u00b7 Hammer & Mold', 'What vintage toys actually sold for at Hammer & Mold. Every closed lot with its final price.'],
+    help:      ['Help \u00b7 Hammer & Mold', 'Shipping, import duty, bidding, payment and returns, answered plainly.'],
+    terms:     ['Terms \u00b7 Hammer & Mold', 'Terms of sale for buyers and sellers: commission, packages, shipping, risk in transit and returns.'],
+    privacy:   ['Privacy \u00b7 Hammer & Mold', 'What we collect, why, and what we do not do. No advertising trackers and no profiling.'],
+    account:   ['Your account \u00b7 Hammer & Mold', 'Your lots, bids, wins and seller package.'],
+    artifact:  ['Preview \u00b7 Hammer & Mold', 'A layout preview of a Hammer & Mold lot page.'],
+    empire:    ['Kenner \u00b7 The Molders \u00b7 Hammer & Mold', 'Named after a street in Cincinnati. Kenner made Star Wars 1977 to 1985 and The Real Ghostbusters, and shaped the shelves of nearly every toy shop in the West.'],
+    tmnt:      ['Playmates \u00b7 The Molders \u00b7 Hammer & Mold', 'Playmates and the Teenage Mutant Ninja Turtles, 1988 to 1997: the line that turned a black-and-white comic into the biggest toy aisle of the decade.'],
+    ljn:       ['LJN \u00b7 The Molders \u00b7 Hammer & Mold', 'LJN and E.T. the Extra-Terrestrial, 1982. The story of a licence nobody wanted and the toys it produced.'],
+    galoob:    ['Galoob \u00b7 The Molders \u00b7 Hammer & Mold', 'Galoob and The A-Team, 1983 to 1984, plus Micro Machines: small scale, large ambition.'],
+    thinkway:  ['Thinkway Toys \u00b7 The Molders \u00b7 Hammer & Mold', 'Mattel passed. Hasbro passed. Thinkway said yes, and got the master toy licence for Toy Story with months to make it happen.'],
+    kaiju:     ['Marusan, Bullmark and Popy \u00b7 The Molders \u00b7 Hammer & Mold', 'Tokyo soft-vinyl kaiju, 1966 to 1984: the Godzilla and Ultraman monsters of the tokusatsu boom.'],
+    imperial:  ['Imperial Toy Corp \u00b7 The Molders \u00b7 Hammer & Mold', 'Imperial and the licensed and unlicensed monsters of the 1970s and 80s, and how to tell one from the other.'],
+    lot:       ['', ''],   // written from the lot itself
+    seller:    ['', ''],
+  };
+
+  const setTag = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+  function setMeta(view, path, title, desc){
+    const m = META[view] || META.home;
+    const t = title || m[0] || META.home[0];
+    const d = desc || m[1] || META.home[1];
+    const url = 'https://hammerandmold.com' + (path || '/');
+    document.title = t;
+    setTag('meta[name="description"]', 'content', d);
+    setTag('link[rel="canonical"]', 'href', url);
+    setTag('meta[property="og:title"]', 'content', t);
+    setTag('meta[property="og:description"]', 'content', d);
+    setTag('meta[property="og:url"]', 'content', url);
+    setTag('meta[name="twitter:title"]', 'content', t);
+    setTag('meta[name="twitter:description"]', 'content', d);
+    // A Product schema left behind on the terms page is a false statement to a
+    // crawler, so it goes when the lot does.
+    if (view !== 'lot'){ const st = document.getElementById('lotLd'); if (st) st.remove(); }
+  }
+
+  // ---- Pageview ----
+  // One hook, so a dashboard can be added without touching the router again.
+  // Cloudflare Web Analytics reads the address bar by itself, so it needs nothing
+  // here; this is for our own first-party record, where the conversion questions
+  // live.
+  function pageview(path){
+    try { if (typeof track === 'function') track('pageview', { path: path }); } catch (e) {}
+  }
+
+  // Written to the address bar without reloading, and recorded as a pageview.
+  // `extra` carries the id for a lot or a seller so the path identifies the thing
+  // and not just the kind of thing.
+  function setPath(view, extra){
+    const base = PATHS[view] || '/';
+    const path = extra ? base + '/' + encodeURIComponent(extra) : base;
+    if (location.pathname !== path) history.pushState({ view: view, extra: extra || null }, '', path);
+    setMeta(view, path);
+    pageview(path);
+  }
+
+  function show(view, opts){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
     const root = views[v];
@@ -3156,6 +3267,35 @@
     if (v === 'sell' && typeof refreshSellTokens === 'function') refreshSellTokens();
     if (v === 'sell' && typeof renderPlans === 'function') renderPlans();
     if (v === 'plans' && typeof renderPlans === 'function') renderPlans();
+    // Skipped when the browser drove the change, or Back would push a new entry
+    // on top of the one it just came from and the button would stop working.
+    if (!opts || !opts.fromHistory) setPath(v, opts && opts.extra);
+  }
+
+  // Back and forward. Without this the browser buttons leave the address bar on
+  // one view and the page on another.
+  window.addEventListener('popstate', ev => {
+    const st = ev.state;
+    if (st && st.view){ routeTo(st.view, st.extra, true); return; }
+    routeFromPath(true);
+  });
+
+  function routeTo(view, extra, fromHistory){
+    if (view === 'lot' && extra && typeof openLot === 'function'){ openLot(extra, { fromHistory: fromHistory }); return; }
+    if (view === 'seller' && extra && typeof renderSeller === 'function'){ renderSeller(extra); show('seller', { extra: extra, fromHistory: fromHistory }); return; }
+    if (view === 'sold' && typeof renderSold === 'function'){ renderSold(); show('sold', { fromHistory: fromHistory }); return; }
+    if (view === 'account' && typeof renderAccount === 'function'){ renderAccount({ fromHistory: fromHistory }); return; }
+    show(view, { fromHistory: fromHistory });
+  }
+
+  // The path the visitor actually arrived on, which is how a shared link and a
+  // page refresh both land somewhere other than the home page.
+  function routeFromPath(fromHistory){
+    const raw = location.pathname.replace(/\/+$/, '') || '/';
+    if (VIEW_BY_PATH[raw]){ routeTo(VIEW_BY_PATH[raw], null, fromHistory); return true; }
+    const m = raw.match(/^(\/lot|\/seller)\/(.+)$/);
+    if (m){ routeTo(VIEW_BY_PATH[m[1]], decodeURIComponent(m[2]), fromHistory); return true; }
+    return false;
   }
   document.addEventListener('click', e => {
     const wb = e.target.closest('[data-watch]');
@@ -3176,10 +3316,12 @@
     const nav = e.target.closest('[data-nav]');
     if (!nav) return;
     const dest = nav.dataset.nav;
-    if (dest === 'seller'){ e.preventDefault(); renderSeller(nav.dataset.seller || 'cornerstone'); show('seller'); return; }
-    if (dest === 'lot'){ e.preventDefault(); openLot(nav.dataset.lot); return; }
-    if (dest === 'sold'){ e.preventDefault(); renderSold(); show('sold'); return; }
-    if (dest === 'account'){ e.preventDefault(); renderAccount(); return; }
+    // Everything goes through routeTo so there is exactly one place that writes
+    // the address bar and records a pageview.
+    if (dest === 'seller'){ e.preventDefault(); routeTo('seller', nav.dataset.seller || 'cornerstone'); return; }
+    if (dest === 'lot'){ e.preventDefault(); routeTo('lot', nav.dataset.lot); return; }
+    if (dest === 'sold'){ e.preventDefault(); routeTo('sold'); return; }
+    if (dest === 'account'){ e.preventDefault(); routeTo('account'); return; }
     if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'imperial' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy' || dest === 'help'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
@@ -4321,7 +4463,7 @@
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
-    show('seller');
+    show('seller', { extra: id });
   }
 
   // ----- Draft lots (browser-local persistence) -----
@@ -4758,10 +4900,10 @@
       '<a data-nav="plans" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare the packages</a> to see which one is cheapest at what you actually sell.</div>';
   }
 
-  async function renderAccount(){
+  async function renderAccount(opts){
     await loadPlans();   // the block below prices itself from the table; render once, with numbers
     const body = document.getElementById('accountBody');
-    show('account');
+    show('account', { fromHistory: opts && opts.fromHistory });
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     if (!SB || !authUser){ body.innerHTML = '<p style="font-family:var(--body);padding:48px 0">Sign in to see your account.</p>'; return; }
@@ -5382,7 +5524,7 @@
   }
 
   // ----- Lot detail page (live, from DB) -----
-  async function openLot(id){
+  async function openLot(id, opts){
     const body = document.getElementById('lotBody');
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
@@ -5391,7 +5533,7 @@
     const row = (k, v) => '<div class="row' + (String(v).length > 58 ? ' col' : '') + '"><span class="k">' + e(k) + '</span><span class="v">' + e(v) + '</span></div>';
     document.getElementById('lotCrumb').textContent = 'Lot';
     body.innerHTML = '<p style="padding:64px 0;color:var(--ink-3);font-family:var(--body)">Loading lot…</p>';
-    show('lot');
+    show('lot', { extra: id, fromHistory: opts && opts.fromHistory });
     if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
     const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
     if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
@@ -5419,6 +5561,55 @@
     const fixedPrice = Number(lot.buy_now || cur || 0);
     const imgs = (lot.image_urls || []).filter(Boolean);
     document.getElementById('lotCrumb').textContent = lot.toy || 'Lot';
+
+    // The lot writes its own title, description and Product schema. Without this
+    // every lot shared to a chat showed "Hammer & Mold, know the toy, then own
+    // it" and no price, and a search for a specific figure had nothing to match
+    // against but the home page.
+    (function lotSeo(){
+      const bits = [lot.maker, lot.year, lot.line].filter(Boolean).join(' \u00b7 ');
+      const title = (lot.toy || 'Lot') + (bits ? ' \u00b7 ' + bits : '') + ' \u00b7 Hammer & Mold';
+      const desc = String(lot.blurb || lot.completeness || lot.notes || '')
+        .replace(/\s+/g, ' ').trim().slice(0, 300) ||
+        'A curated vintage toy at Hammer & Mold, identified, dated and condition-graded.';
+      setMeta('lot', PATHS.lot + '/' + encodeURIComponent(lot.id), title, desc);
+      const hero = (lot.image_urls || []).filter(Boolean)[0];
+      if (hero){
+        setTag('meta[property="og:image"]', 'content', hero);
+        setTag('meta[name="twitter:image"]', 'content', hero);
+        setTag('meta[property="og:image:alt"]', 'content', (lot.toy || 'Vintage toy') + ', photographed for Hammer & Mold');
+      }
+
+      // Product + Offer, so a price, a condition and an availability exist in a
+      // form a search engine can read. A shop with none of this is invisible to
+      // exactly the searches it should win.
+      const price = isFixed ? fixedPrice : (cur || lot.starting_bid || 0);
+      const avail = isSold ? 'SoldOut' : (isPreview ? 'PreOrder' : (ended ? 'SoldOut' : 'InStock'));
+      const condMap = t => /mint|sealed|misb|mib/i.test(t || '') ? 'NewCondition' : 'UsedCondition';
+      const ld = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: lot.toy || 'Vintage toy',
+        description: desc,
+        image: (lot.image_urls || []).filter(Boolean).slice(0, 6),
+        itemCondition: 'https://schema.org/' + condMap(lot.condition),
+        offers: {
+          '@type': 'Offer',
+          url: 'https://hammerandmold.com' + PATHS.lot + '/' + encodeURIComponent(lot.id),
+          priceCurrency: 'EUR',
+          price: Number(price).toFixed(2),
+          availability: 'https://schema.org/' + avail,
+          itemCondition: 'https://schema.org/' + condMap(lot.condition),
+          seller: { '@type': 'Organization', name: 'Hammer & Mold' },
+        },
+      };
+      if (lot.maker) ld.brand = { '@type': 'Brand', name: String(lot.maker).split(/[(,]/)[0].trim() };
+      if (lot.year) ld.releaseDate = String(lot.year);
+      let tag = document.getElementById('lotLd');
+      if (!tag){ tag = document.createElement('script'); tag.type = 'application/ld+json'; tag.id = 'lotLd'; document.head.appendChild(tag); }
+      tag.textContent = JSON.stringify(ld);
+    })();
+
     let ends = '';
     if (lot.ends_at){ const ms = new Date(lot.ends_at) - Date.now(); if (ms <= 0) ends = 'Ended'; else { const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); ends = d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; } }
     else ends = (lot.auction_days || 7) + 'd left';
@@ -5507,6 +5698,17 @@
           // it printed EUR 15.00 under the buy button while the live quote three
           // rows above said EUR 3.85. One number, from the carrier, or none.
           '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 October 2026.' : 'This lot goes live on 1 October 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected, and the risk in transit is ours until it reaches you.' : 'Bidding is binding and a hidden reserve may apply. Every piece is inspected, and the risk in transit is ours until it reaches you.'))) + '</div>' +
+          // Sharing only became possible today: until this morning every lot had
+          // the same URL, so a link sent to a friend opened the home page and the
+          // toy was never seen. Native sheet where the browser has one, a copy
+          // button and two direct links where it does not.
+          '<div class="share">' +
+            '<span class="sl">Share</span>' +
+            '<button type="button" id="shNative" hidden>Share this lot</button>' +
+            '<button type="button" id="shCopy">Copy link</button>' +
+            '<a id="shWa" target="_blank" rel="noopener">WhatsApp</a>' +
+            '<a id="shX" target="_blank" rel="noopener">X</a>' +
+          '</div>' +
           '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
             '<span>Buyer protection</span><span class="protect-x">+</span></button>' +
             '<ul class="protect-list" hidden>' + PROTECTION.map(function(x){ return '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>'; }).join('') +
@@ -5518,6 +5720,44 @@
       '<hr class="rule" /><section class="band"><div class="wrap"><div class="band-head"><div><div class="ey">Bid history</div><h2>' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') + '</h2></div></div>' +
       '<div class="bidhist">' + bids.map((b, i) => '<div class="bidrow"><span>' + (i === 0 ? 'Highest bid' : 'Bid') + '</span><span class="amt">' + money(b.amount) + '</span></div>').join('') + '</div></div></section>' : '';
     body.innerHTML = '<div class="art-top">' + gallery + detail + '</div>' + hist;
+
+    // ---- Share ----
+    (function shareWire(){
+      const url = 'https://hammerandmold.com' + PATHS.lot + '/' + encodeURIComponent(lot.id);
+      const bits = [lot.maker, lot.year].filter(Boolean).join(' ');
+      // The text carries the toy and its maker even when a preview card does not
+      // render, which matters: a link crawler does not run our JavaScript, so on
+      // some apps this typed line is the only description that arrives.
+      const text = (lot.toy || 'A vintage toy') + (bits ? ', ' + bits : '') + ' at Hammer & Mold';
+      const nat = document.getElementById('shNative');
+      const cp = document.getElementById('shCopy');
+      const wa = document.getElementById('shWa');
+      const xx = document.getElementById('shX');
+      if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(text + ' ' + url);
+      if (xx) xx.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text) + '&url=' + encodeURIComponent(url);
+      if (nat && navigator.share){
+        nat.hidden = false;
+        nat.addEventListener('click', () => {
+          navigator.share({ title: lot.toy || 'Hammer & Mold', text: text, url: url }).catch(() => {});
+          if (typeof track === 'function') track('share', { how: 'native', lot: lot.id });
+        });
+      }
+      if (cp) cp.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(url); }
+        catch (e) {
+          // No clipboard permission, so select it instead of failing silently:
+          // the point is that the visitor ends up with the link either way.
+          const t = document.createElement('input');
+          t.value = url; document.body.appendChild(t); t.select();
+          try { document.execCommand('copy'); } catch (e2) {}
+          t.remove();
+        }
+        cp.textContent = 'Link copied'; cp.classList.add('done');
+        setTimeout(() => { cp.textContent = 'Copy link'; cp.classList.remove('done'); }, 2200);
+        if (typeof track === 'function') track('share', { how: 'copy', lot: lot.id });
+      });
+    })();
+
     var pb = document.getElementById('lotProtect');
     if (pb) pb.addEventListener('click', function(){
       var list = pb.parentNode.querySelector('.protect-list');
@@ -5875,6 +6115,22 @@
     }
   }
   injectDraftLots();
+
+  // ---- The path the visitor arrived on ----
+  // A shared link, a bookmark or a refresh has to land where it points. Before
+  // this every one of them opened the home page, which is also why sharing a lot
+  // was pointless: the recipient never saw the toy.
+  (function(){
+    const landed = routeFromPath(true);
+    if (!landed){
+      // Unknown path, so treat it as the home page and correct the address bar
+      // rather than leaving a URL that resolves to nothing.
+      setMeta('home', '/');
+      if (location.pathname !== '/') history.replaceState({ view: 'home' }, '', '/');
+      pageview('/');
+    }
+  })();
+
   (function(){
     const ss = document.getElementById('shopSearch');
     if (ss){

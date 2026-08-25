@@ -18,6 +18,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # GitHub Pages serves static files only, so a shared link like
+      # /lot/<id> has no file behind it and returns 404. Pages does serve
+      # 404.html for any unknown path, so a copy of the app there makes deep
+      # links resolve: the router reads location.pathname and lands on the right
+      # view. Generated at deploy rather than committed, because a 450 kB copy of
+      # index.html in the repo goes stale the first time index.html changes and
+      # nobody notices until a shared link shows last week's site.
+      - name: SPA fallback for deep links
+        run: |
+          cp index.html 404.html
+          echo "404.html written, $(wc -c < 404.html) bytes"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
