@@ -3,3 +3,17 @@ QA-CHECKLIST.md
 
 # schema + policies: keep local, do not serve from a public repo
 admin/schema.sql
+
+# Generated at deploy by build-pages.mjs, never committed: one 450 kB copy of the
+# app per static path would be 7 MB of duplication that goes stale the moment
+# index.html changes.
+/404.html
+/about/
+/sell/
+/packages/
+/we-buy/
+/results/
+/terms/
+/privacy/
+/help/
+/molders/
