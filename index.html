@@ -5459,7 +5459,13 @@
         pts = (d && d.points) || [];
       } catch (e) { pts = []; }
       if (!pts.length){
-        box.innerHTML = '<div class="del-note">No pickup points found for that postcode. Check it, or choose delivery to your door instead.</div>';
+        // The old wording said "check it", which sent people to re-read a postcode
+        // that was perfectly correct: the real reason was that the geocoder only
+        // knew the Netherlands, so no address abroad could ever produce a list.
+        // That is fixed, but the message still has to be true for the case where a
+        // postcode really has no shop near it, and it should not leave someone who
+        // picked the cheaper option wondering what to do next.
+        box.innerHTML = '<div class="del-note"><b>No pickup point near that postcode.</b> Not every address has one within range. Choose delivery to your door instead, or try a nearby postcode if you are happy to collect a little further away.</div>';
         return;
       }
       box.innerHTML = '<div class="so-head">Pickup points near you</div>' + pts.map((p, i) =>
