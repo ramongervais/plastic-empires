@@ -1064,11 +1064,16 @@
       const n = Number(r.sessions) || 0;
       const prev = i ? Number(rows[i - 1].sessions) || 0 : 0;
       const w = top ? Math.max(n / top * 100, n ? 0.6 : 0) : 0;
+      // The drop line only where there is a drop to describe. Repeating "no one
+      // reached the step above" down five empty steps is noise, and it reads like
+      // five separate problems instead of one funnel nobody has walked yet.
+      const drop = (i && prev)
+        ? '<div class="fn-drop">' + Math.round(n / prev * 100) + '% of the step above' +
+          (n < prev ? ' \u00b7 ' + (prev - n) + ' dropped out' : '') + '</div>'
+        : '';
       return '<div class="fn-step">' +
         '<div class="fn-lab"><span>' + esc(r.step) + '</span><b>' + n + '</b></div>' +
-        '<div class="fn-bar"><i style="width:' + w.toFixed(1) + '%"></i></div>' +
-        (i ? '<div class="fn-drop">' + (prev ? Math.round(n / prev * 100) + '% of the step above' : 'no one reached the step above') +
-             (prev && n < prev ? ' \u00b7 ' + (prev - n) + ' dropped out' : '') + '</div>' : '') +
+        '<div class="fn-bar"><i style="width:' + w.toFixed(1) + '%"></i></div>' + drop +
       '</div>';
     }).join('');
   }
@@ -1099,7 +1104,7 @@
     drawFunnel($('fnSell'), sell.data || []);
 
     const li = lots.data || [];
-    $('fnLots').innerHTML = !li.length ? '' :
+    $('fnLots').innerHTML = !li.length ? '<tbody><tr><td class="note">Nothing viewed yet.</td></tr></tbody>' :
       '<thead><tr><th>Lot</th><th class="n">Views</th><th class="n">Bids</th><th class="n">Shares</th><th class="n">Bid rate</th></tr></thead><tbody>' +
       li.map(r => '<tr><td>' + esc(r.toy || '(deleted lot)') + '</td>' +
         '<td class="n">' + r.views + '</td><td class="n">' + r.bids + '</td><td class="n">' + r.shares + '</td>' +
@@ -1107,7 +1112,7 @@
       '</tbody>';
 
     const rf = refs.data || [];
-    $('fnRef').innerHTML = !rf.length ? '' :
+    $('fnRef').innerHTML = !rf.length ? '<tbody><tr><td class="note">No visits recorded yet.</td></tr></tbody>' :
       '<thead><tr><th>Source</th><th class="n">Visits</th></tr></thead><tbody>' +
       rf.map(r => '<tr><td>' + esc(r.source) + '</td><td class="n">' + r.sessions + '</td></tr>').join('') +
       '</tbody>';
