@@ -490,7 +490,16 @@
   #thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
   #thumbs .th { transition:border-color .14s; }
   #thumbs .th.cover { border-color:var(--ink); }
-  #thumbs .th .th-x { position:absolute; top:2px; right:2px; width:18px; height:18px; }
+  #thumbs .th .th-x, #ofThumbs .th .th-x { position:absolute; top:2px; right:2px; width:18px; height:18px; }
+  /* The offer form's thumbnails, sized like the sell page's so the two look
+     like one product. The remove button reuses .th-x rather than inventing a
+     second one that would drift out of step with it. */
+  #ofThumbs { display:flex; flex-wrap:wrap; gap:8px; }
+  #ofThumbs .th { position:relative; width:72px; height:72px; border:1px solid var(--line); border-radius:3px; overflow:hidden; flex:0 0 auto; }
+  #ofThumbs .th .th-x { display:flex; align-items:center; justify-content:center; border:0; border-radius:2px;
+    background:rgba(0,0,0,.66); color:#fff; font-size:13px; line-height:1; cursor:pointer; padding:0; }
+  #ofThumbs .th .th-x:hover { background:rgba(0,0,0,.85); }
+  #ofThumbs .th .th-x:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
   /* reorder controls, revealed on hover or keyboard focus so the photo stays visible */
   #thumbs .th .th-move { position:absolute; left:0; right:0; bottom:0; display:flex; opacity:0; transition:opacity .14s; }
   #thumbs .th:hover .th-move, #thumbs .th:focus-within .th-move { opacity:1; }
@@ -5177,6 +5186,136 @@
   const SUBSCRIBE_URL = 'https://plasticempires-pay.ramongervais.workers.dev/subscribe';
   const TOKENS_URL = 'https://plasticempires-pay.ramongervais.workers.dev/buy-tokens';
   const PORTAL_URL = 'https://plasticempires-pay.ramongervais.workers.dev/portal';
+  // ---- The "we buy your collection" form ----
+  // It had a working button since 25 August that sent nothing anywhere. This is
+  // what it does now.
+  //
+  // Photographs are shrunk here before they leave the device, then posted to the
+  // pay worker, which emails them and records that an offer arrived. They are not
+  // stored: someone sending these is showing the inside of their house to get a
+  // price, and the lots bucket is public.
+  const OFFER_URL = 'https://plasticempires-pay.ramongervais.workers.dev/offer';
+
+  // The sell page has a resize helper, but it lives inside that page's closure and
+  // is not reachable from here. Duplicated rather than refactored: this is a
+  // generic image utility with nothing to get wrong, unlike a price, and pulling
+  // apart the working upload path five weeks before launch is not a trade worth
+  // making.
+  function offerShrink(file, maxDim, quality){
+    return new Promise(resolve => {
+      const fr = new FileReader();
+      fr.onerror = () => resolve('');
+      fr.onload = () => {
+        const img = new Image();
+        img.onerror = () => resolve('');
+        img.onload = () => {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const c = document.createElement('canvas');
+          c.width = Math.round(img.width * scale);
+          c.height = Math.round(img.height * scale);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          try { resolve(c.toDataURL('image/jpeg', quality)); } catch (e) { resolve(''); }
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  (function offerForm(){
+    const send = document.getElementById('ofSend');
+    const files = document.getElementById('ofFiles');
+    const thumbs = document.getElementById('ofThumbs');
+    const status = document.getElementById('ofStatus');
+    if (!send || !files) return;
+
+    const OFFER_MAX = 8;
+    let shots = [];   // { name, dataUrl }
+
+    const say = (t, bold) => { status.innerHTML = bold ? '<b>' + t + '</b>' : t; };
+    const RESET = 'We reply within two working days. Your photographs are used to make you an offer and for nothing else.';
+
+    function draw(){
+      thumbs.innerHTML = shots.map((s, i) =>
+        '<div class="th" style="background-image:url(' + s.dataUrl + ');background-size:cover;background-position:center">' +
+        '<button type="button" class="th-x" data-of-rm="' + i + '" aria-label="Remove this photo">&times;</button></div>').join('');
+    }
+
+    files.addEventListener('change', async () => {
+      const picked = [...files.files].filter(f => /^image\//.test(f.type));
+      if (!picked.length) return;
+      const room = OFFER_MAX - shots.length;
+      if (room <= 0){ say('Eight photographs is the most we need. Remove one to add another.', true); return; }
+      say('Preparing ' + Math.min(picked.length, room) + ' photo' + (Math.min(picked.length, room) === 1 ? '' : 's') + '\u2026');
+      for (const f of picked.slice(0, room)){
+        // 1400px at 0.7 keeps a figure readable and a maker's stamp legible while
+        // landing around 150 kB, which matters because eight of them travel in one
+        // request body.
+        const d = await offerShrink(f, 1400, 0.7);
+        if (d) shots.push({ name: f.name, dataUrl: d });
+      }
+      files.value = '';
+      draw();
+      say(shots.length + ' photo' + (shots.length === 1 ? '' : 's') + ' ready. ' + RESET);
+    });
+
+    thumbs.addEventListener('click', e => {
+      const b = e.target.closest('[data-of-rm]');
+      if (!b) return;
+      shots.splice(parseInt(b.dataset.ofRm, 10), 1);
+      draw();
+      say(shots.length ? shots.length + ' photo' + (shots.length === 1 ? '' : 's') + ' ready. ' + RESET : RESET);
+    });
+
+    send.addEventListener('click', async () => {
+      const email = (document.getElementById('ofEmail').value || '').trim();
+      const count = (document.getElementById('ofCount').value || '').trim();
+      const notes = (document.getElementById('ofNotes').value || '').trim();
+
+      // Checked here so someone is not made to wait for a round trip to be told
+      // their address is missing. The worker checks it again, because a browser
+      // check is a convenience and never a guarantee.
+      if (!/^[^@\s]+@[^@\s.]+\.[^@\s]+$/.test(email)){
+        say('We need an email address to reply to.', true);
+        document.getElementById('ofEmail').focus();
+        return;
+      }
+      if (!shots.length && !notes){
+        say('Add a photograph or tell us what you have, otherwise there is nothing to price.', true);
+        return;
+      }
+
+      send.disabled = true;
+      const was = send.textContent;
+      send.textContent = 'Sending\u2026';
+      say('Sending' + (shots.length ? ' with ' + shots.length + ' photo' + (shots.length === 1 ? '' : 's') : '') + '\u2026');
+      try {
+        const r = await fetch(OFFER_URL, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, count: count, notes: notes, photos: shots.map(s => s.dataUrl) }),
+        });
+        const d = await r.json();
+        if (!r.ok || !d.ok){
+          say((d && d.error) || 'That did not go through. Try again, or write to us directly.', true);
+          return;
+        }
+        track('offer_sent', { photos: d.photos || 0, count: count ? Number(count) : null });
+        shots = []; draw();
+        document.getElementById('ofEmail').value = '';
+        document.getElementById('ofCount').value = '';
+        document.getElementById('ofNotes').value = '';
+        send.hidden = true;
+        say('Thank you. We have it, and we will come back to you within two working days with what we think each piece is worth and what we would pay for the lot.', true);
+        return;
+      } catch (err) {
+        say('That did not go through. Check your connection and try again.', true);
+      } finally {
+        send.disabled = false;
+        send.textContent = was;
+      }
+    });
+  })();
+
   const PLANS_URL = 'https://plasticempires-pay.ramongervais.workers.dev/plans';
   const CHANGE_URL = 'https://plasticempires-pay.ramongervais.workers.dev/change-plan';
 
