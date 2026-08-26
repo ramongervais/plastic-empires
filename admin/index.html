@@ -50,7 +50,7 @@
   .tbl-wrap { overflow-x:auto; }
   /* Money and counts line up, which is the whole reason a table is here rather
      than a list. Not defined anywhere else in this console yet. */
-  #sec-funnel th.n, #sec-funnel td.n { text-align:right; font-variant-numeric:tabular-nums; }
+  #sec-funnel th.n, #sec-funnel td.n, #sec-offers th.n, #sec-offers td.n { text-align:right; font-variant-numeric:tabular-nums; }
   .tabs { display:flex; gap:0; border-bottom:1px solid var(--line); margin:0 0 34px; flex-wrap:wrap; }
   .tab { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); background:none; border:0; border-bottom:2px solid transparent; padding:18px 22px 15px; cursor:pointer; transition:color .14s, border-color .14s; }
   .tab:first-child { padding-left:0; }
@@ -188,6 +188,7 @@
       <button class="tab" data-sec="lots" type="button">Lots</button>
       <button class="tab" data-sec="calibration" type="button">Calibration</button>
       <button class="tab" data-sec="funnel" type="button">Funnel</button>
+      <button class="tab" data-sec="offers" type="button">Offers</button>
       <button class="tab" data-sec="settings" type="button">Site settings</button>
     </div>
 
@@ -426,6 +427,19 @@
     </section>
 
     <!-- ---------- Site settings ---------- -->
+    <!-- ---------- Offers ---------- -->
+    <section class="sec" id="sec-offers" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">People selling to us</div>
+          <h1>Offers</h1>
+          <p class="lede">Submissions from the We buy page. The photographs are not here on purpose: they are in your inbox and stored nowhere else, because someone sending them is showing the inside of their house to get a price.</p>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table id="ofTbl"></table></div>
+      <p class="note" id="ofEmpty" hidden>No offers yet.</p>
+    </section>
+
     <!-- ---------- Funnel ---------- -->
     <section class="sec" id="sec-funnel" hidden>
       <div class="sec-head">
@@ -609,7 +623,7 @@
     }
     $('gate').hidden = true; $('app').hidden = false;
     $('whoEmail').textContent = me.email || '';
-    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots(); loadFunnel();
+    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots(); loadFunnel(); loadOffers();
     $('fnDays').addEventListener('change', loadFunnel);
   }
 
@@ -1051,6 +1065,45 @@
   // would otherwise decide the verdict.
   const median = a => { if (!a.length) return null; const s = [...a].sort((x,y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
   const pct = (n, of) => of ? Math.round(n / of * 100) + '%' : '—';
+
+  /* ================= Offers ================= */
+  // The photographs are deliberately absent from this table. They live in the
+  // inbox, so this is the record that an offer arrived, who from, and where it
+  // got to. Without it a mail that got lost would take the offer with it.
+  const OFFER_STATES = ['new', 'offered', 'accepted', 'declined', 'closed'];
+
+  async function loadOffers(){
+    const res = await SB.rpc('admin_buy_offers', { lim: 200 });
+    if (res.error){ $('ofTbl').innerHTML = ''; $('ofEmpty').hidden = false; $('ofEmpty').textContent = explain(res.error); return; }
+    const rows = res.data || [];
+    $('ofEmpty').hidden = rows.length > 0;
+    if (!rows.length){ $('ofTbl').innerHTML = ''; return; }
+
+    $('ofTbl').innerHTML =
+      '<thead><tr><th>Received</th><th>From</th><th class="n">Pieces</th><th class="n">Photos</th><th>What they said</th><th>Status</th></tr></thead><tbody>' +
+      rows.map(r => {
+        const when = new Date(r.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return '<tr>' +
+          '<td style="white-space:nowrap">' + esc(when) + '</td>' +
+          '<td><a href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></td>' +
+          '<td class="n">' + (r.item_count == null ? '\u2014' : r.item_count) + '</td>' +
+          '<td class="n">' + (r.photos || 0) + '</td>' +
+          '<td style="max-width:34ch">' + (r.notes ? esc(r.notes) : '<span class="note">nothing written</span>') + '</td>' +
+          '<td><select class="ei" data-offer="' + esc(r.id) + '" style="min-width:130px">' +
+            OFFER_STATES.map(st => '<option value="' + st + '"' + (st === r.status ? ' selected' : '') + '>' + st + '</option>').join('') +
+          '</select></td>' +
+        '</tr>';
+      }).join('') + '</tbody>';
+  }
+
+  document.addEventListener('change', async e => {
+    const sel = e.target.closest('[data-offer]');
+    if (!sel) return;
+    sel.disabled = true;
+    const { error } = await SB.rpc('admin_set_offer', { target: sel.dataset.offer, new_status: sel.value });
+    sel.disabled = false;
+    if (error) alert(explain(error));
+  });
 
   /* ================= Funnel ================= */
   // Each step's bar is its share of the FIRST step, so the shape of the drop-off
