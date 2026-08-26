@@ -35,6 +35,22 @@
   .wrap { max-width:1320px; margin:0 auto; padding:0 28px 80px; }
 
   /* ---------- Tabs ---------- */
+  /* Funnel. A step is a bar whose width is its share of the first step, so the
+     drop-off is visible without reading a single number. Monochrome, so the
+     comparison is length and not colour. */
+  .fn-cols { display:grid; gap:36px; }
+  @media (min-width:820px){ .fn-cols { grid-template-columns:1fr 1fr; } }
+  .fn-steps { display:flex; flex-direction:column; gap:2px; }
+  .fn-step { padding:11px 0 0; }
+  .fn-lab { display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:13.5px; }
+  .fn-lab b { font-variant-numeric:tabular-nums; }
+  .fn-bar { height:9px; background:var(--line-2); margin-top:6px; }
+  .fn-bar i { display:block; height:100%; background:var(--ink); }
+  .fn-drop { font-size:11.5px; color:var(--ink-3); margin-top:5px; }
+  .tbl-wrap { overflow-x:auto; }
+  /* Money and counts line up, which is the whole reason a table is here rather
+     than a list. Not defined anywhere else in this console yet. */
+  #sec-funnel th.n, #sec-funnel td.n { text-align:right; font-variant-numeric:tabular-nums; }
   .tabs { display:flex; gap:0; border-bottom:1px solid var(--line); margin:0 0 34px; flex-wrap:wrap; }
   .tab { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); background:none; border:0; border-bottom:2px solid transparent; padding:18px 22px 15px; cursor:pointer; transition:color .14s, border-color .14s; }
   .tab:first-child { padding-left:0; }
@@ -171,6 +187,7 @@
       <button class="tab" data-sec="sellers" type="button">Sellers</button>
       <button class="tab" data-sec="lots" type="button">Lots</button>
       <button class="tab" data-sec="calibration" type="button">Calibration</button>
+      <button class="tab" data-sec="funnel" type="button">Funnel</button>
       <button class="tab" data-sec="settings" type="button">Site settings</button>
     </div>
 
@@ -409,6 +426,45 @@
     </section>
 
     <!-- ---------- Site settings ---------- -->
+    <!-- ---------- Funnel ---------- -->
+    <section class="sec" id="sec-funnel" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">Own events</div>
+          <h1>Funnel</h1>
+          <p class="lede">Cloudflare counts pageviews. This is what happened next. Counted by visit, not by click, so ten refreshes of one lot by one person is one person considering one lot.</p>
+        </div>
+        <div class="ef" style="max-width:180px">
+          <span>Period</span>
+          <select class="ei" id="fnDays">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fn-cols">
+        <div>
+          <div class="ey" style="margin-bottom:14px">Buyers</div>
+          <div id="fnBuy" class="fn-steps"></div>
+        </div>
+        <div>
+          <div class="ey" style="margin-bottom:14px">Sellers</div>
+          <div id="fnSell" class="fn-steps"></div>
+        </div>
+      </div>
+
+      <div class="ey" style="margin:40px 0 14px">Which lots people look at</div>
+      <div class="tbl-wrap"><table id="fnLots"></table></div>
+
+      <div class="ey" style="margin:40px 0 14px">Where they came from</div>
+      <div class="tbl-wrap"><table id="fnRef"></table></div>
+
+      <p class="note" id="fnEmpty" hidden>No events yet. Tracking started on 26 August 2026, so this fills as people use the site.</p>
+    </section>
+
     <section class="sec" id="sec-settings" hidden>
       <div class="sec-head">
         <div>
@@ -553,7 +609,8 @@
     }
     $('gate').hidden = true; $('app').hidden = false;
     $('whoEmail').textContent = me.email || '';
-    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots();
+    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots(); loadFunnel();
+    $('fnDays').addEventListener('change', loadFunnel);
   }
 
   function wireSignOutOnGate(){
@@ -994,6 +1051,67 @@
   // would otherwise decide the verdict.
   const median = a => { if (!a.length) return null; const s = [...a].sort((x,y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m-1] + s[m]) / 2; };
   const pct = (n, of) => of ? Math.round(n / of * 100) + '%' : '—';
+
+  /* ================= Funnel ================= */
+  // Each step's bar is its share of the FIRST step, so the shape of the drop-off
+  // reads at a glance. The percentage under a step is against the step above it,
+  // because that is the number you can act on: "of the people who got this far,
+  // this many carried on".
+  function drawFunnel(el, rows){
+    if (!rows || !rows.length){ el.innerHTML = '<p class="note">Nothing yet.</p>'; return; }
+    const top = Number(rows[0].sessions) || 0;
+    el.innerHTML = rows.map((r, i) => {
+      const n = Number(r.sessions) || 0;
+      const prev = i ? Number(rows[i - 1].sessions) || 0 : 0;
+      const w = top ? Math.max(n / top * 100, n ? 0.6 : 0) : 0;
+      return '<div class="fn-step">' +
+        '<div class="fn-lab"><span>' + esc(r.step) + '</span><b>' + n + '</b></div>' +
+        '<div class="fn-bar"><i style="width:' + w.toFixed(1) + '%"></i></div>' +
+        (i ? '<div class="fn-drop">' + (prev ? Math.round(n / prev * 100) + '% of the step above' : 'no one reached the step above') +
+             (prev && n < prev ? ' \u00b7 ' + (prev - n) + ' dropped out' : '') + '</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  async function loadFunnel(){
+    const days = parseInt($('fnDays').value, 10) || 30;
+    const [buy, sell, lots, refs] = await Promise.all([
+      SB.rpc('admin_funnel', { days: days }),
+      SB.rpc('admin_seller_funnel', { days: days }),
+      SB.rpc('admin_lot_interest', { days: days, lim: 25 }),
+      SB.rpc('admin_referrers', { days: days }),
+    ]);
+
+    // One shared error line rather than four: if the migration has not been run
+    // they all fail the same way, and four copies of that is noise.
+    const failed = [buy, sell, lots, refs].find(r => r.error);
+    if (failed){
+      $('fnEmpty').hidden = false;
+      $('fnEmpty').textContent = explain(failed.error);
+      $('fnBuy').innerHTML = ''; $('fnSell').innerHTML = '';
+      $('fnLots').innerHTML = ''; $('fnRef').innerHTML = '';
+      return;
+    }
+    const anything = (buy.data || []).some(r => Number(r.sessions) > 0);
+    $('fnEmpty').hidden = anything;
+
+    drawFunnel($('fnBuy'), buy.data || []);
+    drawFunnel($('fnSell'), sell.data || []);
+
+    const li = lots.data || [];
+    $('fnLots').innerHTML = !li.length ? '' :
+      '<thead><tr><th>Lot</th><th class="n">Views</th><th class="n">Bids</th><th class="n">Shares</th><th class="n">Bid rate</th></tr></thead><tbody>' +
+      li.map(r => '<tr><td>' + esc(r.toy || '(deleted lot)') + '</td>' +
+        '<td class="n">' + r.views + '</td><td class="n">' + r.bids + '</td><td class="n">' + r.shares + '</td>' +
+        '<td class="n">' + (Number(r.views) ? Math.round(r.bids / r.views * 100) + '%' : '\u2014') + '</td></tr>').join('') +
+      '</tbody>';
+
+    const rf = refs.data || [];
+    $('fnRef').innerHTML = !rf.length ? '' :
+      '<thead><tr><th>Source</th><th class="n">Visits</th></tr></thead><tbody>' +
+      rf.map(r => '<tr><td>' + esc(r.source) + '</td><td class="n">' + r.sessions + '</td></tr>').join('') +
+      '</tbody>';
+  }
 
   async function loadCalibration(){
     const res = await SB.rpc('admin_calibration');

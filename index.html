@@ -3261,9 +3261,63 @@
   // Cloudflare Web Analytics reads the address bar by itself, so it needs nothing
   // here; this is for our own first-party record, where the conversion questions
   // live.
-  function pageview(path){
-    try { if (typeof track === 'function') track('pageview', { path: path }); } catch (e) {}
+  // ---- Our own events ----
+  // Cloudflare counts pageviews. This answers what it cannot: of the people who
+  // looked at a lot, how many bid, how many reached checkout, how many paid.
+  //
+  // What is deliberately not sent: no IP, no user agent, no fingerprint, no
+  // cookie. The session id lives in sessionStorage, so it dies with the tab and
+  // cannot follow anyone between visits. It exists only to join "viewed a lot" to
+  // "placed a bid" inside one visit, which is the whole of what a funnel needs,
+  // and it is the reason the site still needs no consent banner.
+  //
+  // Fire and forget, never awaited, and every failure is swallowed. A counter that
+  // can break a bid is worse than no counter.
+  const SESSION = (() => {
+    try {
+      let v = sessionStorage.getItem('hm_s');
+      if (!v){
+        v = (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now().toString(36)).slice(0, 24);
+        sessionStorage.setItem('hm_s', v);
+      }
+      return v;
+    } catch (e) { return null; }   // private mode, or storage refused
+  })();
+
+  // The referrer reduced to a hostname before it leaves the browser. A full
+  // referring URL can carry someone's search query, and we have no reason to hold
+  // that. Our own paths are dropped: internal navigation is not a source.
+  const REFERRER = (() => {
+    try {
+      const r = document.referrer;
+      if (!r) return '';
+      const h = new URL(r).hostname.replace(/^www\./, '');
+      return h === location.hostname.replace(/^www\./, '') ? '' : h;
+    } catch (e) { return ''; }
+  })();
+
+  let firstEvent = true;
+  function track(name, meta, subject){
+    if (!SB || !SESSION) return;
+    try {
+      const m = Object.assign({}, meta || {});
+      // Sent once per visit, so the source is recorded without repeating it on
+      // every event.
+      if (firstEvent && REFERRER){ m.ref = REFERRER; firstEvent = false; }
+      const row = {
+        name: name,
+        session: SESSION,
+        path: (m.path || location.pathname || '/').slice(0, 300),
+        subject: subject ? String(subject).slice(0, 64) : null,
+        meta: Object.keys(m).length ? m : null,
+        user_id: (authUser && authUser.id) || null,
+      };
+      delete row.meta?.path;   // already its own column
+      SB.from('events').insert(row).then(() => {}, () => {});
+    } catch (e) {}
   }
+
+  function pageview(path){ track('pageview', { path: path }); }
 
   // Written to the address bar without reloading, and recorded as a pageview.
   // `extra` carries the id for a lot or a seller so the path identifies the thing
@@ -3550,6 +3604,7 @@
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
   function openBid(name, bid, bids, lotId){
+    track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
     const live = !!(SB && lotId);
     openModal('Place a bid', name, 'Current bid ' + eur(bid) + ' · ' + bids + ' bids. Enter at least ' + eur(minNext) + '.');
@@ -3567,6 +3622,7 @@
         const { error } = await SB.from('bids').insert({ lot_id: lotId, bidder_id: authUser.id, amount: v });
         btn.disabled = false;
         if (error) { document.getElementById('bidHint').textContent = /row-level|policy/i.test(error.message) ? 'You cannot bid on your own lot.' : error.message; return; }
+        track('bid_placed', { amount: v }, lotId);
         injectDraftLots();
         try { const nr = await fetch(NOTIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: lotId }) }); const nd = await nr.json(); if (nd && nd.ends_at) extended = true; } catch (e) {}
       }
@@ -3780,6 +3836,7 @@
       if (!files.length) return;
       curateBtn.disabled = true; curateBtn.textContent = 'Curating…';
       const stopTicker = stageTicker(LOOK_STAGES);
+      track('curate_start', { photos: files.length });
       try {
         // Pass 1 only. The search pass is asked for separately so the seller
         // gets a finished listing to read while the market is being checked.
@@ -3792,6 +3849,8 @@
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
         if (data.curation) data.curation.versions = data.versions || null;
         stopTicker();
+        track('curate_done', { eligible: data.curation ? data.curation.eligible !== false : false,
+                               identified: data.curation ? !!data.curation.identified : false });
         showCuration(data.curation, true);
       } catch (err) {
         stopTicker();
@@ -4204,6 +4263,7 @@
             injectDraftLots();
             const wasToy = current.toy || 'Your toy';
             resetSell();   // clear the form so the next lot can go straight in
+            track('lot_listed', { preview: !!pre }, lotId);
             openModal(pre ? 'Lot in preview' : 'Lot listed', wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.') + ' The page is cleared, so you can start the next one.');
           } catch (err) {
             const msg = String((err && err.message) || err);
@@ -5229,6 +5289,7 @@
     const target = (plans || []).find(p => p.key === key);
     if (!target) return;
     const now = currentPlanKey();
+    track('plan_chosen', { from: now || 'none', to: key });
 
     // No subscription yet and a paid package chosen: that is a purchase, so it
     // goes through Stripe Checkout.
@@ -5462,6 +5523,7 @@
 
   async function startCheckout(opts){
     opts = opts || {};
+    track('checkout_start', { kind: opts.kind || '', amount: opts.amount || 0 }, opts.lotId);
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     if (SB && !authUser){ openAuth(); return; }
     if (!PAY_URL){
@@ -5554,6 +5616,7 @@
     document.getElementById('lotCrumb').textContent = 'Lot';
     body.innerHTML = '<p style="padding:64px 0;color:var(--ink-3);font-family:var(--body)">Loading lot…</p>';
     show('lot', { extra: id, fromHistory: opts && opts.fromHistory });
+    track('lot_view', null, id);
     if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
     const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
     if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
@@ -6200,6 +6263,7 @@
     }
     if (lotParam && !paid && !canceled){ if (typeof openLot === 'function') setTimeout(() => openLot(lotParam), 300); return; }
     if (paid){
+      track('paid', null, paid);
       openModal('Payment received', 'Thank you.', 'Your payment went through. We will confirm the details and arrange shipping by email. In the sandbox no real money moved.');
       if (typeof openLot === 'function') setTimeout(() => openLot(paid), 400);
     } else {
