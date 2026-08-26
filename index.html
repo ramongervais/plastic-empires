@@ -5044,7 +5044,11 @@
     const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
-      SB.from('bids').select('lot_id,amount,created_at').eq('bidder_id', uid).order('created_at', { ascending: false }),
+      // Was a filter on bidder_id, which is private now: anyone with the public
+      // key could read that column and turn it into a name via seller_public.
+      // my_bids() answers it for the caller only, and returns whether they are
+      // leading, which used to be worked out in the browser from everyone's bids.
+      SB.rpc('my_bids'),
       SB.from('profiles').select('*').eq('id', uid).single(),   // '*' so a column added by a pending migration cannot fail the whole account page
       SB.from('watchlist').select('lot_id').eq('user_id', uid),
       SB.from('lots').select(sel).eq('buyer_id', uid).order('created_at', { ascending: false }),
@@ -5056,23 +5060,30 @@
     const reviewedLotIds = new Set((myRevRes.data || []).map(r => r.lot_id));
     const prefs = prefRes.data || {};
     const watchIds = [...new Set((watchRes.data || []).map(w => w.lot_id))];
-    const bidIds = [...new Set(myBids.map(b => b.lot_id))];
+    const bidIds = [...new Set(myBids.map(b => b.lot_id))];   // rows are { lot_id, my_top, lot_top, bids_on_lot, leading }
     const allIds = [...new Set(lots.map(l => l.id).concat(bidIds).concat(watchIds))];
     const [bidLotsRes, allBidsRes, watchLotsRes] = await Promise.all([
       bidIds.length ? SB.from('lots').select(sel).in('id', bidIds) : Promise.resolve({ data: [] }),
-      allIds.length ? SB.from('bids').select('lot_id,amount,bidder_id').in('lot_id', allIds) : Promise.resolve({ data: [] }),
+      allIds.length ? SB.from('bids').select('lot_id,amount').in('lot_id', allIds) : Promise.resolve({ data: [] }),
       watchIds.length ? SB.from('lots').select(sel).in('id', watchIds) : Promise.resolve({ data: [] })
     ]);
     const bidLots = bidLotsRes.data || [], watchLots = watchLotsRes.data || [];
     const topByLot = {};
-    (allBidsRes.data || []).forEach(b => { const t = topByLot[b.lot_id]; if (!t || Number(b.amount) > t.amount) topByLot[b.lot_id] = { amount: Number(b.amount), bidder_id: b.bidder_id }; });
+    (allBidsRes.data || []).forEach(b => { const t = topByLot[b.lot_id]; if (!t || Number(b.amount) > t.amount) topByLot[b.lot_id] = { amount: Number(b.amount) }; });
+    // Which lots I lead, straight from the database. A lot is mine to win when
+    // my own highest bid is the lot's highest, which cannot tie because a bid
+    // has to beat the previous one.
+    const iLead = {};
+    myBids.forEach(r => { iLead[r.lot_id] = !!r.leading; });
     const myTop = topByLot, bidTop = topByLot;
     const finalPrice = (l, top) => (top[l.id] && top[l.id].amount) || Number(l.buy_now) || Number(l.starting_bid) || 0;
     const soldLots = lots.filter(l => l.status === 'sold');
     const liveLots = lots.filter(l => !isEnded(l));
     const earned = soldLots.reduce((s, l) => s + finalPrice(l, myTop), 0);
-    const wins = bidLots.filter(l => isEnded(l) && bidTop[l.id] && bidTop[l.id].bidder_id === uid && (!l.reserve || bidTop[l.id].amount >= Number(l.reserve)));
-    const myBidByLot = {}; myBids.forEach(b => { const a = Number(b.amount); if (!myBidByLot[b.lot_id] || a > myBidByLot[b.lot_id]) myBidByLot[b.lot_id] = a; });
+    const wins = bidLots.filter(l => isEnded(l) && bidTop[l.id] && iLead[l.id] && (!l.reserve || bidTop[l.id].amount >= Number(l.reserve)));
+    // my_top is already the highest, computed in the database, so there is no
+    // longer a list of individual bids to fold down here.
+    const myBidByLot = {}; myBids.forEach(b => { myBidByLot[b.lot_id] = Number(b.my_top); });
     const stat = (n, k) => '<div class="acct-stat"><div class="n">' + n + '</div><div class="k">' + k + '</div></div>';
     const tog = (key, label, on) => '<div class="acct-toggle" data-pref="' + key + '"><span class="lbl">' + label + '</span><span class="sw' + (on !== false ? ' on' : '') + '"></span></div>';
     const stateOf = l => l.status === 'sold' ? 'Sold' : (l.status === 'unsold' ? 'Not sold' : (isEnded(l) ? 'Awaiting payment' : 'Live'));
@@ -5086,7 +5097,7 @@
       return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
     }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
-    const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = bidTop[l.id] && bidTop[l.id].bidder_id === uid; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
+    const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
     // lot_drafts may not exist yet if section 6 of the schema has not been run;
     // supabase-js reports that as an error rather than throwing, so show none.
@@ -5814,7 +5825,13 @@
       body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is not currently listed.</p>';
       return;
     }
-    const { data: bidRows } = await SB.from('bids').select('amount,created_at,bidder_id').eq('lot_id', id).order('amount', { ascending: false });
+    // amount and created_at only: bidder_id is private, and the bid history on a
+    // lot page never showed a name anyway.
+    const { data: bidRows } = await SB.from('bids').select('amount,created_at').eq('lot_id', id).order('amount', { ascending: false });
+    // Whether the signed-in visitor is the one leading, answered by the database
+    // for one lot rather than by handing the whole bid list to the browser.
+    let iAmLeading = false;
+    if (SB && authUser){ try { const r = await SB.rpc('am_i_leading', { target: id }); iAmLeading = !!(r && r.data); } catch (e) {} }
     let seller = null;
     if (lot.seller_id){ const { data: sp } = await SB.from('seller_public').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
     const bids = bidRows || [];
@@ -5823,7 +5840,7 @@
     const topBid = bids.length ? bids[0] : null;
     const reserve = Number(lot.reserve || 0);
     const reserveMet = !reserve || (topBid && cur >= reserve);
-    const iWon = ended && topBid && reserveMet && authUser && topBid.bidder_id === authUser.id;
+    const iWon = ended && topBid && reserveMet && authUser && iAmLeading;
     const isSold = lot.status === 'sold';
     const isPreview = lot.status === 'preview';
     const isFixed = lot.sale_type === 'fixed';
