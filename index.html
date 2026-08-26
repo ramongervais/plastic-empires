@@ -86,6 +86,10 @@
 
   /* ---------- Masthead ---------- */
   .promo-bar { display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; background:#0a0a0a; color:#fff; text-align:center; padding:8px 20px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  /* The countdown's width is reserved before it has a value, so filling it in
+     moves nothing. tabular-nums keeps every digit the same width, which is what
+     stops the ribbon twitching as the seconds tick. */
+  #promoCount { display:inline-block; min-width:16ch; text-align:left; font-variant-numeric:tabular-nums; }
   .promo-bar .promo-cta { color:#fff; text-decoration:underline; text-underline-offset:2px; cursor:pointer; white-space:nowrap; transition:opacity .15s ease; }
   .promo-bar .promo-cta:hover { opacity:.65; }
   @media (max-width:600px){ .promo-bar { font-size:10px; letter-spacing:.08em; gap:8px; padding:8px 16px; } }
@@ -196,6 +200,24 @@
 
   /* Collection grid */
   .collection, .featured-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  /* Placeholders that hold the shop's height until the real lots arrive. The
+     grid was empty in the HTML and then eighteen cards were inserted, so
+     everything below it, the Molders section included, jumped five rows down
+     the page. Cloudflare blamed #empires for that shift, which is the section
+     that got pushed rather than the one that caused it.
+     Same box, same aspect ratio, same line heights, so nothing moves when a
+     real card replaces one. */
+  .sk { pointer-events:none; }
+  .sk .sk-img { aspect-ratio:4/5; background:var(--panel); border:1px solid var(--line); border-radius:3px; }
+  .sk .sk-l { height:11px; background:var(--line-2); border-radius:2px; margin-top:14px; }
+  .sk .sk-l.w70 { width:70%; }
+  .sk .sk-l.w45 { width:45%; margin-top:9px; }
+  .sk .sk-l.tall { height:26px; margin-top:16px; }
+  .sk .sk-l.btn { height:38px; margin-top:14px; }
+  @media (prefers-reduced-motion: no-preference){
+    .sk { animation:skf 1.4s ease-in-out infinite; }
+    @keyframes skf { 0%,100%{ opacity:.55 } 50%{ opacity:.85 } }
+  }
   /* Featured lots: a paid promotion strip above the shop grid. Max two rows. */
   .featured-strip { margin-bottom:36px; padding-bottom:32px; border-bottom:1px solid var(--line); }
   .featured-head { display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
@@ -883,6 +905,17 @@
         <div class="featured-grid" id="featuredGrid"></div>
       </div>
       <div class="collection">
+        <!-- Removed by injectDraftLots the moment real lots are in hand. Eight is
+             two full rows on desktop, which is what is visible without scrolling. -->
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+        <div class="sk" aria-hidden="true"><div class="sk-img"></div><div class="sk-l w70"></div><div class="sk-l w45"></div><div class="sk-l tall"></div><div class="sk-l btn"></div></div>
+
       </div>
     </div>
   </section>
@@ -4795,6 +4828,10 @@
     if (fgrid) fgrid.innerHTML = promoted.map(lotCardHtml).join('');
     if (fstrip) fstrip.hidden = !promoted.length;
 
+    // The placeholders go the moment there is something real to put in their
+    // place, and not before: removing them earlier would collapse the grid and
+    // cause the very shift they exist to prevent.
+    grid.querySelectorAll('.sk').forEach(el => el.remove());
     grid.querySelectorAll('.artifact-card.draft-lot').forEach(el => el.remove());
     if (rest.length) grid.insertAdjacentHTML('afterbegin', rest.map(lotCardHtml).join(''));
 
@@ -6241,7 +6278,12 @@
       const ms = target - Date.now();
       if (ms <= 0){ const t = document.getElementById('promoText'); if (t) t.innerHTML = 'We are live. The auctions are open.'; return; }
       const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000), m = Math.floor(ms % 3600000 / 60000), s = Math.floor(ms % 60000 / 1000);
-      el.textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
+      // Padded to two digits so the string is always the same length. Without
+      // this it went from '9s' to '10s' and the ribbon reflowed, which is a
+      // layout shift every ten seconds on every page. Cloudflare reported the
+      // page as 80% poor for CLS and named this element twice.
+      const p2 = v => String(v).padStart(2, '0');
+      el.textContent = p2(d) + 'd ' + p2(h) + 'h ' + p2(m) + 'm ' + p2(s) + 's';
       setTimeout(tick, 1000);
     })();
   })();
