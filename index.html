@@ -5074,7 +5074,10 @@
     // my own highest bid is the lot's highest, which cannot tie because a bid
     // has to beat the previous one.
     const iLead = {};
-    myBids.forEach(r => { iLead[r.lot_id] = !!r.leading; });
+    // is_leading, not leading: LEADING is a reserved word in Postgres and naming
+    // the column that made the whole migration a syntax error, so nothing after
+    // it ran and three of four bad bids still went through.
+    myBids.forEach(r => { iLead[r.lot_id] = !!r.is_leading; });
     const myTop = topByLot, bidTop = topByLot;
     const finalPrice = (l, top) => (top[l.id] && top[l.id].amount) || Number(l.buy_now) || Number(l.starting_bid) || 0;
     const soldLots = lots.filter(l => l.status === 'sold');
