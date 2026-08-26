@@ -2688,7 +2688,7 @@
         <p>This policy explains what personal data Hammer &amp; Mold collects, why, who it is shared with, how long it is kept and what rights you have. It covers hammerandmold.com and the accounts, listings, bidding and payment features on it.</p>
 
         <div class="terms-h">1 · The short version</div>
-        <p>We collect the minimum needed to run an auction house: your email to sign you in, what you list, what you bid, what you buy, and a delivery address when something sells. <b>We run no analytics, no advertising trackers and no tracking cookies.</b> We do not sell or rent personal data, ever. We do not profile you for advertising.</p>
+        <p>We collect the minimum needed to run an auction house: your email to sign you in, what you list, what you bid, what you buy, and a delivery address when something sells. <b>We run no advertising trackers and set no tracking cookies.</b> We do measure how the site is used, with a counter that sets no cookie and stores nothing that identifies you: it tells us which pages get read and roughly where visitors came from, and nothing about you as a person. We do not sell or rent personal data, ever. We do not profile you for advertising.</p>
 
         <div class="terms-h">2 · What we collect</div>
         <p><b>Account and identity.</b> Your email address, and the display name, handle, seller type, location and bio you choose to add.</p>
@@ -2713,7 +2713,7 @@
         <div class="terms-h">5 · Who your data is shared with</div>
         <p>We use the following processors and services. Each receives only what it needs.</p>
         <p><b>Supabase</b> · database, sign-in and photo storage. Hosting region [region].<br>
-        <b>Cloudflare</b> · the functions that handle payments, notifications, AI curation and the message relay.<br>
+        <b>Cloudflare</b> · the functions that handle payments, notifications, AI curation and the message relay, and the visitor counter described in section 1. The counter sets no cookie and records no identifier; it sees your IP address in order to answer the request, as any web request does, and does not keep it. European Union and United States.<br>
         <b>Anthropic</b> · the AI that reads your listing photographs and searches the web for comparable sales. United States.<br>
         <b>Stripe</b> · payments, membership billing, and collecting the delivery address. Ireland and United States.<br>
         <b>Resend</b> · sending our email. European Union (Ireland).<br>
@@ -2737,7 +2737,7 @@
         Server and security logs: [period], per each provider's own retention.</p>
 
         <div class="terms-h">9 · Cookies and local storage</div>
-        <p><b>We set no analytics, advertising or tracking cookies, and we have no consent banner because we have nothing to ask consent for.</b> What we do use is strictly necessary: a sign-in token so you stay logged in, your light or dark theme choice, an unsent listing draft, and an offline cache so the site loads. All of it sits in your own browser and you can clear it at any time. Third-party requests described in section 5 will see your IP address, as any web request does.</p>
+        <p><b>We set no advertising or tracking cookies, and we have no consent banner because we have nothing to ask consent for.</b> That includes our visitor counter: it works without a cookie and without a persistent identifier, which is the reason it needs no consent and the reason we chose it. What we do use is strictly necessary: a sign-in token so you stay logged in, your light or dark theme choice, an unsent listing draft, and an offline cache so the site loads. All of it sits in your own browser and you can clear it at any time. Third-party requests described in section 5 will see your IP address, as any web request does.</p>
 
         <div class="terms-h">10 · Your rights</div>
         <p>You can ask us to give you a copy of your data, correct it, delete it, restrict or object to how we use it, or hand it to you in a portable form. You can withdraw consent where we relied on it, and turn off activity emails yourself in your account. Some data we must keep regardless, such as invoices within the seven-year tax period.</p>
@@ -6236,5 +6236,22 @@
   paintStars();
 </script>
 <script>if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('/sw.js').catch(function(){}); }); }</script>
+<!-- Cloudflare Web Analytics. Free, no cookies and no persistent identifier, so
+     there is nothing to ask consent for and the site stays banner-free.
+
+     The token is not a secret: it sits in the HTML of every page, which is how the
+     beacon works at all. Public by design.
+
+     SPA measurement is on by default, which is what this site needs: the beacon
+     wraps history.pushState and listens for popstate, and our router does both, so
+     every view change is counted without a second call from us. Cloudflare
+     improved this on 21 August 2026 by using the Soft Navigation API where the
+     browser has one.
+
+     This is traffic only: visitors, referrers, which pages get read. It does not
+     do "lot viewed -> bid -> paid", because those are our own events. That lives
+     in the pageview() hook in the router and, when it is built, in our own
+     database. -->
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "386fbd2199494da190ed14d6ec26c636"}'></script>
 </body>
 </html>
