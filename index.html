@@ -168,7 +168,14 @@
 
   /* Empires */
   /* Filter + sort bar (publisher = empire) */
-  .collectionbar { display:flex; justify-content:space-between; align-items:center; gap:16px 24px; flex-wrap:wrap; margin:0 0 26px; }
+  /* The chip bar is built from whatever makers have lots, so it cannot be in the
+     HTML, and it used to arrive after first paint and push the whole shop down.
+     Skeleton cards held the height of the cards but not of the bar above them,
+     which is why CLS stayed red after yesterday's fix.
+     It occupies its height from the first paint now: hidden means invisible, not
+     absent, so filling it in moves nothing. One row of chips is 33px. */
+  .collectionbar { display:flex; justify-content:space-between; align-items:center; gap:16px 24px; flex-wrap:wrap; margin:0 0 26px; min-height:33px; }
+  .collectionbar[hidden] { display:flex; visibility:hidden; }
   .filterbar { display:flex; flex-wrap:wrap; gap:8px; }
   .fchip { font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:100px; padding:8px 15px; cursor:pointer; transition:background .12s, color .12s, border-color .12s, transform .12s; }
   .fchip:hover { color:var(--ink); border-color:var(--ink-3); }
@@ -219,6 +226,11 @@
     @keyframes skf { 0%,100%{ opacity:.55 } 50%{ opacity:.85 } }
   }
   /* Featured lots: a paid promotion strip above the shop grid. Max two rows. */
+  /* Deliberately NOT given a reserved height. There are no featured lots today,
+     so holding space for them would leave a permanent empty gap above the shop.
+     It appears only when a placement has been paid for, and then it stays, so it
+     shifts the page once rather than on every load. If featured placement ever
+     becomes the normal state, reserve it the way the chip bar is reserved. */
   .featured-strip { margin-bottom:36px; padding-bottom:32px; border-bottom:1px solid var(--line); }
   .featured-head { display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
   .featured-note { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
@@ -3121,7 +3133,15 @@
   .shop-count{ display:flex; align-items:center; white-space:nowrap; padding:0 16px;
     border-left:1px solid var(--line);
     font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
-  .shop-count:empty{ display:none; }   /* no stray divider before there are lots */
+  /* Empty until the lots are counted. display:none avoided a stray divider but
+     also meant the row grew when the text arrived, which on a narrow screen put
+     it on a second line and moved everything below it. Invisible instead of
+     absent: the space is there from the start and the divider is hidden with it. */
+  .shop-count:empty{ visibility:hidden; border-left-color:transparent; }
+  /* Reserved wide enough for the longest thing it says, which is "18 of 20 lots"
+     rather than the "0 lots" a placeholder would have held. Under-reserving
+     trades a big shift for a small one, which is not the point. */
+  .shop-count{ min-width:13ch; }
   @media (max-width:600px){
     .shop-tools{ flex-direction:column; align-items:stretch; }
     .shop-search{ border-radius:3px 3px 0 0; }
