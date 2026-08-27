@@ -739,6 +739,10 @@
   .share button:focus-visible, .share a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .share .done { border-color:var(--ink); background:var(--ink); color:var(--paper); }
   .t-fit { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  /* The break-even line, directly under the price it justifies. A rule above it so
+     it reads as a note on the price rather than the first item in the list. */
+  .t-be { font-family:var(--body); font-size:13px; line-height:1.5; color:var(--ink-2); margin-top:12px; padding-top:12px; border-top:1px solid var(--line-2); }
+  .t-be b { color:var(--ink); font-variant-numeric:tabular-nums; }
   .t-cta { margin-top:18px; width:100%; }
   /* The chooser. A seller types what they sell in a month and the page answers
      with a package and a number, instead of leaving them to work it out. */
@@ -759,6 +763,11 @@
   .cmp th { font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); text-align:left; padding:0 14px 8px 0; border-bottom:1px solid var(--ink); }
   .cmp td { padding:11px 14px 11px 0; border-bottom:1px solid var(--line-2); }
   .cmp td.n, .cmp th.n { text-align:right; padding-right:0; }
+  /* Money in a column has to line up, so the digits are tabular. .win marks the
+     cheapest package in a row: weight and not colour, because this site has no
+     colour to spend and the meaning has to survive a black-and-white print. */
+  .cmp td.n { font-variant-numeric:tabular-nums; }
+  .cmp td.win { font-weight:700; color:var(--ink); }
   .cmp-scroll { overflow-x:auto; }
   .terms-draft { background:var(--ink); color:var(--paper); border-radius:3px; padding:16px 20px; font-size:13.5px; line-height:1.6; margin:0 0 28px; }
   .terms-h { font-family:var(--label); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); margin:34px 0 0; }
@@ -789,7 +798,48 @@
   .seller-bio { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:66ch; margin:28px 0 0; }
   .seller-link { display:inline-block; font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); cursor:pointer; margin-top:8px; }
   .seller-link:hover { color:var(--ink); }
+  /* A seller's own mark, in the square the monogram otherwise fills. Same 88px box
+     and same one-pixel rule, so a branded seller and an unbranded one sit on the
+     same line and the page does not reflow when a logo loads. contain, not cover:
+     a logo cropped to fill is a logo ruined, and wordmarks are wide. */
+  .seller-logo { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; padding:8px; box-sizing:border-box; }
+  .seller-logo img { max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
+  .seller-soc { display:flex; align-items:center; gap:12px; margin-top:14px; }
+  .seller-soc a { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border:1px solid var(--line); color:var(--ink-3); transition:color .15s, border-color .15s; }
+  .seller-soc a:hover { color:var(--ink); border-color:var(--ink); }
+  .seller-soc svg { width:15px; height:15px; fill:currentColor; }
   @media (max-width:600px){ .seller-hero { flex-direction:column; gap:18px; } .seller-stats { grid-template-columns:1fr 1fr; } .seller-stats .stat:nth-child(2){ border-right:0; } }
+
+  /* ---------- Shopfront editor (account) ---------- */
+  .brand-row { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; padding-bottom:20px; }
+  /* The preview is the same 88px square as the public page, so what a seller sees
+     here is the thing itself and not an approximation of it. */
+  .brand-logo { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; padding:8px; box-sizing:border-box; background:var(--paper); }
+  .brand-logo img { max-width:100%; max-height:100%; object-fit:contain; display:block; }
+  .brand-logo .ph { font-family:var(--label); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); text-align:center; line-height:1.5; }
+  .brand-logo-acts { display:flex; flex-direction:column; gap:8px; justify-content:center; min-height:88px; }
+  .brand-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 20px; }
+  .brand-grid .wide { grid-column:1 / -1; }
+  @media (max-width:640px){ .brand-grid { grid-template-columns:1fr; } }
+  /* An input that carries a fixed prefix: the @ is drawn, not typed, so a handle
+     cannot be stored with one and the constraint cannot be tripped by habit. */
+  .brand-at { display:flex; align-items:stretch; border:1px solid var(--line); }
+  .brand-at .at { display:flex; align-items:center; padding:0 10px; border-right:1px solid var(--line); font-family:var(--body); font-size:14px; color:var(--ink-3); background:var(--paper-2); }
+  .brand-at input { flex:1; border:0; background:transparent; font-family:var(--body); font-size:14px; padding:11px 12px; color:var(--ink); min-width:0; }
+  .brand-at input:focus { outline:2px solid var(--ink); outline-offset:-2px; }
+  .brand-note { font-family:var(--body); font-size:13px; line-height:1.7; color:var(--ink-3); }
+  .brand-save { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding-top:20px; }
+  .brand-msg { font-family:var(--body); font-size:13px; color:var(--ink-3); }
+  /* .bad already carries the site's error red; only the confirming state is new. */
+  .brand-msg.good { color:var(--good); }
+  /* The paid-package notice. A rule down the left rather than a tinted panel: this
+     site has no colour to spend, so emphasis comes from structure. */
+  .brand-lock { border-left:2px solid var(--ink); padding:2px 0 2px 16px; margin:0 0 24px; }
+  .brand-lock-h { font-family:var(--body); font-weight:700; font-size:14px; color:var(--ink); }
+  .brand-lock .seller-link { display:block; }
+  .ef.is-locked > span { color:var(--ink-3); }
+  .ef.is-locked .brand-at { border-style:dashed; }
+  .brand-at input:disabled { color:var(--ink-3); cursor:not-allowed; }
 
   /* ---------- Mobile menu ---------- */
   .navtoggle { display:none; width:40px; height:38px; border:1px solid var(--line); border-radius:6px; background:transparent; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
@@ -901,7 +951,7 @@
         </div>
       </div>
       <div class="hero-artifact">
-        <img class="hero-logo" src="Empires/Brandedimages/hm-godzilla.svg" width="1148" height="885" fetchpriority="high" alt="Hammer &amp; Mold: Godzilla holding an auctioneer's hammer.">
+        <img class="hero-logo" src="/Empires/Brandedimages/hm-godzilla.svg" width="1148" height="885" fetchpriority="high" alt="Hammer &amp; Mold: Godzilla holding an auctioneer's hammer.">
       </div>
     </section>
   <section class="band" id="collection">
@@ -1040,7 +1090,7 @@
         </div>
         <p>Anyone can sell an old toy. We want to tell you what you're actually looking at.</p>
       </div>
-      <img class="why-shot" src="Empires/Brandedimages/kong-agfa.jpg" width="1800" height="1423" loading="lazy" decoding="async" alt="A vintage King Kong figure cranking the handle of an Agfa movie projector.">
+      <img class="why-shot" src="/Empires/Brandedimages/kong-agfa.jpg" width="1800" height="1423" loading="lazy" decoding="async" alt="A vintage King Kong figure cranking the handle of an Agfa movie projector.">
       <div class="moat">
         <div class="cell">
           <div class="num">— The Toy</div>
@@ -1203,9 +1253,9 @@
         <div class="carousel" id="kennerCarousel">
           <div class="carousel-viewport">
             <div class="carousel-track">
-              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 01</span><img src="Empires/Kenner/kenner-street-a.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
-              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 02</span><img src="Empires/Kenner/kenner-street-b.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
-              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 03</span><img src="Empires/Kenner/kenner-street-c.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
+              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 01</span><img src="/Empires/Kenner/kenner-street-a.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
+              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 02</span><img src="/Empires/Kenner/kenner-street-b.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
+              <figure class="slide"><div class="slide-img"><span class="ph">Kenner Street · 03</span><img src="/Empires/Kenner/kenner-street-c.jpg" alt="Kenner Street, Cincinnati" loading="lazy" onerror="this.remove()"></div></figure>
             </div>
           </div>
           <div class="carousel-ui">
@@ -1234,7 +1284,7 @@
           <div class="ey" style="margin-bottom:18px">To scale</div>
           <div class="scale-photo">
             <span class="ph">3¾ in · 9.5 cm</span>
-            <img src="Empires/Kenner/size-334.png" alt="A 3¾-inch (9.5 cm) Kenner Han Solo figure beside a Diet Coke can, for scale" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Kenner/size-334.png" alt="A 3¾-inch (9.5 cm) Kenner Han Solo figure beside a Diet Coke can, for scale" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">A whole galaxy you could fit in a coat pocket.</div>
         </div>
@@ -1398,7 +1448,7 @@
           <div class="ey" style="margin-bottom:18px">Mirage Studios · 1984</div>
           <div class="scale-photo">
             <span class="ph">TMNT #1 · 1984</span>
-            <img src="Empires/TMNT/comic-01.jpg" alt="Teenage Mutant Ninja Turtles issue one, Mirage Studios, 1984" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/TMNT/comic-01.jpg" alt="Teenage Mutant Ninja Turtles issue one, Mirage Studios, 1984" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Issue one. Black and white, oversized, and printed on a gamble.</div>
         </div>
@@ -1421,7 +1471,7 @@
           <div class="ey" style="margin-bottom:18px">Playmates · 1988</div>
           <div class="scale-photo">
             <span class="ph">The first wave · 1988</span>
-            <img src="Empires/TMNT/first-wave.jpg" alt="The 1988 Playmates Teenage Mutant Ninja Turtles first-wave figures" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/TMNT/first-wave.jpg" alt="The 1988 Playmates Teenage Mutant Ninja Turtles first-wave figures" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Four colors, four weapons. The 1988 line as most collectors first met it.</div>
         </div>
@@ -1469,7 +1519,7 @@
           <div class="ey" style="margin-bottom:18px">Playmates · 1990</div>
           <div class="scale-photo">
             <span class="ph">Technodrome · 1990</span>
-            <img src="Empires/TMNT/technodrome.jpg" alt="The Playmates Technodrome playset, 1990" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/TMNT/technodrome.jpg" alt="The Playmates Technodrome playset, 1990" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Krang's fortress on wheels, the flagship of the entire line.</div>
         </div>
@@ -1614,7 +1664,7 @@
           <div class="ey" style="margin-bottom:18px">LJN · 1982</div>
           <div class="scale-photo">
             <span class="ph">E.T. · 1982</span>
-            <img src="Empires/LJN/et.jpg" alt="LJN E.T. the Extra-Terrestrial toy, 1982" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/LJN/et.jpg" alt="LJN E.T. the Extra-Terrestrial toy, 1982" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">The license nobody else wanted, taken for the price of a used car.</div>
         </div>
@@ -1636,7 +1686,7 @@
           <div class="ey" style="margin-bottom:18px">LJN · 1984</div>
           <div class="scale-photo">
             <span class="ph">Wrestling Superstars · 1984</span>
-            <img src="Empires/LJN/wwf.jpg" alt="LJN WWF Wrestling Superstars rubber figures, 1984" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/LJN/wwf.jpg" alt="LJN WWF Wrestling Superstars rubber figures, 1984" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Eight inches of solid rubber, built to survive the playground.</div>
         </div>
@@ -1778,7 +1828,7 @@
           <div class="ey" style="margin-bottom:18px">Galoob · 1983</div>
           <div class="scale-photo">
             <span class="ph">The A-Team · 1983</span>
-            <img src="Empires/Galoob/ateam.jpg" alt="Galoob The A-Team toys, 1983" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Galoob/ateam.jpg" alt="Galoob The A-Team toys, 1983" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Mr. T, machine guns and a black van, moving as fast as the plots.</div>
         </div>
@@ -1800,7 +1850,7 @@
           <div class="ey" style="margin-bottom:18px">Galoob · 1987</div>
           <div class="scale-photo">
             <span class="ph">Micro Machines · 1987</span>
-            <img src="Empires/Galoob/micromachines.jpg" alt="Galoob Micro Machines miniature vehicles, 1987" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Galoob/micromachines.jpg" alt="Galoob Micro Machines miniature vehicles, 1987" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">The tiny cars that saved the company, sold by the fastest mouth on television.</div>
         </div>
@@ -1957,8 +2007,8 @@
           <div class="carousel">
             <div class="carousel-viewport">
               <div class="carousel-track">
-                <figure class="slide"><div class="slide-img"><span class="ph">Toy Story cast · 01</span><img src="Empires/Thinkway/toystory-cast-a.jpg" alt="Thinkway Toy Story figures together: Rex, Bullseye, Mr. Potato Head, Buzz Lightyear and Woody" loading="lazy" onerror="this.remove()"></div></figure>
-                <figure class="slide"><div class="slide-img"><span class="ph">Toy Story cast · 02</span><img src="Empires/Thinkway/toystory-cast-b.jpg" alt="The same Thinkway Toy Story figures, with Rex and Bullseye in focus" loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><span class="ph">Toy Story cast · 01</span><img src="/Empires/Thinkway/toystory-cast-a.jpg" alt="Thinkway Toy Story figures together: Rex, Bullseye, Mr. Potato Head, Buzz Lightyear and Woody" loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><span class="ph">Toy Story cast · 02</span><img src="/Empires/Thinkway/toystory-cast-b.jpg" alt="The same Thinkway Toy Story figures, with Rex and Bullseye in focus" loading="lazy" onerror="this.remove()"></div></figure>
               </div>
             </div>
             <div class="carousel-ui">
@@ -2009,8 +2059,8 @@
           <div class="carousel">
             <div class="carousel-viewport">
               <div class="carousel-track">
-                <figure class="slide"><div class="slide-img"><span class="ph">Buzz Lightyear · 01</span><img src="Empires/Thinkway/buzz-a.jpg" alt="Thinkway Buzz Lightyear figure, front view, chest panel and dome helmet open" loading="lazy" onerror="this.remove()"></div></figure>
-                <figure class="slide"><div class="slide-img"><span class="ph">Buzz Lightyear · 02</span><img src="Empires/Thinkway/buzz-b.jpg" alt="The same Buzz Lightyear from the side, showing the jetpack and the Lightyear nameplate" loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><span class="ph">Buzz Lightyear · 01</span><img src="/Empires/Thinkway/buzz-a.jpg" alt="Thinkway Buzz Lightyear figure, front view, chest panel and dome helmet open" loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><span class="ph">Buzz Lightyear · 02</span><img src="/Empires/Thinkway/buzz-b.jpg" alt="The same Buzz Lightyear from the side, showing the jetpack and the Lightyear nameplate" loading="lazy" onerror="this.remove()"></div></figure>
               </div>
             </div>
             <div class="carousel-ui">
@@ -2138,7 +2188,7 @@
           <div class="ey" style="margin-bottom:18px">Marusan · 1966</div>
           <div class="scale-photo">
             <span class="ph">Marusan Godzilla · 1966</span>
-            <img src="Empires/Kaiju/marusan-godzilla.jpg" alt="Marusan Godzilla soft vinyl figure, 1966" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Kaiju/marusan-godzilla.jpg" alt="Marusan Godzilla soft vinyl figure, 1966" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">The figure that started sofubi. Poured, slushed and hand-sprayed.</div>
         </div>
@@ -2160,7 +2210,7 @@
           <div class="ey" style="margin-bottom:18px">Bullmark · early 1970s</div>
           <div class="scale-photo">
             <span class="ph">Bullmark · 1970s</span>
-            <img src="Empires/Kaiju/bullmark.jpg" alt="Bullmark kaiju soft vinyl figures, early 1970s" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Kaiju/bullmark.jpg" alt="Bullmark kaiju soft vinyl figures, early 1970s" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Bullmark inherited the molds and ruled the golden age.</div>
         </div>
@@ -2300,7 +2350,7 @@
           <div class="ey" style="margin-bottom:18px">Imperial · the stamp</div>
           <div class="scale-photo">
             <span class="ph">Moulded into the feet</span>
-            <img src="Empires/Imperial/imperial-stamp.jpg" alt="The undersides of an Imperial Godzilla's feet, moulded with the Toho 1985 copyright on one and the Imperial name on the other" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Imperial/imperial-stamp.jpg" alt="The undersides of an Imperial Godzilla's feet, moulded with the Toho 1985 copyright on one and the Imperial name on the other" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Toho's 1985 copyright under one foot, Imperial's own name under the other. This is the mark that settles what a figure is.</div>
         </div>
@@ -2328,7 +2378,7 @@
           <div class="ey" style="margin-bottom:18px">Imperial · 1985</div>
           <div class="scale-photo">
             <span class="ph">Godzilla · 1985</span>
-            <img src="Empires/Imperial/godzilla.jpg" alt="Imperial Toy articulated vinyl Godzilla, 1985" loading="lazy" onerror="this.remove()">
+            <img src="/Empires/Imperial/godzilla.jpg" alt="Imperial Toy articulated vinyl Godzilla, 1985" loading="lazy" onerror="this.remove()">
           </div>
           <div class="vcap" style="text-align:left">Articulated, vinyl, and hanging on a hook by the till.</div>
         </div>
@@ -2369,7 +2419,7 @@
       </div>
       <div class="empires">
         <article class="empire has-shot" style="--sig:var(--jp)">
-          <div class="empire-shot"><img src="Empires/Imperial/godzilla-front.jpg" alt="Imperial Toy articulated vinyl Godzilla, 1985, front view" loading="lazy" onerror="this.closest('.empire-shot').remove()"></div>
+          <div class="empire-shot"><img src="/Empires/Imperial/godzilla-front.jpg" alt="Imperial Toy articulated vinyl Godzilla, 1985, front view" loading="lazy" onerror="this.closest('.empire-shot').remove()"></div>
           <div class="chips"><span class="chip">Imperial</span></div>
           <h3>Godzilla</h3>
           <div class="era">1985</div>
@@ -2689,6 +2739,23 @@
         </table>
       </div>
       <div class="ch-note" style="max-width:70ch">Monthly package fees are on top of the commission and are not in this table, which is why the chooser above works on your own volume: on a &euro;100 lot the fee matters, on fifty of them it does not. Catawiki figures from their published seller commission and buyer protection fee, August 2026.</div>
+    </div>
+  </section>
+
+  <!-- The table above leaves the monthly fee out on purpose, so this one puts it
+       back. It is the only place on the site that shows what a package actually
+       costs all in, which is the question a seller is really asking when they look
+       at EUR 25 a month. Filled from the same /plans data as the cards. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Is the monthly fee worth it</div><h2>What a package really costs, fee included</h2></div>
+        <p>A monthly fee looks like a cost and behaves like a discount. Every package charges less commission than the one below it, so above a certain amount of sales the cheaper commission more than pays the fee back. Below that amount, stay on the free one. Here is where the lines cross, on the same numbers the packages are priced on.</p>
+      </div>
+      <div class="cmp-scroll">
+        <table class="cmp" id="allInTable"></table>
+      </div>
+      <div class="ch-note" id="allInNote" style="max-width:70ch"></div>
     </div>
   </section>
 
@@ -3207,7 +3274,7 @@
   @media (max-width:600px){ .zoom-nav{ width:44px; height:44px; font-size:24px; } .zoom-hint{ font-size:10px; } }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="shipping.js"></script>
+<script src="/shipping.js"></script>
 <script>
   const COMMERCIAL = "https://www.youtube.com/watch?v=GVmwlCIPsgU";
   const SUPA_URL = 'https://yazoeshmplhmxefnovjy.supabase.co';
@@ -3869,7 +3936,7 @@
 
     // The brand mark, mid-swing. Reused at two sizes: the big waiting card and
     // the small one inside the price-evidence panel.
-    const HAMMER = '<div class="hmr"><img src="Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
+    const HAMMER = '<div class="hmr"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
       '<svg class="bang" viewBox="0 0 34 26" aria-hidden="true"><path d="M4 20 L0 24"/><path d="M15 17 L15 24"/><path d="M26 20 L31 25"/></svg></div>';
 
     // Named stages rather than one frozen line, plus a running second count so
@@ -4524,7 +4591,7 @@
     if (SB && /^[0-9a-f]{8}-[0-9a-f-]{20,}$/i.test(id)){ renderSellerDB(id); return; }
     const s = SELLERS[id] || SELLERS.cornerstone;
     document.getElementById('sellerCrumb').textContent = s.name;
-    const mono = s.name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    const mono = monogramOf(s.name);
     document.getElementById('sellerHead').innerHTML =
       '<section class="seller-hero">' +
         '<div class="seller-mono">' + mono + '</div>' +
@@ -4562,13 +4629,20 @@
 
   async function renderSellerDB(id){
     const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    // e() is for text between tags and leaves the double quote alone, which is fine
+    // there and unsafe inside an attribute. Everything a seller can now type ends up
+    // in one: the logo in src, the shop name in alt. A name of Bob's "Toys" would
+    // close the attribute early, and logo_url only has to START with our storage
+    // prefix to satisfy its constraint, so '…/lots/x" onerror="…' passes the
+    // database and lands in the markup. Stored XSS on a page other people read.
+    const ea = s => e(s).replace(/"/g, '&quot;');
     const head = document.getElementById('sellerHead');
     document.getElementById('sellerCrumb').textContent = 'Seller';
     head.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:32px 0">Loading seller…</p>';
     document.getElementById('sellerLots').innerHTML = '';
     // seller_public: the public columns only. profiles itself is own-row for a
     // signed-in user, so reading it here would return nothing for a visitor.
-    const { data: prof } = await SB.from('seller_public').select('id,display_name,handle,type,location,bio,created_at').eq('id', id).single();
+    const { data: prof } = await SB.from('seller_public').select('id,display_name,handle,type,location,bio,created_at,logo_url,instagram,x_handle,facebook').eq('id', id).single();
     const p = prof || {};
     const name = p.display_name || 'Seller';
     document.getElementById('sellerCrumb').textContent = name;
@@ -4586,22 +4660,38 @@
     { const { data: rv } = await SB.from('reviews').select('rating,body,created_at,lots!inner(seller_id)').eq('lots.seller_id', id).order('created_at', { ascending: false }).limit(20); reviews = rv || []; }
     const revCount = reviews.length;
     const avg = revCount ? reviews.reduce((s, r) => s + Number(r.rating), 0) / revCount : 0;
-    const mono = (name.split(' ').filter(Boolean).slice(0, 2).map(w => w[0]).join('') || name.slice(0, 2)).toUpperCase();
+    const mono = monogramOf(name);
     const since = p.created_at ? new Date(p.created_at).getFullYear() : '';
     head.innerHTML =
       '<section class="seller-hero">' +
-        '<div class="seller-mono">' + e(mono) + '</div>' +
+        // The seller's own mark when they have set one, the monogram when they have
+        // not. Same 88px box either way, so the page does not shift.
+        (p.logo_url
+          ? '<div class="seller-logo" id="sellerLogo"><img src="' + ea(p.logo_url) + '" alt="' + ea(name) + '" loading="lazy"></div>'
+          : '<div class="seller-mono">' + e(mono) + '</div>') +
         '<div class="seller-id">' +
           '<div class="ey">Seller' + (p.type ? ' · ' + e(p.type) : '') + (p.location ? ' · ' + e(p.location) : '') + '</div>' +
           '<h1 class="seller-name">' + e(name) + '</h1>' +
-          '<div class="seller-meta">' + e(p.handle ? ('@' + p.handle) : ('@' + name.toLowerCase().replace(/\s+/g, ''))) + (since ? ' · Member since ' + since : '') + '</div>' +
+          // A handle only when there is one. The old fallback built one from the
+          // email prefix, which produced '@ramongervais+1' on the second account.
+          (p.handle ? '<div class="seller-meta">@' + e(p.handle) + (since ? ' · Member since ' + since : '') + '</div>'
+                    : (since ? '<div class="seller-meta">Member since ' + since + '</div>' : '')) +
           (revCount ? '<div class="seller-rating">' + qstarsPct(avg / 5 * 100) + ' <b>' + avg.toFixed(1) + '</b> · ' + revCount + ' review' + (revCount > 1 ? 's' : '') + '</div>' : '') +
+          socLinksHtml(p, 'seller-soc') +
           '<div class="buy-row" style="max-width:420px; margin-top:20px"><button class="btn accent" type="button" id="followBtn">Follow</button><button class="btn ghost" type="button" id="msgBtn">Message</button></div>' +
         '</div>' +
       '</section>' +
       '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock(revCount ? avg.toFixed(1) : '—', 'Avg rating') + '</div>' +
       (p.bio ? '<p class="seller-bio">' + e(p.bio) + '</p>' : '') +
       (reviews.length ? '<div class="seller-reviews"><div class="ey" style="margin:28px 0 10px">Reviews</div>' + reviews.map(r => '<div class="rev-item"><div class="rev-item-h">' + qstarsPct(Number(r.rating) / 5 * 100) + '<span class="rev-date">' + new Date(r.created_at).toLocaleDateString('en-GB') + '</span></div>' + (r.body ? '<div class="rev-body">' + e(r.body) + '</div>' : '') + '</div>').join('') + '</div>' : '');
+    // If the logo file is gone, fall back to the monogram rather than leaving a
+    // broken image in the hero. Done here instead of an inline onerror: the same
+    // markup nested three levels of quotes and could not be read.
+    {
+      const box = document.getElementById('sellerLogo');
+      const img = box && box.querySelector('img');
+      if (img) img.addEventListener('error', () => { box.className = 'seller-mono'; box.textContent = mono; });
+    }
     document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + name + '.', 'You will be notified when this seller lists a new lot.'));
     document.getElementById('msgBtn').addEventListener('click', () => openMessage(id, name));
     document.getElementById('sellerLotsIntro').textContent = liveLots.length ? (name + ' has ' + liveLots.length + ' lot' + (liveLots.length > 1 ? 's' : '') + ' live right now.') : (name + ' has no live lots right now.');
@@ -5006,6 +5096,158 @@
     }
   }
 
+  // ----- The seller's own shopfront -----
+  //
+  // Two things at once, because the second turned out to be missing altogether.
+  // The logo and social handles are new. But display_name, handle, type, location
+  // and bio have been rendered on the public seller page since the beginning with
+  // nothing anywhere that could write them: a seller could not set their own name,
+  // and both live accounts still show a null handle, which is why the page falls
+  // back to '@' + the email prefix and one of them reads '@ramongervais+1'.
+  //
+  // Handles, never URLs. The database only accepts a bare handle, so the site
+  // builds the address. A free URL field on a public profile is a phishing surface:
+  // a seller types https://evil.example/login and it renders as a link on
+  // hammerandmold.com. The @ is drawn as a prefix rather than typed, so it cannot
+  // be stored and cannot trip the constraint.
+  const SOC = [
+    { key: 'instagram', label: 'Instagram', base: 'https://www.instagram.com/', max: 30,
+      path: 'M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.96.24 2.42.4.6.24 1.04.52 1.5.98.46.46.74.9.98 1.5.16.46.35 1.25.4 2.42.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.24 1.96-.4 2.42a4.04 4.04 0 0 1-.98 1.5c-.46.46-.9.74-1.5.98-.46.16-1.25.35-2.42.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.96-.24-2.42-.4a4.04 4.04 0 0 1-1.5-.98 4.04 4.04 0 0 1-.98-1.5c-.16-.46-.35-1.25-.4-2.42C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.24-1.96.4-2.42.24-.6.52-1.04.98-1.5.46-.46.9-.74 1.5-.98.46-.16 1.25-.35 2.42-.4C8.42 2.17 8.8 2.16 12 2.16Zm0 1.98c-3.15 0-3.5.01-4.73.07-.94.04-1.5.2-1.86.34-.47.18-.8.4-1.15.75-.35.35-.57.68-.75 1.15-.14.36-.3.92-.34 1.86-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.04.94.2 1.5.34 1.86.18.47.4.8.75 1.15.35.35.68.57 1.15.75.36.14.92.3 1.86.34 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c.94-.04 1.5-.2 1.86-.34.47-.18.8-.4 1.15-.75.35-.35.57-.68.75-1.15.14-.36.3-.92.34-1.86.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.04-.94-.2-1.5-.34-1.86a3.1 3.1 0 0 0-.75-1.15 3.1 3.1 0 0 0-1.15-.75c-.36-.14-.92-.3-1.86-.34-1.23-.06-1.58-.07-4.73-.07Zm0 3.37a4.49 4.49 0 1 1 0 8.98 4.49 4.49 0 0 1 0-8.98Zm0 7.4a2.91 2.91 0 1 0 0-5.82 2.91 2.91 0 0 0 0 5.83Zm5.72-7.6a1.05 1.05 0 1 1-2.1 0 1.05 1.05 0 0 1 2.1 0Z' },
+    { key: 'x_handle', label: 'X', base: 'https://x.com/', max: 15,
+      path: 'M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.2-6.82-5.96 6.82H1.7l7.73-8.84L1.28 2.25h6.82l4.86 6.43 5.28-6.43Zm-1.16 17.52h1.83L7.03 4.13H5.06l12.02 15.64Z' },
+    { key: 'facebook', label: 'Facebook', base: 'https://www.facebook.com/', max: 50,
+      path: 'M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 4.99 3.66 9.13 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.52 1.49-3.91 3.77-3.91 1.1 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.78-1.63 1.57v1.89h2.78l-.44 2.91h-2.34V22c4.78-.81 8.44-4.95 8.44-9.94Z' }
+  ];
+
+  // The public seller page renders these. Built here so the shop and the editor
+  // cannot disagree about what a handle turns into.
+  function socLinksHtml(p, cls){
+    const items = SOC.filter(s => p[s.key]).map(s =>
+      '<a href="' + s.base + encodeURIComponent(p[s.key]) + '" target="_blank" rel="noopener nofollow"' +
+      ' aria-label="' + s.label + '" title="@' + String(p[s.key]).replace(/[<>&"]/g, '') + ' on ' + s.label + '">' +
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + s.path + '"/></svg></a>').join('');
+    return items ? '<div class="' + cls + '">' + items + '</div>' : '';
+  }
+
+  // The initials the seller page falls back to when there is no logo.
+  //
+  // Defined once because it is now drawn in two places, the public page and the
+  // preview in the account, and they must not disagree. It also fixes what that
+  // preview made visible: the old version took the first two space-separated words,
+  // so "Hammer & Mold" produced "H&" because the ampersand counted as a word. Only
+  // words that start with a letter or a digit count now.
+  function monogramOf(name){
+    const words = String(name || '').split(/\s+/).filter(w => /^[\p{L}\p{N}]/u.test(w));
+    // Two words give their initials; one word gives its first two letters, because
+    // a single character in an 88px square reads as a mistake rather than a mark.
+    const ini = words.length > 1 ? words.slice(0, 2).map(w => w[0]).join('') : (words[0] || '').slice(0, 2);
+    return (ini || String(name || '').replace(/[^\p{L}\p{N}]/gu, '').slice(0, 2) || '?').toUpperCase();
+  }
+
+  // A logo is a brand mark, so this one keeps its transparency and writes PNG.
+  // offerShrink exists two screens down but flattens to JPEG, which would box every
+  // logo in white and make it wrong on the dark theme.
+  function logoShrink(file, maxDim){
+    return new Promise(resolve => {
+      const fr = new FileReader();
+      fr.onerror = () => resolve('');
+      fr.onload = () => {
+        const img = new Image();
+        img.onerror = () => resolve('');
+        img.onload = () => {
+          try {
+            const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.max(1, Math.round(img.width * scale));
+            c.height = Math.max(1, Math.round(img.height * scale));
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            resolve(c.toDataURL('image/png'));
+          } catch (e) { resolve(''); }
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  // Branding is a paid feature. 'premium' is the old name for what is now trader,
+  // which currentPlanKey() already maps, and it is accepted here too so an account
+  // still carrying the old value does not silently lose its logo.
+  const BRANDING_PLANS = ['trader', 'dealer', 'premium'];
+  const canBrand = prefs => BRANDING_PLANS.indexOf(String((prefs && prefs.plan) || 'starter').toLowerCase()) !== -1;
+
+  function shopfrontHtml(prefs){
+    const e = s => String(s == null ? '' : s).replace(/[<>&"]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[ch]));
+    const v = k => e(prefs[k] || '');
+
+    // Locked on the free package. The name, location and about text stay editable
+    // because a seller has to be able to say who they are: what a package buys is
+    // the logo and the social links, not the right to have a name.
+    const paid = canBrand(prefs);
+    const lockNote = paid ? '' :
+      '<div class="brand-lock">' +
+        '<div class="brand-lock-h">Logo and social links are part of a paid package</div>' +
+        '<p class="brand-note" style="margin:6px 0 0">Trader and Dealer let you put your own mark on your shop page and link your Instagram, X and Facebook. On Starter your page uses a monogram of your shop name.</p>' +
+        '<span class="seller-link" data-nav="plans" style="margin-top:10px">See the packages</span>' +
+      '</div>';
+    // The locked fields are shown rather than hidden, and disabled rather than
+    // removed: a seller who can see what a package gives them has a reason to buy
+    // one, and an empty section explains nothing.
+    const lock = paid ? '' : ' disabled';
+    const at = (k, label, max, hint) =>
+      '<label class="ef' + (paid ? '' : ' is-locked') + '"><span>' + label + '</span>' +
+        '<span class="brand-at"><span class="at">@</span>' +
+          '<input id="bf_' + k + '" type="text" maxlength="' + max + '" value="' + v(k) + '" autocomplete="off" spellcheck="false" placeholder="' + e(hint) + '"' + lock + '>' +
+        '</span></label>';
+    // The monogram the public page falls back to, so the locked preview shows the
+    // real thing rather than the words "no logo".
+    const mono = monogramOf(prefs.display_name || 'Seller');
+    return '' +
+      lockNote +
+      '<div class="brand-row">' +
+        '<div class="brand-logo" id="bfLogoBox">' +
+          (paid
+            ? (prefs.logo_url
+                ? '<img src="' + e(prefs.logo_url) + '" alt="Your logo">'
+                : '<span class="ph">No<br>logo</span>')
+            : '<span class="ph" style="font-size:26px;letter-spacing:0">' + e(mono) + '</span>') +
+        '</div>' +
+        (paid
+          ? '<div class="brand-logo-acts">' +
+              '<button class="btn ghost" type="button" id="bfPick">' + (prefs.logo_url ? 'Replace logo' : 'Upload a logo') + '</button>' +
+              (prefs.logo_url ? '<button class="acct-signout" type="button" id="bfDrop">Remove</button>' : '') +
+              '<input type="file" id="bfFile" accept="image/*" hidden>' +
+            '</div>'
+          : '') +
+        '<p class="brand-note" style="flex:1;min-width:220px;margin:0">' +
+          (paid
+            ? 'A square mark reads best. PNG with a transparent background works on both the light and the dark theme. We resize it to 256&nbsp;px and store it on our own servers, so it keeps working if you move host.'
+            : 'Your page shows these initials until you upload a logo on a paid package.') +
+        '</p>' +
+      '</div>' +
+      '<div class="brand-grid">' +
+        '<label class="ef"><span>Shop name</span><input class="ei" id="bf_display_name" type="text" maxlength="40" value="' + v('display_name') + '" placeholder="Hammer &amp; Mold"></label>' +
+        '<label class="ef"><span>Handle</span><span class="brand-at"><span class="at">@</span>' +
+          '<input id="bf_handle" type="text" maxlength="30" value="' + v('handle') + '" autocomplete="off" spellcheck="false" placeholder="yourshop">' +
+        '</span></label>' +
+        '<label class="ef"><span>What you are</span><input class="ei" id="bf_type" type="text" maxlength="40" value="' + v('type') + '" placeholder="Dealer, collector, shop…"></label>' +
+        '<label class="ef"><span>Where you are</span><input class="ei" id="bf_location" type="text" maxlength="60" value="' + v('location') + '" placeholder="Haarlem, Netherlands"></label>' +
+        '<label class="ef wide"><span>About your shop</span><textarea class="ei" id="bf_bio" rows="4" maxlength="600" placeholder="What you collect, what you sell, and how you grade it.">' + v('bio') + '</textarea></label>' +
+      '</div>' +
+      '<div class="brand-grid" style="margin-top:18px">' +
+        SOC.map(s => at(s.key, s.label, s.max, 'yourshop')).join('') +
+        '<p class="brand-note wide" style="margin:0">' +
+          (paid ? 'Enter the handle only, without the @ or the full address. These appear as icons on your public page.'
+                : 'Social links are unlocked on Trader and Dealer.') +
+        '</p>' +
+      '</div>' +
+      '<div class="brand-save">' +
+        '<button class="btn accent" type="button" id="bfSave">Save shopfront</button>' +
+        '<span class="seller-link" data-nav="seller" data-seller="' + e(prefs.id || '') + '">View your public page</span>' +
+        '<span class="brand-msg" id="bfMsg"></span>' +
+      '</div>';
+  }
+
   // ----- Account / dashboard (owner's own activity) -----
   // The membership block. Reads the package table rather than naming a price, so
   // the account page cannot show EUR 15 while the checkout charges EUR 7. If the
@@ -5146,6 +5388,10 @@
       '<div class="acct-sec"><div class="h">Membership</div>' +
         membershipHtml(prefs) +
       '</div>' +
+      // High on the page, next to Membership: this is who you are to a buyer, and
+      // it applies to every lot you have. The transactional lists below are about
+      // individual items and can wait their turn.
+      '<div class="acct-sec"><div class="h">Your shopfront</div>' + shopfrontHtml(prefs) + '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
       '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
@@ -5193,6 +5439,117 @@
       var res = await SB.from('profiles').update({ country: cSel.value || null }).eq('id', uid);
       msg.textContent = res.error ? ('Could not save: ' + res.error.message)
         : (cSel.value ? 'Saved. You post from ' + countryName(cSel.value) + '.' : 'Cleared.');
+    });
+
+    // ----- Shopfront: logo and branding -----
+    const bfMsg = (t, kind) => { const m = document.getElementById('bfMsg'); if (!m) return; m.textContent = t || ''; m.className = 'brand-msg' + (kind ? ' ' + kind : ''); };
+    const bfPick = document.getElementById('bfPick');
+    const bfFile = document.getElementById('bfFile');
+    if (bfPick && bfFile){
+      bfPick.addEventListener('click', () => bfFile.click());
+      bfFile.addEventListener('change', async () => {
+        const f = bfFile.files && bfFile.files[0];
+        if (!f) return;
+        bfFile.value = '';   // so picking the same file twice still fires change
+        if (!/^image\//.test(f.type)){ bfMsg('That is not an image.', 'bad'); return; }
+        bfPick.disabled = true; bfMsg('Preparing…');
+        const dataUrl = await logoShrink(f, 256);
+        if (!dataUrl){ bfPick.disabled = false; bfMsg('Could not read that image.', 'bad'); return; }
+        try {
+          const blob = await (await fetch(dataUrl)).blob();
+          // <uid>/profile/logo.png. The first path segment has to be the user's own
+          // id: the storage policies match on foldername(name)[1], which is what
+          // stops one seller overwriting another's files.
+          const path = uid + '/profile/logo.png';
+          bfMsg('Uploading…');
+          const up = await SB.storage.from('lots').upload(path, blob, { contentType: 'image/png', upsert: true });
+          if (up.error) throw up.error;
+          // A cache-buster, because upsert reuses the path so the URL would not
+          // change and the old logo would stay on screen behind the CDN. A query
+          // string is fine: the column's constraint anchors the prefix only.
+          const url = SB.storage.from('lots').getPublicUrl(path).data.publicUrl + '?v=' + Date.now();
+          const res = await SB.from('profiles').update({ logo_url: url }).eq('id', uid);
+          if (res.error) throw res.error;
+          const box = document.getElementById('bfLogoBox');
+          if (box) box.innerHTML = '<img src="' + url + '" alt="Your logo">';
+          bfPick.textContent = 'Replace logo';
+          bfMsg('Logo saved. It is on your public page now.', 'good');
+        } catch (err){
+          bfMsg('Could not save the logo: ' + ((err && err.message) || String(err)), 'bad');
+        }
+        bfPick.disabled = false;
+      });
+    }
+    const bfDrop = document.getElementById('bfDrop');
+    if (bfDrop) bfDrop.addEventListener('click', async () => {
+      if (!confirm('Remove your logo? Your page falls back to the monogram.')) return;
+      bfDrop.disabled = true;
+      const res = await SB.from('profiles').update({ logo_url: null }).eq('id', uid);
+      if (res.error){ bfDrop.disabled = false; bfMsg('Could not remove it: ' + res.error.message, 'bad'); return; }
+      // Take the file too, not just the reference. A logo left in a public bucket
+      // is still fetchable by anyone who saw the URL.
+      try { await SB.storage.from('lots').remove([uid + '/profile/logo.png']); } catch (e) {}
+      renderAccount();
+    });
+
+    // The same rules the database enforces, checked here so a typo reads as a
+    // sentence instead of a constraint name. The database stays the authority: this
+    // is the courtesy, not the guard.
+    const bfSave = document.getElementById('bfSave');
+    if (bfSave) bfSave.addEventListener('click', async () => {
+      const get = k => { const el = document.getElementById('bf_' + k); return el ? el.value.trim() : ''; };
+      // A leading @ is stripped rather than rejected: people type it out of habit,
+      // and the constraint would refuse it.
+      const handleOf = k => get(k).replace(/^@+/, '');
+      const patch = {
+        display_name: get('display_name') || null,
+        handle:       handleOf('handle') || null,
+        type:         get('type') || null,
+        location:     get('location') || null,
+        bio:          get('bio') || null
+      };
+      // Only on a paid package. A disabled input still hands over its .value, so
+      // leaving this out would send the branding anyway and the database would
+      // refuse the whole save with a message about a plan the seller cannot see.
+      if (canBrand(prefs)) SOC.forEach(s => { patch[s.key] = handleOf(s.key) || null; });
+
+      const rules = [
+        ['display_name', /^.{2,40}$/, 'A shop name needs between 2 and 40 characters.'],
+        ['handle',       /^[A-Za-z0-9._]{1,30}$/, 'A handle can use letters, digits, dots and underscores only.'],
+        ['type',         /^.{1,40}$/, 'Keep what you are under 40 characters.'],
+        ['location',     /^.{1,60}$/, 'Keep the location under 60 characters.'],
+        ['bio',          /^[\s\S]{1,600}$/, 'The about text can be at most 600 characters.'],
+        ['instagram',    /^[A-Za-z0-9._]{1,30}$/, 'An Instagram handle can use letters, digits, dots and underscores only.'],
+        ['x_handle',     /^[A-Za-z0-9_]{1,15}$/, 'An X handle is at most 15 letters, digits or underscores.'],
+        ['facebook',     /^[A-Za-z0-9.]{1,50}$/, 'A Facebook name can use letters, digits and dots only.']
+      ];
+      for (const [k, re, msg] of rules){
+        if (patch[k] != null && !re.test(patch[k])){ bfMsg(msg, 'bad'); const el = document.getElementById('bf_' + k); if (el) el.focus(); return; }
+      }
+
+      bfSave.disabled = true; bfMsg('Saving…');
+      const { error } = await SB.from('profiles').update(patch).eq('id', uid);
+      bfSave.disabled = false;
+      if (error){
+        // 23505 is a unique violation, which here can only be the handle.
+        if (/BRANDING_REQUIRES_PAID_PLAN/.test(error.message || '')){
+          // The database refused it, which means the page and the plan disagreed:
+          // either the section above rendered before loadPlans() settled, or the
+          // package lapsed in another tab. Say what happened rather than showing
+          // the raise text.
+          bfMsg('A logo and social links need Trader or Dealer.', 'bad');
+        } else if (error.code === '23505' || /duplicate key|already exists/i.test(error.message || '')){
+          bfMsg('That handle is taken. Try another.', 'bad');
+        } else if (/violates check constraint/i.test(error.message || '')){
+          bfMsg('One of those values was refused: ' + error.message, 'bad');
+        } else if (/permission denied|not allowed/i.test(error.message || '')){
+          bfMsg('Not allowed to save that field. Run section 23 of admin/schema.sql.', 'bad');
+        } else {
+          bfMsg('Could not save: ' + (error.message || String(error)), 'bad');
+        }
+        return;
+      }
+      bfMsg('Saved. Your public page is updated.', 'good');
     });
     body.querySelectorAll('[data-draft-open]').forEach(b => b.addEventListener('click', async () => {
       const { data, error } = await SB.from('lot_drafts').select('id,payload,image_urls').eq('id', b.dataset.draftOpen).maybeSingle();
@@ -5377,6 +5734,9 @@
     return PLAN_CACHE;
   }
   const planFee = p => p.cents === 0 ? 'Free' : '€' + (p.cents / 100).toFixed(0);
+  // Whole euros, Dutch thousands separator, for thresholds and totals where cents
+  // would be noise. The rest of the site uses toLocaleString('nl-NL') the same way.
+  const money0 = n => '€ ' + Math.round(Number(n) || 0).toLocaleString('nl-NL');
   // What a seller pays us in a month at this volume: commission plus the fee.
   const planCost = (p, monthly) => monthly * p.commission + p.cents / 100;
   // What the listing allowance can carry, at their own average price. Used to say
@@ -5394,6 +5754,36 @@
     trader:  'For 8 to 30 sales a month',
     dealer:  'For 30 sales a month and up',
   };
+
+  // What each package buys beyond the commission and the allowance. Kept next to
+  // PLAN_FIT rather than inside renderPlans so the selling argument and the
+  // arithmetic stay separate: one is copy, the other is the plans table.
+  //
+  // Branding is on this list because as of section 24 it is actually enforced. A
+  // paid feature nobody is told about is not a feature.
+  const PLAN_EXTRA = {
+    starter: [],
+    trader:  ['Your own logo and social links on your shop page'],
+    dealer:  ['Your own logo and social links on your shop page', 'Featured placement included'],
+  };
+
+  // The turning point: the sales per month at which a package costs less than the
+  // free one, despite the monthly fee.
+  //
+  // This is the answer to "EUR 25 is a lot", and until now the page did not give
+  // it anywhere. The EUR 100 hammer table deliberately leaves the monthly fee out,
+  // and the chooser only answers after a seller types two numbers. So the one
+  // figure that decides the question was the one figure missing.
+  //
+  // Computed from the plans table, never written down: a hardcoded EUR 357 would go
+  // stale the first time a price or a commission moves.
+  function planBreakEven(p, plans){
+    const free = plans.find(x => x.cents === 0);
+    if (!free || !p.cents) return null;
+    const saved = free.commission - p.commission;      // commission points saved
+    if (saved <= 0) return null;
+    return ((p.cents - free.cents) / 100) / saved;     // euros of sales a month
+  }
 
   async function renderPlans(){
     // Two containers, one on the packages page and one on the sell page, so the
@@ -5414,15 +5804,67 @@
         '<div class="t-name">' + mkEsc(p.name) + '</div>' +
         '<div class="t-price">' + planFee(p) + (p.cents ? '<span>/month</span>' : '') + '</div>' +
         '<div class="t-fit">' + (PLAN_FIT[p.key] || '') + '</div>' +
+        // The monthly fee answered before anyone has to work it out. Rounded up to
+        // the nearest ten so it reads as a threshold and not a false precision.
+        (() => {
+          const be = planBreakEven(p, plans);
+          if (be == null) return '';
+          return '<div class="t-be">Pays for itself from <b>' + money0(Math.ceil(be / 10) * 10) +
+                 '</b> of sales a month</div>';
+        })() +
         '<ul class="t-list">' +
           '<li><b>' + (p.commission * 100).toFixed(0) + '%</b> commission on the buyer’s total</li>' +
           '<li><b>' + p.listings + '</b> listings a month' + (p.cap > p.listings ? ', rolling over to ' + p.cap : '') + '</li>' +
           '<li>Free unlimited identification</li>' +
           '<li>Buyer protection on every lot</li>' +
-          (p.key === 'dealer' ? '<li>Featured placement included</li>' : '') +
+          (PLAN_EXTRA[p.key] || []).map(x => '<li>' + x + '</li>').join('') +
         '</ul>' + cta + '</div>';
     }).join('');
     boxes.forEach(b => { b.innerHTML = html; });
+    renderAllIn(plans);
+  }
+
+  // The all-in table: monthly fee plus commission, per level of monthly sales.
+  //
+  // Catawiki is deliberately NOT a column here. It has its own table above with its
+  // own footnote, and dropping it into a column headed "what you pay" would be
+  // unfair: 9 of its 21.5 points are charged to the buyer, not the seller. This
+  // table answers a different question, which package should I be on, and it can
+  // answer that honestly without a competitor in it.
+  function renderAllIn(plans){
+    const table = document.getElementById('allInTable');
+    const note = document.getElementById('allInNote');
+    if (!table || !plans || !plans.length) return;
+    const ordered = plans.slice().sort((a, b) => a.cents - b.cents);
+    // Chosen to straddle the turning points rather than to flatter any package.
+    // EUR 150 is there on purpose: it is below every break-even, so the free package
+    // wins that row and the table is visibly not an upsell. Trader already wins at
+    // EUR 250, which is what its EUR 233 turning point means.
+    const levels = [150, 250, 500, 1000, 2000, 5000];
+    const costOf = (p, s) => p.cents / 100 + s * p.commission;
+
+    table.innerHTML =
+      '<thead><tr><th>You sell, a month</th>' +
+        ordered.map(p => '<th class="n">' + mkEsc(p.name) + '</th>').join('') +
+      '</tr></thead><tbody>' +
+      levels.map(s => {
+        const costs = ordered.map(p => costOf(p, s));
+        const best = Math.min.apply(null, costs);
+        return '<tr><td>' + money0(s) + '</td>' +
+          ordered.map((p, i) => '<td class="n' + (costs[i] === best ? ' win' : '') + '">' +
+            money0(costs[i]) + '</td>').join('') +
+        '</tr>';
+      }).join('') +
+      '</tbody>';
+
+    // The sentence the page was missing, built from the same numbers.
+    const paid = ordered.filter(p => p.cents > 0).map(p => {
+      const be = planBreakEven(p, plans);
+      return be == null ? null : mkEsc(p.name) + ' from ' + money0(Math.ceil(be / 10) * 10);
+    }).filter(Boolean);
+    note.innerHTML = 'Bold is the cheapest package at that level. Fee and commission together, on the ' +
+      'buyer’s total. Where each one starts costing less than the free package: ' +
+      paid.join(', ') + '. Below that, Starter is the right answer and the chooser above will say so.';
   }
 
   // The plan on the account, read from whatever the last account render fetched.
