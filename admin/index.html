@@ -362,6 +362,23 @@
           <div><label class="f" for="le_buynow">Buy now &euro;</label><input class="f" id="le_buynow" type="number" step="1" min="0"></div>
           <div class="wide"><label class="f" for="le_blurb">Opening paragraph</label><textarea class="f" id="le_blurb" rows="3"></textarea></div>
           <div class="wide"><label class="f" for="le_completeness">Completeness</label><textarea class="f" id="le_completeness" rows="3"></textarea></div>
+          <!-- Restoration. A select rather than the four buttons the sell page uses,
+               because this console is a dense form and not a guided flow: everything
+               else here is a field in a grid and a row of cards would fight it. Same
+               four values, checked by lots_care_level_check in section 26. -->
+          <div>
+            <label class="f" for="le_care">Restoration</label>
+            <select class="f" id="le_care">
+              <option value="">Not stated</option>
+              <option value="as-found">As found</option>
+              <option value="cleaned">Cleaned</option>
+              <option value="repaired">Repaired</option>
+              <option value="restored">Restored</option>
+            </select>
+            <div class="s" style="margin-top:6px">Shows on the lot as its own line. Value-bearing, not a selling point: a repainted figure is a different object from an original one. "As found" is a real answer, not a lesser one.</div>
+          </div>
+          <div class="wide"><label class="f" for="le_carenote">What was done</label><textarea class="f" id="le_carenote" rows="2"></textarea>
+            <div class="s" style="margin-top:6px">Only if you did something. What you fixed or replaced and with what, and which parts are not original. Max 400 characters.</div></div>
           <div class="wide"><label class="f" for="le_notes">Curator's notes</label><textarea class="f" id="le_notes" rows="4"></textarea></div>
         </div>
         <div class="s" id="lotLockNote" style="margin-top:14px"></div>
@@ -993,6 +1010,9 @@
     shipOptions(l);
     v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
     v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
+    // '' when null, which selects the "Not stated" option rather than leaving the
+    // previous lot's value showing in the box.
+    v('le_care', l.care_level || ''); v('le_carenote', l.care_note || '');
 
     // Lock the money fields rather than hide them, so it is obvious why.
     LOT_MONEY.forEach(f => {
@@ -1030,6 +1050,11 @@
       year: g('le_year') || null,
       condition: g('le_condition') || null,
       completeness: g('le_completeness') || null,
+      // Empty select means "not stated", so it has to become null and not ''.
+      // lots_care_level_check accepts null or one of the four, and '' would be
+      // rejected, which is the constraint doing its job.
+      care_level: g('le_care') || null,
+      care_note: g('le_carenote') || null,
       notes: g('le_notes') || null,
       blurb: g('le_blurb') || null,
       shipping_eur: num('le_ship') || 0,
