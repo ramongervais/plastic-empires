@@ -796,6 +796,11 @@
   .s-num { font-family:var(--body); font-weight:700; font-size:26px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .s-lab { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
   .seller-bio { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:66ch; margin:28px 0 0; }
+  /* Room between the seller's own block and the rule that starts Active lots.
+     On the container rather than on .seller-bio, because the bio is not always the
+     last thing here: a seller with reviews ends on those instead, and the gap has
+     to sit under whichever one it is. */
+  #sellerHead { padding-bottom:56px; }
   .seller-link { display:inline-block; font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); cursor:pointer; margin-top:8px; }
   .seller-link:hover { color:var(--ink); }
   /* A seller's own mark, in the square the monogram otherwise fills. Same 88px box
@@ -805,9 +810,25 @@
   .seller-logo { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; padding:8px; box-sizing:border-box; }
   .seller-logo img { max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
   .seller-soc { display:flex; align-items:center; gap:12px; margin-top:14px; }
-  .seller-soc a { display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; border:1px solid var(--line); color:var(--ink-3); transition:color .15s, border-color .15s; }
-  .seller-soc a:hover { color:var(--ink); border-color:var(--ink); }
-  .seller-soc svg { width:15px; height:15px; fill:currentColor; }
+  /* One row of identical squares: Follow, Message, then the seller's own links.
+     ink-2, not ink-3. At this size the lighter grey read as a hairline sketch next
+     to the name above it, which is the same reason the glyphs are solid rather than
+     outlined. */
+  .seller-soc a,
+  .seller-soc .soc-act { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; box-sizing:border-box; border:1px solid var(--line); color:var(--ink-2); background:transparent; padding:0; border-radius:2px; cursor:pointer; transition:color .15s, border-color .15s, background .15s; }
+  .seller-soc a:hover,
+  .seller-soc .soc-act:hover { color:var(--ink); border-color:var(--ink); }
+  /* Follow is the primary action and stays filled. With the labels gone the fill is
+     the only thing left that says which of the two matters, so removing it would
+     leave two identical squares competing. */
+  .seller-soc .soc-act.on { background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .seller-soc .soc-act.on:hover { background:var(--ink-2); border-color:var(--ink-2); }
+  .seller-soc .soc-act:focus-visible,
+  .seller-soc a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .seller-soc svg { width:17px; height:17px; fill:currentColor; display:block; }
+  /* Actions on the left, places to find them on the right. Only drawn when there is
+     something on the far side of it. */
+  .soc-sep { width:1px; height:18px; background:var(--line); margin:0 5px; flex:none; }
   @media (max-width:600px){ .seller-hero { flex-direction:column; gap:18px; } .seller-stats { grid-template-columns:1fr 1fr; } .seller-stats .stat:nth-child(2){ border-right:0; } }
 
   /* ---------- Shopfront editor (account) ---------- */
@@ -3107,7 +3128,7 @@
       <div class="tl">Know the toy. Then own it.</div>
       <div class="soc-h">Follow us</div>
       <div class="socials">
-        <a href="https://www.instagram.com/meetthemolders/" target="_blank" rel="noopener me" aria-label="Meet the Molders on Instagram" title="@meetthemolders on Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.96.24 2.42.4.6.24 1.04.52 1.5.98.46.46.74.9.98 1.5.16.46.35 1.25.4 2.42.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.24 1.96-.4 2.42a4.04 4.04 0 0 1-.98 1.5c-.46.46-.9.74-1.5.98-.46.16-1.25.35-2.42.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.96-.24-2.42-.4a4.04 4.04 0 0 1-1.5-.98 4.04 4.04 0 0 1-.98-1.5c-.16-.46-.35-1.25-.4-2.42C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.24-1.96.4-2.42.24-.6.52-1.04.98-1.5.46-.46.9-.74 1.5-.98.46-.16 1.25-.35 2.42-.4C8.42 2.17 8.8 2.16 12 2.16Zm0 1.98c-3.15 0-3.5.01-4.73.07-.94.04-1.5.2-1.86.34-.47.18-.8.4-1.15.75-.35.35-.57.68-.75 1.15-.14.36-.3.92-.34 1.86-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.04.94.2 1.5.34 1.86.18.47.4.8.75 1.15.35.35.68.57 1.15.75.36.14.92.3 1.86.34 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c.94-.04 1.5-.2 1.86-.34.47-.18.8-.4 1.15-.75.35-.35.57-.68.75-1.15.14-.36.3-.92.34-1.86.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.04-.94-.2-1.5-.34-1.86a3.1 3.1 0 0 0-.75-1.15 3.1 3.1 0 0 0-1.15-.75c-.36-.14-.92-.3-1.86-.34-1.23-.06-1.58-.07-4.73-.07Zm0 3.37a4.49 4.49 0 1 1 0 8.98 4.49 4.49 0 0 1 0-8.98Zm0 7.4a2.91 2.91 0 1 0 0-5.82 2.91 2.91 0 0 0 0 5.83Zm5.72-7.6a1.05 1.05 0 1 1-2.1 0 1.05 1.05 0 0 1 2.1 0Z"/></svg></a>
+        <a href="https://www.instagram.com/meetthemolders/" target="_blank" rel="noopener me" aria-label="Meet the Molders on Instagram" title="@meetthemolders on Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2ZM12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4ZM12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6ZM17.5 5.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z"/></svg></a>
         <a href="https://x.com/meetthemolders" target="_blank" rel="noopener me" aria-label="Meet the Molders on X" title="@meetthemolders on X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.2-6.82-5.96 6.82H1.7l7.73-8.84L1.28 2.25h6.82l4.86 6.43 5.28-6.43Zm-1.16 17.52h1.83L7.03 4.13H5.06l12.02 15.64Z"/></svg></a>
         <span class="hh">@meetthemolders</span>
       </div>
@@ -4600,7 +4621,9 @@
           '<h1 class="seller-name">' + s.name + '</h1>' +
           '<div class="seller-meta">' + s.handle + ' · Member since ' + s.since + (s.verified ? ' · <span class="verified">✓ Verified</span>' : '') + '</div>' +
           '<div class="seller-rating">' + qstarsPct(s.rating / 5 * 100) + ' <b>' + s.rating.toFixed(1) + '</b> · ' + s.reviews + ' reviews</div>' +
-          '<div class="buy-row" style="max-width:420px; margin-top:20px"><button class="btn accent" type="button" id="followBtn">Follow</button><button class="btn ghost" type="button" id="msgBtn">Message</button></div>' +
+          // Same controls as the real seller page. The demo sellers carry no social
+          // handles, so there is nothing on the other side of a separator.
+          '<div class="seller-soc">' + sellerActionsHtml() + '</div>' +
         '</div>' +
       '</section>' +
       '<div class="seller-stats">' + statBlock(nfmt(s.sold), 'Lots sold') + statBlock(s.active, 'Active lots') + statBlock(s.rating.toFixed(1), 'Avg rating') + statBlock(nfmt(s.followers), 'Followers') + '</div>' +
@@ -4677,8 +4700,14 @@
           (p.handle ? '<div class="seller-meta">@' + e(p.handle) + (since ? ' · Member since ' + since : '') + '</div>'
                     : (since ? '<div class="seller-meta">Member since ' + since + '</div>' : '')) +
           (revCount ? '<div class="seller-rating">' + qstarsPct(avg / 5 * 100) + ' <b>' + avg.toFixed(1) + '</b> · ' + revCount + ' review' + (revCount > 1 ? 's' : '') + '</div>' : '') +
-          socLinksHtml(p, 'seller-soc') +
-          '<div class="buy-row" style="max-width:420px; margin-top:20px"><button class="btn accent" type="button" id="followBtn">Follow</button><button class="btn ghost" type="button" id="msgBtn">Message</button></div>' +
+          // One row: what you can do to this seller, then where else to find them.
+          // The separator carries that distinction without a word for it, and it is
+          // only drawn when there is something on the far side of it.
+          (() => {
+            const soc = socItemsHtml(p);
+            return '<div class="seller-soc">' + sellerActionsHtml() +
+              (soc ? '<span class="soc-sep" aria-hidden="true"></span>' + soc : '') + '</div>';
+          })() +
         '</div>' +
       '</section>' +
       '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock(revCount ? avg.toFixed(1) : '—', 'Avg rating') + '</div>' +
@@ -5111,8 +5140,17 @@
   // hammerandmold.com. The @ is drawn as a prefix rather than typed, so it cannot
   // be stored and cannot trip the constraint.
   const SOC = [
-    { key: 'instagram', label: 'Instagram', base: 'https://www.instagram.com/', max: 30,
-      path: 'M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.96.24 2.42.4.6.24 1.04.52 1.5.98.46.46.74.9.98 1.5.16.46.35 1.25.4 2.42.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.24 1.96-.4 2.42a4.04 4.04 0 0 1-.98 1.5c-.46.46-.9.74-1.5.98-.46.16-1.25.35-2.42.4-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.96-.24-2.42-.4a4.04 4.04 0 0 1-1.5-.98 4.04 4.04 0 0 1-.98-1.5c-.16-.46-.35-1.25-.4-2.42C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.24-1.96.4-2.42.24-.6.52-1.04.98-1.5.46-.46.9-.74 1.5-.98.46-.16 1.25-.35 2.42-.4C8.42 2.17 8.8 2.16 12 2.16Zm0 1.98c-3.15 0-3.5.01-4.73.07-.94.04-1.5.2-1.86.34-.47.18-.8.4-1.15.75-.35.35-.57.68-.75 1.15-.14.36-.3.92-.34 1.86-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.04.94.2 1.5.34 1.86.18.47.4.8.75 1.15.35.35.68.57 1.15.75.36.14.92.3 1.86.34 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c.94-.04 1.5-.2 1.86-.34.47-.18.8-.4 1.15-.75.35-.35.57-.68.75-1.15.14-.36.3-.92.34-1.86.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.04-.94-.2-1.5-.34-1.86a3.1 3.1 0 0 0-.75-1.15 3.1 3.1 0 0 0-1.15-.75c-.36-.14-.92-.3-1.86-.34-1.23-.06-1.58-.07-4.73-.07Zm0 3.37a4.49 4.49 0 1 1 0 8.98 4.49 4.49 0 0 1 0-8.98Zm0 7.4a2.91 2.91 0 1 0 0-5.82 2.91 2.91 0 0 0 0 5.83Zm5.72-7.6a1.05 1.05 0 1 1-2.1 0 1.05 1.05 0 0 1 2.1 0Z' },
+    // Solid badge, not the thin outline mark. The outline version is drawn as a
+    // hairline shape, so at 17px in grey it read as a sketch next to the name above
+    // it. This is a filled rounded square with the lens and the flash cut out of it,
+    // which needs fill-rule evenodd: the square fills, the r4.7 circle subtracts,
+    // the r2.8 disc fills again, so the white ring is a hole and the lens centre
+    // stays solid. Without evenodd the whole thing floods.
+    { key: 'instagram', label: 'Instagram', base: 'https://www.instagram.com/', max: 30, rule: 'evenodd',
+      path: 'M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Z'
+          + 'M12 7.3a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Z'
+          + 'M12 9.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Z'
+          + 'M17.5 5.25a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z' },
     { key: 'x_handle', label: 'X', base: 'https://x.com/', max: 15,
       path: 'M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.2-6.82-5.96 6.82H1.7l7.73-8.84L1.28 2.25h6.82l4.86 6.43 5.28-6.43Zm-1.16 17.52h1.83L7.03 4.13H5.06l12.02 15.64Z' },
     { key: 'facebook', label: 'Facebook', base: 'https://www.facebook.com/', max: 50,
@@ -5121,12 +5159,41 @@
 
   // The public seller page renders these. Built here so the shop and the editor
   // cannot disagree about what a handle turns into.
-  function socLinksHtml(p, cls){
-    const items = SOC.filter(s => p[s.key]).map(s =>
+  // Just the links, no wrapper. They now share a row with the Follow and Message
+  // buttons, so the row is assembled by the caller.
+  function socItemsHtml(p){
+    return SOC.filter(s => p[s.key]).map(s =>
       '<a href="' + s.base + encodeURIComponent(p[s.key]) + '" target="_blank" rel="noopener nofollow"' +
       ' aria-label="' + s.label + '" title="@' + String(p[s.key]).replace(/[<>&"]/g, '') + ' on ' + s.label + '">' +
-      '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="' + s.path + '"/></svg></a>').join('');
-    return items ? '<div class="' + cls + '">' + items + '</div>' : '';
+      // fill-rule only where the glyph needs it. Applying evenodd to all of them
+      // would change the X mark, whose inner counter already resolves under the
+      // default nonzero, and that is not a thing to alter blind.
+      '<svg viewBox="0 0 24 24" aria-hidden="true"><path' + (s.rule ? ' fill-rule="' + s.rule + '"' : '') +
+      ' d="' + s.path + '"/></svg></a>').join('');
+  }
+
+  // Follow and Message as the same small square control as the social icons, on one
+  // row with them.
+  //
+  // Follow stays filled and Message stays outlined. Two controls side by side must
+  // not read as equal weight, and dropping the labels is exactly when that matters:
+  // with the words gone, the fill is the only thing left saying which one is the
+  // main action.
+  //
+  // An icon with no label needs its name somewhere, so both carry aria-label and
+  // title. That is also what gives a mouse user the tooltip the label used to be.
+  function sellerActionsHtml(){
+    return '' +
+      '<button type="button" id="followBtn" class="soc-act on" aria-label="Follow this seller" title="Follow this seller">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 4h2.8v5.6H19v2.8h-5.6V18h-2.8v-5.6H5V9.6h5.6z"/></svg>' +
+      '</button>' +
+      // An envelope rather than a speech bubble: it is the glyph everyone reads as
+      // "send this person something", and it is the word Ramon used for the action.
+      // The flap is cut out with evenodd so the shape still reads at 17px.
+      '<button type="button" id="msgBtn" class="soc-act" aria-label="Send this seller a message" title="Send this seller a message">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M2 5h20v14H2z' +
+        'M4.6 7 12 12.6 19.4 7z"/></svg>' +
+      '</button>';
   }
 
   // The initials the seller page falls back to when there is no logo.
