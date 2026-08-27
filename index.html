@@ -664,6 +664,22 @@
   .ei { width:100%; box-sizing:border-box; font-family:var(--body); font-size:14px; padding:9px 11px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); }
   .ei:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
   textarea.ei { resize:vertical; line-height:1.5; }
+  /* Pick-one-of-a-few, as cards rather than a select, so each option can carry the
+     line that explains it. Used by parcel size and by restoration.
+     These classes had no CSS at all: the parcel size picker has been rendering as
+     three bare browser buttons since it was built. Found while adding the second
+     picker that reuses them, so this fixes both.
+     auto-fit, so three options and four both fill the row without a second rule. */
+  .sizepick { display:grid; grid-template-columns:repeat(auto-fit, minmax(148px, 1fr)); gap:8px; }
+  .sizebtn { display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:left; padding:10px 12px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); cursor:pointer; transition:border-color .12s, background .12s, color .12s; }
+  .sizebtn:hover { border-color:var(--ink); }
+  .sizebtn b { font-family:var(--body); font-weight:700; font-size:13px; }
+  .sizebtn span { font-family:var(--body); font-size:11.5px; line-height:1.4; color:var(--ink-3); }
+  .sizebtn i { font-family:var(--label); font-style:normal; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+  /* Inverted when chosen, the same way this site marks a primary control. */
+  .sizebtn.on { background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .sizebtn.on span, .sizebtn.on i { color:var(--paper); opacity:.72; }
+  .sizebtn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   /* .ei is shared by input and select. On a select the browser draws its own
      chevron inside the right padding, and 11px is not enough room, so the arrow
      ends up hard against the border while the text sits 11px off the left: it
@@ -1089,6 +1105,13 @@
           <h3>Godzilla &amp; King Kong</h3>
           <div class="era">1985 &#8211; 1986</div>
           <p>The monsters you could actually own. Cheap vinyl on a hook by the till, from the company a Holocaust survivor built out of a ten-cent bouncing ball.</p>
+          <span class="enter">Meet the Molder <span class="arw">&#8594;</span></span>
+        </article>
+        <article class="empire" data-pub="Palitoy" data-start="1978" data-name="Star Wars, in cardboard" style="--sig:var(--sw)" data-empire="palitoy">
+          <div class="chips"><span class="chip">Palitoy</span></div>
+          <h3>Star Wars, in cardboard</h3>
+          <div class="era">1978 &#8211; 1985</div>
+          <p>Britain's Star Wars line, from the company that also made Action Man. Its Death Star is printed card because plastic cost too much, which is exactly why it is now the one collectors chase.</p>
           <span class="enter">Meet the Molder <span class="arw">&#8594;</span></span>
         </article>
         <article class="empire" data-pub="Thinkway" data-start="1995" data-name="Toy Story" style="--sig:var(--sw)" data-empire="thinkway">
@@ -2496,6 +2519,200 @@
   </section>
 </main>
 
+<!-- ============================ EMPIRE: PALITOY ============================ -->
+<!-- No photographs yet, so the sections run as single editorial columns rather than
+     the two-column origins-grid the other Molders use. .story centres itself at
+     680px, so a lone column reads as a decision instead of a missing image. When
+     Ramon has the photographs, each h2 below takes a .scale-visual beside it. -->
+<main class="view" id="view-palitoy" hidden>
+  <div class="wrap">
+    <div class="crumb">
+      <a data-nav="home">The Molders</a><span class="sep">/</span>
+      <span class="here">Palitoy</span>
+    </div>
+
+    <section class="empire-hero">
+      <div class="ey">The Molder</div>
+      <h1 class="empire-title">Palitoy</h1>
+      <div class="empire-dek">Coalville, Leicestershire &middot; 1919 &ndash; 1986</div>
+      <p class="empire-lede">The most coveted Star Wars playset in the world is made of cardboard. Not because anyone wanted it that way: Palitoy could not afford the plastic. That decision, taken in a Leicestershire factory in 1978, is why a British company most collectors outside the UK had never heard of now sits near the top of the list.</p>
+      <div class="factbar">
+        <div class="fact"><div class="fn">1919</div><div class="fl">Founded as Cascelloid</div></div>
+        <div class="fact"><div class="fn">20m</div><div class="fl">Action Man sold by the late '70s</div></div>
+        <div class="fact"><div class="fn">1978</div><div class="fl">The cardboard Death Star</div></div>
+        <div class="fact"><div class="fn">1986</div><div class="fl">The name stopped trading</div></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="story">
+        <div class="ey">Origins</div>
+        <h2>A man's surname, plus the word toy.</h2>
+        <p><span class="drop">A</span>lfred Edward Pallett founded the Cascelloid company in 1919, working in celluloid: combs, rattles, small moulded things. The toy side needed a name of its own, and the one he registered was his own surname with the job attached. Pallett, plus toy. Palitoy. It is printed on the back of every British Star Wars card and almost nobody reads it as what it is.</p>
+        <p>For decades the toys were a division rather than a company. Then in 1965 the toy operation at Coalville was separated out and given the Palitoy name properly, and in 1968 the parent company sold it to General Mills, the American food giant that had been quietly buying toymakers.</p>
+        <div class="pullquote">That sale is the reason Britain got Star Wars figures at all.</div>
+        <p>General Mills already owned Kenner and Parker Brothers. So when Kenner took the Star Wars licence in 1977 and could not make figures fast enough for the world, the British arm of the same parent company was the obvious place to send it. Palitoy did not win Star Wars in a bidding war. It inherited it through a corporate structure.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="story">
+        <div class="ey">Before the Death Star</div>
+        <h2>Action Man came first, and outsold everything.</h2>
+        <p>In 1966 Palitoy licensed Hasbro's G.I. Joe and rebuilt him for Britain as Action Man. What arrived was not a straight copy. Over the following years he collected the details British children actually remember: the flocked hair, the gripping hands, and the eagle eyes you moved with a lever in the back of his head.</p>
+        <p>By the late 1970s more than twenty million had been sold. Whatever else Palitoy did, this was the thing it did biggest, and it is worth holding onto when the Star Wars story takes over: the company that made the cardboard Death Star was, first and for longer, the company that made Action Man.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="story">
+        <div class="ey">The compromise</div>
+        <h2>Kenner moulded it in plastic. Palitoy printed it on card.</h2>
+        <p>Kenner's Death Star Space Station was injection-moulded plastic, three storeys of it, and it was expensive to make. Palitoy costed the same toy for the British market and the numbers did not work: the tooling and the material were beyond what the division could spend on one playset.</p>
+        <p>So it was redrawn in printed cardboard. Same idea, same gun turret and lift and trash compactor, built out of card and a few plastic parts instead of a moulded shell. It went out cheap in 1978 and it was never sold anywhere but Britain.</p>
+        <div class="pullquote">It was built to be affordable. It survived by being thrown away.</div>
+        <p>Which is exactly why it is now the prize. Cardboard does not forgive damp lofts, sticky tape or children, so the ones that lasted are rare in a way an injection-moulded playset never is. Complete boxed examples in serious condition trade for thousands. The cheap version outlived the expensive one, and the compromise became the most wanted thing the company ever made.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="story">
+        <div class="ey">The end</div>
+        <h2>The licensor took over the licensee's factory.</h2>
+        <p>The design department at Coalville closed in August 1984. On the first of May 1985 most of the work stopped: of 585 people in manufacturing and distribution, 327 were made redundant. What was left of Mainline Railways went to Dapol in South Wales the same year. In 1986 the Palitoy name stopped trading.</p>
+        <p>The building did not close with it. General Mills sold its toy business, and the Coalville site carried on under Kenner Parker, staffed in part by the same people, making toys for the company whose figures Palitoy had been licensed to produce. Tonka bought Kenner Parker in 1987 for $555 million. Hasbro closed the site in 1994.</p>
+        <p>In 2017 Leicestershire County Council put a green plaque on the business park that stands there now, for a company that, in its own words, helped stoke children's imaginations. It is the only thing on the site that says what used to be made there.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">The record</div><h2>Sixty-seven years in Leicestershire</h2></div>
+        <p>From celluloid combs to the British Star Wars line, and the slow handover to the company that had licensed it.</p>
+      </div>
+      <ol class="timeline">
+        <li><span class="ty">1919</span><span class="td"><b>Alfred Edward Pallett</b> founds Cascelloid, working in celluloid.</span></li>
+        <li><span class="ty">1965</span><span class="td">The Coalville toy operation is separated out as the <b>Palitoy Division</b>.</span></li>
+        <li><span class="ty">1966</span><span class="td"><b>Action Man</b> arrives, G.I. Joe rebuilt for Britain.</span></li>
+        <li><span class="ty">1968</span><span class="td">Sold to <b>General Mills</b>, which already owns Kenner and Parker Brothers.</span></li>
+        <li><span class="ty">1972</span><span class="td"><b>Pippa</b>, the small-scale fashion doll, goes into production.</span></li>
+        <li><span class="ty">1978</span><span class="td">The British <b>Star Wars</b> line, and the <b>cardboard Death Star</b>.</span></li>
+        <li><span class="ty">1980</span><span class="td"><b>The Empire Strikes Back</b> line follows.</span></li>
+        <li><span class="ty">1983</span><span class="td"><b>Return of the Jedi</b>, and the Scout Walker.</span></li>
+        <li><span class="ty">1984</span><span class="td">The <b>design department closes</b> in August.</span></li>
+        <li><span class="ty">1985</span><span class="td"><b>327 of 585</b> manufacturing and distribution staff are made redundant.</span></li>
+        <li><span class="ty">1986</span><span class="td">Palitoy <b>stops trading</b>. The site continues as Kenner Parker.</span></li>
+        <li><span class="ty">1994</span><span class="td"><b>Hasbro closes</b> the former Palitoy factory.</span></li>
+        <li><span class="ty">2017</span><span class="td">A <b>green plaque</b> goes up on the business park that replaced it.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Inside the workshop</div><h2>The lines</h2></div>
+        <p>What came out of Coalville, from the one that sold twenty million to the one made of card.</p>
+      </div>
+      <div class="empires">
+        <article class="empire" style="--sig:var(--sw)">
+          <div class="chips"><span class="chip">Palitoy</span></div>
+          <h3>Action Man</h3>
+          <div class="era">1966 &#8211; 1984</div>
+          <p>G.I. Joe rebuilt for Britain, and the biggest thing the company ever sold. Twenty million by the late '70s.</p>
+        </article>
+        <article class="empire" style="--sig:var(--gb)">
+          <div class="chips"><span class="chip">Palitoy</span></div>
+          <h3>Star Wars</h3>
+          <div class="era">1978 &#8211; 1985</div>
+          <p>The British line, on British cards, including the cardboard Death Star that was never sold anywhere else.</p>
+        </article>
+        <article class="empire" style="--sig:var(--jp)">
+          <div class="chips"><span class="chip">Palitoy</span></div>
+          <h3>Pippa</h3>
+          <div class="era">1972 onwards</div>
+          <p>The small fashion doll, built at a scale that fitted a pocket rather than a shelf.</p>
+        </article>
+        <article class="empire" style="--sig:var(--sw)">
+          <div class="chips"><span class="chip">Palitoy</span></div>
+          <h3>Mainline Railways</h3>
+          <div class="era">until 1985</div>
+          <p>The model railway range. What was left of it was sold to Dapol as the factory wound down.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">Original commercials</div><h2>The commercials</h2></div>
+        <p>British spots, not the American ones. Every clip here was checked against its thumbnail before it went in, because a dead video id renders as a broken tile. They play inline; the title opens the clip on YouTube.</p>
+      </div>
+      <div class="vidgrid">
+        <figure class="vid" data-yt="lUkM8VBr4IU">
+          <button class="vid-thumb" type="button" aria-label="Play: Palitoy Star Wars adverts 1978 to 1985">
+            <img src="https://i.ytimg.com/vi/lUkM8VBr4IU/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Palitoy &middot; film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=lUkM8VBr4IU" target="_blank" rel="noopener noreferrer">Star Wars &middot; 1978&#8211;85 adverts &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="4gaJqZ1ay7M">
+          <button class="vid-thumb" type="button" aria-label="Play: 1978 Palitoy Star Wars action figure advert">
+            <img src="https://i.ytimg.com/vi/4gaJqZ1ay7M/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Palitoy &middot; film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=4gaJqZ1ay7M" target="_blank" rel="noopener noreferrer">Action figures &middot; 1978 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="wkWu5HxrDN0">
+          <button class="vid-thumb" type="button" aria-label="Play: Palitoy Star Wars figures and vehicles advert, 1980">
+            <img src="https://i.ytimg.com/vi/wkWu5HxrDN0/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Palitoy &middot; film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=wkWu5HxrDN0" target="_blank" rel="noopener noreferrer">Figures and vehicles &middot; 1980 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="hKpvlV6eB-Y">
+          <button class="vid-thumb" type="button" aria-label="Play: Palitoy Star Wars Scout Walker advert, 1983">
+            <img src="https://i.ytimg.com/vi/hKpvlV6eB-Y/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Palitoy &middot; film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=hKpvlV6eB-Y" target="_blank" rel="noopener noreferrer">Scout Walker &middot; 1983 &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="hZ5Kb5pwoy8">
+          <button class="vid-thumb" type="button" aria-label="Play: Palitoy Action Man adverts from the 1970s">
+            <img src="https://i.ytimg.com/vi/hZ5Kb5pwoy8/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Palitoy &middot; film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=hZ5Kb5pwoy8" target="_blank" rel="noopener noreferrer">Action Man &middot; the 1970s spots &#8599;</a></figcaption>
+        </figure>
+        <figure class="vid" data-yt="S9N9A8jD0BM">
+          <button class="vid-thumb" type="button" aria-label="Play: Palitoy Action Man SAS Division commercial, a lost advert">
+            <img src="https://i.ytimg.com/vi/S9N9A8jD0BM/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Palitoy &middot; film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=S9N9A8jD0BM" target="_blank" rel="noopener noreferrer">Action Man SAS Division &middot; a lost advert &#8599;</a></figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+</main>
+
 <main class="view" id="view-about" hidden>
   <div class="wrap">
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">About</span></div>
@@ -3338,7 +3555,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy') };
   // ---- Paths ----
   // Every view had the same URL, hammerandmold.com/, because nothing ever wrote
   // to the address bar. Three things were broken by that and only one of them is
@@ -3352,6 +3569,7 @@
     empire: '/molders/kenner', tmnt: '/molders/playmates', ljn: '/molders/ljn',
     galoob: '/molders/galoob', thinkway: '/molders/thinkway',
     kaiju: '/molders/kaiju', imperial: '/molders/imperial',
+    palitoy: '/molders/palitoy',
     lot: '/lot', seller: '/seller',
   };
   const VIEW_BY_PATH = Object.keys(PATHS).reduce((m, k) => { m[PATHS[k]] = k; return m; }, {});
@@ -3383,6 +3601,7 @@
     thinkway:  ['Thinkway Toys \u00b7 The Molders \u00b7 Hammer & Mold', 'Mattel passed. Hasbro passed. Thinkway said yes, and got the master toy licence for Toy Story with months to make it happen.'],
     kaiju:     ['Marusan, Bullmark and Popy \u00b7 The Molders \u00b7 Hammer & Mold', 'Tokyo soft-vinyl kaiju, 1966 to 1984: the Godzilla and Ultraman monsters of the tokusatsu boom.'],
     imperial:  ['Imperial Toy Corp \u00b7 The Molders \u00b7 Hammer & Mold', 'Imperial and the licensed and unlicensed monsters of the 1970s and 80s, and how to tell one from the other.'],
+    palitoy:   ['Palitoy \u00b7 The Molders \u00b7 Hammer & Mold', 'The British company that inherited Star Wars through a corporate structure, and whose most coveted playset is made of cardboard because plastic was too expensive.'],
     lot:       ['', ''],   // written from the lot itself
     seller:    ['', ''],
   };
@@ -3534,6 +3753,7 @@
       else if (emp.dataset.empire === 'thinkway') show('thinkway');
       else if (emp.dataset.empire === 'kaiju') show('kaiju');
       else if (emp.dataset.empire === 'imperial') show('imperial');
+      else if (emp.dataset.empire === 'palitoy') show('palitoy');
       else openModal('Coming soon', 'This molder is next.', 'This maker gets its own documentary page soon. We are adding them one at a time.');
       return;
     }
@@ -3546,7 +3766,7 @@
     if (dest === 'lot'){ e.preventDefault(); routeTo('lot', nav.dataset.lot); return; }
     if (dest === 'sold'){ e.preventDefault(); routeTo('sold'); return; }
     if (dest === 'account'){ e.preventDefault(); routeTo('account'); return; }
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'imperial' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy' || dest === 'help'){
+    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'imperial' || dest === 'palitoy' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy' || dest === 'help'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
@@ -3816,6 +4036,24 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   // ----- Theme -----
+  // How much has been done to the piece. A ladder from nothing to heavily worked.
+  //
+  // This is not a selling point, it is value-bearing information. A repainted or
+  // repaired figure is a different object from an original one, and undisclosed
+  // restoration is exactly where a collector's trust breaks. So it gets its own
+  // named field instead of a sentence somebody might put in the notes.
+  //
+  // Condition and this are different questions and both are needed. Condition is
+  // how it looks now. This is why it looks that way. A Mint piece that was
+  // repainted and a Mint piece that survived are not the same lot.
+  const CARE_LEVELS = [
+    { id: 'as-found',  label: 'As found',  hint: 'Nothing done. Dirt, wear and all.' },
+    { id: 'cleaned',   label: 'Cleaned',   hint: 'Washed or dusted. No parts touched.' },
+    { id: 'repaired',  label: 'Repaired',  hint: 'Something fixed or reattached. Original parts.' },
+    { id: 'restored',  label: 'Restored',  hint: 'Repainted, reshaped, or parts replaced.' },
+  ];
+  const careLabel = id => (CARE_LEVELS.find(c => c.id === id) || {}).label || '';
+
   // ----- Sell: AI curation uploader -----
   (function(){
     const WORKER_URL = "https://plasticempires-curate.ramongervais.workers.dev";
@@ -4066,6 +4304,11 @@
         weight_kg: current.weightKg == null ? null : Number(current.weightKg),
         size_class: current.sizeClass || null,
         letterbox: current.letterbox === true,
+        // Value-bearing, so it travels with the lot. insertTolerant drops these and
+        // retries if the migration has not been run yet, which means publishing keeps
+        // working and the console says what was dropped.
+        care_level: current.careLevel || null,
+        care_note: current.careNote || null,
       };
     }
 
@@ -4322,6 +4565,11 @@
           : '') +
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
+          // Shown even when unset, and then it says so. A blank line here would let
+          // a seller publish without ever having been asked the question.
+          row('Restoration', c.careLevel
+                ? careLabel(c.careLevel) + (c.careNote ? ' · ' + c.careNote : '')
+                : 'Not stated. Edit to say what you did to it.') +
           (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days from the first bid') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
           (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None')) +
           // Its own row. It used to be concatenated into the price value above,
@@ -4432,6 +4680,7 @@
     }
 
     const CONDITIONS = ['Mint', 'Near mint', 'Excellent', 'Good', 'Fair', 'Poor'];
+
     const CONFS = ['high', 'medium', 'low'];
     const DAYS = ['3', '5', '7', '10', '14'];
     // an optional hint renders a focusable info dot with a CSS tooltip
@@ -4498,6 +4747,17 @@
         ef('Line', 'e_line', c.line, 'text', 'The toy line it belongs to, such as Star Wars or Teenage Mutant Ninja Turtles.') +
         efSel('Condition', 'e_condition', c.condition, CONDITIONS, 'How it presents, from Mint down to Poor. This sets the star rating buyers see, so grade honestly: over-grading is the fastest way to a dispute.') +
         efArea('Completeness', 'e_completeness', c.completeness, 'What is and is not in the box. Name every missing accessory. Buyers forgive a missing blaster they were told about, not one they discover.') +
+        // Its own field, in the same picker shape as parcel size so each option can
+        // carry the line that explains it. Condition says how it looks; this says
+        // why, and a collector needs both before bidding.
+        '<div class="ef"><label class="ef-l" for="e_care">What you did to it</label>' +
+          '<div class="sizepick carepick" id="e_care">' +
+          CARE_LEVELS.map(cl => '<button type="button" class="sizebtn' + (c.careLevel === cl.id ? ' on' : '') + '" data-care="' + cl.id + '">' +
+            '<b>' + cl.label + '</b><span>' + esc(cl.hint) + '</span></button>').join('') +
+          '</div>' +
+          '<div class="ef-h">Shown on the lot as its own line, because it changes what the piece is worth. A repainted figure and an original one are not the same object, and a buyer who finds out afterwards is a buyer who does not come back. "As found" is not a lesser answer: plenty of collectors want exactly that.</div>' +
+        '</div>' +
+        efArea('What was done', 'e_carenote', c.careNote, 'Only if you did something. What you fixed or replaced, and with what: a reattached arm, a repainted helmet, a replacement cape from another figure. Say which parts are not original. Left empty when nothing was done.') +
         '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
         '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs, counted from the FIRST bid rather than from the day you list. Your lot waits in the shop until someone bids, so it does not disappear in a week nobody happened to look. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
@@ -4543,6 +4803,13 @@
           sizeBox.querySelectorAll('.sizebtn').forEach(x => x.classList.toggle('on', x === b));
           draw();
         });
+        // Same one-of-four behaviour, but it changes no price so it does not redraw
+        // the shipping hint.
+        const careBox = document.getElementById('e_care');
+        if (careBox) careBox.addEventListener('click', e => {
+          const b = e.target.closest('.sizebtn'); if (!b) return;
+          careBox.querySelectorAll('.sizebtn').forEach(x => x.classList.toggle('on', x === b));
+        });
         w.addEventListener('input', draw);
         hint.addEventListener('click', function(e){
           const btn = e.target.closest('.hint-apply'); if (!btn) return;
@@ -4564,6 +4831,8 @@
           sizeClass: (function(){ const b = document.querySelector('#e_size .sizebtn.on'); return b ? b.dataset.size : (current.sizeClass || null); })(),
           letterbox: (function(){ const el = document.getElementById('e_letterbox'); return el ? el.checked === true : (current.letterbox === true); })(),
           blurb: g('e_blurb'), notes: g('e_notes'),
+          careLevel: (function(){ const b = document.querySelector('#e_care .sizebtn.on'); return b ? b.dataset.care : (current.careLevel || null); })(),
+          careNote: g('e_carenote') || null,
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
@@ -6482,6 +6751,18 @@
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
           (lot.stamp_shown === false ? row("Maker's mark", 'Not shown, dated from the sculpt') : (lot.stamp_shown === true ? row("Maker's mark", 'Photographed') : '')) +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
+          // Right under Completeness, above the notes. Condition says how it looks,
+          // this says why: a repainted figure and an original one are different
+          // objects at different prices, and a buyer who finds that out after paying
+          // does not come back. Only rendered when the seller answered, because
+          // inventing "as found" for the twenty older lots would be a claim we made
+          // up on their behalf.
+          (lot.care_level
+            ? '<div class="row' + (lot.care_note ? ' col' : '') + '"><span class="k">Restoration</span><span class="v">' +
+                '<b>' + e(careLabel(lot.care_level)) + '</b>' +
+                (lot.care_note ? '<br>' + e(lot.care_note) : '') +
+              '</span></div>'
+            : '') +
           // The forensics: stamp transcription, dating, variant reasoning. Only
           // shown when a blurb took over the lead, or it would appear twice.
           ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
