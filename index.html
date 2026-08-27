@@ -6617,7 +6617,21 @@
     track('lot_view', null, id);
     if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
     const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
-    if (error || !lot){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">Lot not found. It may have been removed.</p>'; return; }
+    if (error || !lot){
+      // "It may have been removed" was the only thing this said, which sent me
+      // looking for a deleted lot when the real problem was a malformed link: the
+      // admin button was building /lot/admin/ and the id in the path was the word
+      // "admin". A lot id is always a uuid, so a value that is not one means the
+      // address is wrong, not the lot gone. Worth separating: the two have
+      // completely different causes.
+      const looksLikeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
+      body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">' +
+        (looksLikeId
+          ? 'Lot not found. It may have been removed.'
+          : 'That is not a lot address. <a data-nav="home" href="/" style="text-decoration:underline;text-underline-offset:3px">Back to the shop</a>.') +
+        '</p>';
+      return;
+    }
     // An unsold lot is the seller's business, not a public record of a sale
     // that did not happen. Only its owner sees the page. This is a courtesy in
     // the interface, not a security boundary: the row is still world-readable
@@ -6999,7 +7013,12 @@
     const ed = document.getElementById('lotEditLive');
     if (ed && SB) {
       SB.rpc('is_admin').then(r => { if (!r.error && r.data === true) ed.hidden = false; }).catch(() => {});
-      ed.addEventListener('click', () => { location.href = 'admin/#lot=' + encodeURIComponent(lot.id); });
+      // Absolute. Relative, this resolved against whatever path the lot page was
+      // on: from /lot/<uuid> the browser read 'admin/' as /lot/admin/, so the
+      // button landed on /lot/admin/#lot=<id> and the router looked up a lot with
+      // the id "admin". It worked while the whole site was one URL, and path
+      // routing broke it without touching this line. Same family as shipping.js.
+      ed.addEventListener('click', () => { location.href = '/admin/#lot=' + encodeURIComponent(lot.id); });
     }
     const rm = document.getElementById('lotRemove'); if (rm) rm.addEventListener('click', async () => {
       if (!window.confirm('Remove this lot? This cannot be undone.')) return;
