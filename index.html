@@ -488,6 +488,11 @@
      minmax(0,1fr) rather than 1fr, because a grid column defaults to min-content
      and an input's intrinsic width would push it past the modal, which is exactly
      what the flex version did to the city field. */
+  /* The checkout page. Held to a reading width rather than stretched across a
+     desktop: an address form a metre wide is harder to fill in, not easier. */
+  .ck-page { max-width:560px; margin:0 auto; padding:8px 0 64px; }
+  .ck-title { font-family:var(--display); font-weight:600; font-size:clamp(24px,3.4vw,34px); letter-spacing:-.015em; line-height:1.15; margin:10px 0 14px; text-wrap:balance; }
+  .ck-lede { font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2); margin:0 0 22px; max-width:52ch; }
   .ck-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px 12px; }
   .ck-grid .wide { grid-column:1 / -1; }
   .ck-form .bidlabel { margin-bottom:4px; }
@@ -3327,6 +3332,28 @@
   </div>
 </main>
 
+<!-- ============================ CHECKOUT ============================ -->
+<!-- Its own page rather than a dialogue. An address, a carrier choice, a pickup
+     point and a running total is a step in a purchase, not a notice: as a modal it
+     grew taller than the laptop screen, put its own title above the viewport and
+     its buttons below it, and had nowhere to go on a phone. A page has room, scrolls
+     the way a page scrolls, and the back button means something. -->
+<main class="view" id="view-checkout" hidden>
+  <div class="wrap">
+    <div class="crumb">
+      <a data-nav="home">Home</a><span class="sep">/</span>
+      <a id="ckBackLot">Lot</a><span class="sep">/</span>
+      <span class="here">Checkout</span>
+    </div>
+    <div class="ck-page">
+      <div class="ey">Delivery</div>
+      <h1 class="ck-title" id="ckTitle">Where should it go?</h1>
+      <p class="ck-lede">We need the delivery address before payment, so the postage you are charged is the postage for your own country and not an estimate.</p>
+      <div id="ckBody"></div>
+    </div>
+  </div>
+</main>
+
 <!-- ============================ SOLD ARCHIVE ============================ -->
 <main class="view" id="view-sold" hidden>
   <div class="wrap">
@@ -3603,7 +3630,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy') };
+  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy'), checkout: document.getElementById('view-checkout') };
   // ---- Paths ----
   // Every view had the same URL, hammerandmold.com/, because nothing ever wrote
   // to the address bar. Three things were broken by that and only one of them is
@@ -3619,6 +3646,7 @@
     kaiju: '/molders/kaiju', imperial: '/molders/imperial',
     palitoy: '/molders/palitoy',
     lot: '/lot', seller: '/seller',
+    checkout: '/checkout',
   };
   const VIEW_BY_PATH = Object.keys(PATHS).reduce((m, k) => { m[PATHS[k]] = k; return m; }, {});
 
@@ -3649,6 +3677,7 @@
     thinkway:  ['Thinkway Toys \u00b7 The Molders \u00b7 Hammer & Mold', 'Mattel passed. Hasbro passed. Thinkway said yes, and got the master toy licence for Toy Story with months to make it happen.'],
     kaiju:     ['Marusan, Bullmark and Popy \u00b7 The Molders \u00b7 Hammer & Mold', 'Tokyo soft-vinyl kaiju, 1966 to 1984: the Godzilla and Ultraman monsters of the tokusatsu boom.'],
     imperial:  ['Imperial Toy Corp \u00b7 The Molders \u00b7 Hammer & Mold', 'Imperial and the licensed and unlicensed monsters of the 1970s and 80s, and how to tell one from the other.'],
+    checkout:  ['Checkout \u00b7 Hammer & Mold', 'Delivery address and postage before payment.'],
     palitoy:   ['Palitoy \u00b7 The Molders \u00b7 Hammer & Mold', 'The British company that inherited Star Wars through a corporate structure, and whose most coveted playset is made of cardboard because plastic was too expensive.'],
     lot:       ['', ''],   // written from the lot itself
     seller:    ['', ''],
@@ -3776,6 +3805,15 @@
     if (view === 'seller' && extra && typeof renderSeller === 'function'){ renderSeller(extra); show('seller', { extra: extra, fromHistory: fromHistory }); return; }
     if (view === 'sold' && typeof renderSold === 'function'){ renderSold(); show('sold', { fromHistory: fromHistory }); return; }
     if (view === 'account' && typeof renderAccount === 'function'){ renderAccount({ fromHistory: fromHistory }); return; }
+    // A checkout only exists while a purchase is in progress. Arriving on the URL
+    // cold, by refresh or a pasted link, means the amount and the lot are gone, and
+    // an empty address form asking for money is worse than no page. The lot it came
+    // from is a real place, so go there instead of pretending.
+    if (view === 'checkout'){
+      if (typeof CK_LIVE !== 'undefined' && CK_LIVE){ show('checkout', { extra: extra, fromHistory: fromHistory }); return; }
+      if (extra && typeof openLot === 'function'){ openLot(extra); return; }
+      show('home'); return;
+    }
     show(view, { fromHistory: fromHistory });
   }
 
@@ -3784,7 +3822,7 @@
   function routeFromPath(fromHistory){
     const raw = location.pathname.replace(/\/+$/, '') || '/';
     if (VIEW_BY_PATH[raw]){ routeTo(VIEW_BY_PATH[raw], null, fromHistory); return true; }
-    const m = raw.match(/^(\/lot|\/seller)\/(.+)$/);
+    const m = raw.match(/^(\/lot|\/seller|\/checkout)\/(.+)$/);
     if (m){ routeTo(VIEW_BY_PATH[m[1]], decodeURIComponent(m[2]), fromHistory); return true; }
     return false;
   }
@@ -6555,13 +6593,23 @@
     ['LT', 'Lithuania'], ['MT', 'Malta'], ['CY', 'Cyprus'],
   ];
 
+  // True while a purchase is in progress. The checkout page has no meaning without
+  // it, so routeTo sends anyone arriving cold back to the lot rather than showing
+  // an empty form that asks for money.
+  let CK_LIVE = false;
+
   function askAddress(opts, lot){
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    openModal('Delivery', opts.label || 'Where should it go?', 'We need the delivery address before payment, so the postage you are charged is the postage for your own country and not an estimate.');
-    const body = document.getElementById('modalBody');
+    CK_LIVE = true;
+    document.getElementById('ckTitle').textContent = opts.label || 'Where should it go?';
+    const back = document.getElementById('ckBackLot');
+    if (back){
+      back.textContent = (opts.label || 'Lot').slice(0, 40);
+      back.onclick = () => { CK_LIVE = false; routeTo('lot', opts.lotId); };
+    }
+    const body = document.getElementById('ckBody');
+    body.innerHTML = '';
     const f = document.createElement('div');
-    f.className = 'bidform';
-    f.style.marginTop = '14px';
     // A grid, not a flex row with a percentage on one child. The old markup put
     // the city in a flex:1 column and the input inside overflowed the modal on a
     // laptop and ran off the screen on a phone. Grid columns cannot do that.
@@ -6593,11 +6641,12 @@
         '<button class="btn ghost" id="ckCancel" type="button">Cancel</button>' +
       '</div>' +
       '<div class="bidhint" id="ckHint"></div>';
-    body.parentNode.insertBefore(f, body.nextSibling);
-    // Two dismissals in one dialogue is one too many. Cancel sits next to the
-    // confirm where the decision is being made; the generic Close steps aside.
-    { const c = document.getElementById('modalClose'); if (c) c.hidden = true; }
-    { const x = document.getElementById('ckCancel'); if (x) x.addEventListener('click', closeModal); }
+    body.appendChild(f);
+    show('checkout', { extra: opts.lotId });
+    // Cancel goes back to the lot, which is where the buyer was and what they
+    // were looking at. Closing to nowhere would lose the thing they wanted.
+    { const x = document.getElementById('ckCancel');
+      if (x) x.addEventListener('click', () => { CK_LIVE = false; routeTo('lot', opts.lotId); }); }
 
     // Postage is quoted live for the country chosen, because within the EU the
     // same product runs from EUR 8.24 to Austria to EUR 27.73 to Finland. No

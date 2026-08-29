@@ -52,7 +52,10 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // script did exactly that: it replaced the head's description with the shorter
 // one from META and quietly dropped "Shipping included, tracked, across the EU"
 // from the source file. Generated output must never be able to touch its input.
-const SKIP = new Set(["lot", "seller", "account", "artifact", "home"]);
+// checkout joins them for a different reason: it exists only while a purchase
+// is in progress, so a crawled copy would be an empty address form asking for
+// money, indexed under the shop's own name.
+const SKIP = new Set(["lot", "seller", "account", "artifact", "home", "checkout"]);
 
 let written = 0;
 const report = [];
