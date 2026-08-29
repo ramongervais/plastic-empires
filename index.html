@@ -165,6 +165,8 @@
   @media (max-width:760px){ .band-head { grid-template-columns:auto 1fr; gap:0 20px; } .band-head p { grid-column:1 / -1; border-left:0; padding-left:0; margin-top:16px; } }
   .band-head h2 { font-family:var(--display); font-weight:600; font-size: clamp(26px, 3.4vw, 38px); letter-spacing:-.015em; margin:6px 0 0; }
   .band-head p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:40ch; margin:0; }
+  /* A second paragraph inside the one cell the grid gives this column. */
+  .band-head p .bh-p { display:block; margin-top:14px; }
 
   /* Empires */
   /* Filter + sort bar (publisher = empire) */
@@ -3001,8 +3003,11 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">Selling packages</div><h2>Pick the one that fits what you sell</h2></div>
-        <p><b>Identifying a toy is free and unlimited</b>, whichever package you are on: photograph anything and we will tell you what it is, who made it, what year and what condition. A listing is what costs a token. Every package includes the price research, buyer protection on every lot, and postage quoted live from the carrier.</p>
+        <div><div class="ey">Selling packages</div><h2>Pick the package that fits how you sell</h2></div>
+        <!-- One grid cell, two paragraphs. .band-head is a three-column grid and a
+             second <p> would drop to a row of its own under the section number. -->
+        <p><b>Toy identification is always free and unlimited.</b> Photograph anything and we will tell you what it is, who made it, when it was made and what condition it is in.
+        <span class="bh-p">You only pay when you sell. Choose a package based on how much you sell each month. Every package includes price research, buyer protection and live postage rates.</span></p>
       </div>
 
       <!-- Filled from the pay worker's /plans so a price cannot exist in two places -->
@@ -3010,17 +3015,17 @@
 
       <div class="chooser">
         <div class="ey">Which one, exactly</div>
-        <h3 style="font-family:var(--body);font-weight:700;font-size:21px;letter-spacing:-.01em;margin:8px 0 6px">Tell us what you sell in a month and we will do the arithmetic</h3>
+        <h3 style="font-family:var(--body);font-weight:700;font-size:21px;letter-spacing:-.01em;margin:8px 0 6px">See which package costs you least</h3>
         <p style="font-family:var(--body);font-size:15px;color:var(--ink-2);max-width:60ch;margin:0 0 20px">
-          A package is only worth buying if it costs you less than the one below it. This works that out on your own numbers rather than leaving you to guess, and it will tell you to stay on the free one if that is the answer.
+          Tell us roughly how much you sell. We will compare the monthly fee and selling fee together and recommend the cheapest package.
         </p>
         <div class="ch-row">
           <div class="ch-field">
-            <label for="chSales">Items you sell a month</label>
+            <label for="chSales">Items sold per month</label>
             <input id="chSales" type="number" min="0" step="1" inputmode="numeric" placeholder="10">
           </div>
           <div class="ch-field">
-            <label for="chPrice">Average selling price</label>
+            <label for="chPrice">Average sale price</label>
             <input id="chPrice" type="number" min="0" step="1" inputmode="numeric" placeholder="14">
           </div>
         </div>
@@ -3033,12 +3038,14 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">The number that matters</div><h2>What the platform takes out of a sale</h2></div>
-        <p>Compare total cost, not seller commission. Catawiki charges the seller 12.5% and then charges the buyer another 9% on top, and in an auction that buyer fee comes straight out of what anyone is willing to bid. We charge the seller only, and the buyer pays the hammer price.</p>
+        <p>Compare what buyer and seller pay together.
+        <span class="bh-p">On a &euro;100 hammer price, Catawiki charges the seller 12.5% and adds another 9% buyer fee. The buyer pays &euro;109 while the seller receives &euro;87,50.</span>
+        <span class="bh-p">Hammer &amp; Mold adds no buyer fee. A &euro;100 hammer price means the buyer pays &euro;100.</span></p>
       </div>
       <div class="cmp-scroll">
         <table class="cmp">
           <thead>
-            <tr><th>On a &euro;100 hammer</th><th class="n">Buyer pays</th><th class="n">Seller receives</th><th class="n">Platform takes</th></tr>
+            <tr><th>On a &euro;100 hammer price</th><th class="n">Buyer pays</th><th class="n">Seller receives</th><th class="n">Total platform fees</th></tr>
           </thead>
           <tbody>
             <tr><td>Catawiki</td><td class="n">&euro; 109,00</td><td class="n">&euro; 87,50</td><td class="n">21,5%</td></tr>
@@ -3048,7 +3055,7 @@
           </tbody>
         </table>
       </div>
-      <div class="ch-note" style="max-width:70ch">Monthly package fees are on top of the commission and are not in this table, which is why the chooser above works on your own volume: on a &euro;100 lot the fee matters, on fifty of them it does not. Catawiki figures from their published seller commission and buyer protection fee, August 2026.</div>
+      <div class="ch-note" style="max-width:70ch">Monthly package fees are not included in this table. The calculator above includes both your package fee and selling fee to show which package costs least at your sales volume.<br>Catawiki figures based on its published seller commission and buyer protection fee, August 2026.</div>
     </div>
   </section>
 
@@ -3059,8 +3066,10 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">Is the monthly fee worth it</div><h2>What a package really costs, fee included</h2></div>
-        <p>A monthly fee looks like a cost and behaves like a discount. Every package charges less commission than the one below it, so above a certain amount of sales the cheaper commission more than pays the fee back. Below that amount, stay on the free one. Here is where the lines cross, on the same numbers the packages are priced on.</p>
+        <div><div class="ey">Is the monthly fee worth it?</div><h2>What each package really costs</h2></div>
+        <p>A monthly package fee buys you a lower selling fee. Sell enough in a month and the saving becomes greater than the subscription.
+        <span class="bh-p">Sell less, and Starter is cheaper.</span>
+        <span class="bh-p">The table shows the total cost of each package at different monthly sales volumes.</span></p>
       </div>
       <div class="cmp-scroll">
         <table class="cmp" id="allInTable"></table>
@@ -3072,13 +3081,13 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">Changing your mind</div><h2>Moving up, and moving down</h2></div>
+        <div><div class="ey">Changing your package</div><h2>Move up. Move down. Any time.</h2></div>
       </div>
       <div class="story" style="max-width:70ch">
-        <p><b>Moving up happens straight away.</b> Your new listing allowance is there the moment you pay, and the card is charged only the difference for the rest of the month, not a second full month.</p>
-        <p><b>Moving down happens at the end of the month you have paid for.</b> You keep the package you bought until then, because taking it away mid-month after charging for it would not be right. Your account shows the date it changes and you can cancel the change until it happens.</p>
-        <p><b>Unused tokens stay yours.</b> They roll over up to twice your monthly allowance. Moving down does not take tokens away; it only lowers what you are topped up to next month.</p>
-        <p>There is no minimum term and nothing to phone about. If a package turns out to be wrong for you, the chooser above will say so with your own numbers, and you can move on the same day.</p>
+        <p><b>Upgrades happen immediately.</b> Your new listing allowance is available straight away. You only pay the difference for the rest of the month.</p>
+        <p><b>Downgrades start next month.</b> Your current package stays active until the end of the period you have already paid for. You can cancel the change before then.</p>
+        <p><b>Unused listings stay with you.</b> They roll over up to twice your monthly allowance. Downgrading never removes listings you have already accumulated.</p>
+        <p><b>No minimum term. No phone calls.</b> Change or cancel your package from your account whenever you need to.</p>
       </div>
     </div>
   </section>
@@ -6467,10 +6476,15 @@
   // sell-through rate and quietly recommending a package that runs out of tokens.
   const planFits = (p, sales) => p.listings >= sales;
 
+  // Only Starter carries a fit line. The 1-7 / 8-30 / 30+ labels that used to be
+  // on all three read as hard limits, which they never were, and they did not line
+  // up with the actual economics: what decides a package is what you SELL FOR in a
+  // month, not how many items that took. The paid two say that in money instead,
+  // on the line below, computed rather than written down.
   const PLAN_FIT = {
-    starter: 'For 1 to 7 sales a month',
-    trader:  'For 8 to 30 sales a month',
-    dealer:  'For 30 sales a month and up',
+    starter: 'Best for occasional sellers',
+    trader:  '',
+    dealer:  '',
   };
 
   // What each package buys beyond the commission and the allowance. Kept next to
@@ -6481,8 +6495,8 @@
   // paid feature nobody is told about is not a feature.
   const PLAN_EXTRA = {
     starter: [],
-    trader:  ['Your own logo and social links on your shop page'],
-    dealer:  ['Your own logo and social links on your shop page', 'Featured placement included'],
+    trader:  ['Your logo and social links on your shop'],
+    dealer:  ['Your logo and social links on your shop', 'Featured shop placement'],
   };
 
   // The turning point: the sales per month at which a package costs less than the
@@ -6496,12 +6510,25 @@
   // Computed from the plans table, never written down: a hardcoded EUR 357 would go
   // stale the first time a price or a commission moves.
   function planBreakEven(p, plans){
-    const free = plans.find(x => x.cents === 0);
-    if (!free || !p.cents) return null;
-    const saved = free.commission - p.commission;      // commission points saved
+    if (!p.cents) return null;
+    // Against the package DIRECTLY BELOW, not against the free one. Comparing
+    // every package to Starter said Dealer paid for itself from EUR 360, and it does
+    // beat Starter there. It does not beat TRADER there: at EUR 360 Trader costs
+    // EUR 50,20 and Dealer EUR 53,80, so the honest answer is EUR 450, where Dealer
+    // finally passes the package a seller would otherwise be on. A ladder has to
+    // be climbed one rung at a time.
+    const below = plans.filter(x => x.cents < p.cents).sort((a, b) => b.cents - a.cents)[0];
+    if (!below) return null;
+    const saved = below.commission - p.commission;     // selling-fee points saved
     if (saved <= 0) return null;
-    return ((p.cents - free.cents) / 100) / saved;     // euros of sales a month
+    return ((p.cents - below.cents) / 100) / saved;    // euros of sales a month
   }
+
+  // Rounded up to the nearest five, so it reads as a threshold rather than as
+  // false precision. The epsilon is not decoration: 0.12 - 0.08 is 0.039999…, so
+  // Dealer's exact EUR 450 comes back as 450.0000000000002 and a plain ceil pushed
+  // it to EUR 455, which is a number that is true of nothing.
+  const beRound = v => Math.ceil(v / 5 - 1e-9) * 5;
 
   async function renderPlans(){
     // Three containers: the packages page, the sell page, and the dialogue on the
@@ -6517,26 +6544,29 @@
     const html = plans.map(p => {
       const isMine = p.key === mine;
       const cta = isMine
-        ? '<button class="btn ghost t-cta" type="button" disabled>Your package</button>'
-        : '<button class="btn accent t-cta" type="button" data-plan="' + mkEsc(p.key) + '">' + (p.cents === 0 ? 'Move to Starter' : 'Choose ' + mkEsc(p.name)) + '</button>';
+        ? '<button class="btn ghost t-cta" type="button" disabled>Current package</button>'
+        : '<button class="btn accent t-cta" type="button" data-plan="' + mkEsc(p.key) + '">' + (p.cents === 0 ? 'Switch to Starter' : 'Choose ' + mkEsc(p.name)) + '</button>';
+      const fit = PLAN_FIT[p.key] || '';
       return '<div class="tier' + (isMine ? ' on' : '') + '">' +
-        (p.key === 'trader' ? '<div class="t-tag">Most sellers</div>' : '') +
+        (p.key === 'trader' ? '<div class="t-tag">Most popular</div>' : '') +
         '<div class="t-name">' + mkEsc(p.name) + '</div>' +
         '<div class="t-price">' + planFee(p) + (p.cents ? '<span>/month</span>' : '') + '</div>' +
-        '<div class="t-fit">' + (PLAN_FIT[p.key] || '') + '</div>' +
-        // The monthly fee answered before anyone has to work it out. Rounded up to
-        // the nearest ten so it reads as a threshold and not a false precision.
+        (fit ? '<div class="t-fit">' + fit + '</div>' : '') +
+        // The threshold in money, before anyone has to work it out. Rounded up to
+        // the nearest five so it reads as a threshold and not a false precision,
+        // and so it lands on the 235 and 450 the table below proves.
         (() => {
           const be = planBreakEven(p, plans);
           if (be == null) return '';
-          return '<div class="t-be">Pays for itself from <b>' + money0(Math.ceil(be / 10) * 10) +
-                 '</b> of sales a month</div>';
+          return '<div class="t-be">Cheapest from <b>' + money0(beRound(be)) +
+                 '/month</b> in sales</div>';
         })() +
         '<ul class="t-list">' +
-          '<li><b>' + (p.commission * 100).toFixed(0) + '%</b> commission on the buyer’s total</li>' +
-          '<li><b>' + p.listings + '</b> listings a month' + (p.cap > p.listings ? ', rolling over to ' + p.cap : '') + '</li>' +
-          '<li>Free unlimited identification</li>' +
-          '<li>Buyer protection on every lot</li>' +
+          '<li><b>' + (p.commission * 100).toFixed(0) + '%</b> selling fee</li>' +
+          '<li><b>' + p.listings + '</b> listings a month</li>' +
+          (p.cap > p.listings ? '<li>Unused listings roll over, up to ' + p.cap + '</li>' : '') +
+          '<li>Unlimited toy identification</li>' +
+          '<li>Buyer protection on every sale</li>' +
           (PLAN_EXTRA[p.key] || []).map(x => '<li>' + x + '</li>').join('') +
         '</ul>' + cta + '</div>';
     }).join('');
@@ -6564,7 +6594,7 @@
     const costOf = (p, s) => p.cents / 100 + s * p.commission;
 
     table.innerHTML =
-      '<thead><tr><th>You sell, a month</th>' +
+      '<thead><tr><th>Monthly sales</th>' +
         ordered.map(p => '<th class="n">' + mkEsc(p.name) + '</th>').join('') +
       '</tr></thead><tbody>' +
       levels.map(s => {
@@ -6577,14 +6607,19 @@
       }).join('') +
       '</tbody>';
 
-    // The sentence the page was missing, built from the same numbers.
-    const paid = ordered.filter(p => p.cents > 0).map(p => {
-      const be = planBreakEven(p, plans);
-      return be == null ? null : mkEsc(p.name) + ' from ' + money0(Math.ceil(be / 10) * 10);
-    }).filter(Boolean);
-    note.innerHTML = 'Bold is the cheapest package at that level. Fee and commission together, on the ' +
-      'buyer’s total. Where each one starts costing less than the free package: ' +
-      paid.join(', ') + '. Below that, Starter is the right answer and the chooser above will say so.';
+    // The sentence spelled out from the same numbers, one rung at a time: where
+    // each package starts beating the one below it, not the free one.
+    const be = {};
+    ordered.forEach(p => { const v = planBreakEven(p, plans); if (v != null) be[p.key] = beRound(v); });
+    const bands = [];
+    ordered.forEach((p, i) => {
+      const lo = be[p.key], next = ordered[i + 1], hi = next ? be[next.key] : null;
+      if (lo == null && hi != null) bands.push(mkEsc(p.name) + ' is cheapest below roughly ' + money0(hi) + ' a month');
+      else if (lo != null && hi != null) bands.push(mkEsc(p.name) + ' is cheapest from roughly ' + money0(lo) + ' to ' + money0(hi));
+      else if (lo != null) bands.push(mkEsc(p.name) + ' is cheapest above ' + money0(lo));
+    });
+    note.innerHTML = 'Bold shows the cheapest package at each sales level. ' +
+      bands.join('. ') + '. Total cost includes both the monthly package fee and selling fee.';
   }
 
   // The plan on the account, read from whatever the last account render fetched.
@@ -6645,7 +6680,7 @@
           : 'On Starter the same month would cost you ' + eur(planCost(plans[0], monthly)) + ', so ' + mkEsc(best.p.name) + ' saves you ' + eur(planCost(plans[0], monthly) - best.cost) + ' a month.') +
         ' Catawiki would take ' + eur(monthly * 0.197) + ' of it, counting the 9% they charge your buyer.' +
       '</div>' +
-      '<div class="ch-note">This counts one listing per sale. Not everything sells the first time it is listed, so if you relist much, pick the package with room above your number rather than the one that exactly matches it. Tokens roll over, so headroom is not wasted.</div>' +
+      '<div class="ch-note">This counts one listing per sale. Not everything sells the first time it is listed, so if you relist much, pick the package with room above your number rather than the one that exactly matches it. Unused listings roll over, so headroom is not wasted.</div>' +
       (best.p.key === currentPlanKey()
         ? '<div class="ch-note">You are already on ' + mkEsc(best.p.name) + '.</div>'
         : '<button class="btn accent" type="button" style="margin-top:18px" data-plan="' + mkEsc(best.p.key) + '">' + (best.p.cents === 0 ? 'Move to Starter' : 'Choose ' + mkEsc(best.p.name)) + '</button>');
