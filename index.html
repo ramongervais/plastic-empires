@@ -317,13 +317,33 @@
   /* Reserve modal */
   .modal-bg { position:fixed; inset:0; background:rgba(10,9,6,.55); backdrop-filter:blur(3px); z-index:80; display:flex; align-items:center; justify-content:center; padding:24px; }
   .modal-bg[hidden]{ display:none; }
-  .modal { background:var(--paper); border:1px solid var(--line); border-radius:4px; max-width:440px; width:100%; padding:34px; }
+  /* A dialogue taller than the screen used to run off both ends: the title above
+     the top edge, the buttons below the bottom, and no way to reach either. The
+     delivery form with its address, carrier options and total is well past that
+     height on a laptop. Capping and scrolling is the floor, not the fix. The fix
+     is that a checkout is a page and not a dialogue, which is next. */
+  .modal { background:var(--paper); border:1px solid var(--line); border-radius:4px; max-width:440px; width:100%; padding:34px;
+    max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; }
   .modal .ey { margin-bottom:14px; }
   .modal h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:0 0 12px; letter-spacing:-.01em; }
   .modal p { font-family:var(--body); font-size:16px; color:var(--ink); margin:0 0 22px; line-height:1.8; }
   .modal .close { margin-top:8px; }
   .modal-acts { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px; }
   .modal-acts .close { margin-top:0; }
+  /* The dismiss in the corner. position:relative goes on .modal above so this can
+     sit against its padding rather than the viewport. */
+  .modal { position:relative; }
+  .modal-x { position:absolute; top:12px; right:12px; width:32px; height:32px; display:inline-flex;
+    align-items:center; justify-content:center; padding:0; border:0; border-radius:2px;
+    background:transparent; color:var(--ink-3); cursor:pointer; transition:color .12s, background .12s; }
+  .modal-x:hover { color:var(--ink); background:var(--paper-2); }
+  .modal-x:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .modal-x svg { width:15px; height:15px; fill:currentColor; display:block; }
+  /* Confirm and cancel on one line, sharing a baseline. The confirm carries the
+     fill and the cancel does not: two controls side by side must not read as
+     equal weight. */
+  .ck-acts { display:flex; gap:10px; margin-top:14px; }
+  .ck-acts .btn { flex:1; margin-top:0; }
 
   /* ---------- Empire (maker) documentary page ---------- */
   .empire-hero { padding: 56px 0 40px; }
@@ -3339,6 +3359,12 @@
 <!-- Reserve modal -->
 <div class="modal-bg" id="modal" hidden>
   <div class="modal">
+    <!-- The dismiss, where every dialogue on the web puts it. The Close button at
+         the bottom stays for the plain notices; a form gets its own Cancel next to
+         its confirm, and hides that one. -->
+    <button class="modal-x" id="modalX" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.6 4.2 12 10.6l6.4-6.4 1.4 1.4L13.4 12l6.4 6.4-1.4 1.4L12 13.4l-6.4 6.4-1.4-1.4L10.6 12 4.2 5.6z"/></svg>
+    </button>
     <div class="ey" id="modalEy">Reserved</div>
     <h3 id="modalTitle">The Falcon is held for you.</h3>
     <p id="modalBody"></p>
@@ -3967,6 +3993,15 @@
     if (bidForm) bidForm.hidden = true;
     const never = document.getElementById('modalNever');
     if (never) never.hidden = true;
+    // Anything a previous caller injected goes with it. askAddress builds a form
+    // and inserts it into this modal, and without this a second visit left two in
+    // the document with the same ids, so getElementById would answer with the
+    // stale one and the new form would do nothing.
+    modal.querySelectorAll('.ck-form').forEach(el => el.remove());
+    // The Close at the bottom is for plain notices. A form supplies its own
+    // Cancel next to its confirm, and turns this back on when it leaves.
+    const close = document.getElementById('modalClose');
+    if (close) close.hidden = false;
     modal.hidden = false;
   }
 
@@ -4051,6 +4086,7 @@
   })();
   function closeModal(){ modal.hidden = true; }
   document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalX').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
@@ -6545,9 +6581,16 @@
         '</div>' +
       '</div>' +
       '<div class="del-panel" id="ckTotal" style="margin-top:14px"></div>' +
-      '<button class="btn accent" id="ckGo" type="button" style="margin-top:14px;width:100%">Continue to payment</button>' +
+      '<div class="ck-acts">' +
+        '<button class="btn accent" id="ckGo" type="button">Continue to payment</button>' +
+        '<button class="btn ghost" id="ckCancel" type="button">Cancel</button>' +
+      '</div>' +
       '<div class="bidhint" id="ckHint"></div>';
     body.parentNode.insertBefore(f, body.nextSibling);
+    // Two dismissals in one dialogue is one too many. Cancel sits next to the
+    // confirm where the decision is being made; the generic Close steps aside.
+    { const c = document.getElementById('modalClose'); if (c) c.hidden = true; }
+    { const x = document.getElementById('ckCancel'); if (x) x.addEventListener('click', closeModal); }
 
     // Postage is quoted live for the country chosen, because within the EU the
     // same product runs from EUR 8.24 to Austria to EUR 27.73 to Finland. No
