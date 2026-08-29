@@ -353,12 +353,6 @@
   /* Points with a mark. The icon sits in its own column so the second and third
      lines of text align under the first rather than under the glyph, which is the
      thing that makes a bulleted paragraph read as a list instead of a ragged wall. */
-  /* The background-removal toggle, under the thumbnail strip. */
-  .seg-toggle { display:grid; grid-template-columns:auto 1fr; gap:2px 10px; align-items:center;
-    margin-top:12px; padding:12px 14px; border:1px solid var(--line); border-radius:4px; cursor:pointer; }
-  .seg-toggle input { grid-row:1 / span 2; width:16px; height:16px; accent-color:var(--ink); }
-  .seg-toggle span { font-family:var(--body); font-size:13.5px; color:var(--ink); }
-  .seg-toggle .sub { font-size:12px; color:var(--ink-2); }
   .pts { list-style:none; margin:0; padding:0; max-width:74ch; display:grid; gap:22px; }
   .pt { display:grid; grid-template-columns:26px minmax(0,1fr); gap:0 18px; align-items:start; }
   .pt-i { display:flex; align-items:center; justify-content:center; width:26px; height:26px; margin-top:1px; }
@@ -4351,162 +4345,6 @@
     const dataUrlBytes = d => { const i = d.indexOf(','); return i < 0 ? 0 : Math.round((d.length - i - 1) * 0.75); };
     const kb = b => b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.round(b / 1024) + ' KB';
 
-    // ---- Cutting the background out of a shop card -------------------------
-    //
-    // What this changes and what it deliberately does not. The CARD copy, the
-    // small one on the shop grid, gets its background replaced so the catalogue
-    // reads as one set of objects rather than nineteen photographs of nineteen
-    // different rooms. The DISPLAY copy on the lot page is never touched: that is
-    // the one a buyer inspects, and a cut-out hides what the toy was sitting on
-    // and how it was lit.
-    //
-    // Nothing about the toy itself is altered anywhere. There was a white balance
-    // pass in the prototype and it came out, because it read a red figure's own
-    // colour as a cast and drained it grey. On condition-graded goods every edit
-    // to the item's pixels is a claim about the item.
-    //
-    // U2-Netp, Apache 2.0, 4.5 MB, in the browser. It costs nothing per photo and
-    // no picture leaves the device to be cleaned. The runtime comes off a CDN
-    // rather than being vendored: it is several megabytes of wasm, and if it fails
-    // to load the seller simply gets their own photo, which is a fine outcome.
-    const SEG = {
-      S: 320,
-      MEAN: [0.485, 0.456, 0.406],
-      STD: [0.229, 0.224, 0.225],
-      ORT: 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/',
-      MODEL: '/vendor/u2netp.onnx',
-      session: null, loading: null, dead: false,
-    };
-
-    function segLoad(){
-      if (SEG.session) return Promise.resolve(SEG.session);
-      if (SEG.dead) return Promise.resolve(null);
-      if (SEG.loading) return SEG.loading;
-      SEG.loading = (async () => {
-        try {
-          if (!window.ort){
-            await new Promise((res, rej) => {
-              const s = document.createElement('script');
-              s.src = SEG.ORT + 'ort.min.js'; s.onload = res; s.onerror = rej;
-              document.head.appendChild(s);
-            });
-          }
-          ort.env.wasm.wasmPaths = SEG.ORT;
-          ort.env.wasm.numThreads = 1;      // no cross-origin isolation on Pages
-          ort.env.logLevel = 'error';
-          SEG.session = await ort.InferenceSession.create(SEG.MODEL, { executionProviders: ['wasm'] });
-          return SEG.session;
-        } catch (e){
-          // One failure is enough. Retrying per photo would download several
-          // megabytes again for each one and still not work.
-          SEG.dead = true;
-          return null;
-        }
-      })();
-      return SEG.loading;
-    }
-
-    // dataUrl in, dataUrl out, or null if anything at all goes wrong. Every caller
-    // treats null as "use the photo as it came", so a failure here is invisible
-    // rather than blocking a listing.
-    async function segCard(dataUrl, bg){
-      try {
-        const s = await segLoad();
-        if (!s) return null;
-        const img = new Image(); img.src = dataUrl; await img.decode();
-        const S = SEG.S;
-
-        const in1 = document.createElement('canvas'); in1.width = in1.height = S;
-        in1.getContext('2d').drawImage(img, 0, 0, S, S);
-        const d = in1.getContext('2d').getImageData(0, 0, S, S).data;
-        const f = new Float32Array(3 * S * S), n = S * S;
-        for (let i = 0; i < n; i++){
-          f[i]         = (d[i * 4]     / 255 - SEG.MEAN[0]) / SEG.STD[0];
-          f[n + i]     = (d[i * 4 + 1] / 255 - SEG.MEAN[1]) / SEG.STD[1];
-          f[2 * n + i] = (d[i * 4 + 2] / 255 - SEG.MEAN[2]) / SEG.STD[2];
-        }
-        const out = await s.run({ [s.inputNames[0]]: new ort.Tensor('float32', f, [1, 3, S, S]) });
-        const raw = out[s.outputNames[0]].data;
-        let lo = Infinity, hi = -Infinity;
-        for (let i = 0; i < raw.length; i++){ if (raw[i] < lo) lo = raw[i]; if (raw[i] > hi) hi = raw[i]; }
-        const span = (hi - lo) || 1;
-
-        // Harden the edge, then keep only the largest connected island. U2-Net
-        // counts the surface a toy stands on as part of what it is looking at, so
-        // a strip of table survives the cut as a blob floating beside the figure.
-        // A lot has one subject; anything not joined to the biggest region is not it.
-        const mc = document.createElement('canvas'); mc.width = mc.height = S;
-        const mctx = mc.getContext('2d');
-        const mid = mctx.createImageData(S, S);
-        const K = 8;
-        for (let i = 0; i < n; i++){
-          const v = 1 / (1 + Math.exp(-K * ((raw[i] - lo) / span - 0.5)));
-          const a = Math.max(0, Math.min(255, Math.round(v * 255)));
-          mid.data[i * 4] = mid.data[i * 4 + 1] = mid.data[i * 4 + 2] = a;
-          mid.data[i * 4 + 3] = 255;
-        }
-        const lab = new Int32Array(n).fill(-1), stack = new Int32Array(n);
-        let best = -1, bestN = 0, label = 0;
-        for (let start = 0; start < n; start++){
-          if (lab[start] !== -1 || mid.data[start * 4] < 128) continue;
-          let sp = 0, count = 0;
-          stack[sp++] = start; lab[start] = label;
-          while (sp > 0){
-            const q = stack[--sp]; count++;
-            const x = q % S, y = (q / S) | 0;
-            if (x > 0)     { const m = q - 1; if (lab[m] === -1 && mid.data[m * 4] >= 128){ lab[m] = label; stack[sp++] = m; } }
-            if (x < S - 1) { const m = q + 1; if (lab[m] === -1 && mid.data[m * 4] >= 128){ lab[m] = label; stack[sp++] = m; } }
-            if (y > 0)     { const m = q - S; if (lab[m] === -1 && mid.data[m * 4] >= 128){ lab[m] = label; stack[sp++] = m; } }
-            if (y < S - 1) { const m = q + S; if (lab[m] === -1 && mid.data[m * 4] >= 128){ lab[m] = label; stack[sp++] = m; } }
-          }
-          if (count > bestN){ bestN = count; best = label; }
-          label++;
-        }
-        // Nothing found worth keeping: hand back null so the photo is used as-is
-        // rather than shipping a card that is 95% empty paper.
-        if (best < 0 || bestN < n * 0.02) return null;
-        for (let i = 0; i < n; i++) if (lab[i] !== best) mid.data[i * 4] = 0;
-        mctx.putImageData(mid, 0, 0);
-
-        const W = img.naturalWidth, H = img.naturalHeight;
-        const big = document.createElement('canvas'); big.width = W; big.height = H;
-        const bctx = big.getContext('2d', { willReadFrequently: true });
-        bctx.imageSmoothingEnabled = true; bctx.imageSmoothingQuality = 'high';
-        bctx.drawImage(mc, 0, 0, W, H);
-        const md = bctx.getImageData(0, 0, W, H).data;
-
-        const cut = document.createElement('canvas'); cut.width = W; cut.height = H;
-        const cctx = cut.getContext('2d', { willReadFrequently: true });
-        cctx.drawImage(img, 0, 0);
-        const px = cctx.getImageData(0, 0, W, H), p = px.data;
-        // Pull the alpha in by one pixel: without it a light toy keeps a pale
-        // fringe of its old background all the way round.
-        for (let i = 0; i < W * H; i++){
-          let a = md[i * 4];
-          const x = i % W, y = (i / W) | 0;
-          for (let dy = -1; dy <= 1 && a; dy++){
-            for (let dx = -1; dx <= 1 && a; dx++){
-              const nx = x + dx, ny = y + dy;
-              if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
-              const na = md[(ny * W + nx) * 4];
-              if (na < a) a = na;
-            }
-          }
-          p[i * 4 + 3] = a;
-        }
-        cctx.putImageData(px, 0, 0);
-
-        const fin = document.createElement('canvas'); fin.width = W; fin.height = H;
-        const fctx = fin.getContext('2d');
-        fctx.fillStyle = bg || '#ffffff';
-        fctx.fillRect(0, 0, W, H);
-        fctx.drawImage(cut, 0, 0);
-        // JPEG, not PNG: the ground is flat so there is nothing to keep an alpha
-        // channel for, and a PNG of a photograph is several times the size.
-        return fin.toDataURL('image/jpeg', CARD_Q);
-      } catch (e){ return null; }
-    }
-
     function shrinkImage(file, maxDim, quality){
       return new Promise(resolve => {
         const fr = new FileReader();
@@ -4579,20 +4417,6 @@
           + ' · first one is the cover buyers see'
           + (fresh.length ? ' · ' + kb(now) + ' to upload' + (was > now * 1.15 ? ' (resized from ' + kb(was) + ')' : '') : '');
         thumbs.appendChild(note);
-
-        // Offered only once there is something to offer. A toggle for a thing
-        // that has not happened yet reads as a setting; a toggle beside a card
-        // that visibly changed reads as a choice.
-        const done = fresh.filter(f => f.cardClean).length;
-        if (done){
-          const wrap = document.createElement('label');
-          wrap.className = 'seg-toggle';
-          wrap.innerHTML = '<input type="checkbox" id="segOn"' + (SEG_ON ? ' checked' : '') + '>' +
-            '<span>Plain background on the shop card</span>' +
-            '<span class="sub">' + done + ' of ' + fresh.length + ' ready · your full photos are untouched</span>';
-          wrap.querySelector('input').addEventListener('change', e => { SEG_ON = e.target.checked; segApply(); });
-          thumbs.appendChild(wrap);
-        }
       }
       curateBtn.disabled = files.filter(f => !f.existing).length === 0;
     }
@@ -4619,31 +4443,10 @@
           shrinkImage(f, CARD_MAX, CARD_Q)
         ]);
         if (!big) continue;
-        const rec = { name: f.name, dataUrl: big, cardUrl: small || big, cardRaw: small || big,
-                      was: f.size, now: dataUrlBytes(big) + dataUrlBytes(small || '') };
-        files.push(rec);
+        files.push({ name: f.name, dataUrl: big, cardUrl: small || big, was: f.size, now: dataUrlBytes(big) + dataUrlBytes(small || '') });
         render();
-        // Cut the background out of the card copy in the background, literally.
-        // Not awaited: the seller carries on picking photos and reading what the
-        // AI found, and the cleaned card quietly replaces the original when it is
-        // ready. If it never finishes or the model will not load, cardUrl stays
-        // exactly what it was and nobody is told about a feature they did not ask
-        // for. The first photo pays for the model download; the rest are fast.
-        segCard(rec.cardRaw, '#ffffff').then(clean => {
-          if (!clean || !files.includes(rec)) return;
-          rec.cardClean = clean;
-          if (SEG_ON) rec.cardUrl = clean;
-          render();
-        });
       }
       dz.classList.remove('busy');
-    }
-    // On by default, and a seller can turn it off for a lot. Off puts every card
-    // back to the photograph as taken, immediately, with no reprocessing.
-    let SEG_ON = true;
-    function segApply(){
-      files.forEach(f => { if (f.cardClean) f.cardUrl = SEG_ON ? f.cardClean : f.cardRaw; });
-      render();
     }
     input.addEventListener('change', () => { addFiles(input.files); input.value = ''; });
     ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
