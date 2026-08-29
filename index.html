@@ -350,6 +350,17 @@
   /* The card box is a three-column grid, so the waiting mark and the failure line
      have to be told to span it or they sit squeezed into the first column. */
   #plansModalCards .pay-wait, #plansModalCards .acct-empty { grid-column:1 / -1; justify-content:center; padding:30px 0; margin:0; }
+  /* Points with a mark. The icon sits in its own column so the second and third
+     lines of text align under the first rather than under the glyph, which is the
+     thing that makes a bulleted paragraph read as a list instead of a ragged wall. */
+  .pts { list-style:none; margin:0; padding:0; max-width:74ch; display:grid; gap:22px; }
+  .pt { display:grid; grid-template-columns:26px minmax(0,1fr); gap:0 18px; align-items:start; }
+  .pt-i { display:flex; align-items:center; justify-content:center; width:26px; height:26px; margin-top:1px; }
+  .pt-i svg { width:20px; height:20px; display:block; fill:none; stroke:var(--ink);
+    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .pt-t { font-family:var(--body); font-size:16px; line-height:1.75; color:var(--ink); }
+  .pt-t b { font-weight:700; }
+  @media (max-width:520px){ .pt { grid-template-columns:22px minmax(0,1fr); gap:0 14px; } .pt-i svg { width:17px; height:17px; } }
   .pm-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
     margin-top:24px; padding-top:20px; border-top:1px solid var(--line); font-family:var(--body); font-size:14px; color:var(--ink-2); }
   /* Confirm and cancel on one line, sharing a baseline. The confirm carries the
@@ -2819,8 +2830,8 @@
     <section class="empire-hero">
       <div class="ey">Sell with us</div>
       <h1 class="empire-title">Upload. Our AI does the rest.</h1>
-      <div class="empire-dek">Photos in, a full listing out</div>
-      <p class="empire-lede">Add a few clear photos of your toy. Our AI identifies it, dates the year and line, grades the condition and proposes a fair starting bid. Genuine vintage is approved automatically; anything that isn't a collectible is rejected. Each listing uses one token.</p>
+      <div class="empire-dek">Photos in. A full listing out.</div>
+      <p class="empire-lede">Add a few clear photos. Our AI identifies the toy, dates it, grades the condition and builds the listing for you. It also checks recent sales to suggest a fair starting price.<br><br>Identification is free. You only use a listing when you decide to sell.</p>
     </section>
   </div>
   <section class="band">
@@ -2828,10 +2839,10 @@
       <div class="ey" style="margin-bottom:8px">How it works</div>
       <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.015em;margin:0 0 28px">Upload photos. We do the rest.</h2>
       <div class="moat">
-        <div class="cell"><div class="num">— 1 · Upload</div><h4>A few clear photos</h4><p>Front, back, accessories and any flaws, plus one close-up of the maker's stamp: the molded year, country and factory markings. That stamp confirms the age and origin, so it is required with every lot (a worn or scratched stamp is fine).</p></div>
-        <div class="cell"><div class="num">— 2 · AI curation</div><h4>We write and grade it</h4><p>Our AI identifies the toy, dates the year and line, grades condition and flags the variants that matter. Then it goes looking for what the same toy actually fetched recently and prices your lot off those sales, with a link behind every number so you can check the work. Anything that isn't a genuine collectible is rejected automatically, and no token is used.</p></div>
-        <div class="cell"><div class="num">— 3 · Confirm</div><h4>You stay in control</h4><p>Tweak any field, tap to correct a variant, and set a reserve or a Buy-now price. When you submit, one listing token is used.</p></div>
-        <div class="cell"><div class="num">— 4 · Auction</div><h4>It goes live</h4><p>Until launch your lot sits in Preview so buyers can watch it; at launch it opens for bidding. You are paid after the sale, we share the buyer's shipping address, and the buyer can leave you a review.</p></div>
+        <div class="cell"><div class="num">— 1 · Upload</div><h4>A few clear photos</h4><p>Add front, back, accessories and any visible flaws. Include one close-up of the moulded maker's stamp so we can date and identify the toy accurately.</p><p>A worn or partly legible stamp is fine.</p></div>
+        <div class="cell"><div class="num">— 2 · AI identification</div><h4>We identify and grade it</h4><p>Our AI identifies the toy, year, line and variant, then grades its condition and checks recent sales to suggest a price.</p><p>You can review the details and sources before listing.</p></div>
+        <div class="cell"><div class="num">— 3 · Confirm</div><h4>You stay in control</h4><p>Edit any detail, correct the variant, set your Reserve or Buy Now price, then approve the listing.</p></div>
+        <div class="cell"><div class="num">— 4 · Auction</div><h4>It goes live</h4><p>Your lot first appears in Preview so buyers can watch it. When the auction opens, bidding begins.</p><p>After the sale, we share the buyer's shipping details and they can leave a review.</p></div>
       </div>
     </div>
   </section>
@@ -2845,16 +2856,16 @@
             <div class="dz-inner">
               <div class="dz-plus">+</div>
               <div class="dz-label">Add photos</div>
-              <div class="dz-hint">3&ndash;5 clear shots: front, back, accessories and any flaws. <b>One close-up of the moulded stamp is required</b>, the year, country and factory marks on the soles, the lower back or between the shoulders. It is the only text unique to your toy, so it is what lets us date it and find what it actually sells for. A worn or half-legible stamp is fine.</div>
+              <div class="dz-hint">Add 3&ndash;5 clear photos: front, back, accessories and any flaws.<br><br><b>Include one close-up of the moulded maker's stamp.</b></div>
             </div>
           </label>
           <div class="thumbs" id="thumbs"></div>
-          <button class="btn accent" id="curateBtn" disabled>Curate with AI</button>
-          <div class="sell-note" id="sellNote">Your photos stay in your browser until you curate. Curating uses AI to write and grade the listing; genuine toys are approved automatically, prohibited items are rejected (no token used). Each published listing uses one token.</div>
+          <button class="btn accent" id="curateBtn" disabled>Identify my toy</button>
+          <div class="sell-note" id="sellNote">Your photos stay in your browser until you start identification. Identification is free. A listing is only used when you choose to publish the item for sale.</div>
         </div>
         <div class="sell-right">
           <div class="result-card empty" id="resultCard">
-            <div class="rc-empty">Your AI curation will appear here.</div>
+            <div class="rc-empty">Your toy details will appear here.</div>
           </div>
         </div>
       </div>
@@ -2864,15 +2875,16 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Selling packages</div><h2>What it costs to sell</h2></div>
-        <p><b>Identifying a toy is free and unlimited.</b> Photograph anything and we will tell you what it is, who made it, what year, what it originally shipped with and what condition it is in. A token is only spent when you decide to list it. Three packages, and the one that matches what you sell is always the cheapest of the three.</p>
+        <p><b>Toy identification is free and unlimited.</b> Photograph anything and we will identify it, date it, show what originally came with it and grade its condition.
+        <span class="bh-p">You only pay when you list. Choose a package based on how much you sell, or let us work out which one costs you least.</span></p>
       </div>
       <!-- No prices written here. They come from the pay worker's package table,
            which is the only place a price exists. This block used to name EUR 15
            and 3 tokens, both of which had stopped being true. -->
       <div class="tiers three" id="sellPlanCards"></div>
       <div style="margin-top:26px;display:flex;gap:14px;flex-wrap:wrap">
-        <button class="btn accent" type="button" data-nav="plans">Compare the packages</button>
-        <button class="btn ghost" type="button" data-nav="plans">Work out which one fits</button>
+        <button class="btn accent" type="button" data-nav="plans">Compare packages</button>
+        <button class="btn ghost" type="button" data-nav="plans">Find my cheapest package</button>
       </div>
     </div>
   </section>
@@ -3083,12 +3095,36 @@
       <div class="band-head">
         <div><div class="ey">Changing your package</div><h2>Move up. Move down. Any time.</h2></div>
       </div>
-      <div class="story" style="max-width:70ch">
-        <p><b>Upgrades happen immediately.</b> Your new listing allowance is available straight away. You only pay the difference for the rest of the month.</p>
-        <p><b>Downgrades start next month.</b> Your current package stays active until the end of the period you have already paid for. You can cancel the change before then.</p>
-        <p><b>Unused listings stay with you.</b> They roll over up to twice your monthly allowance. Downgrading never removes listings you have already accumulated.</p>
-        <p><b>No minimum term. No phone calls.</b> Change or cancel your package from your account whenever you need to.</p>
-      </div>
+      <!-- Four points, four marks. The icons are doing real work here rather than
+           decorating: up and down are the two directions the whole section is
+           about, and a reader scanning for "what happens if I move down" finds it
+           by shape before they find it by word. -->
+      <ul class="pts">
+        <li class="pt">
+          <span class="pt-i">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20V5"/><path d="M5 12l7-7 7 7"/></svg>
+          </span>
+          <span class="pt-t"><b>Upgrades happen immediately.</b> Your new listing allowance is available straight away. You only pay the difference for the rest of the month.</span>
+        </li>
+        <li class="pt">
+          <span class="pt-i">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v15"/><path d="M19 12l-7 7-7-7"/></svg>
+          </span>
+          <span class="pt-t"><b>Downgrades start next month.</b> Your current package stays active until the end of the period you have already paid for. You can cancel the change before then.</span>
+        </li>
+        <li class="pt">
+          <span class="pt-i">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l8.5 4.6-8.5 4.6-8.5-4.6z"/><path d="M3.5 12.4l8.5 4.6 8.5-4.6"/><path d="M3.5 16.6l8.5 4.6 8.5-4.6"/></svg>
+          </span>
+          <span class="pt-t"><b>Unused listings stay with you.</b> They roll over up to twice your monthly allowance. Downgrading never removes listings you have already accumulated.</span>
+        </li>
+        <li class="pt">
+          <span class="pt-i">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.5h15v10h-15z"/><path d="M8 10.5V7a4 4 0 0 1 7.7-1.5"/></svg>
+          </span>
+          <span class="pt-t"><b>No minimum term. No phone calls.</b> Change or cancel your package from your account whenever you need to.</span>
+        </li>
+      </ul>
     </div>
   </section>
 </main>
@@ -3206,52 +3242,54 @@
     <section class="empire-hero">
       <div class="ey">Help</div>
       <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Shipping &amp; import</h1>
-      <div class="empire-dek">What a parcel costs to send, and what a purchase from abroad really costs you.</div>
+      <div class="empire-dek">What it costs to send, buy and import.</div>
     </section>
   </div>
 
   <section class="band">
     <div class="wrap">
       <div class="story" style="margin:0; max-width:74ch">
-        <div class="terms-draft"><b>Estimates, not quotes.</b> The figures below are indicative, for working out roughly what something will cost. The only binding number is the shipping amount shown on a lot and charged at checkout.</div>
+        <div class="terms-draft"><b>Estimates, not quotes.</b> Use these figures to understand roughly what shipping and import will cost. The final shipping price is always the amount shown on the lot at checkout.</div>
 
         <div class="terms-h">The four zones</div>
-        <p>Shipping and customs do not follow the same map, which is where most people go wrong. <b>Europe is not the EU.</b> The United Kingdom, Switzerland and Norway are in Europe but sit outside the EU customs union, so a parcel from any of them is a customs import even though PostNL groups the UK into a nearby shipping zone. We therefore use four:</p>
+        <p>Shipping and customs do not follow the same map, which is where most people go wrong. <b>Europe is not the EU.</b> The UK, Switzerland and Norway are geographically European but outside the EU customs union, so purchases from them may still be imports. For shipping, we use four zones:</p>
         <ul class="zone-list">
-          <li><b>Netherlands</b> <span>Domestic. No customs, ever.</span></li>
-          <li><b>EU</b> <span>The 27 member states. Free circulation, so no duty and no import VAT.</span></li>
-          <li><b>UK / Europe non-EU</b> <span>United Kingdom, Switzerland, Norway. Near for shipping, foreign for customs.</span></li>
-          <li><b>Rest of world</b> <span>Everywhere else, including the US and Japan.</span></li>
+          <li><b>Netherlands</b> <span>Domestic shipping. No customs.</span></li>
+          <li><b>EU</b> <span>EU member states. No import VAT or customs duty between member states.</span></li>
+          <li><b>UK / Europe outside the EU</b> <span>Nearby for shipping, but treated as imports for customs.</span></li>
+          <li><b>Rest of world</b> <span>All other countries, including the US and Japan.</span></li>
         </ul>
 
         <div class="terms-h">Estimated shipping by weight</div>
-        <p>Sending from the Netherlands, and receiving into the Netherlands. Domestic is a real PostNL price. The rest are working estimates, because a seller in Osaka or Ohio uses a carrier we do not control.</p>
+        <p>These figures estimate shipping from the Netherlands and shipping into the Netherlands. Domestic prices use PostNL rates. International prices are estimates because the carrier depends on the seller's location.</p>
       </div>
 
       <div class="tbl-wrap">
         <table class="ship-table">
-          <thead><tr><th>Weight</th><th>NL to NL</th><th>NL to EU</th><th>NL to UK / non-EU Europe</th><th>NL to rest of world</th><th>Into NL from EU</th><th>Into NL from outside EU</th></tr></thead>
+          <thead><tr><th>Weight</th><th>Within NL</th><th>NL &rarr; EU</th><th>NL &rarr; UK / non-EU Europe</th><th>NL &rarr; rest of world</th><th>EU &rarr; NL</th><th>Outside EU &rarr; NL</th></tr></thead>
           <tbody id="shipTableBody"></tbody>
         </table>
       </div>
 
       <div class="story" style="margin:34px 0 0; max-width:74ch">
         <div class="terms-h">Buying from inside the EU</div>
-        <p>Simple. The goods are already in free circulation, so there is no duty and no import VAT to pay on arrival.</p>
-        <p class="calc-eg">item + shipping = what you pay. A &euro;50 figure from France with &euro;12 postage costs you &euro;62.</p>
+        <p>Simple. There is no import duty or import VAT to pay on arrival.</p>
+        <p class="calc-eg">&euro;50 item + &euro;12 shipping = &euro;62 total</p>
 
         <div class="terms-h">Buying from outside the EU</div>
-        <p>This is where a bargain stops being one. Four things can land on top of the item and the postage:</p>
+        <p>This is where a bargain stops being one. Extra costs can be added to the item price and shipping:</p>
         <ul class="zone-list">
-          <li><b>Import VAT</b> <span>21% Dutch VAT, charged on the customs value, which includes the shipping.</span></li>
-          <li><b>Customs duty</b> <span>Since <b>1 July 2026</b> the EU has abolished the old &euro;150 duty relief. A flat <b>&euro;3 per goods category</b> applies to consignments of &euro;150 or less, an interim measure running to 1 July 2028. Above &euro;150, normal duty applies according to the commodity code.</span></li>
-          <li><b>Handling</b> <span>The carrier charges its own clearance fee. A further <b>&euro;2 per consignment</b> EU handling fee is due in November 2026.</span></li>
-          <li><b>The exchange rate</b> <span>Whatever your card issuer decides to add.</span></li>
+          <li><b>Import VAT</b> <span>Dutch import VAT may apply and is usually calculated on the value of the goods including shipping.</span></li>
+          <li><b>Customs duty</b> <span>Customs duty may apply depending on the value and type of goods.</span></li>
+          <li><b>Handling fees</b> <span>The carrier may charge a fee for customs clearance.</span></li>
+          <li><b>Exchange rate</b> <span>Your bank or card provider may add a currency conversion fee.</span></li>
         </ul>
-        <p class="calc-eg">item + shipping + import VAT + duty + handling = landed cost. A &euro;100 Godzilla from Japan with &euro;23 postage lands nearer &euro;155 than &euro;123.</p>
+        <p class="calc-eg">item + shipping + VAT + duty + handling = landed cost. A &euro;100 Godzilla from Japan with &euro;23 shipping can end up costing closer to &euro;155 than &euro;123.</p>
 
         <div class="terms-h">Selling from the Netherlands</div>
-        <p>Your buyer pays the item plus the shipping shown on the lot, in one payment. If they are outside the EU their own country may then charge them import VAT, duty and handling on arrival, which is theirs to pay and not something we can quote for them. Business exports from the Netherlands can be zero-rated for Dutch VAT where the conditions are met, which is a question for an accountant rather than for us.</p>
+        <p>Your buyer pays the item price and shipping together at checkout.</p>
+        <p>Buyers outside the EU may also be charged import VAT, customs duty or handling fees by their own country when the parcel arrives. Those costs are paid by the buyer and are not included in Hammer &amp; Mold's shipping price.</p>
+        <p>Business sellers may have different VAT rules. Check with your accountant if this applies to you.</p>
       </div>
     </div>
   </section>
@@ -3260,16 +3298,16 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Work it out</div><h2>Cost calculator</h2></div>
-        <p>Pick a direction, a zone and a weight. Buying gives you the landed cost. Selling gives you the figure to put in a lot's shipping field.</p>
+        <p>Choose where the parcel is going, its zone and weight. If you're buying, we estimate the total landed cost. If you're selling, we estimate the shipping price to enter on the lot.</p>
       </div>
       <div class="calc">
         <div class="calc-form">
-          <label class="ef"><span>I am</span>
-            <select class="ei" id="cDir"><option value="buy">Buying, into the Netherlands</option><option value="sell">Selling, from the Netherlands</option></select></label>
+          <label class="ef"><span>Direction</span>
+            <select class="ei" id="cDir"><option value="buy">Buying into the Netherlands</option><option value="sell">Selling from the Netherlands</option></select></label>
           <label class="ef"><span>Zone</span><select class="ei" id="cZone"></select></label>
           <label class="ef"><span>Weight</span><select class="ei" id="cWeight"></select></label>
           <label class="ef"><span>Item price &euro;</span><input class="ei" id="cValue" type="number" min="0" step="0.01" value="50"></label>
-          <label class="ef" id="cHandleWrap"><span>Carrier handling &euro;</span><input class="ei" id="cHandle" type="number" min="0" step="0.01" value="12.50"></label>
+          <label class="ef" id="cHandleWrap"><span>Handling fee &euro;</span><input class="ei" id="cHandle" type="number" min="0" step="0.01" value="12.50"></label>
         </div>
         <div class="calc-out" id="calcOut"></div>
       </div>
@@ -4020,18 +4058,19 @@
         const vat = (item + ship) * IMPORT.vat;
         const duty = (item + ship) <= IMPORT.lowValueCeiling ? IMPORT.lowValueDuty : 0;
         const handling = Math.max(0, Number(hand.value) || 0) + IMPORT.euHandlingFrom2026;
-        rows.push(['Import VAT at 21%', vat]);
-        rows.push([(item + ship) <= IMPORT.lowValueCeiling
-          ? 'Customs duty, flat rate under \u20ac150'
-          : 'Customs duty, by commodity code', duty]);
-        rows.push(['Handling, carrier plus the \u20ac2 EU fee', handling]);
+        // The three import costs kept on separate lines rather than rolled into
+        // one figure. A single "charges" number is the thing a buyer cannot check
+        // and cannot argue with, and it is also the thing that varies most.
+        rows.push(['Estimated import VAT', vat]);
+        rows.push(['Estimated customs duty', duty]);
+        rows.push(['Estimated handling fee', handling]);
         total = item + ship + vat + duty + handling;
       }
       const note = buying
         ? (z.customs
-            ? 'Above \u20ac150 the flat \u20ac3 does not apply and real duty is charged on the commodity code, which for toys is usually low but is not zero. Treat this as a floor.'
-            : 'Inside the EU there is no duty and no import VAT, so this is the whole cost.')
-        : 'This is what to put in the lot\u2019s shipping field. Your buyer pays item plus shipping as one payment. Outside the EU they may then owe import charges of their own, which are theirs to pay.';
+            ? 'Import VAT, customs duty and handling fees vary by country, carrier and the type of goods, so treat this as a guide rather than a final figure.'
+            : 'No import VAT or customs duty applies within the EU.')
+        : 'This is the shipping price to enter on the lot. Your buyer pays the item price and shipping together at checkout. Buyers outside the EU may be charged import costs by their own country, which they pay.';
       out.innerHTML =
         '<div class="calc-rows">' + rows.map(r =>
           '<div class="calc-row"><span>' + r[0] + '</span><span class="num">' + eur(r[1]) + '</span></div>').join('') +
@@ -4347,9 +4386,9 @@
       editing = false;
       input.value = '';
       render();
-      setCard('<div class="rc-empty">Your AI curation will appear here.</div>', true);
+      setCard('<div class="rc-empty">Your toy details will appear here.</div>', true);
       curateBtn.disabled = true;
-      curateBtn.textContent = 'Curate with AI';
+      curateBtn.textContent = 'Identify my toy';
     }
 
     function render(){
@@ -4449,7 +4488,7 @@
 
     curateBtn.addEventListener('click', async () => {
       if (!files.length) return;
-      curateBtn.disabled = true; curateBtn.textContent = 'Curating…';
+      curateBtn.disabled = true; curateBtn.textContent = 'Identifying…';
       const stopTicker = stageTicker(LOOK_STAGES);
       track('curate_start', { photos: files.length });
       try {
@@ -4469,10 +4508,10 @@
         showCuration(data.curation, true);
       } catch (err) {
         stopTicker();
-        setCard('<div class="rc-empty">Could not curate. ' + esc(err.message || err) + '<br><br>The AI curation runs on the live site, not inside the claude.ai preview.</div>', true);
+        setCard('<div class="rc-empty">Could not identify it. ' + esc(err.message || err) + '<br><br>Toy identification runs on the live site, not inside the claude.ai preview.</div>', true);
       } finally {
         stopTicker();
-        curateBtn.disabled = false; curateBtn.textContent = 'Curate with AI';
+        curateBtn.disabled = false; curateBtn.textContent = 'Identify my toy';
       }
     });
 
@@ -4559,9 +4598,9 @@
     let editing = false;   // set while the seller has the edit form open
 
     function showCuration(c, thenPrice){
-      if (!c){ setCard('<div class="rc-empty">No curation returned.</div>', true); return; }
+      if (!c){ setCard('<div class="rc-empty">No details returned.</div>', true); return; }
       if (c.eligible === false){
-        setCard('<div class="rc-head"><div><div class="rc-title">Can\'t be listed</div><div class="rc-sub">Rejected automatically</div></div></div><div class="rc-notes" style="margin-top:16px">' + esc(c.rejectionReason || 'This item is not a collectible toy and cannot be listed on Hammer &amp; Mold.') + '</div><div class="rc-notes" style="color:var(--ink-3);margin-top:10px">No token was used. Only genuine vintage toys and collectibles are allowed.</div>', true);
+        setCard('<div class="rc-head"><div><div class="rc-title">Can\'t be listed</div><div class="rc-sub">Rejected automatically</div></div></div><div class="rc-notes" style="margin-top:16px">' + esc(c.rejectionReason || 'This item is not a collectible toy and cannot be listed on Hammer &amp; Mold.') + '</div><div class="rc-notes" style="color:var(--ink-3);margin-top:10px">No listing was used. Only genuine vintage toys and collectibles are allowed.</div>', true);
         current = null;
         return;
       }
@@ -4742,7 +4781,7 @@
       if (!comps.length){
         const why = c.compsError
           ? 'The market check could not run this time, so the estimate is the curator\'s own reading of the photos.'
-          : 'No comparable sales were found for this exact toy, so the estimate is the curator\'s own reading of the photos.';
+          : 'No recent sales were found for this exact toy, so the estimate is our own reading of the photos.';
         return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span>none found</span></div>' +
           '<div class="comps-none">' + why + ' Treat it as a starting point, and set the price yourself if you know this toy better than we do.' +
           (c.compsSummary ? ' ' + esc(c.compsSummary) : '') + '</div></div>';
@@ -4798,15 +4837,15 @@
                 ? careLabel(c.careLevel) + (c.careNote ? ' · ' + c.careNote : '')
                 : 'Not stated. Edit to say what you did to it.') +
           (fixed ? '' : row('Auction length', (c.auctionDays || 7) + ' days from the first bid') + row('Reserve (min. accepted)', c.reserve ? eur(c.reserve) : 'None')) +
-          (fixed ? row('Fixed price', eur(price)) : row('Buy now price', c.buyNow ? eur(c.buyNow) : 'None')) +
+          (fixed ? row('Fixed price', eur(price)) : row('Buy Now price', c.buyNow ? eur(c.buyNow) : 'None')) +
           // Its own row. It used to be concatenated into the price value above,
           // where row() escaped it into visible markup and it only appeared on an
-          // auction that also had a Buy-now price.
+          // auction that also had a Buy Now price.
           row('Shipping', Number(c.shipping || 0) > 0
             ? eur(c.shipping) + ' added at checkout'
             : (fixed ? 'Included in your price' : 'Free, you pay the postage')) + '</div>' +
         variantsHtml +
-        '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting bid') + '</div><div class="amt">' + eur(price) + '</div></div>' +
+        '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting price') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
           (c.pricedFrom ? '<br>' + esc(c.pricedFrom === 'curator estimate' ? 'Curator estimate' : 'Estimate from ' + c.pricedFrom) : '') +
           (c.compsCached ? '<br>Comps from cache' : '') +
@@ -4815,7 +4854,7 @@
         (c.notes ? '<div class="rc-notes">' + esc(c.notes) + '</div>' : '') +
         '<div class="buy-row" style="margin-top:24px"><button class="btn accent" id="submitLot" type="button">Submit this ' + (fixed ? 'item' : 'lot') + '</button>' +
           (SB ? '<button class="btn ghost" id="draftLot" type="button">' + (draftId ? 'Update draft' : 'Save as draft') + '</button>' : '') + '</div>' +
-        (draftId ? '<div class="rc-notes" style="color:var(--ink-3);margin-top:12px">Working on a saved draft. No token has been used yet; publishing spends one.</div>' : '');
+        (draftId ? '<div class="rc-notes" style="color:var(--ink-3);margin-top:12px">Working on a saved draft. No listing has been used yet; publishing uses one.</div>' : '');
       setCard(html, false);
       editing = false;
       if (c.compsPending) bindCompWait();
@@ -4849,7 +4888,7 @@
           const draftToy = current.toy || 'Your lot';
           resetSell();
           openModal('Draft saved', draftToy + ' is saved as a draft.',
-            'No listing token was used. Find it under Drafts in your account, and publish when you are ready. The page is cleared, so you can start the next one.');
+            'No listing was used. Find it under Drafts in your account, and publish when you are ready. The page is cleared, so you can start the next one.');
         } catch (err) {
           const msg = String((err && err.message) || err);
           openModal('Could not save the draft', 'Something went wrong.',
@@ -4896,7 +4935,7 @@
             openModal(pre ? 'Lot in preview' : 'Lot listed', wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.') + ' The page is cleared, so you can start the next one.');
           } catch (err) {
             const msg = String((err && err.message) || err);
-            if (/NO_TOKENS/.test(msg)) openModal('Out of tokens', 'No listing tokens left.', 'You need a token to list a lot. Open your account to buy a token pack, or upgrade to Premium for 50 tokens a month.');
+            if (/NO_TOKENS/.test(msg)) openModal('Out of listings', 'No listings left this month.', 'You need one listing to publish a lot. Open your account to buy more, or move up to Trader for 50 listings a month.');
             else openModal('Could not list', 'Something went wrong.', msg);
           } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; if (typeof refreshSellTokens === 'function') refreshSellTokens(); }
           return;
@@ -4919,15 +4958,15 @@
     const efRO = (label, val, hint) => '<div class="ef ef-ro"><span>' + label + tip(hint) + '</span>' +
       '<div class="ro-val">' + (val == null || val === '' ? '\u2014' : esc(String(val))) + '</div></div>';
 
-    // Blocking: a Buy-now under the opening bid means nobody would ever bid,
+    // Blocking: a Buy Now under the opening bid means nobody would ever bid,
     // they would simply take it, and the lot sells below where it opened.
     function priceProblem(c){
       const fixed = c.saleType === 'fixed';
       const bid = Number(c.startingBid || 0), buy = c.buyNow == null ? null : Number(c.buyNow);
       if (!fixed && buy != null && buy > 0 && buy < bid)
-        return 'Buy now (' + eur(buy) + ') is below the starting bid (' + eur(bid) + '). A buyer would skip the auction and take it for the lower price. Raise Buy now above the starting bid, or clear it.';
+        return 'Buy Now (' + eur(buy) + ') is below the starting price (' + eur(bid) + '). A buyer would skip the auction and take it for the lower price. Raise Buy Now above the starting price, or clear it.';
       if (!fixed && c.reserve != null && Number(c.reserve) > 0 && buy != null && buy > 0 && Number(c.reserve) > buy)
-        return 'The reserve (' + eur(c.reserve) + ') is above Buy now (' + eur(buy) + '), so a Buy-now sale would fall below your own minimum. Lower the reserve or raise Buy now.';
+        return 'The reserve (' + eur(c.reserve) + ') is above Buy Now (' + eur(buy) + '), so a Buy Now sale would fall below your own minimum. Lower the reserve or raise Buy Now.';
       const ship = c.shipping == null ? 0 : Number(c.shipping);
       if (ship < 0) return 'Shipping cannot be negative.';
       if (ship > SHIPPING.MAX) return 'Shipping of ' + SHIPPING.eur(ship) + ' is above the ' + SHIPPING.eur(SHIPPING.MAX) + ' cap. Postage is not a hidden fee: if it genuinely costs more than that, contact us.';
@@ -4985,9 +5024,9 @@
           '<div class="ef-h">Shown on the lot as its own line, because it changes what the piece is worth. A repainted figure and an original one are not the same object, and a buyer who finds out afterwards is a buyer who does not come back. "As found" is not a lesser answer: plenty of collectors want exactly that.</div>' +
         '</div>' +
         efArea('What was done', 'e_carenote', c.careNote, 'Only if you did something. What you fixed or replaced, and with what: a reattached arm, a repainted helmet, a replacement cape from another figure. Say which parts are not original. Left empty when nothing was done.') +
-        '<div class="ef-row">' + ef('Starting bid €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none. Shown on the card as Starting bid until someone bids.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
+        '<div class="ef-row">' + ef('Starting price €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
-        '<div class="ef-row">' + ef('Buy now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs, counted from the FIRST bid rather than from the day you list. Your lot waits in the shop until someone bids, so it does not disappear in a week nobody happened to look. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
+        '<div class="ef-row">' + ef('Buy Now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs, counted from the FIRST bid rather than from the day you list. Your lot waits in the shop until someone bids, so it does not disappear in a week nobody happened to look. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
         '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "Fallback only. The buyer is normally quoted live from the carrier for their own country, so this amount is not what they see. It is used if the carrier cannot be reached. Leave it at 0 unless you know why you are setting it.") + '</div>' +
         '<div class="ef"><label class="ef-l">Fits through a letterbox</label>' +
           '<label class="lb-check"><input type="checkbox" id="e_letterbox"' + (c.letterbox ? ' checked' : '') + '>' +
@@ -7091,13 +7130,13 @@
     // that: the line used to read "each listing uses 1" and stop, which invites
     // exactly the wrong conclusion. Someone not signed in used to see nothing at
     // all, and they are the person who most needs to hear it.
-    const free = 'Identifying is free &middot; a token is only spent when you list';
-    if (!SB || !authUser){ el.innerHTML = free; return; }
+    const free = 'Identification is free';
+    if (!SB || !authUser){ el.innerHTML = free + ' &middot; a listing is only used when you sell'; return; }
     try {
       const { data } = await SB.from('profiles').select('tokens').eq('id', authUser.id).single();
       const t = data ? data.tokens : null;
-      if (t == null){ el.innerHTML = free; return; }
-      el.innerHTML = free + ' &middot; <b>' + t + '</b> left'
+      if (t == null){ el.innerHTML = free + ' &middot; a listing is only used when you sell'; return; }
+      el.innerHTML = free + ' &middot; <b>' + t + '</b> listing' + (t === 1 ? '' : 's') + ' left'
         + (t <= 0 ? ' &middot; <a data-nav="account">buy more</a>' : '');
     } catch (e){ el.innerHTML = free; }
   }
