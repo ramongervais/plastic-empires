@@ -5932,19 +5932,37 @@
       '<button class="' + (p.cents > (mine ? mine.cents : 0) ? 'acct-pay' : 'acct-signout') + '" type="button" data-plan="' + mkEsc(p.key) + '">' +
       (p.cents === 0 ? 'Move to Starter' : (p.cents > (mine ? mine.cents : 0) ? 'Move up to ' : 'Move down to ') + mkEsc(p.name)) + '</button>').join('');
 
+    // The date the change lands, from the profile rather than from a shrug. The
+    // page used to say "at the end of this billing period", which is not a date
+    // and cannot be planned around.
+    const pendAt = prefs.plan_pending_at ? new Date(prefs.plan_pending_at) : null;
+    const pendWhen = (pendAt && !isNaN(pendAt))
+      ? pendAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      : null;
+
     return '<div class="mship"><div class="mship-l">' +
         '<div class="mship-plan">' + mkEsc(mine ? mine.name : (key.charAt(0).toUpperCase() + key.slice(1))) +
           (paying ? '<span class="mship-badge">Active</span>' : '') + '</div>' +
         '<div class="mship-tok">' + tokens + ' listing token' + (tokens === 1 ? '' : 's') + ' left &middot; ' + allowance +
-          (mine ? ' &middot; ' + (mine.commission * 100).toFixed(0) + '% commission' : '') + '</div>' +
+          (mine ? ' &middot; ' + (mine.commission * 100).toFixed(0) + '% selling fee' : '') + '</div>' +
       '</div>' +
       '<div class="mship-r">' + btns +
         (paying ? '<button class="acct-signout" id="mManage" type="button">Billing</button>' : '') +
         '<button class="acct-signout" id="mBuy" type="button">Buy 25 tokens &middot; € 18</button></div>' +
     '</div>' +
+    // The copy told a seller to "choose your current package again to cancel",
+    // and the row above renders one button per OTHER package, so the button it
+    // named did not exist anywhere on the page. It is here now, next to the
+    // sentence that asks for it, and it carries the same data-plan the handler
+    // already understands.
     (pending
-      ? '<div class="acct-empty"><b>You move to ' + mkEsc(pending.name) + ' at the end of this billing period.</b> Until then you keep ' +
-        mkEsc(mine ? mine.name : 'your package') + ' and your tokens stay yours. Choose ' + mkEsc(mine ? mine.name : 'it') + ' again to cancel the change.</div>'
+      ? '<div class="acct-empty"><b>You move to ' + mkEsc(pending.name) +
+        (pendWhen ? ' on ' + mkEsc(pendWhen) : ' at the end of this billing period') + '.</b> Until then you keep ' +
+        mkEsc(mine ? mine.name : 'your package') + ', including its ' +
+        (mine ? (mine.commission * 100).toFixed(0) + '% selling fee' : 'selling fee') +
+        ', and the listings you have built up stay yours.' +
+        (mine ? '<div style="margin-top:12px"><button class="btn ghost" type="button" data-plan="' + mkEsc(mine.key) + '">Cancel this change, keep ' + mkEsc(mine.name) + '</button></div>' : '') +
+        '</div>'
       : '') +
     '<div class="acct-empty">A token is spent when you list, never when you identify a toy. Unused tokens roll over. ' +
       '<a data-plans-pop style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare the packages</a> to see which one is cheapest at what you actually sell.</div>';
@@ -6742,14 +6760,19 @@
           d && d.error === 'already_subscribed' ? 'Your subscription could not be read. Reload the page and try again, or open Billing from your account.' : ((d && d.error) || 'Please try again.'));
         return;
       }
-      if (d.unchanged){
+      // Choosing the package you are already on, with a move down booked, is the
+      // cancel. The worker releases the Stripe schedule and answers this.
+      if (d.cancelled){
+        openModal('Change cancelled', 'You are staying on ' + target.name + '.',
+          'The booked move has been called off. Nothing about your package changes, and you can book it again whenever you want to.');
+      } else if (d.unchanged){
         openModal('Already on ' + target.name, 'Nothing to change.', 'You are on this package and it is billing correctly.');
       } else if (going_down){
-        const when = d.at ? new Date(d.at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'the end of the period you have paid for';
+        const when = d.at ? new Date(d.at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'the end of the period you have paid for';
         openModal('Change booked', 'You move to ' + target.name + ' on ' + when + '.',
-          'Nothing changes before then: you keep the package you paid for, and your tokens stay yours. You can cancel this from your account until it happens.');
+          'Nothing changes before then: you keep the package you paid for, and the listings you have built up stay yours. We will email you a few days before it happens, and you can cancel it from your account until then.');
       } else {
-        openModal('You are on ' + target.name, target.listings + ' listings a month and ' + (target.commission * 100).toFixed(0) + '% commission, from now.',
+        openModal('You are on ' + target.name, target.listings + ' listings a month and ' + (target.commission * 100).toFixed(0) + '% selling fee, from now.',
           'Your card was charged only the difference for the rest of this month, not a second full month.');
       }
       PLAN_NOW = null;                        // the plan just moved, so re-read it
