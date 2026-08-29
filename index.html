@@ -459,6 +459,17 @@
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
   .bidform { margin:2px 0 20px; }
+  /* The delivery form. Two columns on anything wider than a phone, one below, and
+     smaller type than a bid: a bid is a single number and earns 20px bold, an
+     address is seven fields and at that size it shouts and does not fit.
+     minmax(0,1fr) rather than 1fr, because a grid column defaults to min-content
+     and an input's intrinsic width would push it past the modal, which is exactly
+     what the flex version did to the city field. */
+  .ck-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px 12px; }
+  .ck-grid .wide { grid-column:1 / -1; }
+  .ck-form .bidlabel { margin-bottom:4px; }
+  .ck-form .bidinput { font-size:15px; font-weight:500; padding:10px 12px; width:100%; }
+  @media (max-width:540px){ .ck-grid { grid-template-columns:1fr; } }
   .bidlabel { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; }
   .bidinput-row { display:flex; gap:10px; }
   .bidinput { flex:1; min-width:0; font-family:var(--body); font-size:20px; font-weight:700; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); font-variant-numeric:tabular-nums; }
@@ -5489,6 +5500,17 @@
       '</button>';
   }
 
+  // Escape for text between tags, at a scope everything can reach.
+  //
+  // There was already one of these, but it lives inside the sell page's closure,
+  // so every caller outside it was referencing a name that does not exist. The
+  // delivery modal was the casualty: quote() calls esc() on its very first line,
+  // threw a ReferenceError, and because the function is async that surfaced as an
+  // unhandled rejection rather than a crash. The page carried on, the shipping
+  // panel stayed empty, and the button said "Pick how it should travel first"
+  // about options that had never arrived. Nine calls out there were broken.
+  const esc = s => String(s == null ? '' : s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+
   // The waiting mark: the brand hammer coming down. Used wherever something
   // takes long enough that a still page reads as a hang.
   const HAMMER = '<div class="hmr"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
@@ -6501,18 +6523,27 @@
     const f = document.createElement('div');
     f.className = 'bidform';
     f.style.marginTop = '14px';
+    // A grid, not a flex row with a percentage on one child. The old markup put
+    // the city in a flex:1 column and the input inside overflowed the modal on a
+    // laptop and ran off the screen on a phone. Grid columns cannot do that.
+    //
+    // Address type is also smaller than the bid type it inherited. A bid is one
+    // number and deserves to be large; an address is seven fields and reads as
+    // shouting at 20px bold, which is also what made it too tall to fit.
+    f.className = 'bidform ck-form';
     f.innerHTML =
-      '<label class="bidlabel" for="ckName">Full name</label><input class="bidinput" id="ckName" autocomplete="name">' +
-      '<label class="bidlabel" for="ckLine1" style="margin-top:10px">Street and number</label><input class="bidinput" id="ckLine1" autocomplete="address-line1">' +
-      '<label class="bidlabel" for="ckLine2" style="margin-top:10px">Addition (optional)</label><input class="bidinput" id="ckLine2" autocomplete="address-line2">' +
-      '<div style="display:flex;gap:10px;margin-top:10px">' +
-        '<div style="flex:0 0 40%"><label class="bidlabel" for="ckZip">Postcode</label><input class="bidinput" id="ckZip" autocomplete="postal-code"></div>' +
-        '<div style="flex:1"><label class="bidlabel" for="ckCity">City</label><input class="bidinput" id="ckCity" autocomplete="address-level2"></div>' +
+      '<div class="ck-grid">' +
+        '<div class="wide"><label class="bidlabel" for="ckName">Full name</label><input class="bidinput" id="ckName" autocomplete="name"></div>' +
+        '<div class="wide"><label class="bidlabel" for="ckLine1">Street and number</label><input class="bidinput" id="ckLine1" autocomplete="address-line1"></div>' +
+        '<div><label class="bidlabel" for="ckLine2">Addition</label><input class="bidinput" id="ckLine2" autocomplete="address-line2"></div>' +
+        '<div><label class="bidlabel" for="ckZip">Postcode</label><input class="bidinput" id="ckZip" autocomplete="postal-code"></div>' +
+        '<div><label class="bidlabel" for="ckCity">City</label><input class="bidinput" id="ckCity" autocomplete="address-level2"></div>' +
+        '<div><label class="bidlabel" for="ckCountry">Country</label>' +
+          '<select class="bidinput" id="ckCountry" autocomplete="country">' +
+            DEST.map(([c, n]) => '<option value="' + c + '"' + (c === 'NL' ? ' selected' : '') + '>' + n + '</option>').join('') +
+          '</select>' +
+        '</div>' +
       '</div>' +
-      '<label class="bidlabel" for="ckCountry" style="margin-top:10px">Country</label>' +
-      '<select class="bidinput" id="ckCountry" autocomplete="country">' +
-        DEST.map(([c, n]) => '<option value="' + c + '"' + (c === 'NL' ? ' selected' : '') + '>' + n + '</option>').join('') +
-      '</select>' +
       '<div class="del-panel" id="ckTotal" style="margin-top:14px"></div>' +
       '<button class="btn accent" id="ckGo" type="button" style="margin-top:14px;width:100%">Continue to payment</button>' +
       '<div class="bidhint" id="ckHint"></div>';
