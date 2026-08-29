@@ -344,6 +344,9 @@
      equal weight. */
   .ck-acts { display:flex; gap:10px; margin-top:14px; }
   .ck-acts .btn { flex:1; margin-top:0; }
+  /* Search over the pickup points. Small type on purpose: it sits inside a list
+     and must not compete with the shop names it filters. */
+  .pt-search { font-size:14px; font-weight:500; padding:9px 11px; width:100%; margin:8px 0 4px; }
 
   /* ---------- Empire (maker) documentary page ---------- */
   .empire-hero { padding: 56px 0 40px; }
@@ -6628,15 +6631,66 @@
         box.innerHTML = '<div class="del-note"><b>No pickup point near that postcode.</b> Not every address has one within range. Choose delivery to your door instead, or try a nearby postcode if you are happy to collect a little further away.</div>';
         return;
       }
-      box.innerHTML = '<div class="so-head">Pickup points near you</div>' + pts.map((p, i) =>
-        '<button type="button" class="pt-row" data-pt="' + i + '">' +
-          '<span class="pt-n">' + esc(p.name) + '<i>' + esc(p.street + ', ' + p.city) + '</i></span>' +
-          '<span class="pt-d">' + (p.distance == null ? '' : (p.distance / 1000).toFixed(1) + ' km') + '</span>' +
-        '</button>').join('');
-      box.querySelectorAll('.pt-row').forEach((b) => b.addEventListener('click', () => {
-        point = pts[Number(b.dataset.pt)];
-        drawTotal();
-      }));
+      // The search box is written once and the list re-renders underneath it, so
+      // typing never rebuilds the input and never loses the caret.
+      box.innerHTML =
+        '<div class="so-head">Pickup points near you</div>' +
+        '<input class="bidinput pt-search" id="ckPtQ" autocomplete="off" spellcheck="false" ' +
+          'placeholder="Search a shop, or type another postcode">' +
+        '<div id="ckPtList"></div>';
+
+      const listEl = document.getElementById('ckPtList');
+      const renderList = (q) => {
+        const t = String(q || '').trim().toLowerCase();
+        const shown = t
+          ? pts.filter((p) => (p.name + ' ' + p.street + ' ' + p.city).toLowerCase().indexOf(t) !== -1)
+          : pts;
+        listEl.innerHTML = shown.length
+          ? shown.map((p) => {
+              const i = pts.indexOf(p);
+              return '<button type="button" class="pt-row" data-pt="' + i + '">' +
+                '<span class="pt-n">' + esc(p.name) + '<i>' + esc(p.street + ', ' + p.city) + '</i></span>' +
+                '<span class="pt-d">' + (p.distance == null ? '' : (p.distance / 1000).toFixed(1) + ' km') + '</span>' +
+              '</button>';
+            }).join('')
+          : '<div class="del-note">Nothing here matches that. Clear the box to see them all, or type a postcode to look somewhere else.</div>';
+        listEl.querySelectorAll('.pt-row').forEach((b) => b.addEventListener('click', () => {
+          point = pts[Number(b.dataset.pt)];
+          drawTotal();
+        }));
+      };
+      renderList('');
+
+      // A postcode is a different question from a name: it means "look somewhere
+      // else", not "filter what is here". Typing the code near work should find the
+      // shops near work, not nothing. Anything that is not a postcode filters the
+      // list already loaded, which needs no request at all.
+      const q = document.getElementById('ckPtQ');
+      let tmr = null;
+      q.addEventListener('input', () => {
+        const v = q.value;
+        renderList(v);
+        clearTimeout(tmr);
+        // Only a Dutch-style postcode triggers a new lookup, and only after the
+        // typing stops. Firing per keystroke would be four requests for one code.
+        if (!/^\s*\d{4}\s*[a-zA-Z]{2}\s*$/.test(v)) return;
+        tmr = setTimeout(async () => {
+          listEl.innerHTML = '<div class="del-note">Looking for shops near ' + esc(v.trim()) + '\u2026</div>';
+          try {
+            const r = await fetch(PAY_URL.replace(/\/checkout$/, '') + '/service-points', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ country: document.getElementById('ckCountry').value,
+                postcode: v.trim(), houseNumber: '', carrier: chosen && chosen.carrier }),
+            });
+            const d = await r.json();
+            const found = (d && d.points) || [];
+            if (found.length){ pts = found; renderList(''); q.value = ''; }
+            else listEl.innerHTML = '<div class="del-note">No pickup point near ' + esc(v.trim()) + '.</div>';
+          } catch (e) {
+            listEl.innerHTML = '<div class="del-note">Could not reach the carrier. Try again.</div>';
+          }
+        }, 500);
+      });
     }
     const drawTotal = () => {
       const ship = chosen ? Number(chosen.price) : 0;
