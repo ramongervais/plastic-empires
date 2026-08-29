@@ -345,6 +345,9 @@
   .modal.wide h3 { margin-bottom:10px; }
   .pm-lead { font-size:14.5px !important; line-height:1.7 !important; color:var(--ink-2) !important; max-width:80ch; margin:0 0 24px !important; }
   .pm-lead b { color:var(--ink); }
+  /* The card box is a three-column grid, so the waiting mark and the failure line
+     have to be told to span it or they sit squeezed into the first column. */
+  #plansModalCards .pay-wait, #plansModalCards .acct-empty { grid-column:1 / -1; justify-content:center; padding:30px 0; margin:0; }
   .pm-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
     margin-top:24px; padding-top:20px; border-top:1px solid var(--line); font-family:var(--body); font-size:14px; color:var(--ink-2); }
   /* Confirm and cancel on one line, sharing a baseline. The confirm carries the
@@ -4226,11 +4229,13 @@
   function closePlans(){ if (plansModal) plansModal.hidden = true; }
   async function openPlansModal(){
     if (!plansModal) return;
+    // The hammer, not a line of grey text. Waiting is waiting wherever it happens,
+    // and this is the same mark the curation and the payout setup already use.
     const box = document.getElementById('plansModalCards');
-    if (box && !box.children.length) box.innerHTML = '<div class="acct-empty">Loading the packages…</div>';
+    if (box && !box.children.length) box.innerHTML = '<div class="pay-wait">' + HAMMER + '<span class="t">Loading the packages…</span></div>';
     plansModal.hidden = false;
     track('plans_modal_open', {});
-    // renderPlans fills every container that exists, this one included, and its
+    // renderPlans fills every container it knows about, this one included, and its
     // all-in table simply is not here, which it already handles.
     await renderPlans();
   }
@@ -6499,9 +6504,11 @@
   }
 
   async function renderPlans(){
-    // Two containers, one on the packages page and one on the sell page, so the
-    // sell page never has to carry its own copy of a price.
-    const boxes = ['planCards', 'sellPlanCards'].map(id => document.getElementById(id)).filter(Boolean);
+    // Three containers: the packages page, the sell page, and the dialogue on the
+    // account page, so none of them carries its own copy of a price. This list is
+    // the whole reason the dialogue sat on "Loading the packages…" forever: the
+    // element existed, nothing was ever asked to fill it.
+    const boxes = ['planCards', 'sellPlanCards', 'plansModalCards'].map(id => document.getElementById(id)).filter(Boolean);
     if (!boxes.length) return;
     const plans = await loadPlans();
     if (!plans){ boxes.forEach(b => { b.innerHTML = '<div class="acct-empty">Packages could not be loaded. Reload the page, or write to us at support@hammerandmold.com.</div>'; }); return; }
