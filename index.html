@@ -3224,7 +3224,6 @@
         <p>Listings are prepared with AI-assisted curation and this is not guaranteed to be accurate. The Seller is solely responsible for reviewing and confirming every listing (identification, variant, condition, completeness, authenticity) before it goes live. Only genuine collectible toys, models and related memorabilia may be listed; items that are not collectibles, or that are prohibited (including adult, sexual, weapon or illegal content) are refused automatically, and we may edit, refuse or remove any listing at our discretion. Each published listing uses one listing token from the Seller's balance.</p>
         <p>Suggested starting bids, estimate ranges and any comparable sales shown to the Seller are indicative market research, not a valuation, an appraisal or a guarantee of value. Comparable listings are third-party data collected automatically from public sources: they may be inaccurate, out of date, mis-converted between currencies or not genuinely comparable to the lot. The Seller sets the final price and is responsible for it. Nothing in a curation is investment or resale advice.</p>
 
-        <p><b>Returns and who pays the postage.</b> Two different situations, and the difference decides who is out of pocket. If an item arrives materially different from its listing, damaged, or not as described, return it and you are refunded in full including what you paid for postage, and we cover the cost of sending it back. If you change your mind, you may return an item within 14 days of receiving it, but you pay the return postage yourself and the refund covers the item rather than the original delivery. Tell us before you send anything back so the return is recorded and reaches the right address. This is stated here in advance deliberately: a buyer who is not told beforehand that a change-of-mind return is at their own cost cannot be charged for it.</p>
 
         <div class="terms-h">5 · Bidding and winning</div>
         <p>A placed bid is a binding, irrevocable offer, subject to any hidden reserve. The highest valid bid at close, or acceptance of a Buy-now price, wins. We may extend, void or re-open an auction in case of a fault, error or suspected manipulation.</p>
@@ -3247,6 +3246,7 @@
         <p><b>Commission is charged on the total the Buyer pays, postage included.</b> We charge on the total because the total is what we process, and we say so here rather than in a footnote. Postage is not a margin: it is passed to the carrier at the price quoted.</p>
         <p>The Seller packs and dispatches promptly after payment, using the service the Buyer paid for, and must send with a valid tracking code.</p>
         <p><b>Risk in transit.</b> Where you buy as a consumer, the risk of loss or damage in transit stays with us until you take physical possession of the item, as Dutch and EU consumer law requires. That risk is ours whether or not a carrier pays anything out, and it is not something we could disclaim to a consumer. If an item arrives damaged, tell us <b>within 48 hours</b> with photographs and keep the packaging: a carrier claim needs both, and we cannot pursue one afterwards without them. If an item does not arrive at all, you are refunded in full. Between businesses, risk passes on dispatch.</p>
+        <p><b>Returns and who pays the postage.</b> Two different situations, and the difference decides who is out of pocket. If an item arrives materially different from its listing, damaged, or not as described, return it and you are refunded in full including what you paid for postage, and we cover the cost of sending it back. If you change your mind, you may return an item within 14 days of receiving it, but you pay the return postage yourself and the refund covers the item rather than the original delivery. Tell us before you send anything back so the return is recorded and reaches the right address. This is stated here in advance deliberately: a buyer who is not told beforehand that a change-of-mind return is at their own cost cannot be charged for it.</p>
 
         <div class="terms-h">9 · Authenticity and "as-is"</div>
         <p>Vintage toys are second-hand collectables sold "as-is, with all faults". Descriptions and curation are opinions on a best-effort basis, not guarantees of authenticity, completeness, grade or value. Buyers should inspect photos and ask before bidding. Statutory consumer rights are not removed by this clause.</p>
@@ -5531,6 +5531,43 @@
   const BRANDING_PLANS = ['trader', 'dealer', 'premium'];
   const canBrand = prefs => BRANDING_PLANS.indexOf(String((prefs && prefs.plan) || 'starter').toLowerCase()) !== -1;
 
+  const CONNECT_START  = 'https://plasticempires-pay.ramongervais.workers.dev/connect/start';
+  const CONNECT_STATUS = 'https://plasticempires-pay.ramongervais.workers.dev/connect/status';
+
+  // Where a seller's money goes.
+  //
+  // Rendered from the stored flag so the page draws immediately, then corrected by
+  // a call to Stripe. That order matters on the way back from onboarding: a seller
+  // returns here seconds after finishing, before Stripe's webhook has landed, and a
+  // page that only trusted the stored value would tell them they still cannot be
+  // paid, which is exactly the moment they decide the thing is broken.
+  function payoutHtml(prefs){
+    const e = s => String(s == null ? '' : s).replace(/[<>&"]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[ch]));
+    const has = !!prefs.stripe_account_id;
+    const ok  = prefs.payouts_enabled === true;
+    return '' +
+      '<div class="brand-row" style="align-items:center">' +
+        '<div style="flex:1;min-width:260px">' +
+          '<div class="pay-state" id="payState">' +
+            (ok   ? '<b>Your payout account is ready.</b> Sales are paid out once a month.'
+                  : has ? '<b>Almost there.</b> Stripe still needs something before it can pay you.'
+                        : '<b>You cannot be paid yet.</b> Set up a payout account so we can send you what your lots earn.') +
+          '</div>' +
+          '<p class="brand-note" style="margin:8px 0 0">' +
+            'Stripe handles the identity check and holds your bank details; we never see them. ' +
+            'We pay out once a month, and a sale joins the next run fourteen days after it is delivered, ' +
+            'which is the window a buyer has to send something back.' +
+          '</p>' +
+        '</div>' +
+        '<div class="brand-logo-acts">' +
+          '<button class="btn accent" type="button" id="payStart">' +
+            (ok ? 'Update details' : has ? 'Finish setup' : 'Set up payouts') +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="brand-msg" id="payMsg" style="margin-top:4px"></div>';
+  }
+
   function shopfrontHtml(prefs){
     const e = s => String(s == null ? '' : s).replace(/[<>&"]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[ch]));
     const v = k => e(prefs[k] || '');
@@ -5746,6 +5783,10 @@
       // High on the page, next to Membership: this is who you are to a buyer, and
       // it applies to every lot you have. The transactional lists below are about
       // individual items and can wait their turn.
+      // Directly under Membership, above the lists. Getting paid outranks
+      // everything else a seller does here, and until this is done a sale earns
+      // them nothing they can actually reach.
+      '<div class="acct-sec"><div class="h">Getting paid</div>' + payoutHtml(prefs) + '</div>' +
       '<div class="acct-sec"><div class="h">Your shopfront</div>' + shopfrontHtml(prefs) + '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
@@ -5795,6 +5836,41 @@
       msg.textContent = res.error ? ('Could not save: ' + res.error.message)
         : (cSel.value ? 'Saved. You post from ' + countryName(cSel.value) + '.' : 'Cleared.');
     });
+
+    // ----- Getting paid -----
+    const payMsg = (t, kind) => { const m = document.getElementById('payMsg'); if (m){ m.textContent = t || ''; m.className = 'brand-msg' + (kind ? ' ' + kind : ''); } };
+    const payBtn = document.getElementById('payStart');
+    if (payBtn) payBtn.addEventListener('click', async () => {
+      payBtn.disabled = true; payMsg('Opening Stripe…');
+      try {
+        const r = await fetch(CONNECT_START, { method: 'POST', headers: await authHeaders(), body: '{}' });
+        const d = await r.json().catch(() => ({}));
+        if (d && d.url){ location.href = d.url; return; }
+        payMsg((d && d.error) || 'Could not start. Try again.', 'bad');
+      } catch (err){ payMsg(err.message, 'bad'); }
+      payBtn.disabled = false;
+    });
+
+    // The correction pass. Asks Stripe what is actually true and rewrites the line
+    // the page drew from the stored flag, which is stale for anyone who has just
+    // come back from onboarding.
+    (async () => {
+      const st = document.getElementById('payState');
+      if (!st || !SB || !authUser) return;
+      try {
+        const r = await fetch(CONNECT_STATUS, { headers: await authHeaders() });
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d.payouts_enabled){
+          st.innerHTML = '<b>Your payout account is ready.</b> Sales are paid out once a month.';
+          if (payBtn) payBtn.textContent = 'Update details';
+        } else if (d.connected){
+          st.innerHTML = '<b>Almost there.</b> Stripe still needs something before it can pay you' +
+            (d.needs ? ' (' + d.needs + ' item' + (d.needs === 1 ? '' : 's') + ' outstanding)' : '') + '.';
+          if (payBtn) payBtn.textContent = 'Finish setup';
+        }
+      } catch (e) { /* the stored flag stands */ }
+    })();
 
     // ----- Shopfront: logo and branding -----
     const bfMsg = (t, kind) => { const m = document.getElementById('bfMsg'); if (!m) return; m.textContent = t || ''; m.className = 'brand-msg' + (kind ? ' ' + kind : ''); };
@@ -6065,11 +6141,32 @@
   const PLANS_URL = 'https://plasticempires-pay.ramongervais.workers.dev/plans';
   const CHANGE_URL = 'https://plasticempires-pay.ramongervais.workers.dev/change-plan';
 
+  // The session token, for any worker call that acts on money or on an account.
+  //
+  // The worker used to take whatever userId this page put in the body and believe
+  // it, which meant anyone could downgrade another seller's plan or open their
+  // billing portal by typing a different id. It now asks Supabase whose session
+  // this is. An attacker can claim any id; they cannot produce a signed session
+  // for it.
+  //
+  // userId still travels in the body for now, and the worker ignores it. Removing
+  // it is a separate tidy-up and leaving it costs nothing.
+  async function authHeaders(){
+    const base = { 'Content-Type': 'application/json' };
+    if (!SB) return base;
+    try {
+      const { data } = await SB.auth.getSession();
+      const tok = data && data.session && data.session.access_token;
+      if (tok) base.Authorization = 'Bearer ' + tok;
+    } catch (e) {}
+    return base;
+  }
+
   async function goCheckout(endpoint, extra){
     if (SB && !authUser){ openAuth(); return; }
     try {
       const body = Object.assign({ userId: authUser ? authUser.id : '', email: authUser ? authUser.email : '', origin: location.origin }, extra || {});
-      const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const r = await fetch(endpoint, { method: 'POST', headers: await authHeaders(), body: JSON.stringify(body) });
       const d = await r.json();
       if (d && d.url) location.href = d.url; else openModal('Something went wrong', 'Could not start', (d && d.error) || 'Please try again.');
     } catch (err){ openModal('Something went wrong', 'Could not start', err.message); }
@@ -6308,7 +6405,7 @@
       if (target.cents === 0) return;
       b.disabled = true;
       try {
-        const r = await fetch(SUBSCRIBE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser.id, email: authUser.email, origin: location.origin, plan: key }) });
+        const r = await fetch(SUBSCRIBE_URL, { method: 'POST', headers: await authHeaders(), body: JSON.stringify({ userId: authUser.id, email: authUser.email, origin: location.origin, plan: key }) });
         const d = await r.json();
         if (d && d.url){ location.href = d.url; return; }
         // A subscription exists after all, so this is a move and not a purchase.
@@ -6334,7 +6431,7 @@
     const now = currentPlanKey() || (await loadMyPlan(), currentPlanKey()) || 'starter';
     const going_down = plans.findIndex(p => p.key === key) < plans.findIndex(p => p.key === now);
     try {
-      const r = await fetch(CHANGE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ userId: authUser.id, plan: key }) });
+      const r = await fetch(CHANGE_URL, { method: 'POST', headers: await authHeaders(), body: JSON.stringify({ userId: authUser.id, plan: key }) });
       const d = await r.json();
       if (d && d.error === 'no_subscription'){ goCheckout(SUBSCRIBE_URL, { plan: key }); return; }
       if (!d || d.error){
