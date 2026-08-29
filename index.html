@@ -640,6 +640,13 @@
   .load-wrap .hmr { width:112px; height:96px; }
   .load-stage { font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:18px; }
   .load-sec { font-variant-numeric:tabular-nums; color:var(--ink-3); }
+  /* The same waiting mark, sized for a single line next to a button. Creating a
+     Stripe account and an onboarding link is two round trips and runs to several
+     seconds, which is long enough that a still page reads as a dead button and
+     gets clicked again. */
+  .pay-wait { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .pay-wait .hmr { width:34px; height:29px; margin:0; flex-shrink:0; }
+  .pay-wait .t { font-family:var(--body); font-size:13px; color:var(--ink-2); }
   .comps-wait { display:flex; align-items:center; gap:14px; margin-top:12px; }
   .comps-wait .hmr { width:68px; height:58px; margin:0; flex-shrink:0; }
   .comps-wait .t { font-family:var(--body); font-size:13.5px; line-height:1.6; color:var(--ink-2); }
@@ -4196,8 +4203,6 @@
 
     // The brand mark, mid-swing. Reused at two sizes: the big waiting card and
     // the small one inside the price-evidence panel.
-    const HAMMER = '<div class="hmr"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
-      '<svg class="bang" viewBox="0 0 34 26" aria-hidden="true"><path d="M4 20 L0 24"/><path d="M15 17 L15 24"/><path d="M26 20 L31 25"/></svg></div>';
 
     // Named stages rather than one frozen line, plus a running second count so
     // a long wait never looks like a hang. The markup is written once and only
@@ -5484,6 +5489,11 @@
       '</button>';
   }
 
+  // The waiting mark: the brand hammer coming down. Used wherever something
+  // takes long enough that a still page reads as a hang.
+  const HAMMER = '<div class="hmr"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
+    '<svg class="bang" viewBox="0 0 34 26" aria-hidden="true"><path d="M4 20 L0 24"/><path d="M15 17 L15 24"/><path d="M26 20 L31 25"/></svg></div>';
+
   // The initials the seller page falls back to when there is no logo.
   //
   // Defined once because it is now drawn in two places, the public page and the
@@ -5841,10 +5851,19 @@
     const payMsg = (t, kind) => { const m = document.getElementById('payMsg'); if (m){ m.textContent = t || ''; m.className = 'brand-msg' + (kind ? ' ' + kind : ''); } };
     const payBtn = document.getElementById('payStart');
     if (payBtn) payBtn.addEventListener('click', async () => {
-      payBtn.disabled = true; payMsg('Opening Stripe…');
+      // Two round trips: create the account, then the onboarding link. It runs to
+      // several seconds, and a still page reads as a dead button, so the same
+      // hammer the curation uses comes down here too. The button is disabled as
+      // well, because the first instinct on silence is to click again.
+      const msgEl = document.getElementById('payMsg');
+      payBtn.disabled = true;
+      if (msgEl) msgEl.innerHTML = '<div class="pay-wait">' + HAMMER +
+        '<span class="t">Setting up your payout account with Stripe…</span></div>';
       try {
         const r = await fetch(CONNECT_START, { method: 'POST', headers: await authHeaders(), body: '{}' });
         const d = await r.json().catch(() => ({}));
+        // Leave the hammer running on success: the browser is about to navigate,
+        // and clearing it first would flash an empty line on the way out.
         if (d && d.url){ location.href = d.url; return; }
         payMsg((d && d.error) || 'Could not start. Try again.', 'bad');
       } catch (err){ payMsg(err.message, 'bad'); }
