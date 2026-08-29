@@ -4901,7 +4901,7 @@
           const pr = await SB.from('profiles').select('country').eq('id', authUser.id).maybeSingle();
           if (!pr.error && (!pr.data || !pr.data.country)){
             openModal('One thing first', 'We need to know where you post from.',
-              'Your country decides what postage costs you, and tells a buyer whether their order is an EU movement or a customs import. Set it under "Where you post from" in your account, then publish.');
+              'Your country decides what postage costs you, and tells a buyer whether their order is an EU movement or a customs import. Set it under "Shipping from" in your account, then publish.');
             return;
           }
         }
@@ -4935,7 +4935,7 @@
             openModal(pre ? 'Lot in preview' : 'Lot listed', wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.') + ' The page is cleared, so you can start the next one.');
           } catch (err) {
             const msg = String((err && err.message) || err);
-            if (/NO_TOKENS/.test(msg)) openModal('Out of listings', 'No listings left this month.', 'You need one listing to publish a lot. Open your account to buy more, or move up to Trader for 50 listings a month.');
+            if (/NO_TOKENS/.test(msg)) openModal('Out of listings', 'No listings left this month.', 'You need one listing to publish a lot. Open your account to buy more, or switch to Trader for 50 listings a month.');
             else openModal('Could not list', 'Something went wrong.', msg);
           } finally { btn.disabled = false; btn.textContent = 'Submit this lot'; if (typeof refreshSellTokens === 'function') refreshSellTokens(); }
           return;
@@ -5852,14 +5852,13 @@
       '<div class="brand-row pay-row" style="align-items:center">' +
         '<div style="flex:1;min-width:260px">' +
           '<div class="pay-state" id="payState">' +
-            (ok   ? '<b>Your payout account is ready.</b> Sales are paid out once a month.'
+            (ok   ? '<b>Your payout account is ready.</b> Eligible balances are paid monthly.'
                   : has ? '<b>Almost there.</b> Stripe still needs something before it can pay you.'
-                        : '<b>You cannot be paid yet.</b> Set up a payout account so we can send you what your lots earn.') +
+                        : '<b>Set up payouts.</b> Add a payout account before your first sale is ready to be paid.') +
           '</div>' +
           '<p class="brand-note" style="margin:8px 0 0">' +
-            'Stripe handles the identity check and holds your bank details; we never see them. ' +
-            'We pay out once a month, and a sale joins the next run fourteen days after it is delivered, ' +
-            'which is the window a buyer has to send something back.' +
+            'Stripe verifies your identity and securely holds your bank details. Hammer &amp; Mold never sees them.' +
+            '<br>Eligible balances are paid monthly after the buyer&rsquo;s return window has passed.' +
           '</p>' +
         '</div>' +
         '<div class="brand-logo-acts">' +
@@ -5918,7 +5917,7 @@
           : '') +
         '<p class="brand-note" style="flex:1;min-width:220px;margin:0">' +
           (paid
-            ? 'A square mark reads best. PNG with a transparent background works on both the light and the dark theme. We resize it to 256&nbsp;px and store it on our own servers, so it keeps working if you move host.'
+            ? 'A square logo works best. Use a PNG with a transparent background so it looks good in both light and dark mode.'
             : 'Your page shows these initials until you upload a logo on a paid package.') +
         '</p>' +
       '</div>' +
@@ -5927,20 +5926,20 @@
         '<label class="ef"><span>Handle</span><span class="brand-at"><span class="at">@</span>' +
           '<input id="bf_handle" type="text" maxlength="30" value="' + v('handle') + '" autocomplete="off" spellcheck="false" placeholder="yourshop">' +
         '</span></label>' +
-        '<label class="ef"><span>What you are</span><input class="ei" id="bf_type" type="text" maxlength="40" value="' + v('type') + '" placeholder="Dealer, collector, shop…"></label>' +
-        '<label class="ef"><span>Where you are</span><input class="ei" id="bf_location" type="text" maxlength="60" value="' + v('location') + '" placeholder="Haarlem, Netherlands"></label>' +
+        '<label class="ef"><span>Seller type</span><input class="ei" id="bf_type" type="text" maxlength="40" value="' + v('type') + '" placeholder="Dealer, collector, shop…"></label>' +
+        '<label class="ef"><span>Location</span><input class="ei" id="bf_location" type="text" maxlength="60" value="' + v('location') + '" placeholder="Haarlem, Netherlands"></label>' +
         '<label class="ef wide"><span>About your shop</span><textarea class="ei" id="bf_bio" rows="4" maxlength="600" placeholder="What you collect, what you sell, and how you grade it.">' + v('bio') + '</textarea></label>' +
       '</div>' +
       '<div class="brand-grid" style="margin-top:18px">' +
         SOC.map(s => at(s.key, s.label, s.max, 'yourshop')).join('') +
         '<p class="brand-note wide" style="margin:0">' +
-          (paid ? 'Enter the handle only, without the @ or the full address. These appear as icons on your public page.'
+          (paid ? 'Enter your username only, without @ or the full URL. Social links appear on your public shop.'
                 : 'Social links are unlocked on Trader and Dealer.') +
         '</p>' +
       '</div>' +
       '<div class="brand-save">' +
-        '<button class="btn accent" type="button" id="bfSave">Save shopfront</button>' +
-        '<span class="seller-link" data-nav="seller" data-seller="' + e(prefs.id || '') + '">View your public page</span>' +
+        '<button class="btn accent" type="button" id="bfSave">Save storefront</button>' +
+        '<span class="seller-link" data-nav="seller" data-seller="' + e(prefs.id || '') + '">View shop</span>' +
         '<span class="brand-msg" id="bfMsg"></span>' +
       '</div>';
   }
@@ -5961,15 +5960,19 @@
     const paying = !!mine && mine.cents > 0;
 
     const allowance = mine
-      ? mine.listings + '/month' + (mine.cap > mine.listings ? ', rolls over to ' + mine.cap : '')
+      ? mine.listings + ' added each month' + (mine.cap > mine.listings ? ' &middot; rolls over up to ' + mine.cap : '')
       : 'monthly allowance';
 
     // Where the buttons go. Anything paid routes through data-plan, which the
     // one click handler turns into a purchase or a move as appropriate.
+    //
+    // All of them say "Switch to". Up and down were spelled out before, which
+    // made the cheaper package read as a demotion rather than a choice, and the
+    // direction is obvious from the price anyway.
     const others = (plans || []).filter(p => p.key !== key);
     const btns = others.map(p =>
       '<button class="' + (p.cents > (mine ? mine.cents : 0) ? 'acct-pay' : 'acct-signout') + '" type="button" data-plan="' + mkEsc(p.key) + '">' +
-      (p.cents === 0 ? 'Move to Starter' : (p.cents > (mine ? mine.cents : 0) ? 'Move up to ' : 'Move down to ') + mkEsc(p.name)) + '</button>').join('');
+      'Switch to ' + mkEsc(p.name) + '</button>').join('');
 
     // The date the change lands, from the profile rather than from a shrug. The
     // page used to say "at the end of this billing period", which is not a date
@@ -5982,12 +5985,12 @@
     return '<div class="mship"><div class="mship-l">' +
         '<div class="mship-plan">' + mkEsc(mine ? mine.name : (key.charAt(0).toUpperCase() + key.slice(1))) +
           (paying ? '<span class="mship-badge">Active</span>' : '') + '</div>' +
-        '<div class="mship-tok">' + tokens + ' listing token' + (tokens === 1 ? '' : 's') + ' left &middot; ' + allowance +
+        '<div class="mship-tok">' + tokens + ' listing' + (tokens === 1 ? '' : 's') + ' left &middot; ' + allowance +
           (mine ? ' &middot; ' + (mine.commission * 100).toFixed(0) + '% selling fee' : '') + '</div>' +
       '</div>' +
       '<div class="mship-r">' + btns +
         (paying ? '<button class="acct-signout" id="mManage" type="button">Billing</button>' : '') +
-        '<button class="acct-signout" id="mBuy" type="button">Buy 25 tokens &middot; € 18</button></div>' +
+        '<button class="acct-signout" id="mBuy" type="button">Buy 25 listings &middot; € 18</button></div>' +
     '</div>' +
     // The copy told a seller to "choose your current package again to cancel",
     // and the row above renders one button per OTHER package, so the button it
@@ -5995,16 +5998,16 @@
     // sentence that asks for it, and it carries the same data-plan the handler
     // already understands.
     (pending
-      ? '<div class="acct-empty"><b>You move to ' + mkEsc(pending.name) +
-        (pendWhen ? ' on ' + mkEsc(pendWhen) : ' at the end of this billing period') + '.</b> Until then you keep ' +
-        mkEsc(mine ? mine.name : 'your package') + ', including its ' +
-        (mine ? (mine.commission * 100).toFixed(0) + '% selling fee' : 'selling fee') +
-        ', and the listings you have built up stay yours.' +
-        (mine ? '<div style="margin-top:12px"><button class="btn ghost" type="button" data-plan="' + mkEsc(mine.key) + '">Cancel this change, keep ' + mkEsc(mine.name) + '</button></div>' : '') +
+      ? '<div class="acct-empty"><b>Your plan changes to ' + mkEsc(pending.name) +
+        (pendWhen ? ' on ' + mkEsc(pendWhen) : ' at the end of this billing period') + '.</b> Until then, you keep ' +
+        mkEsc(mine ? mine.name : 'your package') +
+        (mine ? ' and its ' + (mine.commission * 100).toFixed(0) + '% selling fee' : '') +
+        '. Any unused listings stay yours.' +
+        (mine ? '<div style="margin-top:12px"><button class="btn ghost" type="button" data-plan="' + mkEsc(mine.key) + '">Keep ' + mkEsc(mine.name) + '</button></div>' : '') +
         '</div>'
       : '') +
-    '<div class="acct-empty">A token is spent when you list, never when you identify a toy. Unused tokens roll over. ' +
-      '<a data-plans-pop style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare the packages</a> to see which one is cheapest at what you actually sell.</div>';
+    '<div class="acct-empty">Identification is always free. A listing is used only when you publish an item for sale. Unused listings roll over. ' +
+      '<a data-plans-pop style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare packages</a> to see which costs least based on how much you sell.</div>';
   }
 
   async function renderAccount(opts){
@@ -6072,13 +6075,13 @@
       // An unsold lot is out of the public shop and sits here instead, with the
       // one action that matters. A price would be meaningless: nobody paid it.
       const right = l.status === 'unsold'
-        ? '<div style="text-align:right"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 token</div></div>'
+        ? '<div style="text-align:right"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 listing</div></div>'
         : '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>';
       return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
     }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
-    const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">You are not watching any lots yet.</div>';
+    const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">Lots you watch will appear here. <a data-nav="home" href="#collection" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Browse auctions</a></div>';
     // lot_drafts may not exist yet if section 6 of the schema has not been run;
     // supabase-js reports that as an error rather than throwing, so show none.
     const drafts = (draftsRes && !draftsRes.error) ? (draftsRes.data || []) : [];
@@ -6094,12 +6097,12 @@
           '<button class="acct-pay" data-draft-open="' + e(d.id) + '" type="button">Open</button>' +
           '<button class="acct-signout" data-draft-del="' + e(d.id) + '" type="button">Delete</button>' +
         '</div><div class="st" style="text-align:right;margin-top:4px">' + n + ' photo' + (n === 1 ? '' : 's') + '</div></div></div>';
-    }).join('') : '<div class="acct-empty">No drafts. On the Sell page, curate a lot and choose Save as draft to keep it here without spending a token.</div>';
+    }).join('') : '<div class="acct-empty"><b>No drafts yet.</b> Start a listing on the Sell page and choose Save as draft to keep it here. Saving a draft does not use one of your listings.</div>';
 
     const purchasesHtml = purchases.length ? purchases.map(l => row(l, (reviewedLotIds.has(l.id) ? '<div class="st">Reviewed</div>' : (l.seller_id && l.seller_id !== uid ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>' : '<div class="st">Your lot</div>')), 'Bought')).join('') : '';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-2);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
-      '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Tokens left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
+      '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Listings left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
       '<div class="acct-sec"><div class="h">Membership</div>' +
         membershipHtml(prefs) +
       '</div>' +
@@ -6110,12 +6113,12 @@
       // everything else a seller does here, and until this is done a sale earns
       // them nothing they can actually reach.
       '<div class="acct-sec"><div class="h">Getting paid</div>' + payoutHtml(prefs) + '</div>' +
-      '<div class="acct-sec"><div class="h">Your shopfront</div>' + shopfrontHtml(prefs) + '</div>' +
+      '<div class="acct-sec"><div class="h">Your storefront</div>' + shopfrontHtml(prefs) + '</div>' +
       '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
       '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
-      '<div class="acct-sec"><div class="h">Where you post from</div>' +
-        '<div class="acct-empty" style="padding-bottom:12px">We use this to work out your postage, and to tell buyers whether an order is an EU movement or a customs import. Required before you can list.</div>' +
+      '<div class="acct-sec"><div class="h">Shipping from</div>' +
+        '<div class="acct-empty" style="padding-bottom:12px">We use your shipping country to calculate postage and determine whether customs may apply. This is required before you can list.</div>' +
         '<label class="ef" style="max-width:320px"><span>Country</span><select class="ei" id="acctCountry">' +
           '<option value="">Choose your country…</option>' +
           COUNTRIES.map(function(c){ return '<option value="' + c[0] + '"' + (prefs.country === c[0] ? ' selected' : '') + '>' + e(c[1]) + '</option>'; }).join('') +
@@ -6126,10 +6129,11 @@
       '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
       '<div class="acct-sec"><div class="h">Notifications</div>' +
-        tog('notify_outbid', 'Email me when I\'m outbid', prefs.notify_outbid) +
-        tog('notify_ending', 'Email me when a lot I watch is ending soon', prefs.notify_ending) +
-        tog('notify_won', 'Email me when I win a lot', prefs.notify_won) +
-        tog('notify_sold', 'Email me when one of my items sells', prefs.notify_sold) +
+        '<div class="acct-empty" style="padding-bottom:6px">Choose which emails you want to receive.</div>' +
+        tog('notify_outbid', 'When I\'m outbid', prefs.notify_outbid) +
+        tog('notify_ending', 'When a watched lot is ending', prefs.notify_ending) +
+        tog('notify_won', 'When I win a lot', prefs.notify_won) +
+        tog('notify_sold', 'When one of my items sells', prefs.notify_sold) +
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
@@ -6137,17 +6141,17 @@
     // from the auction that failed, so there is nothing to verify here beyond
     // asking once: it costs a token and the previous bids go.
     body.querySelectorAll('[data-relist]').forEach(b => b.addEventListener('click', async () => {
-      if (!confirm('Relist ' + (b.dataset.label || 'this lot') + '?\n\nIt uses one listing token, and the bids from the auction that did not sell are cleared.')) return;
+      if (!confirm('Relist ' + (b.dataset.label || 'this lot') + '?\n\nIt uses one listing, and the bids from the auction that did not sell are cleared.')) return;
       b.disabled = true; b.textContent = 'Relisting…';
       const { error } = await SB.rpc('relist_lot', { target: b.dataset.relist, days: 7 });
       if (error){
         b.disabled = false; b.textContent = 'Relist';
-        if (/NO_TOKENS/.test(error.message || '')) openModal('Out of tokens', 'No listing tokens left.', 'Relisting uses one token. Buy a token pack from your account, or upgrade to Premium for 50 tokens a month.');
+        if (/NO_TOKENS/.test(error.message || '')) openModal('Out of listings', 'No listings left this month.', 'Relisting uses one listing. Buy more from your account, or switch to Trader for 50 listings a month.');
         else if (/relist_lot/.test(error.message || '')) openModal('Not available yet', 'The relist function is missing.', 'Run section 11 of admin/schema.sql, then try again.');
         else openModal('Could not relist', 'Something went wrong.', error.message || String(error));
         return;
       }
-      openModal('Relisted', (b.dataset.label || 'Your lot') + ' is back on.', 'It is back in the shop with the previous bids cleared, and it runs for another 7 days from the first new bid. One listing token was used.');
+      openModal('Relisted', (b.dataset.label || 'Your lot') + ' is back on.', 'It is back in the shop with the previous bids cleared, and it runs for another 7 days from the first new bid. One listing was used.');
       renderAccount();
     }));
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
@@ -6194,7 +6198,7 @@
         if (!r.ok) return;
         const d = await r.json();
         if (d.payouts_enabled){
-          st.innerHTML = '<b>Your payout account is ready.</b> Sales are paid out once a month.';
+          st.innerHTML = '<b>Your payout account is ready.</b> Eligible balances are paid monthly.';
           if (payBtn) payBtn.textContent = 'Update details';
         } else if (d.connected){
           st.innerHTML = '<b>Almost there.</b> Stripe still needs something before it can pay you' +
@@ -6320,7 +6324,7 @@
       if (typeof window.HM_openDraft === 'function') window.HM_openDraft(data);
     }));
     body.querySelectorAll('[data-draft-del]').forEach(b => b.addEventListener('click', async () => {
-      if (!confirm('Delete this draft? The curation is lost. Photos already uploaded stay in storage.')) return;
+      if (!confirm('Delete this draft? The details we identified are lost. Photos already uploaded stay in storage.')) return;
       const { error } = await SB.from('lot_drafts').delete().eq('id', b.dataset.draftDel);
       if (error){ openModal('Could not delete', 'Something went wrong.', error.message); return; }
       renderAccount();
