@@ -796,7 +796,12 @@
   .share .sl { font-family:var(--label); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-right:4px; }
   .share button, .share a { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
     background:transparent; border:1px solid var(--line); color:var(--ink); padding:8px 13px; border-radius:3px;
-    cursor:pointer; text-decoration:none; line-height:1; transition:border-color .15s ease, background .15s ease; }
+    cursor:pointer; text-decoration:none; line-height:1; transition:border-color .15s ease, background .15s ease;
+    display:inline-flex; align-items:center; gap:7px; }
+  /* Optically slightly larger than the 10.5px label beside it: a glyph at the same
+     nominal size reads smaller than letters do. currentColor so it inverts with the
+     button when Copy link turns black on success. */
+  .share svg { width:13px; height:13px; flex:none; fill:currentColor; display:block; }
   .share button:hover, .share a:hover { border-color:var(--ink); background:var(--paper-2); }
   .share button:focus-visible, .share a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .share .done { border-color:var(--ink); background:var(--ink); color:var(--paper); }
@@ -5588,6 +5593,16 @@
   // about options that had never arrived. Nine calls out there were broken.
   const esc = s => String(s == null ? '' : s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
 
+  // The marks on the share row. Solid glyphs on currentColor so they invert with
+  // the button on hover and need no second colour for the dark theme. X is the same
+  // path the social links use, kept in one place rather than typed twice.
+  const SH_ICON = {
+    share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3.7 18.3 9h-3.6v5.6h-3.4V9H7.7zM4.6 13.6h2.6v5.2h9.6v-5.2h2.6v7.8H4.6z"/></svg>',
+    link:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a3.9 3.9 0 0 0 5.5 0l2.8-2.8a3.9 3.9 0 1 0-5.5-5.5l-1.4 1.4 1.7 1.7 1.4-1.4a1.5 1.5 0 1 1 2.1 2.1l-2.8 2.8a1.5 1.5 0 0 1-2.1 0zM13.4 10.6a3.9 3.9 0 0 0-5.5 0l-2.8 2.8a3.9 3.9 0 0 0 5.5 5.5l1.4-1.4-1.7-1.7-1.4 1.4a1.5 1.5 0 1 1-2.1-2.1l2.8-2.8a1.5 1.5 0 0 1 2.1 0z"/></svg>',
+    whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2m0 1.9a8.1 8.1 0 1 1-4.1 15.1l-.3-.2-3 .8.8-2.9-.2-.3A8.1 8.1 0 0 1 12 3.9m-3.7 4c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.8 4.3 3.8 2.1.8 2.6.7 3 .6.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4l-.6-.3-1.5-.7c-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.1-.2 0-.4.1-.5l.4-.5.3-.5v-.4l-.7-1.7c-.2-.4-.4-.4-.5-.4z"/></svg>',
+    x:     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.2-6.82-5.96 6.82H1.7l7.73-8.84L1.28 2.25h6.82l4.86 6.43 5.28-6.43Zm-1.16 17.52h1.83L7.03 4.13H5.06l12.02 15.64Z"/></svg>',
+  };
+
   // The waiting mark: the brand hammer coming down. Used wherever something
   // takes long enough that a still page reads as a hang.
   const HAMMER = '<div class="hmr"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
@@ -7135,10 +7150,14 @@
           // button and two direct links where it does not.
           '<div class="share">' +
             '<span class="sl">Share</span>' +
-            '<button type="button" id="shNative" hidden>Share this lot</button>' +
-            '<button type="button" id="shCopy">Copy link</button>' +
-            '<a id="shWa" target="_blank" rel="noopener">WhatsApp</a>' +
-            '<a id="shX" target="_blank" rel="noopener">X</a>' +
+            // Every one carries its mark. A row of word-only buttons reads as a
+            // list of settings; the glyph is what makes it read as sharing. Solid
+            // shapes on currentColor, so they invert with the button on hover and
+            // work on both themes without a second colour.
+            '<button type="button" id="shNative" hidden>' + SH_ICON.share + 'Share this lot</button>' +
+            '<button type="button" id="shCopy">' + SH_ICON.link + 'Copy link</button>' +
+            '<a id="shWa" target="_blank" rel="noopener">' + SH_ICON.whatsapp + 'WhatsApp</a>' +
+            '<a id="shX" target="_blank" rel="noopener">' + SH_ICON.x + 'X</a>' +
           '</div>' +
           '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
             '<span>Buyer protection</span><span class="protect-x">+</span></button>' +
@@ -7183,8 +7202,11 @@
           try { document.execCommand('copy'); } catch (e2) {}
           t.remove();
         }
-        cp.textContent = 'Link copied'; cp.classList.add('done');
-        setTimeout(() => { cp.textContent = 'Copy link'; cp.classList.remove('done'); }, 2200);
+        // innerHTML with the icon back, not textContent: setting text would wipe
+        // the svg and leave a word where a marked button was, and it would never
+        // come back.
+        cp.innerHTML = SH_ICON.link + 'Link copied'; cp.classList.add('done');
+        setTimeout(() => { cp.innerHTML = SH_ICON.link + 'Copy link'; cp.classList.remove('done'); }, 2200);
         if (typeof track === 'function') track('share', { how: 'copy', lot: lot.id });
       });
     })();
