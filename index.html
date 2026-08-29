@@ -6573,11 +6573,15 @@
     f.innerHTML =
       '<div class="ck-grid">' +
         '<div class="wide"><label class="bidlabel" for="ckName">Full name</label><input class="bidinput" id="ckName" autocomplete="name"></div>' +
-        '<div class="wide"><label class="bidlabel" for="ckLine1">Street and number</label><input class="bidinput" id="ckLine1" autocomplete="address-line1"></div>' +
+        // Pairs that belong together. The first attempt at two columns put the
+        // addition beside the postcode and the city beside the country, which
+        // splits the one pair everybody reads as a unit: postcode and city. An
+        // addition is part of the street line, so it sits next to it.
+        '<div><label class="bidlabel" for="ckLine1">Street and number</label><input class="bidinput" id="ckLine1" autocomplete="address-line1"></div>' +
         '<div><label class="bidlabel" for="ckLine2">Addition</label><input class="bidinput" id="ckLine2" autocomplete="address-line2"></div>' +
         '<div><label class="bidlabel" for="ckZip">Postcode</label><input class="bidinput" id="ckZip" autocomplete="postal-code"></div>' +
         '<div><label class="bidlabel" for="ckCity">City</label><input class="bidinput" id="ckCity" autocomplete="address-level2"></div>' +
-        '<div><label class="bidlabel" for="ckCountry">Country</label>' +
+        '<div class="wide"><label class="bidlabel" for="ckCountry">Country</label>' +
           '<select class="bidinput" id="ckCountry" autocomplete="country">' +
             DEST.map(([c, n]) => '<option value="' + c + '"' + (c === 'NL' ? ' selected' : '') + '>' + n + '</option>').join('') +
           '</select>' +
