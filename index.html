@@ -339,6 +339,14 @@
   .modal-x:hover { color:var(--ink); background:var(--paper-2); }
   .modal-x:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .modal-x svg { width:15px; height:15px; fill:currentColor; display:block; }
+  /* Landscape. Three packages have to sit next to each other or there is nothing
+     to compare, and the card grid already falls to one column under 900px. */
+  .modal.wide { max-width:1020px; padding:34px 34px 30px; }
+  .modal.wide h3 { margin-bottom:10px; }
+  .pm-lead { font-size:14.5px !important; line-height:1.7 !important; color:var(--ink-2) !important; max-width:80ch; margin:0 0 24px !important; }
+  .pm-lead b { color:var(--ink); }
+  .pm-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    margin-top:24px; padding-top:20px; border-top:1px solid var(--line); font-family:var(--body); font-size:14px; color:var(--ink-2); }
   /* Confirm and cancel on one line, sharing a baseline. The confirm carries the
      fill and the cancel does not: two controls side by side must not read as
      equal weight. */
@@ -802,9 +810,19 @@
      nominal size reads smaller than letters do. currentColor so it inverts with the
      button when Copy link turns black on success. */
   .share svg { width:13px; height:13px; flex:none; fill:currentColor; display:block; }
+  /* The outline pair. Named so it beats the fill:currentColor above, which is what
+     the two solid platform marks need and what would turn an outline into a blob. */
+  .share svg.ln { width:14px; height:14px; fill:none; stroke:currentColor; }
   .share button:hover, .share a:hover { border-color:var(--ink); background:var(--paper-2); }
   .share button:focus-visible, .share a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .share .done { border-color:var(--ink); background:var(--ink); color:var(--paper); }
+  /* On a phone the row is four controls wide and one of them was dropping to a
+     line of its own, which reads as a mistake rather than as a wrap. Tighter
+     tracking and padding fit them across; the icons carry the meaning anyway. */
+  @media (max-width:600px){
+    .share { gap:8px; }
+    .share button, .share a { padding:8px 10px; letter-spacing:.05em; gap:6px; }
+  }
   .t-fit { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
   /* The break-even line, directly under the price it justifies. A rule above it so
      it reads as a note on the price rather than the first item in the list. */
@@ -3418,6 +3436,28 @@
   </div>
 </div>
 
+<!-- The packages, without leaving the page.
+     On the account page a seller is in the middle of something: setting up a
+     shopfront, reading what a token costs. Sending them to a different page to
+     answer "what would I get" loses the thing they were doing. It is landscape
+     because three packages side by side is the comparison; stacked they are three
+     separate offers and nobody compares them. -->
+<div class="modal-bg" id="plansModal" hidden>
+  <div class="modal wide">
+    <button class="modal-x" id="plansX" type="button" aria-label="Close">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.6 4.2 12 10.6l6.4-6.4 1.4 1.4L13.4 12l6.4 6.4-1.4 1.4L12 13.4l-6.4 6.4-1.4-1.4L10.6 12 4.2 5.6z"/></svg>
+    </button>
+    <div class="ey">Selling packages</div>
+    <h3>Pick the one that fits what you sell</h3>
+    <p class="pm-lead"><b>Identifying a toy is free and unlimited</b> on every package. A listing is what costs a token. Every package includes the price research, buyer protection on every lot, and postage quoted live from the carrier.</p>
+    <div class="tiers three" id="plansModalCards"></div>
+    <div class="pm-foot">
+      <span>Not sure? The packages page works it out on your own numbers.</span>
+      <button class="btn ghost" type="button" id="plansFull">Open the full comparison</button>
+    </div>
+  </div>
+</div>
+
 <footer class="foot">
   <div class="wrap foot-in">
     <div>
@@ -3560,6 +3600,45 @@
   .mship-badge{ font-family:var(--label); font-size:9px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:4px 8px; border-radius:2px; }
   .mship-tok{ font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:4px; }
   .mship-r{ display:flex; gap:8px; flex-wrap:wrap; }
+  /* ---- The account page as cards -------------------------------------------
+     Every section used to be a stretch of prose under a hairline rule on an open
+     white page, and grey prose at that: --ink-3 is #8c8c8c, which is 3:1 on white
+     and fails to be readable at the size this page sets it. Two changes, both
+     scoped to this page so nothing else on the site moves.
+
+     A card per section, because these are separate jobs: what you pay, how you
+     get paid, who you are to a buyer, what you have listed. A rule between them
+     says "next paragraph"; an edge says "different thing".
+
+     And the copy goes black. On a page where every line is either a number about
+     your money or an instruction you have to follow, there is no such thing as
+     text worth setting in a grey a third of the way to the background. Grey is
+     kept for the eyebrow labels only, and even there it moves up a step. */
+  #accountBody .acct-sec{ margin:16px 0; background:var(--paper); border:1px solid var(--line); border-radius:8px;
+    padding:20px 24px 22px; box-shadow:0 1px 3px rgba(0,0,0,.045); }
+  #accountBody .acct-sec .h{ color:var(--ink-2); border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:4px; }
+  /* The last row in a card should not draw a rule against the card's own edge. */
+  #accountBody .acct-sec > .acct-row:last-child,
+  #accountBody .acct-sec > .acct-toggle:last-child{ border-bottom:0; padding-bottom:2px; }
+  #accountBody .acct-empty{ color:var(--ink); font-size:14.5px; line-height:1.7; }
+  /* Black too, and a size smaller. Hierarchy from scale, not from bleaching the
+     colour out until the sentence cannot be read. */
+  #accountBody .brand-note{ color:var(--ink); font-size:13.5px; }
+  #accountBody .pay-state{ font-size:15.5px; }
+  /* An empty status line still took up its margin and left a hole in the card. */
+  #accountBody .brand-msg:empty{ display:none; }
+  #accountBody .acct-sec > .brand-row:last-child,
+  #accountBody .brand-row.pay-row{ padding-bottom:0; }
+  #accountBody .acct-stat .k,
+  #accountBody .acct-row .info .s,
+  #accountBody .acct-row .st,
+  #accountBody .mship-tok,
+  #accountBody .brand-msg{ color:var(--ink-2); }
+  #accountBody .ef > span{ color:var(--ink-2); }
+  #accountBody .acct-stats{ border-radius:8px; margin-bottom:24px; }
+  /* The one thing on the page that is not a card: it is the summary the cards
+     below explain, so it keeps the seam-grid look that reads as one object. */
+
   .rev-stars{ display:flex; gap:6px; margin-bottom:12px; }
   .rev-star{ background:none; border:0; padding:0; font-size:28px; line-height:1; color:var(--line); cursor:pointer; transition:color .1s; }
   .rev-star:hover, .rev-star.on{ color:var(--ink); }
@@ -3857,7 +3936,11 @@
     if (dest === 'lot'){ e.preventDefault(); routeTo('lot', nav.dataset.lot); return; }
     if (dest === 'sold'){ e.preventDefault(); routeTo('sold'); return; }
     if (dest === 'account'){ e.preventDefault(); routeTo('account'); return; }
-    if (dest === 'artifact' || dest === 'home' || dest === 'empire' || dest === 'tmnt' || dest === 'ljn' || dest === 'galoob' || dest === 'thinkway' || dest === 'kaiju' || dest === 'imperial' || dest === 'palitoy' || dest === 'about' || dest === 'sell' || dest === 'terms' || dest === 'privacy' || dest === 'help'){
+    // Everything else that is simply a view. This used to be a hand-written list
+    // of names, and plans and buy were never added to it: the Packages link in the
+    // menu and every "compare the packages" on the site did nothing at all. Asking
+    // the view table means a new page is reachable the moment it exists.
+    if (views[dest] && dest !== 'checkout'){
       // let in-page anchors on home still work
       if (dest === 'home' && nav.getAttribute('href') && !views.home.hidden) return;
       e.preventDefault(); show(dest);
@@ -4135,6 +4218,37 @@
   document.getElementById('modalX').addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ----- The packages, as a dialogue -----
+  // Its own element rather than a call to openModal, which writes textContent into
+  // three fixed ids and would strip the cards straight back out again.
+  const plansModal = document.getElementById('plansModal');
+  function closePlans(){ if (plansModal) plansModal.hidden = true; }
+  async function openPlansModal(){
+    if (!plansModal) return;
+    const box = document.getElementById('plansModalCards');
+    if (box && !box.children.length) box.innerHTML = '<div class="acct-empty">Loading the packages…</div>';
+    plansModal.hidden = false;
+    track('plans_modal_open', {});
+    // renderPlans fills every container that exists, this one included, and its
+    // all-in table simply is not here, which it already handles.
+    await renderPlans();
+  }
+  if (plansModal){
+    document.getElementById('plansX').addEventListener('click', closePlans);
+    plansModal.addEventListener('click', e => { if (e.target === plansModal) closePlans(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePlans(); });
+    // The way out to the full page, with the chooser and the all-in table on it.
+    document.getElementById('plansFull').addEventListener('click', () => { closePlans(); show('plans'); });
+    // Choosing a package inside the dialogue leaves for Stripe or rewrites the
+    // account behind it; either way the dialogue has done its job.
+    plansModal.addEventListener('click', e => { if (e.target.closest('[data-plan]')) setTimeout(closePlans, 0); });
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-plans-pop]')) return;
+    e.preventDefault();
+    openPlansModal();
+  });
 
   // ----- Theme -----
   // How much has been done to the piece. A ladder from nothing to heavily worked.
@@ -5593,14 +5707,26 @@
   // about options that had never arrived. Nine calls out there were broken.
   const esc = s => String(s == null ? '' : s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
 
-  // The marks on the share row. Solid glyphs on currentColor so they invert with
-  // the button on hover and need no second colour for the dark theme. X is the same
-  // path the social links use, kept in one place rather than typed twice.
+  // The marks on the share row, from Ramon's own set.
+  //
+  // Two kinds in one row, which is why there are two shapes of svg here. Share and
+  // link are drawn as outlines and carry their weight in a stroke; WhatsApp and X
+  // are platform marks and are solid. Both are set on currentColor rather than the
+  // #141B34 and white they arrive as, so one row works on the light theme, the dark
+  // theme, and inverted inside the black Copy link button on success.
+  //
+  // The outline pair keeps fill="none" as a class the CSS can name: .share svg sets
+  // fill:currentColor for the solid marks, and a presentation attribute would lose
+  // to it and flood the outlines into blobs.
   const SH_ICON = {
-    share: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3.7 18.3 9h-3.6v5.6h-3.4V9H7.7zM4.6 13.6h2.6v5.2h9.6v-5.2h2.6v7.8H4.6z"/></svg>',
-    link:  '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a3.9 3.9 0 0 0 5.5 0l2.8-2.8a3.9 3.9 0 1 0-5.5-5.5l-1.4 1.4 1.7 1.7 1.4-1.4a1.5 1.5 0 1 1 2.1 2.1l-2.8 2.8a1.5 1.5 0 0 1-2.1 0zM13.4 10.6a3.9 3.9 0 0 0-5.5 0l-2.8 2.8a3.9 3.9 0 0 0 5.5 5.5l1.4-1.4-1.7-1.7-1.4 1.4a1.5 1.5 0 1 1-2.1-2.1l2.8-2.8a1.5 1.5 0 0 1 2.1 0z"/></svg>',
-    whatsapp: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2m0 1.9a8.1 8.1 0 1 1-4.1 15.1l-.3-.2-3 .8.8-2.9-.2-.3A8.1 8.1 0 0 1 12 3.9m-3.7 4c-.2 0-.5.1-.7.4-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.8 4.3 3.8 2.1.8 2.6.7 3 .6.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.2-1.4l-.6-.3-1.5-.7c-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.1-.2 0-.4.1-.5l.4-.5.3-.5v-.4l-.7-1.7c-.2-.4-.4-.4-.5-.4z"/></svg>',
-    x:     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.2-6.82-5.96 6.82H1.7l7.73-8.84L1.28 2.25h6.82l4.86 6.43 5.28-6.43Zm-1.16 17.52h1.83L7.03 4.13H5.06l12.02 15.64Z"/></svg>',
+    share: '<svg class="ln" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M9.39567 4.5H8.354C5.40772 4.5 3.93458 4.5 3.01929 5.37868C2.104 6.25736 2.104 7.67157 2.104 10.5V14.5C2.104 17.3284 2.104 18.7426 3.01929 19.6213C3.93458 20.5 5.40772 20.5 8.354 20.5H12.5606C15.5069 20.5 16.98 20.5 17.8953 19.6213C18.4883 19.052 18.6971 18.2579 18.7706 17"/>' +
+      '<path d="M16.1667 7V3.85355C16.1667 3.65829 16.3316 3.5 16.535 3.5C16.6326 3.5 16.7263 3.53725 16.7954 3.60355L21.5275 8.14645C21.7634 8.37282 21.8958 8.67986 21.8958 9C21.8958 9.32014 21.7634 9.62718 21.5275 9.85355L16.7954 14.3964C16.7263 14.4628 16.6326 14.5 16.535 14.5C16.3316 14.5 16.1667 14.3417 16.1667 14.1464V11H13.1157C8.875 11 7.3125 14.5 7.3125 14.5V12C7.3125 9.23858 9.64435 7 12.5208 7H16.1667Z"/></svg>',
+    link:  '<svg class="ln" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">' +
+      '<path d="M10 13.229C10.1416 13.4609 10.3097 13.6804 10.5042 13.8828C11.7117 15.1395 13.5522 15.336 14.9576 14.4722C15.218 14.3121 15.4634 14.1157 15.6872 13.8828L18.9266 10.5114C20.3578 9.02184 20.3578 6.60676 18.9266 5.11718C17.4953 3.6276 15.1748 3.62761 13.7435 5.11718L13.03 5.85978"/>' +
+      '<path d="M10.9703 18.14L10.2565 18.8828C8.82526 20.3724 6.50471 20.3724 5.07345 18.8828C3.64218 17.3932 3.64218 14.9782 5.07345 13.4886L8.31287 10.1172C9.74413 8.62761 12.0647 8.6276 13.4959 10.1172C13.6904 10.3195 13.8584 10.539 14 10.7708"/></svg>',
+    whatsapp: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 0C37.2547 0 48 10.7453 48 24C48 37.2547 37.2547 48 24 48C19.82 48 15.8904 46.9314 12.4678 45.0527L0 48L3.19629 35.9736C1.16368 32.4497 0 28.3606 0 24C6.76533e-07 10.7453 10.7453 6.76489e-07 24 0ZM24 4.29785C13.1194 4.29785 4.299 13.1185 4.29883 23.999C4.29883 28.1943 5.6104 32.083 7.8457 35.2783L5.7793 42.3193L13.1455 40.4434C16.2581 42.5026 19.9887 43.7012 24 43.7012V43.7002C34.8807 43.7002 43.7012 34.8797 43.7012 23.999C43.701 13.1185 34.8806 4.29785 24 4.29785ZM17.4043 12.1562C17.6982 12.1324 17.9685 12.3028 18.0938 12.5693L20.8311 18.376C20.9604 18.6506 20.9041 18.9777 20.6895 19.1924L18.6484 21.2324C18.2072 21.6737 18.0781 22.361 18.3818 22.9062C19.1265 24.2415 20.1281 25.5276 21.2881 26.7109C22.4714 27.8709 23.7574 28.8732 25.0928 29.6172C25.6381 29.9212 26.3246 29.7919 26.7666 29.3506L28.8076 27.3096C29.0222 27.0953 29.3486 27.0382 29.623 27.168L35.4297 29.9053C35.6964 30.0306 35.8677 30.3014 35.8438 30.5947C35.7811 31.3587 35.4741 32.8901 34.1016 34.2627C30.227 38.1372 23.2692 33.7536 22.9854 33.584C21.2741 32.6647 19.6483 31.4347 18.1064 29.8936C16.5651 28.3522 15.3344 26.725 14.415 25.0137C14.2445 24.7301 9.86133 17.7735 13.7363 13.8984C15.109 12.5258 16.6403 12.2189 17.4043 12.1562Z"/></svg>',
+    x:     '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M36.6526 3.8078H43.3995L28.6594 20.6548L46 43.5797H32.4225L21.7881 29.6759L9.61989 43.5797H2.86886L18.6349 25.56L2 3.8078H15.9222L25.5348 16.5165L36.6526 3.8078ZM34.2846 39.5414H38.0232L13.8908 7.63406H9.87892L34.2846 39.5414Z"/></svg>',
   };
 
   // The waiting mark: the brand hammer coming down. Used wherever something
@@ -5670,7 +5796,7 @@
     const has = !!prefs.stripe_account_id;
     const ok  = prefs.payouts_enabled === true;
     return '' +
-      '<div class="brand-row" style="align-items:center">' +
+      '<div class="brand-row pay-row" style="align-items:center">' +
         '<div style="flex:1;min-width:260px">' +
           '<div class="pay-state" id="payState">' +
             (ok   ? '<b>Your payout account is ready.</b> Sales are paid out once a month.'
@@ -5704,7 +5830,9 @@
       '<div class="brand-lock">' +
         '<div class="brand-lock-h">Logo and social links are part of a paid package</div>' +
         '<p class="brand-note" style="margin:6px 0 0">Trader and Dealer let you put your own mark on your shop page and link your Instagram, X and Facebook. On Starter your page uses a monogram of your shop name.</p>' +
-        '<span class="seller-link" data-nav="plans" style="margin-top:10px">See the packages</span>' +
+        // A real button, not a grey caption. It read as disabled text, and the
+        // data-nav it carried was never wired up, so tapping it did nothing at all.
+        '<button class="btn ghost" type="button" data-plans-pop style="margin-top:12px">See the packages</button>' +
       '</div>';
     // The locked fields are shown rather than hidden, and disabled rather than
     // removed: a seller who can see what a package gives them has a reason to buy
@@ -5805,7 +5933,7 @@
         mkEsc(mine ? mine.name : 'your package') + ' and your tokens stay yours. Choose ' + mkEsc(mine ? mine.name : 'it') + ' again to cancel the change.</div>'
       : '') +
     '<div class="acct-empty">A token is spent when you list, never when you identify a toy. Unused tokens roll over. ' +
-      '<a data-nav="plans" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare the packages</a> to see which one is cheapest at what you actually sell.</div>';
+      '<a data-plans-pop style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Compare the packages</a> to see which one is cheapest at what you actually sell.</div>';
   }
 
   async function renderAccount(opts){
@@ -5899,7 +6027,7 @@
 
     const purchasesHtml = purchases.length ? purchases.map(l => row(l, (reviewedLotIds.has(l.id) ? '<div class="st">Reviewed</div>' : (l.seller_id && l.seller_id !== uid ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>' : '<div class="st">Your lot</div>')), 'Bought')).join('') : '';
     body.innerHTML =
-      '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-3);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
+      '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-2);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Tokens left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live now') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
       '<div class="acct-sec"><div class="h">Membership</div>' +
         membershipHtml(prefs) +
@@ -7154,7 +7282,9 @@
             // list of settings; the glyph is what makes it read as sharing. Solid
             // shapes on currentColor, so they invert with the button on hover and
             // work on both themes without a second colour.
-            '<button type="button" id="shNative" hidden>' + SH_ICON.share + 'Share this lot</button>' +
+            // "Share this lot" next to the row's own "Share" label was saying the
+            // word twice and it was the width that pushed X onto a second line.
+            '<button type="button" id="shNative" hidden>' + SH_ICON.share + 'Send</button>' +
             '<button type="button" id="shCopy">' + SH_ICON.link + 'Copy link</button>' +
             '<a id="shWa" target="_blank" rel="noopener">' + SH_ICON.whatsapp + 'WhatsApp</a>' +
             '<a id="shX" target="_blank" rel="noopener">' + SH_ICON.x + 'X</a>' +
