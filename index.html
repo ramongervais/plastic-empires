@@ -3043,7 +3043,7 @@
     <div class="wrap">
       <div class="story" style="margin:0; max-width:72ch">
         <div class="terms-draft"><b>DRAFT · not legal advice.</b> A working starting point, not yet reviewed by a lawyer or a privacy specialist. It describes what the Platform actually does with your data today. Complete the [bracketed] fields before publishing.</div>
-        <p><b>Controller:</b> RG Product Design, [address], Netherlands. KvK 96149302. Privacy contact: [privacy@hammerandmold.com]. Last updated 26 August 2026.</p>
+        <p><b>Controller:</b> RG Product Design, [address], Netherlands. KvK 96149302. Privacy contact: <a href="mailto:privacy@hammerandmold.com">privacy@hammerandmold.com</a>. Last updated 26 August 2026.</p>
         <p>This policy explains what personal data Hammer &amp; Mold collects, why, who it is shared with, how long it is kept and what rights you have. It covers hammerandmold.com and the accounts, listings, bidding and payment features on it.</p>
 
         <div class="terms-h">1 · The short version</div>
@@ -3112,7 +3112,7 @@
         <p>We may update this policy. The date at the top always shows the current version, and we will tell you about a significant change before it takes effect.</p>
 
         <div class="terms-h">Contact</div>
-        <p>RG Product Design · [address] · hammerandmold.com · [privacy@hammerandmold.com]</p>
+        <p>RG Product Design · [address] · hammerandmold.com · <a href="mailto:privacy@hammerandmold.com">privacy@hammerandmold.com</a></p>
         <p style="color:var(--ink-3); font-size:13px">Draft v0.1 for review. Complete the [bracketed] fields and have a qualified adviser review before publishing. See also our <a data-nav="terms" style="text-decoration:underline">Terms &amp; Conditions</a>.</p>
       </div>
     </div>
@@ -6041,7 +6041,7 @@
         });
         const d = await r.json();
         if (!r.ok || !d.ok){
-          say((d && d.error) || 'That did not go through. Try again, or write to us directly.', true);
+          say((d && d.error) || 'That did not go through. Try again, or write to us at support@hammerandmold.com.', true);
           return;
         }
         track('offer_sent', { photos: d.photos || 0, count: count ? Number(count) : null });
@@ -6145,7 +6145,7 @@
     const boxes = ['planCards', 'sellPlanCards'].map(id => document.getElementById(id)).filter(Boolean);
     if (!boxes.length) return;
     const plans = await loadPlans();
-    if (!plans){ boxes.forEach(b => { b.innerHTML = '<div class="acct-empty">Packages could not be loaded. Reload the page, or write to us.</div>'; }); return; }
+    if (!plans){ boxes.forEach(b => { b.innerHTML = '<div class="acct-empty">Packages could not be loaded. Reload the page, or write to us at support@hammerandmold.com.</div>'; }); return; }
     await loadMyPlan();
     const mine = (currentPlanKey() || 'starter');
     const html = plans.map(p => {
