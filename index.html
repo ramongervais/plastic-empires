@@ -4841,9 +4841,11 @@
           // Its own row. It used to be concatenated into the price value above,
           // where row() escaped it into visible markup and it only appeared on an
           // auction that also had a Buy Now price.
-          row('Shipping', Number(c.shipping || 0) > 0
-            ? eur(c.shipping) + ' added at checkout'
-            : (fixed ? 'Included in your price' : 'Free, you pay the postage')) + '</div>' +
+          // What actually happens, rather than what the listing says. The buyer
+          // is quoted for their own country and their own chosen carrier, so
+          // there is no single number to show a seller here and pretending there
+          // is was the whole problem.
+          row('Shipping', 'Quoted to the buyer at checkout, and paid by them') + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting price') + '</div><div class="amt">' + eur(price) + '</div></div>' +
         '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
@@ -4967,9 +4969,9 @@
         return 'Buy Now (' + eur(buy) + ') is below the starting price (' + eur(bid) + '). A buyer would skip the auction and take it for the lower price. Raise Buy Now above the starting price, or clear it.';
       if (!fixed && c.reserve != null && Number(c.reserve) > 0 && buy != null && buy > 0 && Number(c.reserve) > buy)
         return 'The reserve (' + eur(c.reserve) + ') is above Buy Now (' + eur(buy) + '), so a Buy Now sale would fall below your own minimum. Lower the reserve or raise Buy Now.';
-      const ship = c.shipping == null ? 0 : Number(c.shipping);
-      if (ship < 0) return 'Shipping cannot be negative.';
-      if (ship > SHIPPING.MAX) return 'Shipping of ' + SHIPPING.eur(ship) + ' is above the ' + SHIPPING.eur(SHIPPING.MAX) + ' cap. Postage is not a hidden fee: if it genuinely costs more than that, contact us.';
+      // The two shipping checks that were here are gone with the field. A seller
+      // can no longer enter a negative or absurd postage amount because they can
+      // no longer enter one at all.
       if (bid < 0 || (buy != null && buy < 0)) return 'Prices cannot be negative.';
       return null;
     }
@@ -4992,24 +4994,13 @@
       // Free postage on an auction is a real choice, but it has to be made with
       // the numbers in view: at the opening bid the postage comes out of a much
       // smaller amount than the seller is imagining.
-      if (bid > 0 && !Number(c.shipping || 0)){
-        const billed = chargeableKg(c.weightKg, c.sizeClass);
-        const cost = billed ? bandFor(billed).eu : 0;
-        if (cost){
-          // The seller's OWN rate, not a hardcoded 15%. This used to assume
-          // Starter for everybody, so a Dealer paying 8% was told they would keep
-          // less than they actually would: on a EUR 35 lot with EUR 15 postage it
-          // said EUR 15 when the true figure for them was EUR 17.
-          const rate = myRate();
-          const net = bid - bid * rate - cost;
-          return { title: 'You have set shipping to zero, so you pay the postage.',
-                   body: 'Nothing is charged to the buyer for postage on this lot, which means it comes out of your side. ' +
-                         'Posting it costs about ' + eur(cost) + ' to the EU, so if it sells at your starting price of ' + eur(bid) +
-                         ', your ' + (rate * 100).toFixed(0) + '% selling fee and the postage leave you ' + eur(Math.round(net)) + '. ' +
-                         'That is fine if you meant it, and free postage does attract bidders. ' +
-                         'If you did not mean it, put the amount in the shipping field: the buyer pays it once at checkout, and although the selling fee is charged on the total, adding it there still leaves you better off than absorbing it.' };
-        }
-      }
+      // The free-postage warning is gone with the field it was about.
+      //
+      // It fired whenever shipping was zero and told the seller they were paying
+      // the postage. That was never true once live quoting shipped: the buyer
+      // chooses a delivery option at checkout and is charged for it, whatever the
+      // listing says. It was a warning about a state that no longer exists,
+      // arguing from a premise the checkout had already replaced.
       if (hi > 0 && bid > hi)
         return { title: 'The starting price is above the estimate.',
                  body: 'You are starting at ' + eur(bid) + ' while the estimate tops out at ' + eur(hi) + '. That is allowed, but a high starting price is the usual reason a lot gets no bids at all. A low start with competition tends to finish higher.' };
@@ -5046,7 +5037,15 @@
         '<div class="ef-row">' + ef('Starting price €', 'e_bid', c.startingBid, 'number', 'The opening price. Bidding starts here, so set it low enough to attract a first bid: a low start with competition usually beats a high start with none.') + ef('Reserve € (optional)', 'e_reserve', c.reserve, 'number', 'The lowest price you will actually accept, kept hidden. If bidding ends below it the lot does not sell. Buyers only ever see whether it has been met, never the number. Leave blank to sell at any price.') + '</div>' +
         '<div class="ef-row">' + efRO('Est. low €', c.estimateLow, 'The bottom of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + efRO('Est. high €', c.estimateHigh, 'The top of the value range the AI estimates. Guidance for setting your price, not shown to buyers.') + '</div>' +
         '<div class="ef-row">' + ef('Buy Now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs, counted from the FIRST bid rather than from the day you list. Your lot waits in the shop until someone bids, so it does not disappear in a week nobody happened to look. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
-        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding.') + ef('Shipping \u20ac', 'e_ship', c.shipping, 'number', "Fallback only. The buyer is normally quoted live from the carrier for their own country, so this amount is not what they see. It is used if the carrier cannot be reached. Leave it at 0 unless you know why you are setting it.") + '</div>' +
+        // Weight, and no postage price.
+        //
+        // Asking a seller to name a shipping amount was asking them to guess a
+        // number that is almost never charged: the buyer picks a delivery option
+        // at checkout and we re-price that live from the carrier for their own
+        // country. The field's only real job was to be a fallback, and a fallback
+        // belongs in a table we maintain, not in a guess from someone who has no
+        // way of knowing what a parcel to Finland costs.
+        '<div class="ef-row">' + ef('Weight kg', 'e_weight', c.weightKg, 'number', 'Packed weight in kilograms, including the box and padding. This is what the carrier prices on, so it is worth getting close.') + '</div>' +
         '<div class="ef"><label class="ef-l">Fits through a letterbox</label>' +
           '<label class="lb-check"><input type="checkbox" id="e_letterbox"' + (c.letterbox ? ' checked' : '') + '>' +
           '<span>Yes, it lies flat in an envelope under about 3.2 cm</span></label>' +
@@ -5064,7 +5063,7 @@
         '<div class="buy-row" style="margin-top:20px"><button class="btn accent" id="saveLot" type="button">Save changes</button><button class="btn ghost" id="cancelLot" type="button">Cancel</button></div>';
       setCard(html, false);
       (function(){
-        const w = document.getElementById('e_weight'), sh = document.getElementById('e_ship'), hint = document.getElementById('shipHint');
+        const w = document.getElementById('e_weight'), hint = document.getElementById('shipHint');
         const sizeBox = document.getElementById('e_size');
         if (!w || !hint) return;
         function draw(){
@@ -5079,9 +5078,12 @@
           const why = (sc && sc.vol > kg)
             ? 'A ' + sc.label.toLowerCase() + ' parcel bills as <b>' + sc.vol + ' kg</b> of space even at ' + (kg || 0) + ' kg on the scales'
             : 'At ' + kg + ' kg on the scales';
-          hint.innerHTML = why + ', which is <b>' + q.band.toLowerCase() + '</b>: ' +
+          // Shown so a seller can price the lot knowing what a parcel costs, not
+          // so they can set it. There is nothing to apply any more: the buyer is
+          // quoted live for their own country and pays that.
+          hint.innerHTML = why + ', which is <b>' + q.band.toLowerCase() + '</b>: about ' +
             eur(q.nl) + ' within the Netherlands, ' + eur(q.eu) + ' to the EU, ' + eur(q.row) + ' beyond it. ' +
-            '<button type="button" class="hint-apply" data-nl="' + q.nl + '" data-eu="' + q.eu + '" data-row="' + q.row + '">Use these three</button>';
+            '<span style="color:var(--ink-3)">Your buyer is quoted their own country&rsquo;s rate at checkout and pays it.</span>';
         }
         if (sizeBox) sizeBox.addEventListener('click', e => {
           const b = e.target.closest('.sizebtn'); if (!b) return;
@@ -5096,13 +5098,6 @@
           careBox.querySelectorAll('.sizebtn').forEach(x => x.classList.toggle('on', x === b));
         });
         w.addEventListener('input', draw);
-        hint.addEventListener('click', function(e){
-          const btn = e.target.closest('.hint-apply'); if (!btn) return;
-          sh.value = btn.dataset.eu;
-          current.shippingNl = Number(btn.dataset.nl);
-          current.shippingRow = Number(btn.dataset.row);
-          draw();
-        });
         draw();
       })();
       document.getElementById('saveLot').addEventListener('click', () => {
@@ -5112,7 +5107,7 @@
           toy: g('e_toy'), maker: g('e_maker'), line: g('e_line'), year: g('e_year'),
           condition: g('e_condition'), completeness: g('e_completeness'),
           startingBid: num('e_bid'),
-          reserve: num('e_reserve'), buyNow: num('e_buynow'), shipping: num('e_ship'), weightKg: num('e_weight'),
+          reserve: num('e_reserve'), buyNow: num('e_buynow'), weightKg: num('e_weight'),
           sizeClass: (function(){ const b = document.querySelector('#e_size .sizebtn.on'); return b ? b.dataset.size : (current.sizeClass || null); })(),
           letterbox: (function(){ const el = document.getElementById('e_letterbox'); return el ? el.checked === true : (current.letterbox === true); })(),
           blurb: g('e_blurb'), notes: g('e_notes'),
