@@ -2055,6 +2055,16 @@
         <p>The fast-talking spots that made Galoob's smallest toys famous. They play inline here; the title opens the clip on YouTube.</p>
       </div>
       <div class="vidgrid">
+        <!-- First, because it is the oldest and because it is the line the page
+             above is actually about. The rest of this grid is Micro Machines. -->
+        <figure class="vid" data-yt="z7KFgIHM2ac">
+          <button class="vid-thumb" type="button" aria-label="Play: Galoob Mr. T 1983 commercial">
+            <img src="https://i.ytimg.com/vi/z7KFgIHM2ac/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
+            <span class="vid-ph">Galoob · film</span>
+            <span class="vid-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          </button>
+          <figcaption><a href="https://www.youtube.com/watch?v=z7KFgIHM2ac" target="_blank" rel="noopener noreferrer">Mr. T &middot; 1983 &#8599;</a></figcaption>
+        </figure>
         <figure class="vid" data-yt="NwZzYTvOXMk">
           <button class="vid-thumb" type="button" aria-label="Play: Micro Machines ads 1989">
             <img src="https://i.ytimg.com/vi/NwZzYTvOXMk/hqdefault.jpg" alt="" loading="lazy" onerror="this.remove()">
@@ -2860,6 +2870,15 @@
             </div>
           </label>
           <div class="thumbs" id="thumbs"></div>
+          <!-- The one thing a camera cannot record. A seller knows whether the
+               electronics still work and we were never asking, which on a toy
+               that has them is the difference between EUR 15 and EUR 90. -->
+          <label class="ef" id="sellerNotesWrap" style="margin-top:16px">
+            <span>Anything the photos can&rsquo;t show</span>
+            <textarea class="ei" id="sellerNotes" rows="3" maxlength="600"
+              placeholder="Does it work? Lights, sound, motor. Height with a tape measure. Battery corrosion, repairs, replaced parts, where you got it."></textarea>
+          </label>
+          <div class="sell-note" style="margin:-4px 0 14px">Optional, and worth a minute. We can grade what we can see, but we cannot tell from a photograph whether the eyes still light up, and on a toy that has electronics that is usually the largest single thing about what it is worth.</div>
           <button class="btn accent" id="curateBtn" disabled>Identify my toy</button>
           <div class="sell-note" id="sellNote">Your photos stay in your browser until you start identification. Identification is free. A listing is only used when you choose to publish the item for sale.</div>
         </div>
@@ -4382,6 +4401,8 @@
       files = [];
       current = null;
       draftId = null;
+      // The next toy is a different toy: its electronics are a different question.
+      const sn = document.getElementById("sellerNotes"); if (sn) sn.value = "";
       draftUrls = null;
       editing = false;
       input.value = '';
@@ -4490,14 +4511,20 @@
       if (!files.length) return;
       curateBtn.disabled = true; curateBtn.textContent = 'Identifying…';
       const stopTicker = stageTicker(LOOK_STAGES);
-      track('curate_start', { photos: files.length });
+      track('curate_start', { photos: files.length, notes: !!((document.getElementById('sellerNotes') || {}).value || '').trim() });
       try {
         // Pass 1 only. The search pass is asked for separately so the seller
         // gets a finished listing to read while the market is being checked.
         const res = await fetch(WORKER_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ images: files.map(f => f.dataUrl), skipComps: true }),
+          body: JSON.stringify({
+            images: files.map(f => f.dataUrl),
+            skipComps: true,
+            // Sent on the first pass, so it prices WITH what the seller knows
+            // rather than being corrected afterwards.
+            sellerNotes: (document.getElementById('sellerNotes') || {}).value || '',
+          }),
         });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || ('HTTP ' + res.status));
@@ -4997,25 +5024,18 @@
       return 0.15;
     }
 
-    // Non-blocking: legitimate sometimes, but usually a mistake worth flagging.
-    function priceWarning(c){
-      if (c.saleType === 'fixed') return null;
-      const bid = Number(c.startingBid || 0), hi = Number(c.estimateHigh || 0);
-      // Free postage on an auction is a real choice, but it has to be made with
-      // the numbers in view: at the opening bid the postage comes out of a much
-      // smaller amount than the seller is imagining.
-      // The free-postage warning is gone with the field it was about.
-      //
-      // It fired whenever shipping was zero and told the seller they were paying
-      // the postage. That was never true once live quoting shipped: the buyer
-      // chooses a delivery option at checkout and is charged for it, whatever the
-      // listing says. It was a warning about a state that no longer exists,
-      // arguing from a premise the checkout had already replaced.
-      if (hi > 0 && bid > hi)
-        return { title: 'The starting price is above the estimate.',
-                 body: 'You are starting at ' + eur(bid) + ' while the estimate tops out at ' + eur(hi) + '. That is allowed, but a high starting price is the usual reason a lot gets no bids at all. A low start with competition tends to finish higher.' };
-      return null;
-    }
+    // There is no priceWarning any more, and that is the point.
+    //
+    // Two lived here. The free-postage one went with the field it was about. The
+    // last one told a seller their starting price was above our estimate, and
+    // Ramon killed it on the Dor Mei Godzilla: our own AI had read a working
+    // electronic figure as a painted one and capped it at EUR 40, he corrected it
+    // to EUR 69, and the site popped a dialogue implying he had got it wrong.
+    //
+    // An estimate we generated is not a fact to measure the seller against. They
+    // are holding the toy. When our number and theirs disagree, the one that has
+    // actually seen the thing work should not be the one being warned.
+
     function showPriceError(msg){
       const box = document.getElementById('priceErr');
       if (box){ box.textContent = msg; box.hidden = false; box.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
@@ -5130,9 +5150,7 @@
         const bad = priceProblem(next);
         if (bad){ showPriceError(bad); return; }
         current = next;
-        const warn = priceWarning(current);
         viewMode();
-        if (warn) setTimeout(() => openModal('Worth a second look', warn.title, warn.body), 60);
       });
       document.getElementById('cancelLot').addEventListener('click', viewMode);
     }
