@@ -55,6 +55,22 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // checkout joins them for a different reason: it exists only while a purchase
 // is in progress, so a crawled copy would be an empty address form asking for
 // money, indexed under the shop's own name.
+// The documentary pages, and the company each one is about. "about" is the field
+// that tells a machine these are pages concerning a real manufacturer rather than
+// pages that merely mention one.
+const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei"]);
+const MOLDER_NAME = {
+  empire: "Kenner Products",
+  tmnt: "Playmates Toys",
+  ljn: "LJN",
+  galoob: "Galoob",
+  thinkway: "Thinkway Toys",
+  kaiju: "Marusan Shoten, Bullmark and Popy",
+  imperial: "Imperial Toy Corporation",
+  palitoy: "Palitoy",
+  dormei: "Dor Mei",
+};
+
 const SKIP = new Set(["lot", "seller", "account", "artifact", "home", "checkout"]);
 
 let written = 0;
@@ -79,6 +95,42 @@ for (const view of Object.keys(PATHS)) {
     .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(url) + "$2")
     .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
     .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2");
+
+  // Structured data for the documentary pages, per path.
+  //
+  // These nine are articles: researched, argued, and written from toys somebody
+  // actually held. Until now they carried only the site-wide Organization node,
+  // so a crawler saw nine anonymous pages with no author and no subject. That is
+  // the exact shape Google's guidance tells you not to be, and the one this site
+  // had least excuse for, because the first-hand part is true.
+  //
+  // Injected here rather than written into index.html because the author, the
+  // headline and the subject differ per page, and the source file has one head.
+  if (view.startsWith("molders") || MOLDER.has(view)) {
+    const node = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "@id": url + "#article",
+      headline: title.split(" \u00b7 ")[0],
+      description: desc,
+      url,
+      isPartOf: { "@id": SITE + "/#website" },
+      publisher: { "@id": SITE + "/#org" },
+      author: {
+        "@type": "Person",
+        name: "Ramon Gervais",
+        url: SITE + "/about",
+        affiliation: { "@id": SITE + "/#org" },
+      },
+      about: { "@type": "Organization", name: MOLDER_NAME[view] || title.split(" \u00b7 ")[0] },
+      inLanguage: "en",
+    };
+    out = out.replace(
+      "</head>",
+      '<script type="application/ld+json">' + JSON.stringify(node) + "</script></head>"
+    );
+    if (!out.includes('"@type":"Article"')) throw new Error(view + ": Article schema was not injected");
+  }
 
   // Every replacement has to have bitten. A silent no-op would ship a file that
   // claims to be the packages page while its head still says the home page.

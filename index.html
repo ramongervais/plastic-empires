@@ -350,6 +350,25 @@
   /* The card box is a three-column grid, so the waiting mark and the failure line
      have to be told to span it or they sit squeezed into the first column. */
   #plansModalCards .pay-wait, #plansModalCards .acct-empty { grid-column:1 / -1; justify-content:center; padding:30px 0; margin:0; }
+  /* First-hand evidence, shown as such. A photograph of the object we actually
+     handled is the one thing a page about an undocumented maker can offer that
+     a compiler of other people's listings cannot. */
+  .ev-grid { display:grid; gap:24px; margin-top:8px; }
+  @media (min-width:760px){ .ev-grid { grid-template-columns:1fr 1fr; } }
+  .ev { margin:0; }
+  .ev img { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:4px; }
+  .ev figcaption { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:12px; max-width:56ch; }
+  .ev figcaption b { color:var(--ink); }
+
+  /* The byline. Nine essays written from toys in someone's hands were reading as
+     nine anonymous pages, which is the one thing Google's guidance says not to
+     be and the one thing this site had least excuse for. */
+  .byline { display:flex; align-items:baseline; gap:8px 14px; flex-wrap:wrap;
+    font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-3); margin-top:22px; padding-top:14px; border-top:1px solid var(--line); }
+  .byline b { color:var(--ink); font-weight:600; }
+  .byline .sep { color:var(--line-2); }
+
   /* ---- Sources, and the way onward ------------------------------------
      A molder page used to end. You read to the bottom of Galoob and the site
      simply stopped: no way back up, and nowhere to go next, which on a set of
@@ -1392,6 +1411,7 @@
       <h1 class="empire-title">Kenner</h1>
       <div class="empire-dek">Cincinnati, Ohio · 1947 – 2000</div>
       <p class="empire-lede">The company that turned licenses into legends. From a toy oven that actually baked to an empty box that launched Star Wars, Kenner spent five decades deciding what a generation would find under the tree.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1947</div><div class="fl">Founded, Cincinnati</div></div>
         <div class="fact"><div class="fn">300M+</div><div class="fl">Star Wars figures sold, 1978–85</div></div>
@@ -1630,6 +1650,7 @@
       <h1 class="empire-title">Teenage Mutant Ninja Turtles</h1>
       <div class="empire-dek">Mirage Studios · Playmates Toys · 1984 – 1997</div>
       <p class="empire-lede">Two cartoonists, a kitchen-table joke and an idea that got wildly out of hand. In four years the Turtles went from a 3,000-copy black-and-white parody to the action figures on every shelf in the Western world.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1984</div><div class="fl">First comic, self-published</div></div>
         <div class="fact"><div class="fn">3,000</div><div class="fl">Copies of issue #1</div></div>
@@ -1892,6 +1913,7 @@
       <h1 class="empire-title">LJN</h1>
       <div class="empire-dek">New York City · 1970 – 1994</div>
       <p class="empire-lede">The company most people can only name by its rainbow. LJN made the first E.T. toys, the rubber wrestlers that ruled the '80s playground, and a run of games so notorious the logo became a punchline. Behind those three letters is a stranger story.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1970</div><div class="fl">Founded, New York</div></div>
         <div class="fact"><div class="fn">$35k</div><div class="fl">The E.T. license fee</div></div>
@@ -2100,6 +2122,7 @@
       <h1 class="empire-title">Galoob</h1>
       <div class="empire-dek">San Francisco · 1957 – 1998</div>
       <p class="empire-lede">A family firm that began with a wind-up monkey and nearly died twice, then saved itself by making the smallest cars in the world. Galoob's back catalog hides a courtroom victory that changed gaming, and a toy recalled for putting eyes out.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1957</div><div class="fl">Founded, San Francisco</div></div>
         <div class="fact"><div class="fn">21</div><div class="fl">David Galoob's age at the helm</div></div>
@@ -2326,6 +2349,7 @@
       <h1 class="empire-title">Thinkway</h1>
       <div class="empire-dek">Markham, Ontario · 1984 &#8211; 2021</div>
       <p class="empire-lede">The little Canadian toy company that made one of the smartest bets in toy history. Mattel passed. Hasbro passed. Thinkway looked at a cowboy, a spaceman and a film nobody had ever made before, and said yes.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1995</div><div class="fl">Toy Story master licence</div></div>
         <div class="fact"><div class="fn">12&#8243;</div><div class="fl">The Buzz Pixar wanted</div></div>
@@ -2560,6 +2584,7 @@
       <h1 class="empire-title">Kaiju</h1>
       <div class="empire-dek">Marusan · Bullmark · Popy · Tokyo · 1966 – 1983</div>
       <p class="empire-lede">The monsters that stomped across late-night Japanese television, cast in soft vinyl and painted by hand. Three Tokyo houses turned the Showa-era kaiju boom into toys, and barely sent one abroad. Today they are among the most coveted objects in collecting.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1966</div><div class="fl">First Godzilla in soft vinyl</div></div>
         <div class="fact"><div class="fn">1969</div><div class="fl">Bullmark rises from Marusan</div></div>
@@ -2765,6 +2790,7 @@
       <h1 class="empire-title">Imperial Toy</h1>
       <div class="empire-dek">Los Angeles, California · 1969 &#8211; 2020</div>
       <p class="empire-lede">The company that proved a toy did not need a television commercial, a giant box or a place on the Christmas list to become unforgettable. Imperial specialised in the little things: bouncing balls, bubbles, rubber creatures, monsters and wonderfully strange novelties that children could actually afford. And behind it was Fred Kort, a man who had lost much of his own childhood in wartime Europe and went on to spend his adult life making toys for other people's.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1969</div><div class="fl">Founded in Los Angeles</div></div>
         <div class="fact"><div class="fn">800+</div><div class="fl">Toys in production at its height</div></div>
@@ -2977,6 +3003,7 @@
       <h1 class="empire-title">Palitoy</h1>
       <div class="empire-dek">Coalville, Leicestershire &middot; 1919 &ndash; 1986</div>
       <p class="empire-lede">The most coveted Star Wars playset in the world is made of cardboard. Not because anyone wanted it that way: Palitoy could not afford the plastic. That decision, taken in a Leicestershire factory in 1978, is why a British company most collectors outside the UK had never heard of now sits near the top of the list.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">1919</div><div class="fl">Founded as Cascelloid</div></div>
         <div class="fact"><div class="fn">20m</div><div class="fl">Action Man sold by the late '70s</div></div>
@@ -3212,6 +3239,7 @@
       <h1 class="empire-title">Dor Mei</h1>
       <div class="empire-dek">Hong Kong, cast in China &middot; 1986</div>
       <p class="empire-lede">Every other maker on this site left a paper trail: founders, addresses, lawsuits, an obituary. Dor Mei left toys. No founding date anyone agrees on, no factory address, no company history, not one interview. What survives is the moulding itself, stamped into the soles of monsters that were never licensed to exist. It turns out to be enough: the one encyclopaedia that mentions this company dates its figures a decade wrong, and the stamp on the foot is what proves it. This is what the record looks like when nobody bothered to keep it, and what a toy can still tell you anyway.</p>
+      <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>From examples we have handled</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
         <div class="fact"><div class="fn">36 cm</div><div class="fl">The large figure, 14 to 15 inches</div></div>
         <div class="fact"><div class="fn">0</div><div class="fl">Dorsal fins, which is the tell</div></div>
@@ -3264,7 +3292,7 @@
       <ul class="pts">
         <li class="pt">
           <span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17c3-6 6-9 9-9s6 3 9 9"/><path d="M12 8V4"/></svg></span>
-          <span class="pt-t"><b>No dorsal fins.</b> This is the giveaway and it is the first thing to look at. Godzilla's back plates are the single most recognisable thing about the character, and Dor Mei left them off. A large vinyl kaiju with a smooth or lightly ridged back is very unlikely to be a licensed figure at all.</span>
+          <span class="pt-t"><b>The back plates are wrong.</b> Godzilla's tall triangular dorsal fins are the most recognisable thing about the character, and Dor Mei did not reproduce them: our own figure carries a row of low rounded nubs down the neck that fade out along the back. Wikizilla describes these figures as having no dorsal fins at all, which is not quite what ours shows, and we are going with the toy. Either way a large vinyl kaiju whose spine is bumps rather than blades is not a licensed figure.</span>
         </li>
         <li class="pt">
           <span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.5h15v10h-15z"/><path d="M8 10.5V7a4 4 0 0 1 7.7-1.5"/></svg></span>
@@ -3278,6 +3306,24 @@
     </div>
   </section>
 
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">The evidence</div><h2>Our own figure, photographed</h2></div>
+        <p>Everything this page claims about the date comes off these two feet. They are not stock images: this is the example we handled, and it is why the page can disagree with the reference work.</p>
+      </div>
+      <div class="ev-grid">
+        <figure class="ev">
+          <img src="/Empires/DorMei/dormei-stamp.jpg" alt="The undersides of both feet of a Dor Mei vinyl kaiju. The left foot is moulded DOR MEI, registered trademark, MADE IN CHINA, copyright 1986. The right foot carries a list of United States patent numbers." loading="lazy" onerror="this.closest('figure').remove()">
+          <figcaption><b>The soles.</b> One foot reads <b>DOR MEI &reg; &middot; MADE IN CHINA &middot; &copy; 1986</b>. The other carries a list of US patent numbers, which is a curious thing to find on a figure of a character its maker had no right to cast: the body was unlicensed, the mechanism inside it apparently was not treated the same way.</figcaption>
+        </figure>
+        <figure class="ev">
+          <img src="/Empires/DorMei/dormei-figure.jpg" alt="A Dor Mei vinyl kaiju figure in profile, showing a row of low rounded nubs along the neck and back instead of Godzilla's tall triangular dorsal plates, and one red painted eye." loading="lazy" onerror="this.closest('figure').remove()">
+          <figcaption><b>The spine.</b> Low rounded nubs from the head down the neck, fading along the back, where a licensed Godzilla has tall maple-leaf plates. This is the fastest way to know what you are looking at from across a room.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
   <section class="band">
     <div class="wrap">
       <div class="band-head">
