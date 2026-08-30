@@ -4717,7 +4717,9 @@
         dropped.push(m[1]);
         delete row[m[1]];
       }
-      return { error: { message: 'Too many unknown columns. Run the pending migration in admin/schema.sql.' } };
+      // The seller gets a sentence; the detail goes where a developer looks.
+      console.error('Save failed: too many unknown columns. Run the pending migration in admin/schema.sql.');
+      return { error: { message: 'We could not save that just now. Nothing was lost, so please try again in a moment.' } };
     }
 
     // Append-only calibration record. Never allowed to fail the publish: the
@@ -4894,7 +4896,7 @@
         } catch (err) {
           const msg = String((err && err.message) || err);
           openModal('Could not save the draft', 'Something went wrong.',
-            /lot_drafts/.test(msg) ? 'The lot_drafts table does not exist yet. Run section 6 of admin/schema.sql.' : msg);
+            /lot_drafts/.test(msg) ? 'Drafts are not available just yet. Your photos and details are still on screen, so you can publish now instead.' : msg);
         } finally { dBtn.disabled = false; dBtn.textContent = draftId ? 'Update draft' : 'Save as draft'; }
       });
       document.getElementById('submitLot').addEventListener('click', async () => {
@@ -4934,7 +4936,15 @@
             const wasToy = current.toy || 'Your toy';
             resetSell();   // clear the form so the next lot can go straight in
             track('lot_listed', { preview: !!pre }, lotId);
-            openModal(pre ? 'Lot in preview' : 'Lot listed', wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'), 'Saved to the database' + (urls.length ? ' with ' + urls.length + ' photo(s)' : '') + '. ' + (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.' : 'It now appears in the Shop.') + ' The page is cleared, so you can start the next one.');
+            // "Saved to the database with 6 photo(s)" was two faults in one line.
+            // Nobody listing a toy cares that we keep a database, and the (s) is
+            // the machine showing through where a sentence should be.
+            openModal(pre ? 'Lot in preview' : 'Lot listed',
+              wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'),
+              (urls.length ? 'Saved with ' + urls.length + ' photo' + (urls.length === 1 ? '' : 's') + '. ' : 'Saved. ') +
+              (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.'
+                   : 'It now appears in the Shop.') +
+              ' The page is cleared, so you can start the next one.');
           } catch (err) {
             const msg = String((err && err.message) || err);
             if (/NO_TOKENS/.test(msg)) openModal('Out of listings', 'No listings left this month.', 'You need one listing to publish a lot. Open your account to buy more, or switch to Trader for 50 listings a month.');
@@ -6161,7 +6171,7 @@
       if (error){
         b.disabled = false; b.textContent = 'Relist';
         if (/NO_TOKENS/.test(error.message || '')) openModal('Out of listings', 'No listings left this month.', 'Relisting uses one listing. Buy more from your account, or switch to Trader for 50 listings a month.');
-        else if (/relist_lot/.test(error.message || '')) openModal('Not available yet', 'The relist function is missing.', 'Run section 11 of admin/schema.sql, then try again.');
+        else if (/relist_lot/.test(error.message || '')) { console.error('relist_lot is missing. Run section 11 of admin/schema.sql.'); openModal('Not available yet', 'Relisting is not switched on yet.', 'We have been told. Your lot is safe and still in your account, so nothing is lost.'); }
         else openModal('Could not relist', 'Something went wrong.', error.message || String(error));
         return;
       }
@@ -6324,7 +6334,8 @@
         } else if (/violates check constraint/i.test(error.message || '')){
           bfMsg('One of those values was refused: ' + error.message, 'bad');
         } else if (/permission denied|not allowed/i.test(error.message || '')){
-          bfMsg('Not allowed to save that field. Run section 23 of admin/schema.sql.', 'bad');
+          console.error('Shopfront save refused: run section 23 of admin/schema.sql.');
+          bfMsg('We could not save that just now. Please try again in a moment.', 'bad');
         } else {
           bfMsg('Could not save: ' + (error.message || String(error)), 'bad');
         }
