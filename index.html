@@ -350,6 +350,38 @@
   /* The card box is a three-column grid, so the waiting mark and the failure line
      have to be told to span it or they sit squeezed into the first column. */
   #plansModalCards .pay-wait, #plansModalCards .acct-empty { grid-column:1 / -1; justify-content:center; padding:30px 0; margin:0; }
+  /* ---- Sources, and the way onward ------------------------------------
+     A molder page used to end. You read to the bottom of Galoob and the site
+     simply stopped: no way back up, and nowhere to go next, which on a set of
+     eight documentary pages is the one thing that makes them a set. */
+  .src { border-top:1px solid var(--ink); padding-top:18px; }
+  .src-note { font-family:var(--body); font-size:14px; color:var(--ink-2); max-width:62ch; margin:0 0 16px; }
+  .src-list { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:10px 12px; }
+  .src-list a { display:inline-flex; align-items:baseline; gap:8px; font-family:var(--body); font-size:14px;
+    color:var(--ink); text-decoration:none; border:1px solid var(--line); border-radius:3px; padding:9px 13px;
+    transition:border-color .15s ease, background .15s ease; }
+  .src-list a:hover { border-color:var(--ink); background:var(--paper-2); }
+  .src-w { font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+
+  .onward { border-top:1px solid var(--ink); padding-top:18px; margin-top:56px; }
+  .onward-head { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .totop { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:3px;
+    padding:8px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .totop:hover { border-color:var(--ink); color:var(--ink); }
+  .totop svg { width:11px; height:11px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .nextgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  @media (max-width:900px){ .nextgrid { grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:560px){ .nextgrid { grid-template-columns:repeat(2,1fr); } }
+  .nexttile { background:var(--paper); padding:16px 16px 18px; cursor:pointer; border:0; text-align:left;
+    font-family:inherit; display:flex; flex-direction:column; gap:4px; transition:background .15s ease; }
+  .nexttile:hover { background:var(--paper-2); }
+  .nexttile .nm { font-family:var(--display); font-weight:600; font-size:16px; letter-spacing:-.01em; color:var(--ink); }
+  .nexttile .yr { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+  .nexttile .fo { font-family:var(--body); font-size:12.5px; color:var(--ink-2); line-height:1.45; }
+  .nexttile.is-here { background:var(--panel); cursor:default; }
+  .nexttile.is-here .nm { color:var(--ink-3); }
+
   /* Points with a mark. The icon sits in its own column so the second and third
      lines of text align under the first rather than under the glyph, which is the
      thing that makes a bulleted paragraph read as a list instead of a ragged wall. */
@@ -1539,6 +1571,49 @@
       </div>
     </div>
   </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Kenner_Products" target="_blank" rel="noopener noreferrer">Kenner Products <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <div class="nexttile is-here"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <!-- ============================ EMPIRE: TMNT ============================ -->
@@ -1756,6 +1831,50 @@
       </div>
     </div>
   </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Playmates_Toys" target="_blank" rel="noopener noreferrer">Playmates Toys <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Teenage_Mutant_Ninja_Turtles_(1987_TV_series)" target="_blank" rel="noopener noreferrer">The 1987 series <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <div class="nexttile is-here"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <!-- ============================ EMPIRE: LJN ============================ -->
@@ -1917,6 +2036,49 @@
           </button>
           <figcaption><a href="https://www.youtube.com/watch?v=ptSf5R9dcbw" target="_blank" rel="noopener noreferrer">Superstars · retro spot &#8599;</a></figcaption>
         </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/LJN" target="_blank" rel="noopener noreferrer">LJN <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <div class="nexttile is-here"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
       </div>
     </div>
   </section>
@@ -2097,6 +2259,51 @@
           </button>
           <figcaption><a href="https://www.youtube.com/watch?v=sIJG6uHfnMg" target="_blank" rel="noopener noreferrer">Sky Dancers · 1994 &#8599;</a></figcaption>
         </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Galoob" target="_blank" rel="noopener noreferrer">Galoob <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/The_A-Team" target="_blank" rel="noopener noreferrer">The A-Team <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Micro_Machines" target="_blank" rel="noopener noreferrer">Micro Machines <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <div class="nexttile is-here"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
       </div>
     </div>
   </section>
@@ -2290,6 +2497,49 @@
       </div>
     </div>
   </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Toy_Story" target="_blank" rel="noopener noreferrer">Toy Story <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <div class="nexttile is-here"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <!-- ============================ EMPIRE: KAIJU ============================ -->
@@ -2445,6 +2695,52 @@
           </button>
           <figcaption><a href="https://www.youtube.com/watch?v=MrW3nzf53vo" target="_blank" rel="noopener noreferrer">Vintage Bullmark kaiju · 1970s &#8599;</a></figcaption>
         </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Marusan_Sh%C5%8Dten" target="_blank" rel="noopener noreferrer">Marusan Shōten <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Bullmark" target="_blank" rel="noopener noreferrer">Bullmark <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Popy" target="_blank" rel="noopener noreferrer">Popy <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Sofubi" target="_blank" rel="noopener noreferrer">Sofubi <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <div class="nexttile is-here"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
       </div>
     </div>
   </section>
@@ -2609,6 +2905,49 @@
           </button>
           <figcaption><a href="https://www.youtube.com/watch?v=0tQIZEBibx4" target="_blank" rel="noopener noreferrer">6&#8243; Imperial Godzilla, 1985 · The Geek Chest &#8599;</a></figcaption>
         </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Imperial_Toy_Corporation" target="_blank" rel="noopener noreferrer">Imperial Toy Corporation <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <div class="nexttile is-here"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">You are here.</span></div>
+          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+        </div>
       </div>
     </div>
   </section>
@@ -2803,6 +3142,50 @@
           </button>
           <figcaption><a href="https://www.youtube.com/watch?v=S9N9A8jD0BM" target="_blank" rel="noopener noreferrer">Action Man SAS Division &middot; a lost advert &#8599;</a></figcaption>
         </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where this comes from.
+       These pages make claims about real companies and real dates, and until now
+       they made them with nothing to check them against. An outbound link to the
+       encyclopaedia is the cheapest possible way to be answerable for a sentence,
+       and it is also how a page earns the right to be quoted by anything that
+       reads it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="src">
+        <div class="ey">Where this comes from</div>
+        <p class="src-note">Our own reading of the toys, checked against the public record. Follow these if you want to go further than we did.</p>
+        <ul class="src-list">
+          <li><a href="https://en.wikipedia.org/wiki/Palitoy" target="_blank" rel="noopener noreferrer">Palitoy <span class="src-w">Wikipedia</span> &#8599;</a></li>
+          <li><a href="https://en.wikipedia.org/wiki/Action_Man" target="_blank" rel="noopener noreferrer">Action Man <span class="src-w">Wikipedia</span> &#8599;</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- The way onward. Eight documentary pages that each dead-ended were eight
+       separate articles; with this they are a set you can read through. The
+       current one stays in the grid, greyed, so the row does not reshuffle as
+       you move between makers and you can see where you are in the eight. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="onward">
+        <div class="onward-head">
+          <div><div class="ey">Keep reading</div><h2 style="font-family:var(--display);font-weight:600;font-size:clamp(21px,2.2vw,27px);letter-spacing:-.015em;margin:6px 0 0">The other molders</h2></div>
+          <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
+        </div>
+        <div class="nextgrid">
+          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <div class="nexttile is-here"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">You are here.</span></div>
+        </div>
       </div>
     </div>
   </section>
@@ -3982,6 +4365,15 @@
   document.addEventListener('click', e => {
     const wb = e.target.closest('[data-watch]');
     if (wb){ e.preventDefault(); e.stopPropagation(); toggleWatch(wb); return; }
+    // Back to the top of a long documentary page. Smooth unless the reader has
+    // asked their machine not to animate things, which is a setting people turn
+    // on because motion makes them ill rather than because they dislike it.
+    if (e.target.closest('[data-totop]')){
+      e.preventDefault();
+      const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: still ? 'auto' : 'smooth' });
+      return;
+    }
     const emp = e.target.closest('[data-empire]');
     if (emp){
       e.preventDefault();
