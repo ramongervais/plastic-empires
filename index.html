@@ -5018,6 +5018,13 @@
 
     function showCuration(c, thenPrice){
       if (!c){ setCard('<div class="rc-empty">No details returned.</div>', true); return; }
+      // Postage comes from the identification, not from the seller with a scale.
+      // Six lots reached the site with no weight at all, which meant the carrier
+      // was asked to price an assumed one kilo: on a 33cm vinyl kaiju that is a
+      // parcel quoted at a third of what it costs to send, and the shortfall
+      // lands on the seller after the buyer has already paid.
+      if (c.packedWeightKg != null && c.weightKg == null) c.weightKg = Number(c.packedWeightKg) || null;
+      if (c.parcelSize && !c.sizeClass) c.sizeClass = String(c.parcelSize).toUpperCase();
       if (c.eligible === false){
         setCard('<div class="rc-head"><div><div class="rc-title">Can\'t be listed</div><div class="rc-sub">Rejected automatically</div></div></div><div class="rc-notes" style="margin-top:16px">' + esc(c.rejectionReason || 'This item is not a collectible toy and cannot be listed on Hammer &amp; Mold.') + '</div><div class="rc-notes" style="color:var(--ink-3);margin-top:10px">No listing was used. Only genuine vintage toys and collectibles are allowed.</div>', true);
         current = null;

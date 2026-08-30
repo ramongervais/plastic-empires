@@ -82,8 +82,12 @@
   .tbl-scroll { overflow-x:auto; }
 
   /* ---------- Badges ---------- */
-  .badge { display:inline-block; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; padding:5px 9px; border:1px solid var(--line); border-radius:2px; color:var(--ink-3); white-space:nowrap; }
+  /* A status, not a control. It sat in a row beside the Edit button wearing the
+     same border and the same uppercase label, so it read as pressable. */
+  .badge { cursor:default; user-select:none; display:inline-block; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; padding:5px 9px; border:1px solid var(--line); border-radius:2px; color:var(--ink-3); white-space:nowrap; }
   .badge.live { border-color:var(--live); color:var(--live); }
+  .lot-open { color:inherit; text-decoration:none; border-bottom:1px solid transparent; }
+  .lot-open:hover { border-bottom-color:var(--ink); }
   .badge.sched { border-color:var(--warn); color:var(--warn); }
   .badge.done { border-color:var(--line); color:var(--ink-3); }
   .badge.paid { border-color:var(--ink); color:var(--ink); background:var(--ink); color:var(--paper); }
@@ -565,6 +569,8 @@
 <script>
 (function(){
   'use strict';
+  // Where the public site lives, so a lot row can open the thing it describes.
+  const SITE = 'https://hammerandmold.com';
   const SUPA_URL = 'https://yazoeshmplhmxefnovjy.supabase.co';
   const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
   const SB = (window.supabase && window.supabase.createClient)
@@ -935,15 +941,26 @@
       const b = lotBids[l.id] || { n: 0, max: 0 };
       const cls = l.status === 'live' ? 'live' : (l.status === 'preview' ? 'sched' : (l.status === 'unsold' ? 'refunded' : 'done'));
       const label = l.status === 'ended' ? 'awaiting payment' : l.status;
+      // The lot name opens the lot. The badge is a status, not a control, and it
+      // was styled exactly like the Edit button beside it, so of course it read
+      // as one: Ramon clicked PREVIEW expecting to see the lot and got nothing.
+      // A thing that looks pressable has to be pressable or stop looking it.
+      const kg = Number(l.weight_kg || 0);
+      const ship = kg > 0
+        ? 'quoted live · ' + kg + ' kg'
+        : '<b style="color:var(--bad)">no weight</b>';
       return '<tr>' +
-        '<td><div class="nm">' + esc(l.toy || 'Untitled') + '</div>' +
+        '<td><a class="nm lot-open" href="' + esc(SITE + '/lot/' + l.id + '/') + '" target="_blank" rel="noopener">' + esc(l.toy || 'Untitled') + '</a>' +
           '<div class="sub">' + esc([l.maker, l.year].filter(Boolean).join(' · ')) + '</div></td>' +
         '<td><span class="badge ' + cls + '">' + esc(label) + '</span></td>' +
         '<td class="num">' + b.n + '</td>' +
         '<td class="num">' + eur(b.n ? b.max : l.starting_bid) + '</td>' +
-        '<td class="sub">' + (Number(l.shipping_eur || 0) > 0
-            ? eur(l.shipping_nl_eur || 0) + ' / ' + eur(l.shipping_eur) + ' / ' + eur(l.shipping_row_eur || 0)
-            : 'free') + '</td>' +
+        // Shipping is no longer a number the seller sets: the buyer is quoted
+        // live from the weight at checkout. So the honest thing to show here is
+        // whether we HAVE a weight to quote from. 'free' was reporting an empty
+        // column as a decision, and on a 33 cm vinyl Godzilla with no weight
+        // recorded the carrier gets asked to price one assumed kilo.
+        '<td class="sub">' + ship + '</td>' +
         '<td class="sub">' + (l.stamp_shown === false ? 'not shown' : (l.stamp_shown === true ? 'yes' : '—')) + '</td>' +
         '<td><button class="btn ghost sm" type="button" data-editlot="' + esc(l.id) + '">Edit</button></td>' +
       '</tr>';
