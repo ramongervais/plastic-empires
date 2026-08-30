@@ -4973,6 +4973,18 @@
       if (bid < 0 || (buy != null && buy < 0)) return 'Prices cannot be negative.';
       return null;
     }
+    // What this seller actually pays on a sale. Falls back to Starter's rate when
+    // the package table has not loaded or nobody is signed in, which is the safe
+    // direction: it under-promises rather than over-promises what they keep.
+    function myRate(){
+      try {
+        const key = (typeof currentPlanKey === 'function' && currentPlanKey()) || 'starter';
+        const p = (PLAN_CACHE || []).find(x => x.key === key);
+        if (p && typeof p.commission === 'number') return p.commission;
+      } catch (e) {}
+      return 0.15;
+    }
+
     // Non-blocking: legitimate sometimes, but usually a mistake worth flagging.
     function priceWarning(c){
       if (c.saleType === 'fixed') return null;
@@ -4984,16 +4996,23 @@
         const billed = chargeableKg(c.weightKg, c.sizeClass);
         const cost = billed ? bandFor(billed).eu : 0;
         if (cost){
-          const net = bid - bid * 0.15 - cost;
-          return { title: 'You are paying the postage on this one.',
-                   body: 'Posting this costs about ' + eur(cost) + ' to the EU. If it sells at your opening bid of ' + eur(bid) +
-                         ', commission and postage leave you ' + eur(Math.round(net)) + '. That is fine if you meant it, and free postage does attract bidders. ' +
-                         'If you did not mean it, set the shipping amount instead: it is added once at checkout and commission is charged on the total, so putting it there costs you nothing extra.' };
+          // The seller's OWN rate, not a hardcoded 15%. This used to assume
+          // Starter for everybody, so a Dealer paying 8% was told they would keep
+          // less than they actually would: on a EUR 35 lot with EUR 15 postage it
+          // said EUR 15 when the true figure for them was EUR 17.
+          const rate = myRate();
+          const net = bid - bid * rate - cost;
+          return { title: 'You have set shipping to zero, so you pay the postage.',
+                   body: 'Nothing is charged to the buyer for postage on this lot, which means it comes out of your side. ' +
+                         'Posting it costs about ' + eur(cost) + ' to the EU, so if it sells at your starting price of ' + eur(bid) +
+                         ', your ' + (rate * 100).toFixed(0) + '% selling fee and the postage leave you ' + eur(Math.round(net)) + '. ' +
+                         'That is fine if you meant it, and free postage does attract bidders. ' +
+                         'If you did not mean it, put the amount in the shipping field: the buyer pays it once at checkout, and although the selling fee is charged on the total, adding it there still leaves you better off than absorbing it.' };
         }
       }
       if (hi > 0 && bid > hi)
-        return { title: 'The opening bid is above the estimate.',
-                 body: 'You are starting at ' + eur(bid) + ' while the estimate tops out at ' + eur(hi) + '. That is allowed, but a high opening price is the usual reason a lot gets no bids at all. A low start with competition tends to finish higher.' };
+        return { title: 'The starting price is above the estimate.',
+                 body: 'You are starting at ' + eur(bid) + ' while the estimate tops out at ' + eur(hi) + '. That is allowed, but a high starting price is the usual reason a lot gets no bids at all. A low start with competition tends to finish higher.' };
       return null;
     }
     function showPriceError(msg){
