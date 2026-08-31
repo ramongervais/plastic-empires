@@ -550,6 +550,13 @@
   .ship-opt.on { border-color:var(--ink); }
   .ship-opt input { margin-right:8px; }
   .ship-opt .so-t { font-family:var(--body); font-size:14px; display:flex; justify-content:space-between; gap:12px; font-variant-numeric:tabular-nums; }
+  /* The carrier sits between the service and the price, so the row reads as one
+     sentence: what it is, who carries it, what it costs. */
+  .ship-opt .so-c { font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-2); background:var(--paper-2); border:1px solid var(--line); border-radius:2px;
+    padding:3px 7px; margin-left:auto; margin-right:12px; white-space:nowrap; align-self:center; }
+  .ship-opt.on .so-c { border-color:var(--ink); color:var(--ink); }
+  .ship-opt .so-t b { margin-left:0; }
   .ship-opt .so-n { display:block; font-family:var(--body); font-size:12px; line-height:1.5; color:var(--ink-3); margin-top:4px; }
   .del-note { font-family:var(--body); font-size:12px; line-height:1.6; color:var(--ink-3); margin-top:10px; }
   .auc-card .cd { font-family:var(--label); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
@@ -7628,12 +7635,29 @@
     const drawTotal = () => {
       const ship = chosen ? Number(chosen.price) : 0;
       const box = document.getElementById('ckTotal');
-      const opt = (o) =>
-        '<label class="ship-opt' + (chosen && chosen.id === o.id ? ' on' : '') + '">' +
+      // Who is carrying it, said out loud.
+      //
+      // The worker has always returned the carrier and the checkout has always
+      // thrown it away, so a buyer chose between "Collect from a pickup point"
+      // and "Delivered to your door" with no idea whether that meant PostNL, DPD
+      // or DHL. In the Netherlands that is not a detail. People have a carrier
+      // they trust and a carrier whose notes they have found on the mat, and
+      // Marktplaats names every one of theirs for exactly this reason.
+      const CARRIER = { postnl: 'PostNL', dpd: 'DPD', dhl: 'DHL', budbee: 'Budbee',
+                        bpost: 'bpost', ups: 'UPS', dhl_express: 'DHL Express',
+                        gls: 'GLS', mondialrelay: 'Mondial Relay' };
+      const carrierName = c => CARRIER[String(c || '').toLowerCase()] ||
+        (c ? String(c).charAt(0).toUpperCase() + String(c).slice(1) : '');
+      const opt = (o) => {
+        const who = carrierName(o.carrier);
+        return '<label class="ship-opt' + (chosen && chosen.id === o.id ? ' on' : '') + '">' +
           '<input type="radio" name="shipopt" value="' + esc(o.id) + '"' + (chosen && chosen.id === o.id ? ' checked' : '') + '>' +
-          '<span class="so-t">' + esc(o.label) + '<b>' + money(o.price) + '</b></span>' +
+          '<span class="so-t">' + esc(o.label) +
+            (who ? '<span class="so-c">' + esc(who) + '</span>' : '') +
+            '<b>' + money(o.price) + '</b></span>' +
           '<span class="so-n">' + esc(o.note) + '</span>' +
         '</label>';
+      };
       // A pickup option that names no shop cannot be posted, so it is asked for
       // here rather than discovered after the money has moved.
       const needsPoint = !!(chosen && chosen.needs_point);
