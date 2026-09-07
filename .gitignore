@@ -17,3 +17,8 @@ admin/schema.sql
 /privacy/
 /help/
 /molders/
+/retrobrighting/
+
+# Local safety copies taken before a large edit. Never serve these: the repo
+# is public, so a committed .bak is a second copy of the site on the internet.
+*.bak

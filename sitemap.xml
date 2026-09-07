@@ -11,87 +11,92 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/sell</loc>
+    <loc>https://hammerandmold.com/sell/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/packages</loc>
+    <loc>https://hammerandmold.com/packages/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/we-buy</loc>
+    <loc>https://hammerandmold.com/we-buy/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/results</loc>
+    <loc>https://hammerandmold.com/results/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/about</loc>
+    <loc>https://hammerandmold.com/about/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/kenner</loc>
+    <loc>https://hammerandmold.com/molders/kenner/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/playmates</loc>
+    <loc>https://hammerandmold.com/molders/playmates/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/ljn</loc>
+    <loc>https://hammerandmold.com/molders/ljn/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/galoob</loc>
+    <loc>https://hammerandmold.com/molders/galoob/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/thinkway</loc>
+    <loc>https://hammerandmold.com/molders/thinkway/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/kaiju</loc>
+    <loc>https://hammerandmold.com/molders/kaiju/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/imperial</loc>
+    <loc>https://hammerandmold.com/molders/imperial/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/palitoy</loc>
+    <loc>https://hammerandmold.com/molders/palitoy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/molders/dor-mei</loc>
+    <loc>https://hammerandmold.com/molders/dor-mei/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/help</loc>
+    <loc>https://hammerandmold.com/retrobrighting/</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://hammerandmold.com/help/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/terms</loc>
+    <loc>https://hammerandmold.com/terms/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://hammerandmold.com/privacy</loc>
+    <loc>https://hammerandmold.com/privacy/</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

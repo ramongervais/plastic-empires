@@ -59,6 +59,9 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // that tells a machine these are pages concerning a real manufacturer rather than
 // pages that merely mention one.
 const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei"]);
+// Not a molder, but the same kind of page: researched, argued, signed. It gets
+// the same Article node, with a subject that is a process rather than a company.
+const ARTICLE_SUBJECT = { retrobright: "Retrobrighting" };
 const MOLDER_NAME = {
   empire: "Kenner Products",
   tmnt: "Playmates Toys",
@@ -82,7 +85,9 @@ for (const view of Object.keys(PATHS)) {
   const m = META[view];
   if (!m || !m[0]) { report.push("  skipped " + view + " (no meta)"); continue; }
   const [title, desc] = m;
-  const url = SITE + p;
+  // Trailing slash, because that is the form GitHub Pages answers with a 200.
+  // Naming the other one in the canonical points every crawler at a redirect.
+  const url = SITE + (p === "/" ? p : p.replace(/\/+$/, "") + "/");
 
   // Replace, never append: a second <title> or canonical is worse than a wrong
   // one, because which of them a crawler believes is not defined anywhere.
@@ -106,7 +111,7 @@ for (const view of Object.keys(PATHS)) {
   //
   // Injected here rather than written into index.html because the author, the
   // headline and the subject differ per page, and the source file has one head.
-  if (view.startsWith("molders") || MOLDER.has(view)) {
+  if (view.startsWith("molders") || MOLDER.has(view) || ARTICLE_SUBJECT[view]) {
     const node = {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -122,7 +127,9 @@ for (const view of Object.keys(PATHS)) {
         url: SITE + "/about",
         affiliation: { "@id": SITE + "/#org" },
       },
-      about: { "@type": "Organization", name: MOLDER_NAME[view] || title.split(" \u00b7 ")[0] },
+      about: ARTICLE_SUBJECT[view]
+        ? { "@type": "Thing", name: ARTICLE_SUBJECT[view] }
+        : { "@type": "Organization", name: MOLDER_NAME[view] || title.split(" \u00b7 ")[0] },
       inLanguage: "en",
     };
     out = out.replace(
