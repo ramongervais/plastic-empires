@@ -393,6 +393,7 @@
   @media (max-width:560px){ .nextgrid { grid-template-columns:repeat(2,1fr); } }
   .nexttile { background:var(--paper); padding:16px 16px 18px; cursor:pointer; border:0; text-align:left;
     font-family:inherit; display:flex; flex-direction:column; gap:4px; transition:background .15s ease; }
+  .nexttile { text-decoration:none; color:inherit; }
   .nexttile:hover { background:var(--paper-2); }
   .nexttile .nm { font-family:var(--display); font-weight:600; font-size:16px; letter-spacing:-.01em; color:var(--ink); }
   .nexttile .yr { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
@@ -1111,7 +1112,7 @@
     <nav class="top">
       <a href="#empires" class="hide-sm" data-nav="home">The Molders</a>
       <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
-      <a class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
+      <a href="/sell/" class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
       <a class="hide-sm" id="authLink" data-auth-label style="cursor:pointer">Sign in</a>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light or dark"><span class="theme-icon"></span></button>
       <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
@@ -1120,10 +1121,10 @@
   <div class="mobile-panel" id="mobilePanel">
     <a href="#empires" data-nav="home">The Molders</a>
     <a href="#collection" data-nav="home">Shop</a>
-    <a data-nav="sell">Sell</a>
-    <a data-nav="plans">Packages</a>
-    <a data-nav="buy">We buy</a>
-    <a data-nav="retrobright">Retro Brighting</a>
+    <a href="/sell/" data-nav="sell">Sell</a>
+    <a href="/packages/" data-nav="plans">Packages</a>
+    <a href="/we-buy/" data-nav="buy">We buy</a>
+    <a href="/retrobrighting/" data-nav="retrobright">Retro Brighting</a>
     <a href="https://www.instagram.com/meetthemolders/" target="_blank" rel="noopener">Instagram</a>
     <a href="https://x.com/meetthemolders" target="_blank" rel="noopener">X</a>
     <a id="authLinkM" data-auth-label>Sign in</a>
@@ -1334,7 +1335,7 @@
   <div class="wrap">
     <div class="crumb">
       <a data-nav="home">The Molders</a><span class="sep">/</span>
-      <a data-empire="kenner" style="color:var(--sw)">Star Wars</a><span class="sep">/</span>
+      <a href="/molders/kenner/" data-empire="kenner" style="color:var(--sw)">Star Wars</a><span class="sep">/</span>
       <span class="here">Millennium Falcon</span>
     </div>
 
@@ -1362,7 +1363,7 @@
 
         <div class="spec">
           <div class="row"><span class="k">Reference</span><span class="v">PE · SW · 001</span></div>
-          <div class="row"><span class="k">Maker</span><span class="v"><a data-empire="kenner" style="text-decoration:underline; text-underline-offset:3px; cursor:pointer">Kenner, Cincinnati ↗</a></span></div>
+          <div class="row"><span class="k">Maker</span><span class="v"><a href="/molders/kenner/" data-empire="kenner" style="text-decoration:underline; text-underline-offset:3px; cursor:pointer">Kenner, Cincinnati ↗</a></span></div>
           <div class="row"><span class="k">Released</span><span class="v">1979</span></div>
           <div class="row"><span class="k">Line</span><span class="v">Star Wars (1977 – 1985)</span></div>
           <div class="row"><span class="k">Condition</span><span class="v good">Loose · near-complete</span></div>
@@ -1659,14 +1660,14 @@
         </div>
         <div class="nextgrid">
           <div class="nexttile is-here"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -1921,15 +1922,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
           <div class="nexttile is-here"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -2130,15 +2131,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
           <div class="nexttile is-here"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -2357,15 +2358,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
           <div class="nexttile is-here"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -2592,15 +2593,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
           <div class="nexttile is-here"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -2798,15 +2799,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
           <div class="nexttile is-here"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -3007,15 +3008,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
           <div class="nexttile is-here"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -3247,15 +3248,15 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
           <div class="nexttile is-here"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">You are here.</span></div>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></button>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Unlicensed Godzillas, and no record of who made them.</span></a>
         </div>
       </div>
     </div>
@@ -3397,14 +3398,14 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></button>
-          <button class="nexttile" type="button" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></button>
-          <button class="nexttile" type="button" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></button>
-          <button class="nexttile" type="button" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></button>
-          <button class="nexttile" type="button" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></button>
-          <button class="nexttile" type="button" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></button>
-          <button class="nexttile" type="button" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars, and the 3¾-inch figure that set the standard.</span></a>
+          <a class="nexttile" href="/molders/playmates/" data-empire="tmnt"><span class="yr">1966 –</span><span class="nm">Playmates</span><span class="fo">Turtles by the million, out of Hong Kong.</span></a>
+          <a class="nexttile" href="/molders/ljn/" data-empire="ljn"><span class="yr">1970 – 1995</span><span class="nm">LJN</span><span class="fo">Wrestling rubber, and some famously bad games.</span></a>
+          <a class="nexttile" href="/molders/galoob/" data-empire="galoob"><span class="yr">1957 – 1998</span><span class="nm">Galoob</span><span class="fo">The A-Team, then the smallest cars in the world.</span></a>
+          <a class="nexttile" href="/molders/thinkway/" data-empire="thinkway"><span class="yr">1985 –</span><span class="nm">Thinkway Toys</span><span class="fo">The Buzz Lightyear nobody could keep in stock.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Japanese vinyl monsters, and who cast them.</span></a>
+          <a class="nexttile" href="/molders/imperial/" data-empire="imperial"><span class="yr">1969 –</span><span class="nm">Imperial Toy Corp</span><span class="fo">Dime-store dinosaurs and bagged rack toys.</span></a>
+          <a class="nexttile" href="/molders/palitoy/" data-empire="palitoy"><span class="yr">1935 – 1984</span><span class="nm">Palitoy</span><span class="fo">Britain’s Star Wars, moulded in Leicestershire.</span></a>
           <div class="nexttile is-here"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">You are here.</span></div>
         </div>
       </div>
@@ -3729,9 +3730,9 @@
           <button class="totop" type="button" data-totop><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg> Back to the top</button>
         </div>
         <div class="nextgrid">
-          <button class="nexttile" type="button" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars and The Real Ghostbusters, in the white ABS this page is about.</span></button>
-          <button class="nexttile" type="button" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Soft vinyl, which fails a different way entirely.</span></button>
-          <button class="nexttile" type="button" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Where the surface of the toy is the only archive there is.</span></button>
+          <a class="nexttile" href="/molders/kenner/" data-empire="kenner"><span class="yr">1947 – 2000</span><span class="nm">Kenner</span><span class="fo">Star Wars and The Real Ghostbusters, in the white ABS this page is about.</span></a>
+          <a class="nexttile" href="/molders/kaiju/" data-empire="kaiju"><span class="yr">1947 –</span><span class="nm">Marusan, Bullmark, Popy</span><span class="fo">Soft vinyl, which fails a different way entirely.</span></a>
+          <a class="nexttile" href="/molders/dor-mei/" data-empire="dormei"><span class="yr">1986</span><span class="nm">Dor Mei</span><span class="fo">Where the surface of the toy is the only archive there is.</span></a>
         </div>
       </div>
     </div>
@@ -3871,7 +3872,7 @@
           </tbody>
         </table>
       </div>
-      <div class="ch-note" style="max-width:70ch"><b>We pay about half of what we think a piece will fetch, and we say so up front.</b> That is what buying it outright costs us: we take the risk that it does not sell, we do the photographing and grading and packing, and we wait for our money instead of you. If you would rather have the other &euro;10,50 and do the work yourself, list it and keep 85%. Both offers are real and the page for the other one is <a data-nav="sell" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">here</a>.</div>
+      <div class="ch-note" style="max-width:70ch"><b>We pay about half of what we think a piece will fetch, and we say so up front.</b> That is what buying it outright costs us: we take the risk that it does not sell, we do the photographing and grading and packing, and we wait for our money instead of you. If you would rather have the other &euro;10,50 and do the work yourself, list it and keep 85%. Both offers are real and the page for the other one is <a href="/sell/" data-nav="sell" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">here</a>.</div>
     </div>
   </section>
 
@@ -3958,7 +3959,7 @@
 <!-- ============================ PLANS ============================ -->
 <main class="view" id="view-plans" hidden>
   <div class="wrap">
-    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a data-nav="sell">Sell</a><span class="sep">/</span><span class="here">Packages</span></div>
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a href="/sell/" data-nav="sell">Sell</a><span class="sep">/</span><span class="here">Packages</span></div>
   </div>
 
   <section class="band">
@@ -4179,7 +4180,7 @@
 
         <div class="terms-h">Contact</div>
         <p>RG Product Design &middot; Da Costastraat 49, 2032 MG Haarlem, Netherlands &middot; KvK 96149302 &middot; <a href="mailto:privacy@hammerandmold.com">privacy@hammerandmold.com</a></p>
-        <p style="color:var(--ink-3); font-size:13px">Draft v0.1 for review. Complete the [bracketed] fields and have a qualified adviser review before publishing. See also our <a data-nav="terms" style="text-decoration:underline">Terms &amp; Conditions</a>.</p>
+        <p style="color:var(--ink-3); font-size:13px">Draft v0.1 for review. Complete the [bracketed] fields and have a qualified adviser review before publishing. See also our <a href="/terms/" data-nav="terms" style="text-decoration:underline">Terms &amp; Conditions</a>.</p>
       </div>
     </div>
   </section>
@@ -4336,7 +4337,7 @@
         <p>After a completed purchase a Buyer may leave one review of the Seller. Reviews must be honest and based on a genuine transaction. No fake, incentivised, abusive, defamatory or unlawful reviews, and no reviewing your own listings. We may remove or withhold reviews that breach these rules, and reviews reflect the opinion of the Buyer, not of the Platform.</p>
 
         <div class="terms-h">15 · Content, privacy, law</div>
-        <p>You keep ownership of your photos and text and grant us a license to host and display them for the Platform. To complete a sale, a Buyer's shipping details are shared with the relevant Seller for fulfilment only. Your public seller page shows your display name, handle, seller type, location, bio, the date you joined, your listings and any reviews you have received; your email address, plan, token balance and notification settings are not published. We process personal data per our <a data-nav="privacy" style="text-decoration:underline">Privacy Policy</a> and the GDPR. These Terms are governed by the laws of the Netherlands, subject to any mandatory consumer protections in your own country.</p>
+        <p>You keep ownership of your photos and text and grant us a license to host and display them for the Platform. To complete a sale, a Buyer's shipping details are shared with the relevant Seller for fulfilment only. Your public seller page shows your display name, handle, seller type, location, bio, the date you joined, your listings and any reviews you have received; your email address, plan, token balance and notification settings are not published. We process personal data per our <a href="/privacy/" data-nav="privacy" style="text-decoration:underline">Privacy Policy</a> and the GDPR. These Terms are governed by the laws of the Netherlands, subject to any mandatory consumer protections in your own country.</p>
 
         <div class="terms-h">Contact</div>
         <p>RG Product Design &middot; Da Costastraat 49, 2032 MG Haarlem, Netherlands &middot; KvK 96149302 &middot; support@hammerandmold.com</p>
@@ -4475,24 +4476,24 @@
         <span class="h">Visit</span>
         <a data-nav="home">The Molders</a>
         <a data-nav="home">Shop</a>
-        <a data-nav="sold">Sold archive</a>
-        <a data-nav="artifact">Millennium Falcon</a>
-        <a data-nav="about">About</a>
-        <a data-nav="retrobright">Retro Brighting</a>
+        <a href="/results/" data-nav="sold">Sold archive</a>
+        <a href="/preview/" data-nav="artifact">Millennium Falcon</a>
+        <a href="/about/" data-nav="about">About</a>
+        <a href="/retrobrighting/" data-nav="retrobright">Retro Brighting</a>
       </div>
       <div class="col">
         <span class="h">Molders</span>
-        <a data-empire="kenner">Star Wars</a>
-        <a data-empire="kenner">The Real Ghostbusters</a>
-        <a data-empire="kaiju">Kaiju</a>
+        <a href="/molders/kenner/" data-empire="kenner">Star Wars</a>
+        <a href="/molders/kenner/" data-empire="kenner">The Real Ghostbusters</a>
+        <a href="/molders/kaiju/" data-empire="kaiju">Kaiju</a>
       </div>
       <div class="col">
         <span class="h">Contact</span>
         <span>hammerandmold.com</span>
         <span>EU shipping, included</span>
-        <a data-nav="help">Shipping &amp; import</a>
-        <a data-nav="terms">Terms &amp; Conditions</a>
-        <a data-nav="privacy">Privacy Policy</a>
+        <a href="/help/" data-nav="help">Shipping &amp; import</a>
+        <a href="/terms/" data-nav="terms">Terms &amp; Conditions</a>
+        <a href="/privacy/" data-nav="privacy">Privacy Policy</a>
       </div>
     </div>
   </div>
@@ -4830,6 +4831,25 @@
     } catch (e) { return ''; }
   })();
 
+  // Where a paid click came from, read before anything else touches the address
+  // bar. setPath calls history.pushState with the pathname only, so ?utm_source
+  // is gone by the time the first pageview is recorded, and a campaign we paid
+  // for would arrive looking like direct traffic. Marktplaats and most ad
+  // platforms route the click through a redirect that strips the referrer too,
+  // so the tag is often the only source there is. Read once, here, at parse
+  // time, and carried on the first event next to the referrer.
+  const CAMPAIGN = (() => {
+    try {
+      const q = new URLSearchParams(location.search);
+      const out = {};
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(k => {
+        const v = q.get(k);
+        if (v) out[k.slice(4)] = String(v).slice(0, 64);
+      });
+      return Object.keys(out).length ? out : null;
+    } catch (e) { return null; }
+  })();
+
   let firstEvent = true;
   function track(name, meta, subject){
     if (!SB || !SESSION) return;
@@ -4837,7 +4857,11 @@
       const m = Object.assign({}, meta || {});
       // Sent once per visit, so the source is recorded without repeating it on
       // every event.
-      if (firstEvent && REFERRER){ m.ref = REFERRER; firstEvent = false; }
+      if (firstEvent && (REFERRER || CAMPAIGN)){
+        if (REFERRER) m.ref = REFERRER;
+        if (CAMPAIGN) Object.assign(m, CAMPAIGN);
+        firstEvent = false;
+      }
       const row = {
         name: name,
         session: SESSION,
@@ -8798,7 +8822,7 @@
       b.querySelector('#authOut').addEventListener('click', async () => { if (SB) { await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
-      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a data-nav="terms" id="authTermsL">Terms &amp; Conditions</a> and our <a data-nav="privacy">Privacy Policy</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a href="/terms/" data-nav="terms" id="authTermsL">Terms &amp; Conditions</a> and our <a href="/privacy/" data-nav="privacy">Privacy Policy</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
       const go = async () => {
         const v = b.querySelector('#authEmail').value.trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
