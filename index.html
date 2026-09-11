@@ -1094,6 +1094,42 @@
     .pxstep:nth-child(1), .pxstep:nth-child(2){ border-bottom:1px solid var(--ink); }
     .pxmark { padding:0 12px 10px 0; }
   }
+  /* ---- Before and after, two columns that move together --------------------
+     Seven photographs of one Ecto-1: three before, four after. They run off one
+     shared index, so "next" means the next comparison rather than the next
+     picture, and each column wraps on its own length. The first two positions
+     are matched by angle on purpose, because that is the only thing that makes
+     a before-and-after evidence rather than decoration: same car, same ground,
+     same light, same side.
+
+     No timer runs while the tab is hidden, and none runs at all for a reader
+     who has asked their machine to stop animating things. */
+  .rb-car{ display:grid; gap:1px; background:var(--line); border:1px solid var(--line); margin:8px 0 0; }
+  @media (min-width:760px){ .rb-car{ grid-template-columns:1fr 1fr; } }
+  .rb-col{ background:var(--paper); padding:20px; }
+  .rb-h{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:13px; }
+  .rb-h .t{ font-family:var(--label); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink); }
+  .rb-h .c{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+  .rb-frame{ position:relative; aspect-ratio:4/3; background:var(--paper-2); border:1px solid var(--line); overflow:hidden; }
+  .rb-frame img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .5s ease; }
+  .rb-frame img.on{ opacity:1; }
+  /* The controls sit on the photograph, which is where a hand looks for them.
+     A white car on a white ground gives them nothing to sit against, so they
+     bring their own ground with them. */
+  .rb-nav{ position:absolute; top:50%; transform:translateY(-50%); width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer;
+    border:1px solid rgba(255,255,255,.55); background:rgba(19,19,19,.45); color:#fff;
+    -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); transition:background .15s ease; }
+  .rb-nav:hover{ background:rgba(19,19,19,.82); }
+  .rb-nav:focus-visible{ outline:2px solid #fff; outline-offset:-5px; }
+  .rb-nav.prev{ left:10px; } .rb-nav.next{ right:10px; }
+  .rb-nav svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; }
+  .rb-dots{ display:flex; gap:6px; margin-top:12px; }
+  .rb-dot{ width:24px; height:3px; background:var(--line); border:0; padding:0; cursor:pointer; transition:background .15s ease; }
+  .rb-dot.on{ background:var(--ink); }
+  .rb-dot:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+  .rb-cap{ font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin:13px 0 0; max-width:54ch; }
+  .rb-cap b{ color:var(--ink); }
 </style>
 </head>
 <body>
@@ -3606,33 +3642,133 @@
   <section class="band" id="rb-evidence">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">From the bench</div><h2>Our own pieces, photographed</h2></div>
-        <p>Not stock images and not somebody else's before-and-after. These are pieces that went through the process described above, in this workshop, with what was used and how long written under each one.</p>
+        <div><div class="ey">From the bench</div><h2>One Ecto-1, before and after</h2></div>
+        <p>Not a stock photograph and not somebody else's comparison. A Kenner Real Ghostbusters Ecto&#8209;1, treated in this workshop in September 2026 by the method set out above and then protected. Both columns move together every three seconds, or on the arrows.</p>
       </div>
-      <div class="ev-grid">
-        <figure class="ev">
-          <img src="/Empires/Retrobright/before.jpg" alt="A yellowed vintage toy photographed before treatment, against a neutral background in even light." loading="lazy" onerror="this.closest('figure').remove()">
-          <figcaption><b>Before.</b> Washed, dried and photographed in even light against a neutral ground, because a before-and-after shot under two different lamps proves nothing at all.</figcaption>
-        </figure>
-        <figure class="ev">
-          <img src="/Empires/Retrobright/after.jpg" alt="The same vintage toy after peroxide treatment and a coat of UV protectant, photographed in the same light and from the same angle." loading="lazy" onerror="this.closest('figure').remove()">
-          <figcaption><b>After.</b> Same piece, same angle, same light, then protected. Stopped at the point where it matched the parts around it rather than pushed to white.</figcaption>
-        </figure>
-        <figure class="ev">
-          <img src="/Empires/Retrobright/untreated.jpg" alt="A yellowed vintage toy that was deliberately left untreated, showing even honest ageing." loading="lazy" onerror="this.closest('figure').remove()">
-          <figcaption><b>Left alone.</b> Even, honest ageing across the whole piece, with printing and paint intact. A great many toys arrive looking like this, and the right answer is to photograph them and say so.</figcaption>
-        </figure>
+
+      <div class="rb-car">
+      <div class="rb-col">
+        <div class="rb-h"><span class="t">Before</span><span class="c" data-rb-count="before">1 / 3</span></div>
+        <div class="rb-frame" data-rb-frame="before">
+          <img src="/Empires/Retrobright/before-c.jpg" alt="A Kenner Real Ghostbusters Ecto-1 before treatment, front three-quarter from the left. The body has yellowed to a deep cream, the roof lights read olive and the windows grey-green." data-i="0" class="on">
+          <img src="/Empires/Retrobright/before-a.jpg" alt="The same yellowed Ecto-1 from the rear three-quarter on the right, gunner seat raised with its red guns, an orange ghost figure standing on the table in front of it." loading="lazy" data-i="1">
+          <img src="/Empires/Retrobright/before-b.jpg" alt="The same yellowed Ecto-1 side on with the front to the right, showing the full length of the cream body against the red fin flash." loading="lazy" data-i="2">
+          <button class="rb-nav prev" type="button" data-rb-step="-1" aria-label="Previous comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="rb-nav next" type="button" data-rb-step="1" aria-label="Next comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+        <div class="rb-dots" data-rb-dots="before"></div>
+        <p class="rb-cap"><b>Before.</b> Forty years of the reaction described at the top of this page. The body has gone to a deep cream, and it did not go alone: the roof lights read olive and the glazing grey-green. Photographed against a neutral ground in even light, because a before-and-after taken under two different lamps proves nothing at all.</p>
+      </div>
+      <div class="rb-col">
+        <div class="rb-h"><span class="t">After</span><span class="c" data-rb-count="after">1 / 4</span></div>
+        <div class="rb-frame" data-rb-frame="after">
+          <img src="/Empires/Retrobright/after-a.jpg" alt="The same Ecto-1 after treatment and a coat of UV protectant, front three-quarter from the left. The body is white and the roof lights have gone back to clear blue." data-i="0" class="on">
+          <img src="/Empires/Retrobright/after-c.jpg" alt="The treated Ecto-1 from the rear three-quarter on the right: white body, blue roof lights and blue glazing, with the Ghostbusters badge intact on the door and the tailgate." loading="lazy" data-i="1">
+          <img src="/Empires/Retrobright/after-b.jpg" alt="The treated Ecto-1 front three-quarter from the left and slightly higher, with the orange ghost figure sitting on the gunner seat." loading="lazy" data-i="2">
+          <img src="/Empires/Retrobright/after-d.jpg" alt="The treated Ecto-1 photographed from above, showing the white roof, the four blue roof lights and the black gunner platform." loading="lazy" data-i="3">
+          <button class="rb-nav prev" type="button" data-rb-step="-1" aria-label="Previous comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+          <button class="rb-nav next" type="button" data-rb-step="1" aria-label="Next comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+        </div>
+        <div class="rb-dots" data-rb-dots="after"></div>
+        <p class="rb-cap"><b>After.</b> Treated, rinsed properly, then finished with 303 Aerospace Protectant against the ultraviolet that caused all of it. The white is the white it was moulded in and the glazing has come back to blue. Stopped at a match with the parts around it rather than pushed past it. <b>The no-ghost badges are new stickers, not the originals.</b> The number plates are original and were left alone, which is why they still carry the old tone against the new white.</p>
+      </div>
+      </div>
+
+      <div class="ch-note" style="max-width:74ch">The clear parts are the half of this nobody photographs. The roof lights and the glazing had yellowed alongside the shell and came back with it, and the protectant is not for them: it must not go on clear plastics. So the white body is guarded from here and those parts are not, on one car, on one shelf, under one light.</div>
+
+      <div class="story" style="max-width:70ch;margin-top:26px">
+        <p><b>Which makes this car the experiment, not the illustration.</b> The
+        section above admits that nobody has published what happens to a treated
+        and protected piece over years, and that the honest position is a
+        prediction rather than a result. This Ecto&#8209;1 was bleached and then
+        protected in <b>September 2026</b>, and it has a shielded surface and an
+        unshielded one a few centimetres apart, on the same body, in the same
+        room.</p>
+        <p><b>And a good sticker was taken off on purpose.</b> This car arrived
+        as three states at once: the tailgate badge was already gone, one door
+        carried a replacement somebody had fitted in the wrong size, and the
+        other door still had a sound original. Treat that and you get a clean
+        white car wearing the same three states, which reads as a muddle rather
+        than as a history.</p>
+        <p>So all of them came off, the good one included, and the car wears new
+        ones. That is the judgement the rule at the top of this page leaves you
+        with. <b>Never take peroxide to a sticker</b> settles what you must not
+        do; it does not settle what to do with a piece whose stickers are past
+        saving before you start. The answer here was to make it one honest state
+        instead of three, and then to say so. The number plates were kept, and
+        they are the only original markings left on it.</p>
+        <p>If the mechanism at the top of this page is right, the glazing goes
+        first and the white holds longer. If both go at the same rate, the
+        protectant is doing less than it claims. Either answer is worth having,
+        and the only cost of getting it is photographing this car again in a year
+        from the same two angles, in the same light. The dates are on the page so
+        that the comparison is possible later.</p>
       </div>
     </div>
   </section>
   <script>
-    // Each figure removes itself when its file is not on disk yet, which is the
-    // pattern the molder pages already use. If none of them survive, the heading
-    // above is introducing an empty grid, so the whole band goes with them.
+    // One index, two columns, different lengths. "Next" moves the comparison
+    // rather than one picture, so the pairing the order was built around holds.
     (function(){
       var sec = document.getElementById('rb-evidence');
       if (!sec) return;
-      addEventListener('load', function(){ if (!sec.querySelector('figure')) sec.remove(); });
+      var cols = [].map.call(sec.querySelectorAll('[data-rb-frame]'), function(f){
+        var side = f.getAttribute('data-rb-frame');
+        return {
+          imgs:  [].slice.call(f.querySelectorAll('img')),
+          dots:  sec.querySelector('[data-rb-dots="' + side + '"]'),
+          count: sec.querySelector('[data-rb-count="' + side + '"]')
+        };
+      });
+      if (!cols.length) return;
+      var idx = 0;
+
+      cols.forEach(function(c){
+        c.imgs.forEach(function(_, k){
+          var b = document.createElement('button');
+          b.className = 'rb-dot' + (k === 0 ? ' on' : '');
+          b.type = 'button';
+          b.setAttribute('aria-label', 'Photograph ' + (k + 1) + ' of ' + c.imgs.length);
+          b.addEventListener('click', function(){ idx = k; paint(); go(); });
+          c.dots.appendChild(b);
+        });
+      });
+
+      function paint(){
+        cols.forEach(function(c){
+          var at = ((idx % c.imgs.length) + c.imgs.length) % c.imgs.length;
+          c.imgs.forEach(function(im, k){ im.classList.toggle('on', k === at); });
+          [].forEach.call(c.dots.children, function(d, k){ d.classList.toggle('on', k === at); });
+          c.count.textContent = (at + 1) + ' / ' + c.imgs.length;
+        });
+      }
+
+      [].forEach.call(sec.querySelectorAll('[data-rb-step]'), function(b){
+        b.addEventListener('click', function(){
+          idx += Number(b.getAttribute('data-rb-step'));
+          paint(); go();
+        });
+      });
+
+      // A reader who has turned motion off gets the arrows and no carousel.
+      var still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var timer = null;
+      function stop(){ if (timer){ clearInterval(timer); timer = null; } }
+      function go(){
+        stop();
+        if (still) return;
+        // Nothing ticks for a tab nobody is looking at. It costs nothing on a
+        // DOM-only carousel, and it is the habit worth keeping.
+        if (document.visibilityState === 'hidden') return;
+        timer = setInterval(function(){ idx++; paint(); }, 3000);
+      }
+
+      sec.addEventListener('mouseenter', stop);
+      sec.addEventListener('mouseleave', go);
+      sec.addEventListener('focusin', stop);
+      sec.addEventListener('focusout', go);
+      document.addEventListener('visibilitychange', go);
+      go();
     })();
   </script>
 
@@ -3687,7 +3823,7 @@
         <p>We do treat toys, and a good deal of the shelf has been through it. These are the lines the process stops at, and they are not negotiable for a better-looking photograph.</p>
       </div>
       <ul class="pts">
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span class="pt-t"><b>Never on paint, tampo printing, stickers or glue.</b> Peroxide lifts tampo, dulls paint, softens adhesive and will find the edge of a decal. On a figure this is not recoverable, and a factory-printed marking is often the thing that dates the piece.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span class="pt-t"><b>Never on paint, tampo printing, stickers or glue.</b> Peroxide lifts tampo, dulls paint, softens adhesive and will find the edge of a sticker. On a figure this is not recoverable, and a factory-printed marking is often the thing that dates the piece.</span></li>
         <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v12H4z"/><path d="M13 6h7v12h-7z"/></svg></span><span class="pt-t"><b>Never on a multi-material piece as one job.</b> Arms, torso and head are frequently different blends from different tools, and they bleach at different rates. You do not correct a yellow figure, you produce a figure in three colours.</span></li>
         <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v6c0 5-3.5 7.5-8 8-4.5-.5-8-3-8-8V7z"/></svg></span><span class="pt-t"><b>Never when the yellowing is the evidence.</b> On an undocumented or unlicensed cast, the surface state is part of what identifies it. Bleaching that away destroys the record for a cosmetic gain, on the one class of object where the object is the only archive.</span></li>
         <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></span><span class="pt-t"><b>Never without saying so.</b> Any lot here that has been treated says treated, in the description, in as many words, alongside what was used. A buyer is entitled to know that the white they are looking at is younger than the toy.</span></li>
