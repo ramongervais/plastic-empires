@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The app boots on supabase-js from this CDN, so the connection is opened
+     as early as the parser can see it rather than when the script tag is
+     reached three thousand lines further down. -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <title>Hammer &amp; Mold · Know the toy. Then own it.</title>
 <meta name="description" content="Auction house for original vintage toys. Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told. Shipping included, tracked, across the EU.">
 <link rel="canonical" href="https://hammerandmold.com/">
@@ -4884,6 +4889,11 @@
   .zoom-hint{ position:absolute; bottom:22px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.55); font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
   @media (max-width:600px){ .zoom-nav{ width:44px; height:44px; font-size:24px; } .zoom-hint{ font-size:10px; } }
 </style>
+<!-- The connection is opened while the page is still parsing, so the fetch
+     below does not start with a cold DNS lookup and TLS handshake. defer is
+     not an option here: the inline script under this one reads
+     window.supabase while parsing, so deferring it sets SB to null and the
+     shop, the lots, the bidding and the sign-in all stop. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/shipping.js"></script>
 <script>
