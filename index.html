@@ -1130,6 +1130,53 @@
   .rb-dot:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
   .rb-cap{ font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin:13px 0 0; max-width:54ch; }
   .rb-cap b{ color:var(--ink); }
+  /* ---- One column for the whole article ----------------------------------
+     The page was dancing. Tables ran the full 1124px of the wrap, the prose
+     under them sat at 74ch, .story centred itself with margin auto, and the
+     inline max-widths came in three sizes. So the left edge moved, the right
+     edge moved, and the eye had to find the start of the line again at every
+     block. Everything below a band-head now shares one measure and one left
+     edge, top to bottom, and the gaps between blocks are one number. Scoped to
+     this view so the molder pages keep the layout they were built for. */
+  #view-retrobright{ --rb-col:780px; --rb-gap:38px; }
+  #view-retrobright .story,
+  #view-retrobright .cmp-scroll,
+  #view-retrobright .pts,
+  #view-retrobright .ch-note,
+  #view-retrobright .pxscale,
+  #view-retrobright .rb-car,
+  #view-retrobright .src{
+    max-width:var(--rb-col);
+    margin-left:0; margin-right:0;
+  }
+  #view-retrobright .story,
+  #view-retrobright .cmp-scroll,
+  #view-retrobright .pts,
+  #view-retrobright .pxscale,
+  #view-retrobright .rb-car{ margin-bottom:var(--rb-gap); }
+  /* A note is a footnote to the block above it, so it sits closer to that than
+     to whatever comes next. */
+  #view-retrobright .ch-note{ margin-top:0; margin-bottom:var(--rb-gap); }
+  #view-retrobright .story > p:last-child,
+  #view-retrobright .pts > li:last-child{ margin-bottom:0; }
+  /* The opening section carries the drop cap and no section number, so it is
+     the one place the grid is allowed to be a single wide column. */
+  #view-retrobright .origins-grid{ grid-template-columns:1fr; gap:0; }
+  @media (max-width:860px){ #view-retrobright{ --rb-col:100%; --rb-gap:30px; } }
+  /* The Ecto-1 section is the one that is allowed to be wide, because it is a
+     photograph comparison and a photograph wants the width. The prose under it
+     then picks up the same two columns, so the block below the carousel lines
+     up with the block above it instead of shrinking back to a lonely centred
+     measure in the middle of the page. */
+  #view-retrobright .rb-car{ max-width:none; }
+  #view-retrobright .rb-two{
+    max-width:none;
+    columns:2; column-gap:var(--rb-gap);
+  }
+  /* A paragraph that starts with a bold lead-in must not be cut in half by the
+     column break, or the sentence arrives before the thing it introduces. */
+  #view-retrobright .rb-two p{ break-inside:avoid; margin-top:0; }
+  @media (max-width:860px){ #view-retrobright .rb-two{ columns:1; } }
 </style>
 </head>
 <body>
@@ -3459,13 +3506,13 @@
     <section class="empire-hero">
       <div class="ey">The workshop</div>
       <h1 class="empire-title">Retro Brighting</h1>
-      <div class="empire-dek">Why white plastic turns yellow, and what peroxide really does about it</div>
-      <p class="empire-lede">A white Stormtrooper, a Ghostbusters Ecto-1, a Dreamcast: they all go the same colour eventually, and the collector internet will tell you it is the fire retardants. That is close, but it is not right, and the difference matters once you are standing over a forty-year-old toy with a bottle of peroxide in your hand. This page is what is actually happening inside the plastic, what the oil off your fingers adds to it, both working formulas at 3% and at 12%, and the step after the bleach that decides whether any of it holds.</p>
+      <div class="empire-dek">Why white plastic goes yellow, and what peroxide actually does about it</div>
+      <p class="empire-lede">A white Stormtrooper. A Ghostbusters Ecto-1. A Dreamcast. Give them enough years and they all head for the same nicotine yellow, and the forums will tell you it is the fire retardants. That is close enough to sound right and wrong enough to matter. Here is what is actually happening inside the plastic, what forty years of handling adds to it, the two recipes we use, and the step afterwards that decides whether any of it lasts.</p>
       <div class="byline"><span>Written by <b>Ramon Gervais</b></span><span class="sep">/</span><span>Sourced, with the papers listed</span><span class="sep">/</span><span>Hammer &amp; Mold, Haarlem</span></div>
       <div class="factbar">
-        <div class="fact"><div class="fn">2-HMA</div><div class="fl">The compound that reflects yellow, built out of the toy itself</div></div>
+        <div class="fact"><div class="fn">2-HMA</div><div class="fl">The compound doing the yellow. The toy built it itself</div></div>
         <div class="fact"><div class="fn">220 h</div><div class="fl">Under UV, by which half the flame retardant has left the plastic</div></div>
-        <div class="fact"><div class="fn">12%</div><div class="fl">The strongest peroxide sold in the EU, and the ceiling this page works to</div></div>
+        <div class="fact"><div class="fn">12%</div><div class="fl">The strongest peroxide sold in the EU, and our ceiling too</div></div>
         <div class="fact"><div class="fn">10 yr</div><div class="fl">Before the treated half of a test shell went yellower than the untreated half</div></div>
       </div>
     </section>
@@ -3477,10 +3524,12 @@
         <div class="story">
           <div class="ey">The rot</div>
           <h2>The rubber that saves the toy is the part that fails.</h2>
-          <p><span class="drop">A</span>BS is three things in one name: acrylonitrile for hardness and chemical resistance, styrene for stiffness and gloss, butadiene for the ability to survive being dropped down the stairs. That third one is synthetic rubber, and it is why a Kenner figure bends rather than shatters. It is also the weak link, because unlike the other two it carries unsaturated carbon-to-carbon double bonds, and a double bond is an open invitation.</p>
-          <p>Ultraviolet light, or simply enough heat over enough years, knocks a hydrogen off the butadiene chain and leaves a free radical behind. Oxygen finds it within moments. What follows is a loop that feeds itself: radical, hydroperoxide, carbonyl, another radical. Each pass leaves the chain a little shorter and a little more conjugated, which is the word for double bonds sitting in a row, sharing their electrons.</p>
-          <p>Conjugation is colour. A run of alternating double bonds absorbs light in the blue end of the spectrum, and what the eye receives back is everything that was not absorbed, which is yellow going on brown. The account that has stuck in the restoration world names the specific culprit: 2-hydroxymuconic acid, 2-HMA, formed when radicals off the decomposing butadiene unroll the benzene ring in the styrene next to it. Whether or not 2-HMA is the whole story, the shape of the answer is not in dispute. The yellow is not dirt sitting on the toy. It is the toy, rearranged.</p>
-          <p>Which sets up everything below. You cannot wash off a chromophore that the polymer built out of its own backbone, and the same reaction that made the colour also cut the chains that made the plastic tough. Colour and brittleness are two readings of one process. Every treatment on this page addresses the first and can do nothing whatsoever about the second.</p>
+          <p><span class="drop">A</span>BS is three things in one name. Acrylonitrile for hardness. Styrene for stiffness and gloss. Butadiene, which is synthetic rubber, and it is the reason a Kenner figure bends instead of shattering when it goes down the stairs.</p>
+          <p>That rubber is also the weak one. It carries double bonds, which are the spare links in a molecule where something else can attach. The other two do not have them. A double bond is an open door.</p>
+          <p>Light, or just heat over enough years, knocks a hydrogen off the butadiene and leaves behind a free radical: a molecule with an unpaired electron, desperate to grab something. Oxygen obliges within moments. Then it loops. Radical, hydroperoxide, carbonyl, another radical. Every pass shortens the chain a little and lines up a few more double bonds in a row, which chemists call conjugation.</p>
+          <p>Conjugation is colour. A run of double bonds soaks up the blue end of the light, so what comes back to your eye is yellow going on brown. The restoration world names a specific culprit, 2-hydroxymuconic acid, and it may well be right. It hardly matters. The shape of the answer is not in dispute.</p>
+          <p><b>The yellow is not dirt sitting on the toy. It is the toy itself changing.</b></p>
+          <p>Which decides everything below. You cannot wash off a colour the plastic built out of its own backbone. And the same reaction that made the colour also cut the chains that made the plastic tough, so the yellowing and the brittleness are the same ageing read two ways. Everything on this page deals with the first one. Nothing here touches the second.</p>
         </div>
       </div>
     </div>
@@ -3489,24 +3538,25 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">The additive</div><h2>The flame retardants, and the thing everyone gets wrong about them</h2></div>
-        <p>Toys and consumer electronics moulded in ABS and high-impact polystyrene through the 1970s and 80s carried brominated flame retardants, because a large hollow plastic object near a heater is a fire risk and the standards said so. They are still in there. What they do is more specific than the folklore.</p>
+        <div><div class="ey">The additive</div><h2>The flame retardants, and what everyone gets wrong</h2></div>
+        <p>Toys and electronics moulded in ABS through the 1970s and 80s came with brominated flame retardants in the mix, because a big hollow plastic object near a heater is a fire risk and the standards said so. They are still in there. What they do is more specific than the folklore.</p>
       </div>
       <div class="cmp-scroll">
         <table class="cmp">
           <thead><tr><th>Compound</th><th>What it is</th><th>What it does under UV</th></tr></thead>
           <tbody>
-            <tr><td>TBBPA<br><span class="note">Tetrabromobisphenol&#8209;A</span></td><td>The dominant brominated flame retardant in ABS, and the one most studied because of electronic waste</td><td class="note">Accelerates the oxidation of the ABS around it through bromine radical reactions, and suppresses the induction period: the grace window a stabilised plastic normally gets before it starts to go</td></tr>
-            <tr><td>DecaBDE<br><span class="note">Decabromodiphenyl ether</span></td><td>Used in high&#8209;impact polystyrene, the other white-goods plastic of the era</td><td class="note">Photodegrades fast. In dispersed HIPS film it follows first&#8209;order kinetics at 0.14 per second, past half converted within minutes of exposure</td></tr>
+            <tr><td>TBBPA<br><span class="note">Tetrabromobisphenol&#8209;A</span></td><td>The dominant brominated flame retardant in ABS, and the one most studied because of electronic waste</td><td class="note">Speeds up the oxidation of the ABS around it, and removes the induction period: the grace window a stabilised plastic normally gets before it starts to go</td></tr>
+            <tr><td>DecaBDE<br><span class="note">Decabromodiphenyl ether</span></td><td>Used in high&#8209;impact polystyrene, the other white-goods plastic of the era</td><td class="note">Breaks down fast. In dispersed HIPS film it follows first&#8209;order kinetics at 0.14 per second, past half converted within minutes of exposure</td></tr>
             <tr><td>HBCDD, DBDPE, TTBPT</td><td>The later replacements, brought in as the earlier ones were restricted</td><td class="note">Same failure, slower. HBCDD runs at 0.019 per second. All of them shed brominated aromatics; bromophenols are the most abundant product from TTBPT</td></tr>
-            <tr class="total"><td>Antimony trioxide</td><td>Not a retardant on its own. The synergist packed alongside the bromine to make it work at lower loadings</td><td class="note">Turns up in every analysis of flame&#8209;retarded ABS from e&#8209;waste. It is the reason a bromine reading and an antimony reading travel together</td></tr>
+            <tr class="total"><td>Antimony trioxide</td><td>Not a retardant on its own. The helper packed alongside the bromine so less of it is needed</td><td class="note">Turns up in every analysis of flame&#8209;retarded ABS from e&#8209;waste. It is why a bromine reading and an antimony reading travel together</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="ch-note" style="max-width:74ch">The mechanism is the same one that makes them useful. A flame retardant works because the carbon-to-bromine bond is weak enough to break under heat, releasing bromine radicals that mop up the hydrogen and hydroxyl radicals feeding the fire. Ultraviolet light breaks that same bond, homolytically, at room temperature. The property that stops your toy burning is the property that will not leave it alone for forty years.</div>
-      <div class="story" style="max-width:70ch;margin-top:22px">
-        <p><b>Here is the correction.</b> It is repeated everywhere that the bromine causes the yellowing. It does not. The yellowing is the oxidation of the ABS itself, and it happens in plastics with no flame retardant in them at all. What the bromine does is accelerate it, by removing the induction period and by throwing radicals into a reaction that was already running. That is a real and significant effect, and it is not the same claim.</p>
-        <p>The distinction is not pedantry, because it predicts what happens after you treat a toy. Under irradiation, roughly half the TBBPA and a fifth of the bromine leave the plastic within 220 hours, with surface cracking and yellowing following, and those degraded bromine species do not stay where they started. They migrate through the polymer. Bleach the surface and there is a reservoir underneath, free to move outward. This is the mechanism behind the single most common complaint about retro brighting: it comes back.</p>
+      <div class="ch-note">The mechanism is the same one that makes them useful. A flame retardant works because the bond holding the bromine is weak enough to break under heat, and the loose bromine then mops up the radicals feeding the fire. Ultraviolet light breaks that same bond at room temperature. The property that stops your toy burning is the property that will not leave it alone for forty years.</div>
+      <div class="story">
+        <p><b>So here is the correction.</b> Everybody repeats that the bromine turns the plastic yellow. It does not. The yellowing is the ABS oxidising, and it happens in plastics with no flame retardant in them at all.</p>
+        <p>What the bromine does is make it happen sooner and faster. It is not the pigment. Think of it as fuel thrown onto a fire that was already burning. That is a real effect and a significant one, and it is not the same claim.</p>
+        <p>The difference matters because it predicts what happens after you treat a toy. Under UV, roughly half the TBBPA and a fifth of the bromine leave the plastic inside 220 hours, and the broken-down bromine does not sit still. It travels through the polymer. Bleach the surface and there is a reservoir underneath, free to work its way out. That is the mechanism behind the most common complaint about retro brighting: it comes back.</p>
       </div>
     </div>
   </section>
@@ -3515,25 +3565,26 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">The other layer</div><h2>And then there are your hands</h2></div>
-        <p>A toy that was played with carries something a toy in a warehouse never did: a film of human sebum, applied daily for years by a child who did not wash first. It is not cosmetic and it is not inert.</p>
+        <p>A toy that was played with carries something a warehouse toy never did. A film of sebum, the oil your skin makes, put there daily for years by a child who did not wash first. It is not cosmetic and it is not inert.</p>
       </div>
       <ul class="pts">
         <li class="pt">
           <span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.5 4 6 6.8 6 10a6 6 0 0 1-12 0c0-3.2 2.5-6 6-10z"/></svg></span>
-          <span class="pt-t"><b>Squalene is the yellow one.</b> It makes up twelve to fifteen percent of sebum, and it carries six double bonds with no aromatic ring to steady them. It photo-oxidises through singlet oxygen into squalene hydroperoxide more readily than the oleic and palmitoleic acids sitting next to it, and squalene is the sebum component identified as responsible for yellow staining on fabric. On a white toy it does exactly what it does on a white shirt, except nobody launders the toy.</span>
+          <span class="pt-t"><b>Squalene is the yellow one.</b> It is twelve to fifteen percent of sebum and it carries six double bonds, which by now you know is an invitation. It oxidises more readily than the other oils around it, and it is the component identified as responsible for yellow staining on fabric. It does the same thing on a white toy. Nobody launders the toy.</span>
         </li>
         <li class="pt">
           <span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h10"/></svg></span>
-          <span class="pt-t"><b>A hydroperoxide on the surface is a radical source on the surface.</b> That is the part that turns a stain into damage. Oxidised squalene does not merely sit there being yellow, it decomposes into radicals, in contact with a polymer whose whole failure mode is radical attack. The fingerprint is feeding the reaction described at the top of this page, from the outside in.</span>
+          <span class="pt-t"><b>Once it oxidises it starts feeding the reaction.</b> Squalene does not just sit there being yellow. It breaks down into radicals, on the surface of a plastic whose whole failure mode is radical attack. The fingerprint joins in, working from the outside in.</span>
         </li>
         <li class="pt">
           <span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v13a3 3 0 0 0 6 0V6a2 2 0 0 1 4 0v12"/></svg></span>
-          <span class="pt-t"><b>The fatty acids are solvents.</b> Triglycerides and free fatty acids are close to sixty percent of sebum, wax esters another quarter. Oleic, palmitic and sapienic acid are non-polar liquids that swell polystyrene and ABS, carry the antioxidants and UV stabilisers out of the surface layer, and act as stress-cracking agents wherever a moulding was left under tension. On soft PVC, a cape or a vinyl kaiju, they accelerate plasticiser migration, which is the tacky greasy figure every collector has met.</span>
+          <span class="pt-t"><b>The fatty acids act as solvents.</b> They are close to sixty percent of sebum. They swell ABS slightly, wash the protective additives out of the surface layer, and crack a moulding that was left under tension. On soft PVC, a cape or a vinyl kaiju, they speed up plasticiser migration. That is the tacky, greasy figure every collector has met.</span>
         </li>
       </ul>
-      <div class="ch-note" style="max-width:74ch">Which is why yellowing on a played-with figure is so often patchy rather than even, and why the pattern sometimes reads as a grip. It is not one process on a uniform surface, it is bulk oxidation running everywhere and a local dose of oxidiser and solvent left on the parts a hand actually touched.</div>
-      <div class="story" style="max-width:70ch;margin-top:22px">
-        <p><b>The useful conclusion is a preventive one.</b> Removing sebum is reversible, cheap and safe: lukewarm water, a drop of pH-neutral detergent, a soft brush, dried properly and not left wet in a seam. Do it before the squalene oxidises and you have removed a fuel source rather than treated a symptom. Everything below this line is the opposite kind of intervention, and worth understanding before you reach for it.</p>
+      <div class="ch-note">It explains something you have probably noticed. Yellowing on a played-with figure is often patchy rather than even, and sometimes the pattern reads as a grip. That is two things at once: the bulk oxidation running everywhere, and a local dose of oxidiser and solvent left exactly where a hand held it. Sometimes you can almost see where they were held.</div>
+      <div class="story">
+        <p><b>Wash it first. Always.</b> Lukewarm water, a drop of pH-neutral detergent, a soft brush, dried properly and not left damp in a seam. That is it.</p>
+        <p>Do that and you have removed a fuel source, not treated a symptom. It is cheap, it is safe, and you can undo it by doing nothing. <b>Removing forty years of skin oil is cleaning. Everything after this line is intervention.</b></p>
       </div>
     </div>
   </section>
@@ -3543,10 +3594,13 @@
       <div class="origins-grid">
         <div class="story">
           <div class="ey">The chemistry of the fix</div>
-          <h2>Peroxide does not undo any of it.</h2>
-          <p>Hydrogen peroxide bleaches the yellow by attacking the conjugated double bonds in the chromophore. Break the conjugation and the run of shared electrons stops absorbing blue light, so the eye stops receiving yellow. It is the same mechanism by which peroxide takes the colour out of lycopene or chlorophyll: the molecule is not removed, its ability to absorb visible light is destroyed.</p>
-          <p>Ultraviolet light is not decoration in the process. It photolyses the peroxide into hydroxyl radicals, which is what makes the rate practical rather than geological. The oxy laundry booster in every recipe is sodium percarbonate with TAED, tetraacetylethylenediamine, which reacts with peroxide to form peracetic acid: a more aggressive oxidant that works at room temperature. That combination, peroxide plus TAED plus UV, is the whole of what people mean by retro brighting, and it was worked out on the English Amiga Board over the summer of 2008 after the CBM Museum Wuppertal published a five-day submersion result that March. Peroxide on yellowed household plastic was a known home remedy as far back as the 1960s.</p>
-          <p><b>What it cannot do is anything structural.</b> It does not restore the butadiene, reverse chain scission, or address the embrittlement, which is the half of the damage that actually threatens the object. A retrobrighted toy is a bleached toy. It is exactly as degraded as it was, and now looks like it is not. Treat this as cosmetics, never as conservation, and the rest of the decisions get easier.</p>
+          <h2>Peroxide bleaches. It does not repair.</h2>
+          <p>Hydrogen peroxide attacks those lined-up double bonds. Break the run and it stops absorbing blue light, so your eye stops seeing yellow. Same trick as taking the colour out of a tomato stain. The molecule is still there. Its ability to show a colour is gone.</p>
+          <p>So the plastic looks younger. Chemically, it is not younger.</p>
+          <p>The UV light is not decoration. It splits the peroxide into hydroxyl radicals, which is what makes this take hours instead of geological time. The oxy laundry booster in every recipe is sodium percarbonate with TAED, which reacts with peroxide to make peracetic acid, a sharper oxidant that works at room temperature.</p>
+          <p>Peroxide plus that booster plus UV is the whole of what people mean by retro brighting. It was worked out on the English Amiga Board over the summer of 2008, after the CBM Museum Wuppertal published a five-day soak that March. Peroxide on yellowed household plastic goes back to the 1960s as a home remedy.</p>
+          <p><b>What it cannot do is anything structural.</b> It does not rebuild the butadiene. It does not reverse the chain scission, the cutting of the molecular chains that made the plastic tough. It does nothing about the brittleness, which is the half of the damage that actually threatens the object.</p>
+          <p><b>A retrobrighted toy is a bleached toy, not a restored polymer.</b> It is exactly as degraded as it was and now looks like it is not. Hold that in mind and every decision below gets easier.</p>
         </div>
       </div>
     </div>
@@ -3555,8 +3609,8 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">The formula</div><h2>Concentrations, and what they are called in a shop</h2></div>
-        <p>Peroxide for this is sold two ways: as a clear liquid by strength, and as a hairdressing cream by volume. Volume is the amount of oxygen gas one volume of the solution will release, which is why the numbers look unfamiliar. They map cleanly.</p>
+        <div><div class="ey">Choosing a strength</div><h2>How strong, and what it is called in the shop</h2></div>
+        <p>Peroxide comes two ways. As a clear liquid sold by percentage, and as hairdressing cream sold by volume. Volume is how much oxygen gas it will give off, which is why the numbers look odd. They line up neatly.</p>
       </div>
       <div class="pxscale">
         <div class="pxbar">
@@ -3577,14 +3631,14 @@
         <table class="cmp">
           <thead><tr><th>Strength</th><th>Sold as</th><th>Where you find it</th><th>Use</th></tr></thead>
           <tbody>
-            <tr><td><b>3%</b></td><td>10 volume</td><td>Pharmacy, drogist. Liquid</td><td class="note">Light yellowing, small unpainted parts, and anything you are not certain about. Slow enough to be forgiving</td></tr>
-            <tr><td>6%</td><td>20 volume</td><td>Hairdressing supplier. Liquid or cream</td><td class="note">The middle setting. Rarely worth buying separately if you have the other two</td></tr>
-            <tr><td>9%</td><td>30 volume</td><td>Hairdressing supplier. Cream</td><td class="note">Heavier yellowing where 12% feels like too much</td></tr>
+            <tr><td><b>3%</b></td><td>10 volume</td><td>Pharmacy, drogist. Liquid</td><td class="note">Light yellowing, small unpainted parts, and anything you are not sure about. Slow enough to forgive you</td></tr>
+            <tr><td>6%</td><td>20 volume</td><td>Hairdressing supplier. Liquid or cream</td><td class="note">The middle setting. Rarely worth buying if you have the other two</td></tr>
+            <tr><td>9%</td><td>30 volume</td><td>Hairdressing supplier. Cream</td><td class="note">Heavier yellowing, where 12% feels like too much</td></tr>
             <tr class="total"><td><b>12%</b></td><td>40 volume</td><td>Hairdressing supplier. Cream or liquid</td><td class="note">The legal ceiling. Annex III of EU Regulation 1223/2009 caps hydrogen peroxide in hair products at 12%, present or released, so 40 volume is the strongest thing anyone will sell you over a counter</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="ch-note" style="max-width:74ch">Stronger is not better, it is faster. The reaction you are running does not distinguish between the chromophore you want gone and the surface you want intact, so the only thing a higher concentration buys is less time to notice that it has gone too far. Start at the bottom of this table.</div>
+      <div class="ch-note"><b>Stronger does not mean better. It means faster.</b> The reaction cannot tell the difference between the colour you want gone and the surface you want kept. All a higher concentration buys you is less time to notice you have gone too far. Start at the top of that table.</div>
     </div>
   </section>
 
@@ -3592,23 +3646,23 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Formula one</div><h2>3%, submerged</h2></div>
-        <p>For light yellowing on small, unpainted, single-material parts. The one to use first, and on anything you would be sad to lose.</p>
+        <p>This is where we start. Light yellowing, unpainted parts, anything small enough to go right under. It is also what we use when a piece is valuable enough that we would rather wait than hurry.</p>
       </div>
       <div class="cmp-scroll">
         <table class="cmp">
           <thead><tr><th>Ingredient</th><th>Amount</th><th>Why</th></tr></thead>
           <tbody>
-            <tr><td>Hydrogen peroxide 3%, 10 volume</td><td>500 ml, or enough to submerge completely</td><td class="note">Pharmacy grade is fine. Nothing is gained by a stabilised industrial grade</td></tr>
-            <tr><td>Oxy laundry booster, sodium percarbonate with TAED</td><td>¼ teaspoon, roughly 1 gram per 500 ml</td><td class="note">The activator. Stir in immediately before use and never store the mixture with it in, because it gasses off and the bottle is then a pressure vessel</td></tr>
-            <tr><td>Glycerine</td><td>1 level teaspoon, optional</td><td class="note">Slows evaporation at the surface. Matters more in the gel than here</td></tr>
+            <tr><td>Hydrogen peroxide 3%, 10 volume</td><td>500 ml, or enough to cover the part</td><td class="note">Ordinary pharmacy peroxide is fine. An industrial grade buys you nothing here</td></tr>
+            <tr><td>Oxy laundry booster, sodium percarbonate with TAED</td><td>¼ teaspoon, roughly 1 gram per 500 ml</td><td class="note">The activator. Stir it in just before you use it and never store the mix with it in, because it gasses off and the bottle becomes a pressure vessel</td></tr>
+            <tr><td>Glycerine</td><td>1 level teaspoon, optional</td><td class="note">Slows evaporation at the surface. It matters more in the gel than it does here</td></tr>
           </tbody>
         </table>
       </div>
       <ul class="pts">
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v6l-4 3 4 3v6H6v-6l4-3-4-3z"/></svg></span><span class="pt-t"><b>Submerge completely, in glass or clear PET.</b> Anything that floats develops a tide line at the meniscus that no amount of further treatment will even out, because that band gets both liquid and air. Weight the part down or turn it every hour.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></span><span class="pt-t"><b>UV, at 20 to 25 degrees.</b> A UV-A lamp at 30 to 45 cm, or daylight. Keep it under 30 degrees: heat drives the same oxidation you are trying to undo, and a hot sealed container of peroxide is its own problem.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span><span class="pt-t"><b>Check hourly, not daily.</b> Four to twelve hours is typical for light yellowing at this strength, two or three days for a stubborn piece. There is no state you are aiming for beyond matching the parts around it, and past that point you are only removing surface.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/></svg></span><span class="pt-t"><b>Rinse in cold water, thoroughly.</b> Peroxide left in a screw boss or a joint carries on working in the dark for weeks. Dry fully before reassembly.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v6l-4 3 4 3v6H6v-6l4-3-4-3z"/></svg></span><span class="pt-t"><b>Get it completely under, in glass or clear PET.</b> Do not leave half of it above the liquid. The waterline turns into a treatment line you will never even out afterwards, because that band gets liquid and air at once. If it floats, weigh it down or turn it every hour.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg></span><span class="pt-t"><b>UV-A or daylight, 20 to 25 degrees.</b> A lamp at 30 to 45 cm is plenty. Do not build a greenhouse. Heat drives the same oxidation that damaged the plastic in the first place, and a hot sealed jar of peroxide is a problem of its own.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span><span class="pt-t"><b>Then check it. And check it again.</b> At 3% we look about once an hour. Four to twelve hours is normal for light yellowing, and a stubborn piece can take two or three days. There is no magic finishing colour. <b>Stop when it matches the original plastic around it, not when it looks like a new refrigerator.</b></span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16"/><path d="M12 4v16"/></svg></span><span class="pt-t"><b>Rinse in cold water, properly.</b> Peroxide trapped in a screw hole or a joint keeps reacting in the dark for weeks after the part looks dry. Dry it fully before anything goes back together.</span></li>
       </ul>
     </div>
   </section>
@@ -3617,24 +3671,24 @@
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Formula two</div><h2>12%, as a gel</h2></div>
-        <p>For heavier yellowing, and for parts too large or too awkward to submerge. This is the original Retr0bright recipe, which specifies 10 to 15% and is normally run at 40 volume.</p>
+        <p>We keep this for heavier yellowing, and for parts too large or too awkward to submerge. It is much faster. That is the advantage and the problem. This is the original Retr0bright recipe, which specifies 10 to 15%.</p>
       </div>
       <div class="cmp-scroll">
         <table class="cmp">
           <thead><tr><th>Ingredient</th><th>Amount</th><th>Why</th></tr></thead>
           <tbody>
-            <tr><td>Hydrogen peroxide 12%, 40 volume</td><td>500 ml</td><td class="note">Or skip the next two rows entirely and buy 12% cream developer, which is already the right consistency</td></tr>
-            <tr><td>Xanthan gum</td><td>2 heaped tablespoons</td><td class="note">Turns the liquid into a non-drip gel that will stay on a vertical surface</td></tr>
-            <tr><td>Glycerine</td><td>1 level teaspoon</td><td class="note">Keeps the gel from drying out, which is the actual cause of most streaking</td></tr>
-            <tr class="total"><td>Oxy laundry booster</td><td>¼ teaspoon</td><td class="note">Stirred in at the moment of use, never before. Store the gel without it, in a dark container</td></tr>
+            <tr><td>Hydrogen peroxide 12%, 40 volume</td><td>500 ml</td><td class="note">Or skip the next two rows and buy 12% cream developer, which is already about the right consistency</td></tr>
+            <tr><td>Xanthan gum</td><td>2 heaped tablespoons</td><td class="note">Turns liquid peroxide into a gel that will stay on a vertical surface</td></tr>
+            <tr><td>Glycerine</td><td>1 level teaspoon</td><td class="note">Keeps the gel from drying out, which is what actually causes most streaking</td></tr>
+            <tr class="total"><td>Oxy laundry booster</td><td>¼ teaspoon</td><td class="note">In at the moment of use, never before. Store the gel without it, in a dark container</td></tr>
           </tbody>
         </table>
       </div>
       <ul class="pts">
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l5-1 10-10-4-4L5 15z"/></svg></span><span class="pt-t"><b>Blend, rest, blend.</b> Peroxide and xanthan on high for five seconds, glycerine in, five seconds more, stand for a minute, then five seconds again. It comes out smooth and holds its shape. Lumps become thin spots and thin spots become streaks.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v13H3z"/><path d="M3 7l9-4 9 4"/></svg></span><span class="pt-t"><b>One to two millimetres, evenly, then cling film.</b> Brush it on thicker than looks necessary and wrap the whole part. The film is not optional: an exposed gel dries from the edges inward, and the boundary between wet and drying gel is precisely where blotching comes from.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span class="pt-t"><b>UV at 30 to 45 cm, checked every 30 minutes.</b> Four times the strength is roughly four times the speed, so the window in which you can still stop is four times narrower. Unwrap, look, rewrap.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg></span><span class="pt-t"><b>Twelve percent is a hazard, treat it as one.</b> Nitrile gloves and eye protection, ventilated, away from metal, never mixed with anything else, never sealed warm. It bleaches skin on contact and does not warn you first.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l5-1 10-10-4-4L5 15z"/></svg></span><span class="pt-t"><b>Blend, rest, blend.</b> Peroxide and xanthan for five seconds, glycerine in, five seconds more, stand a minute, then five seconds again. You want it smooth. Lumps make thin spots, thin spots dry first, and uneven drying is where streaks come from.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h18v13H3z"/><path d="M3 7l9-4 9 4"/></svg></span><span class="pt-t"><b>One to two millimetres, evenly, then cling film.</b> Brush it on thicker than looks necessary and wrap the whole part. The film is not optional. Gel left open to the air dries from its edges inward, and the line between wet and drying gel is exactly where blotching appears.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span><span class="pt-t"><b>Under UV, look every 30 minutes.</b> Four times the strength is roughly a quarter of the comfortable window. Unwrap it. Look at it. Wrap it again if it needs more. Do not trust a timer.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg></span><span class="pt-t"><b>Treat 12% with respect.</b> Nitrile gloves and eye protection. Somewhere ventilated. Away from metal. Never mixed with other cleaners. Never heated, never sealed warm. It bleaches skin on contact and it does not warn you first.</span></li>
       </ul>
     </div>
   </section>
@@ -3642,8 +3696,8 @@
   <section class="band" id="rb-evidence">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">From the bench</div><h2>One Ecto-1, before and after</h2></div>
-        <p>Not a stock photograph and not somebody else's comparison. A Kenner Real Ghostbusters Ecto&#8209;1, treated in this workshop in September 2026 by the method set out above and then protected. Both columns move together every three seconds, or on the arrows.</p>
+        <div><div class="ey">From the bench</div><h2>Our own Ecto-1, before and after</h2></div>
+        <p>No borrowed before-and-after here. A Kenner Real Ghostbusters Ecto&#8209;1, treated by us in September 2026 with the method above, then protected. Shot in the same light, from the same angles, before and after. Change the lighting between two photographs and almost any restoration looks impressive. That proves nothing. Both columns move together every three seconds, or on the arrows.</p>
       </div>
 
       <div class="rb-car">
@@ -3657,52 +3711,31 @@
           <button class="rb-nav next" type="button" data-rb-step="1" aria-label="Next comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         </div>
         <div class="rb-dots" data-rb-dots="before"></div>
-        <p class="rb-cap"><b>Before.</b> Forty years of the reaction described at the top of this page. The body has gone to a deep cream, and it did not go alone: the roof lights read olive and the glazing grey-green. Photographed against a neutral ground in even light, because a before-and-after taken under two different lamps proves nothing at all.</p>
+        <p class="rb-cap"><b>Before.</b> Forty years of everything at the top of this page. The body has gone to a deep cream, and it did not go alone: the roof lights read olive and the glazing grey-green. Washed and dried first, then photographed against a neutral ground.</p>
       </div>
       <div class="rb-col">
         <div class="rb-h"><span class="t">After</span><span class="c" data-rb-count="after">1 / 4</span></div>
         <div class="rb-frame" data-rb-frame="after">
           <img src="/Empires/Retrobright/after-a.jpg" alt="The same Ecto-1 after treatment and a coat of UV protectant, front three-quarter from the left. The body is white and the roof lights have gone back to clear blue." data-i="0" class="on">
-          <img src="/Empires/Retrobright/after-c.jpg" alt="The treated Ecto-1 from the rear three-quarter on the right: white body, blue roof lights and blue glazing, with the Ghostbusters badge intact on the door and the tailgate." loading="lazy" data-i="1">
+          <img src="/Empires/Retrobright/after-c.jpg" alt="The treated Ecto-1 from the rear three-quarter on the right: white body, blue roof lights and blue glazing, with the Ghostbusters badge on the door and the tailgate." loading="lazy" data-i="1">
           <img src="/Empires/Retrobright/after-b.jpg" alt="The treated Ecto-1 front three-quarter from the left and slightly higher, with the orange ghost figure sitting on the gunner seat." loading="lazy" data-i="2">
           <img src="/Empires/Retrobright/after-d.jpg" alt="The treated Ecto-1 photographed from above, showing the white roof, the four blue roof lights and the black gunner platform." loading="lazy" data-i="3">
           <button class="rb-nav prev" type="button" data-rb-step="-1" aria-label="Previous comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
           <button class="rb-nav next" type="button" data-rb-step="1" aria-label="Next comparison"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
         </div>
         <div class="rb-dots" data-rb-dots="after"></div>
-        <p class="rb-cap"><b>After.</b> Treated, rinsed properly, then finished with 303 Aerospace Protectant against the ultraviolet that caused all of it. The white is the white it was moulded in and the glazing has come back to blue. Stopped at a match with the parts around it rather than pushed past it. <b>The no-ghost badges are new stickers, not the originals.</b> The number plates are original and were left alone, which is why they still carry the old tone against the new white.</p>
+        <p class="rb-cap"><b>After.</b> Treated, rinsed, then finished with 303 against the UV that caused all of it. We stopped at a match with the parts around it. <b>The no-ghost badges are new stickers, not the originals.</b> The number plates are original and were left alone, which is why they still carry the old tone against the new white.</p>
       </div>
       </div>
 
-      <div class="ch-note" style="max-width:74ch">The clear parts are the half of this nobody photographs. The roof lights and the glazing had yellowed alongside the shell and came back with it, and the protectant is not for them: it must not go on clear plastics. So the white body is guarded from here and those parts are not, on one car, on one shelf, under one light.</div>
+      <div class="ch-note">The clear parts are the half nobody photographs. The roof lights and the glazing had yellowed along with the shell, and they came back with it. But the protectant is not for them: it must not go on clear plastic. So one car now has a shielded surface and an unshielded one, centimetres apart, on the same shelf, under the same light.</div>
 
-      <div class="story" style="max-width:70ch;margin-top:26px">
-        <p><b>Which makes this car the experiment, not the illustration.</b> The
-        section above admits that nobody has published what happens to a treated
-        and protected piece over years, and that the honest position is a
-        prediction rather than a result. This Ecto&#8209;1 was bleached and then
-        protected in <b>September 2026</b>, and it has a shielded surface and an
-        unshielded one a few centimetres apart, on the same body, in the same
-        room.</p>
-        <p><b>And a good sticker was taken off on purpose.</b> This car arrived
-        as three states at once: the tailgate badge was already gone, one door
-        carried a replacement somebody had fitted in the wrong size, and the
-        other door still had a sound original. Treat that and you get a clean
-        white car wearing the same three states, which reads as a muddle rather
-        than as a history.</p>
-        <p>So all of them came off, the good one included, and the car wears new
-        ones. That is the judgement the rule at the top of this page leaves you
-        with. <b>Never take peroxide to a sticker</b> settles what you must not
-        do; it does not settle what to do with a piece whose stickers are past
-        saving before you start. The answer here was to make it one honest state
-        instead of three, and then to say so. The number plates were kept, and
-        they are the only original markings left on it.</p>
-        <p>If the mechanism at the top of this page is right, the glazing goes
-        first and the white holds longer. If both go at the same rate, the
-        protectant is doing less than it claims. Either answer is worth having,
-        and the only cost of getting it is photographing this car again in a year
-        from the same two angles, in the same light. The dates are on the page so
-        that the comparison is possible later.</p>
+      <div class="story rb-two">
+        <p><b>Which makes this car an experiment rather than an illustration.</b> Nobody has published what happens to a treated and protected piece over ten years. This one was bleached and protected in <b>September 2026</b> and carries its own control.</p>
+        <p>If the mechanism above is right, the glazing yellows first and the white holds longer. If they go at the same rate, the protectant is doing less than it claims. Either answer is worth having. The only cost is photographing this car again in a year, same angles, same light.</p>
+        <p><b>And we took a good sticker off on purpose.</b> This one arrived as three states at once. The tailgate badge was already gone. One door carried a replacement somebody had fitted in the wrong size. The other door still had a sound original.</p>
+        <p>Treat that and you get a clean white car still wearing three states, which reads as a muddle rather than a history. So they all came off, the good one included, and it wears new ones. The number plates stayed, and they are the only original markings left on it.</p>
+        <p>That is the judgement the rule further down leaves you with. <b>Never take peroxide to a sticker</b> settles what you must not do. It does not settle what to do with stickers that were already past saving before you started. Here the answer was to make it one honest state instead of three, and then to say so out loud.</p>
       </div>
     </div>
   </section>
@@ -3775,14 +3808,16 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">The evidence against</div><h2>Ten years later, the treated half was worse</h2></div>
-        <p>Everything above is how it is done. This is the result every person treating a toy should have seen before they start, because it is the one that says what happens if you stop at the bleach.</p>
+        <div><div class="ey">The evidence against</div><h2>Ten years later, the treated side looked worse</h2></div>
+        <p>Anyone thinking about doing this should see this experiment first.</p>
       </div>
-      <div class="story" style="max-width:70ch">
-        <p>In 2015 a Dreamcast shell was retrobrighted with part of its surface masked off with tape, so that treated and untreated plastic sat side by side on one object, in one room, under one light, for a decade. It was re-examined in 2025. The treated half had yellowed further than the untreated half beside it, and carried streaking and blotching that the masked areas did not. Not slower, not equal: worse.</p>
-        <p>That is a single object rather than a controlled study, and it deserves to be described as one. But it is the best-controlled comparison the hobby has, because the control and the sample are the same piece of plastic, and it agrees with the mechanism. The chromophores were bleached at the surface. The degraded bromine species underneath were not, and they migrate. The chain scission was never addressed at all, and an already-oxidised surface that has just been through a strong oxidiser is not better placed to resist the next ten years.</p>
-        <p>Conservation science has not produced a reversal for any of this. The Getty's plastics programme exists precisely because the field does not yet know how to save these objects, and nothing in it endorses bleaching them. We can remove the colour and we cannot repair the polymer, and that is not going to change.</p>
-        <p><b>But look at what that shell did next.</b> It went back on a shelf, bleached, with nothing at all between it and the light that had yellowed it the first time. The oxidation had never stopped, the bromine reservoir was still in the bulk, and the treatment had just stripped the surface layer that was doing the absorbing. A decade of the original cause, applied to a surface with less left to lose. That is not an argument against treating a toy. It is an argument against treating a toy and then walking away, which is what almost every published before-and-after actually shows.</p>
+      <div class="story">
+        <p>In 2015 part of a Dreamcast shell was masked off with tape while the rest was retrobrighted. Treated and untreated ABS then sat side by side on the same object, in the same room, under the same light, for ten years.</p>
+        <p>It was compared again in 2025. The treated areas had yellowed <b>more</b> than the untreated ones beside them, and carried streaking and blotching the masked areas did not. Not slower. Not equal. Worse.</p>
+        <p>That is one Dreamcast shell, not a controlled study, and it deserves to be called that. But as hobby experiments go it is unusually good, because the sample and the control are the same piece of plastic. And what happened makes chemical sense. The bleaching removed the colour near the surface. It did not remove the degraded material underneath, it did not repair the broken chains, and it did nothing to stop light, heat and oxygen carrying on.</p>
+        <p>Conservation science has no reversal to offer either. The Getty runs a plastics programme precisely because the field does not yet know how to save these objects, and nothing in it endorses bleaching them. We can take the colour off. We cannot repair the polymer. That is not going to change.</p>
+        <p><b>But look at what that shell did next.</b> It went back on a shelf with nothing at all between it and the light that had yellowed it the first time. A decade of the original cause, on a surface with less left to lose.</p>
+        <p>So this is not an argument against retrobrighting. It is an argument against retrobrighting something and then putting it straight back on the same sunny shelf, which is what almost every published before-and-after actually shows.</p>
       </div>
     </div>
   </section>
@@ -3790,28 +3825,30 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">After the bleach</div><h2>The step that decides whether it holds</h2></div>
-        <p>Bleaching removes the product of the reaction. It does nothing to the reaction. So the only question that matters once a part comes out of the gel is what you put between it and the thing that started all of this.</p>
+        <div><div class="ey">After the bleach</div><h2>The part people tend to forget</h2></div>
+        <p>Bleaching removes the visible result of the oxidation. It does nothing to the oxidation. So once a part comes out of the gel, the only question left is what you put between it and the thing that started all of this.</p>
       </div>
-      <div class="story" style="max-width:70ch">
-        <p>Read the chain back and it separates into three parts. There is an initiator, ultraviolet light and heat. There is a propagator, oxygen working through the radicals the initiator made. And there is an accelerant, the bromine coming off the flame retardant. Peroxide addresses none of the three. It removes what they produced.</p>
-        <p>Of those three, exactly one can be controlled on a shelf. You cannot take the oxygen away and you certainly cannot take the flame retardant out of a toy that was moulded with it in 1984. You can take the light away, and that is what the finishing step is for.</p>
+      <div class="story">
+        <p>Read the chain backwards and there are three things driving it. Light and heat get it started. Oxygen keeps it going. The bromine coming off the flame retardant speeds it up. Peroxide addresses none of them. It removes what they produced.</p>
+        <p>Of those three, exactly one is under your control on a shelf. You cannot take the oxygen away. You certainly cannot take the flame retardant out of something moulded in 1984. You can take the light away.</p>
+        <p>That is why we use a UV protectant afterwards. We currently use <b>303 Aerospace Protectant</b>, and the reasons are as much about what is not in the bottle as what is.</p>
       </div>
       <div class="cmp-scroll">
         <table class="cmp">
           <thead><tr><th>303 Aerospace Protectant</th><th>What it is</th><th>What it means here</th></tr></thead>
           <tbody>
-            <tr><td>The formula</td><td>Water-based, with no petroleum distillates, no alcohol, no mineral oil and no silicone oils. Dries to a clear matte finish</td><td class="note">The absences are the point. Petroleum distillates and silicone oils are the things that would sit on the surface doing to the plastic what sebum does, which would be a very expensive way to undo the last two days of work</td></tr>
-            <tr><td>What it does</td><td>UV blockers, sold against discolouration, fading, embrittlement, cracking and chalking</td><td class="note">It targets the initiator, and it is the only step in this entire page that addresses a cause rather than a symptom</td></tr>
-            <tr><td>Where it must not go</td><td>Not for clear plastics</td><td class="note">Read that as canopies, bubbles, windscreens, the Ecto&#8209;1 glazing and the front of a display case. On a toy the clear parts are usually the ones you least want to fog</td></tr>
-            <tr class="total"><td>How often</td><td>Every three to five weeks under sun, two to three in extreme sun</td><td class="note">Those intervals are written for a boat deck. A shelf indoors is a different exposure and nobody has published a figure for it, so treat it as a coating you maintain rather than a seal you apply once</td></tr>
+            <tr><td>The formula</td><td>Water-based, with no petroleum distillates, no alcohol, no mineral oil and no silicone oils. Dries clear and matte</td><td class="note">Those absences are the point. Petroleum distillates and silicone oils would sit on the surface doing to the plastic roughly what sebum does, which is an expensive way to undo two days of work</td></tr>
+            <tr><td>What it does</td><td>UV blockers, sold against discolouration, fading, embrittlement, cracking and chalking</td><td class="note">It targets the thing that starts the reaction. It is the only step on this whole page that addresses a cause instead of a symptom</td></tr>
+            <tr><td>Where it must not go</td><td>Not for clear plastics</td><td class="note">Windscreens, bubbles, canopies, the Ecto&#8209;1 glazing, the front of a display case. On a toy the clear parts are usually the ones you least want to fog</td></tr>
+            <tr class="total"><td>How often</td><td>Every three to five weeks under sun, two to three in extreme sun</td><td class="note">Those intervals are written for a boat deck. A shelf indoors is a far gentler exposure and nobody has published a figure for it, so treat it as a coating you maintain rather than a seal you apply once</td></tr>
           </tbody>
         </table>
       </div>
-      <div class="ch-note" style="max-width:74ch">The console restoration community reached the same place independently: applying 303 after treatment is common practice, and the wikis that recommend it say plainly that how well it holds up over the long term is not known. That is the correct way to put it, and this page will not put it more strongly.</div>
-      <div class="story" style="max-width:70ch;margin-top:22px">
-        <p><b>What it cannot do, said plainly.</b> It does not stop thermal oxidation, which runs in the dark. It does not stop the degraded bromine species already in the bulk from migrating outward. It does not touch the embrittlement. A protected piece should yellow more slowly than an unprotected one, and the mechanism says it will still yellow.</p>
-        <p>That is a prediction rather than a result, because the long-term data does not exist yet. What exists instead is a growing number of treated and protected pieces sitting on shelves with a date attached. Every lot on this site that has been through the process carries what was done to it and when, which over enough years is the only way anyone finds out.</p>
+      <div class="ch-note">The console restoration community got here on its own: applying 303 after treatment is common practice, and the wikis that recommend it say plainly that nobody knows how well it holds up long term. That is the honest way to put it, and we are not going to put it more strongly.</div>
+      <div class="story">
+        <p><b>What it cannot do, plainly.</b> It does not stop thermal oxidation, which runs in the dark. It does not stop the degraded bromine already inside from migrating outward. It does not touch the brittleness.</p>
+        <p>Our expectation is simply that a protected piece should yellow more slowly than the same piece under the same light without it. That is a prediction, not a result, because the long-term data does not exist yet.</p>
+        <p>Which is why we write down what was done to every treated toy we sell, and when. In ten years that record will be worth more than any before-and-after photograph.</p>
       </div>
     </div>
   </section>
@@ -3819,16 +3856,35 @@
   <section class="band">
     <div class="wrap">
       <div class="band-head">
-        <div><div class="ey">Our position</div><h2>What we will not do</h2></div>
-        <p>We do treat toys, and a good deal of the shelf has been through it. These are the lines the process stops at, and they are not negotiable for a better-looking photograph.</p>
+        <div><div class="ey">Our position</div><h2>Where we draw the line</h2></div>
+        <p>We do retrobright toys. A good part of the shelf has been through it. But there are places we stop, and none of them are negotiable for a better-looking photograph.</p>
       </div>
       <ul class="pts">
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span class="pt-t"><b>Never on paint, tampo printing, stickers or glue.</b> Peroxide lifts tampo, dulls paint, softens adhesive and will find the edge of a sticker. On a figure this is not recoverable, and a factory-printed marking is often the thing that dates the piece.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v12H4z"/><path d="M13 6h7v12h-7z"/></svg></span><span class="pt-t"><b>Never on a multi-material piece as one job.</b> Arms, torso and head are frequently different blends from different tools, and they bleach at different rates. You do not correct a yellow figure, you produce a figure in three colours.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v6c0 5-3.5 7.5-8 8-4.5-.5-8-3-8-8V7z"/></svg></span><span class="pt-t"><b>Never when the yellowing is the evidence.</b> On an undocumented or unlicensed cast, the surface state is part of what identifies it. Bleaching that away destroys the record for a cosmetic gain, on the one class of object where the object is the only archive.</span></li>
-        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></span><span class="pt-t"><b>Never without saying so.</b> Any lot here that has been treated says treated, in the description, in as many words, alongside what was used. A buyer is entitled to know that the white they are looking at is younger than the toy.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span class="pt-t"><b>Never over paint, tampo printing, stickers or glue.</b> Peroxide lifts printing, dulls paint, softens adhesive and finds the edge of a sticker. Losing an original factory marking is a far bigger problem than yellow plastic, because that marking is often what dates the piece.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v12H4z"/><path d="M13 6h7v12h-7z"/></svg></span><span class="pt-t"><b>Never a multi-material toy as one job.</b> A head, torso and arms can look identical and be different plastic from different tools. They bleach at different speeds. That is how one yellow figure becomes one white, one cream and one grey figure.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 4v6c0 5-3.5 7.5-8 8-4.5-.5-8-3-8-8V7z"/></svg></span><span class="pt-t"><b>Never when the ageing is what identifies the object.</b> On a bootleg, an undocumented cast or an odd variant, the surface itself is part of the evidence. Take it off and it cannot be put back, on the one kind of object where the object is the whole archive.</span></li>
+        <li class="pt"><span class="pt-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></span><span class="pt-t"><b>Never without saying so.</b> Every treated toy we sell is described as treated, alongside what was used. A buyer should know whether the white they are looking at is forty years old, or forty years old and recently bleached.</span></li>
       </ul>
-      <div class="ch-note" style="max-width:74ch"><b>The order of operations, start to finish.</b> Wash first, because sebum is an oxidiser that is still working and taking it off is free. Then decide, and for a great many pieces the answer is that the yellowing is even, honest and part of the object. If it is going to be treated: the lowest concentration that will do it, checked far more often than feels necessary, stopped at the point where it matches the parts around it rather than at white. Rinse it properly. Protect it, because an unprotected bleached surface is the Dreamcast. Then store it out of direct sun and off fluorescent tubes, cool, dry, stable, and not sealed in a PVC bag. And write down what was done, so that in ten years somebody knows what they are looking at.</div>
+      <div class="story">
+        <p><b>And there is a fifth, which is not a rule so much as a habit.</b> If the yellowing is even, the paint and printing are intact and the thing simply looks its age, we usually leave it alone.</p>
+        <p><b>Age is not automatically damage that needs fixing.</b></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap">
+      <div class="origins-grid">
+        <div class="story">
+          <div class="ey">The short version</div>
+          <h2>If you remember nothing else</h2>
+          <p>Wash it first. Lukewarm water, pH-neutral detergent, soft brush, dried properly. That alone removes something that is still working on the plastic.</p>
+          <p>Then decide whether it needs treating at all. A great deal of vintage plastic looks perfectly good with even, honest ageing, and doing nothing is a real answer.</p>
+          <p>If you do treat it: the lowest concentration that will do the job. Check it far more often than feels necessary. Stop when it matches the original plastic around it, not when it reaches refrigerator white. Rinse it properly.</p>
+          <p>Then protect it from UV, because an unprotected bleached surface is the Dreamcast. Store it cool, dry, out of direct sun, off fluorescent tubes, and not sealed in a PVC bag.</p>
+          <p>And write down what you did. Somebody looking at that toy in ten years deserves to know what happened to it.</p>
+        </div>
+      </div>
     </div>
   </section>
 
