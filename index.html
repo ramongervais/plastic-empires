@@ -6574,7 +6574,12 @@
         (!isClosed && l.id ? '<button class="watch-btn' + (watchedIds.has(l.id) ? ' on' : '') + '" type="button" data-watch="' + e(l.id) + '" aria-label="Watch this lot" aria-pressed="' + (watchedIds.has(l.id) ? 'true' : 'false') + '">' + watchStarSvg(watchedIds.has(l.id)) + '</button>' : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
-      '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
+      // The title is a real link now. It was an anchor with the destination in a
+      // data attribute and the routing in JavaScript, which is a piece of text to
+      // a crawler, so all twenty-four lots were reachable only through the
+      // sitemap. The router still calls preventDefault, so clicking is unchanged
+      // and middle-click now works.
+      '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" href="/lot/' + encodeURIComponent(l.id) + '/" data-nav="lot" data-lot="' + e(l.id) + '">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
         // makerLabel, not the raw maker. The curation writes free text and the
         // bracketed half is provenance for the lot page, not for a card: today
         // that already puts "HASBRO (TITAN SPORTS INC.)" on a card next to a line
