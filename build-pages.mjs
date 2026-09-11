@@ -159,7 +159,178 @@ for (const view of Object.keys(PATHS)) {
   report.push("  " + p.padEnd(22) + title.slice(0, 52));
 }
 
-// The app itself is the fallback for anything per-record, /lot/<id> above all.
+// ---------------------------------------------------------------------------
+// Lots.
+//
+// Until now a lot was the one thing on this site a search engine could never
+// see. /lot/<id> has no file behind it, so GitHub Pages answered the 404.html
+// fallback, and the fallback answers with a 404 status. A person got the lot
+// because the router reads the path; Google got a 404 and left. The whole of
+// the actual inventory was unindexable, on a site whose competitor has
+// eighty-seven thousand listings in front of the same buyers.
+//
+// So each lot gets a real file with a real head, the same way the fixed paths
+// do, plus the Product and Offer the client already builds at runtime. The
+// difference is that this version exists before any JavaScript runs, which is
+// the only version a crawler reads.
+//
+// The credentials are the ones already in index.html and already in every
+// visitor's browser: a publishable key against row-level security. Read once
+// from the source rather than copied here, so there is one definition.
+const SUPA_URL = (html.match(/SUPA_URL = '([^']+)'/) || [])[1];
+const SUPA_KEY = (html.match(/SUPA_KEY = '([^']+)'/) || [])[1];
+
+const LOT_COLS = "id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at";
+
+async function fetchLots() {
+  if (!SUPA_URL || !SUPA_KEY) throw new Error("could not read SUPA_URL/SUPA_KEY out of index.html");
+  // Everything a buyer could land on. Drafts are nobody's business, and a sold
+  // lot is the archive: "what did this actually fetch" is a real search and the
+  // answer is a page we already own.
+  const url = SUPA_URL + "/rest/v1/lots?select=" + LOT_COLS +
+    "&status=in.(live,preview,sold,unsold)&order=created_at.desc";
+  const res = await fetch(url, { headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY } });
+  if (!res.ok) throw new Error("lots fetch failed: HTTP " + res.status + " " + (await res.text()).slice(0, 200));
+  const rows = await res.json();
+  if (!Array.isArray(rows)) throw new Error("lots fetch returned " + typeof rows);
+  return rows;
+}
+
+const clean = (s) => String(s || "").replace(/\s+/g, " ").trim();
+function trim(s, n) {
+  s = clean(s);
+  if (s.length <= n) return s;
+  const cut = s.slice(0, n);
+  const stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf(", "), cut.lastIndexOf(" "));
+  return (stop > n * 0.6 ? cut.slice(0, stop) : cut).replace(/[.,;\s]+$/, "") + "\u2026";
+}
+
+function lotTitle(l) {
+  const bits = [clean(l.toy) || "Vintage toy"];
+  const maker = clean(l.maker).split(/[(,]/)[0].trim();
+  if (maker) bits.push(maker + (clean(l.year) ? " " + clean(l.year) : ""));
+  else if (clean(l.year)) bits.push(clean(l.year));
+  return bits.join(" \u00b7 ") + " \u00b7 Hammer & Mold";
+}
+
+function lotDescription(l) {
+  // The blurb is written for a reader, so it is the right thing to hand a
+  // search engine too. Completeness is the fallback because on a vintage toy
+  // that is the sentence a buyer is actually looking for.
+  const lead = clean(l.blurb) || clean(l.completeness) || clean(l.notes);
+  const tail = [];
+  if (clean(l.condition)) tail.push("Condition " + clean(l.condition).toLowerCase());
+  if (clean(l.sale_type) === "auction") tail.push("at auction");
+  const s = lead ? trim(lead, 150) + (tail.length ? " " + tail.join(", ") + "." : "") : "";
+  return s || (lotTitle(l).split(" \u00b7 Hammer")[0] + ", at Hammer & Mold.");
+}
+
+function lotSchema(l, url) {
+  const sold = l.status === "sold" || l.status === "unsold";
+  const ended = l.ends_at && new Date(l.ends_at).getTime() < Date.now();
+  const avail = sold || ended ? "SoldOut" : (l.status === "preview" ? "PreOrder" : "InStock");
+  const cond = /mint|sealed|misb|mib/i.test(clean(l.condition)) ? "NewCondition" : "UsedCondition";
+  const price = Number(l.buy_now || l.starting_bid || 0);
+  const node = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: clean(l.toy) || "Vintage toy",
+    description: lotDescription(l),
+    image: (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean).slice(0, 6),
+    itemCondition: "https://schema.org/" + cond,
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: "EUR",
+      price: price.toFixed(2),
+      availability: "https://schema.org/" + avail,
+      itemCondition: "https://schema.org/" + cond,
+      seller: { "@type": "Organization", "@id": SITE + "/#org" },
+    },
+  };
+  const brand = clean(l.maker).split(/[(,]/)[0].trim();
+  if (brand) node.brand = { "@type": "Brand", name: brand };
+  if (clean(l.year)) node.releaseDate = clean(l.year);
+  return node;
+}
+
+const lots = await fetchLots();
+
+// Two of the same toy is normal in this shop: two Boba Fetts came through in
+// the same week. Identical titles across two URLs is not normal, it is the
+// duplicate a search engine drops one of. So a repeat gets the thing a
+// collector would actually use to tell them apart, its condition, and only if
+// that still collides does it fall back to a fragment of the id.
+const titleCount = new Map();
+for (const l of lots) {
+  const t = lotTitle(l);
+  titleCount.set(t, (titleCount.get(t) || 0) + 1);
+}
+const titleUsed = new Map();
+function uniqueTitle(l) {
+  const base = lotTitle(l);
+  if ((titleCount.get(base) || 0) < 2) return base;
+  const cond = clean(l.condition);
+  const withCond = cond ? base.replace(" \u00b7 Hammer & Mold", " \u00b7 " + cond + " \u00b7 Hammer & Mold") : base;
+  const seen = (titleUsed.get(withCond) || 0) + 1;
+  titleUsed.set(withCond, seen);
+  if (seen === 1) return withCond;
+  return withCond.replace(" \u00b7 Hammer & Mold", " \u00b7 " + String(l.id).slice(0, 6) + " \u00b7 Hammer & Mold");
+}
+
+const lotLocs = [];
+for (const l of lots) {
+  if (!l || !l.id) continue;
+  const path = "/lot/" + encodeURIComponent(l.id) + "/";
+  const url = SITE + path;
+  const title = uniqueTitle(l);
+  const desc = lotDescription(l);
+  const hero = (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean)[0] || "";
+
+  let out = html
+    .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
+    .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(url) + "$2")
+    .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
+    .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
+    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(url) + "$2")
+    .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
+    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2");
+  if (hero) {
+    out = out
+      .replace(/(<meta property="og:image" content=")[^"]*(")/, "$1" + esc(hero) + "$2")
+      .replace(/(<meta name="twitter:image" content=")[^"]*(")/, "$1" + esc(hero) + "$2");
+  }
+  out = out.replace("</head>", '<script id="lotLd" type="application/ld+json">' +
+    JSON.stringify(lotSchema(l, url)) + "</script></head>");
+
+  if (!out.includes('href="' + esc(url) + '"')) throw new Error(l.id + ": canonical was not rewritten");
+
+  const dir = "." + path;
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
+  lotLocs.push({ loc: url, status: l.status });
+}
+
+// A second sitemap rather than appending to the hand-kept one, because these
+// come and go with the auctions and that file is written by a person. Declared
+// in robots.txt, so it is found without anybody having to submit it.
+if (lotLocs.length) {
+  const body = lotLocs.map((x) =>
+    "  <url>\n    <loc>" + x.loc + "</loc>\n    <changefreq>" +
+    (x.status === "sold" || x.status === "unsold" ? "monthly" : "daily") +
+    "</changefreq>\n    <priority>" + (x.status === "sold" || x.status === "unsold" ? "0.4" : "0.7") +
+    "</priority>\n  </url>"
+  ).join("\n");
+  fs.writeFileSync("sitemap-lots.xml",
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    "<!-- Generated by build-pages.mjs at deploy. Do not edit, and do not commit. -->\n" +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + body + "\n</urlset>\n");
+}
+console.log("lots: " + lotLocs.length + " pre-rendered, sitemap-lots.xml written");
+
+// The app itself is the fallback for anything per-record that has no file:
+// /seller/<id>, and a /lot/<id> that was published after the last deploy.
 fs.copyFileSync(SRC, "404.html");
 
 // The sitemap promises these paths exist. If it lists something this did not

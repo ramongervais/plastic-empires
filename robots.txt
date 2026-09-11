@@ -38,3 +38,6 @@ Allow: /
 Disallow: /admin/
 
 Sitemap: https://hammerandmold.com/sitemap.xml
+# Lots, generated at deploy. Separate file because they come and go with the
+# auctions and sitemap.xml is kept by hand.
+Sitemap: https://hammerandmold.com/sitemap-lots.xml
