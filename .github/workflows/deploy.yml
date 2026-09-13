@@ -3,6 +3,22 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Lots are pre-rendered by build-pages.mjs at deploy time, read live out of
+  # Supabase. Publishing a lot in /admin/ writes a database row and nothing
+  # else, so until something pushes to main there is no file at /lot/<id>/ and
+  # a crawler gets 404.html, which answers 404. The lot is live for a person
+  # and does not exist for Google, which is the exact problem the pre-render
+  # was built to solve.
+  #
+  # So the deploy also runs on a clock. Same job, same commit, freshly queried
+  # inventory: new lots get their file and their sitemap entry, closed ones get
+  # their status corrected, within half a day of the change. Twice daily rather
+  # than hourly because auctions run for days, not minutes, and a build that
+  # fails on an unreachable Supabase leaves the last good deploy serving.
+  #
+  # Not on the hour: GitHub delays scheduled runs at peak times.
+  schedule:
+    - cron: "17 5,17 * * *"
 permissions:
   contents: read
   pages: write
