@@ -482,6 +482,26 @@
 
   /* Origins: two columns (story + photo carousel) */
   .origins-grid, .scale-grid { display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:start; }
+  /* Two columns of prose, where a photograph would have been.
+     Origins and the turning point were built as story-plus-picture and the
+     picture never arrived: Empires/TMNT held no comic-01.jpg and no
+     first-wave.jpg, so half the width was a labelled empty box on every visit.
+     Setting the prose in two columns uses the measure the grid was already
+     holding open, and the section gets SHORTER rather than emptier, which an
+     empty panel never does.
+     The head stays outside .cols so it spans the full measure; only the body
+     is divided. A paragraph may not be cut by the column break, or its lead-in
+     arrives without the sentence it introduces. */
+  .story.wide { max-width:none; margin:0; }
+  .story .cols { columns:2; column-gap:56px; }
+  .story .cols p { break-inside:avoid; }
+  .story .cols p:last-child { margin-bottom:0; }
+  @media (max-width:900px){ .story .cols { columns:1; } }
+  /* The pull quote sits between the head and the columns, as a deck. It stays
+     out of .cols on purpose: 26px italic inside a half-width column is cramped,
+     and this is the line the section is about. Capped rather than run the full
+     1124px, which at this size would strand a half line. */
+  .story.wide .pullquote { max-width:640px; margin:2px 0 34px; }
   .origins-grid .story, .scale-grid .story { max-width:none; margin:0; }
   .carousel { position:sticky; top:88px; }
   .carousel-viewport { position:relative; overflow:hidden; border:1px solid var(--line); border-radius:3px; background:var(--panel); }
@@ -1800,48 +1820,30 @@
 
   <section class="band">
     <div class="wrap">
-      <div class="origins-grid">
-        <div class="story">
-          <div class="ey">Origins · the comic</div>
-          <h2>A joke drawn at a kitchen table.</h2>
+      <div class="story wide">
+        <div class="ey">Origins &middot; the comic</div>
+        <h2>A joke drawn at a kitchen table.</h2>
+        <div class="cols">
           <p><span class="drop">O</span>ne night in November 1983, Kevin Eastman and Peter Laird were trading silly drawings in their apartment in Dover, New Hampshire. Eastman sketched a masked turtle standing upright with a pair of nunchucks, and scrawled three words above it as a gag: Teenage Mutant Ninja Turtles. It was a parody, poking fun at the biggest comics of the day, Frank Miller's ninjas, the New Mutants, Dave Sim's Cerebus. It was never meant to leave the room.</p>
           <p>But they couldn't let it go. With a tax refund and a loan from Eastman's uncle, around $1,200 between them, the pair self-published a single oversized black-and-white issue in May 1984, under an imprint they invented on the spot: Mirage Studios, so named because the studio didn't really exist. They printed 3,000 copies, priced at $1.50, and mailed out a press release that made the tiny print run sound like an event. It sold out. The gritty little comic became the most talked-about book in the independent scene, and first-printing copies now change hands for the price of a car.</p>
         </div>
-
-        <div class="scale-visual">
-          <div class="ey" style="margin-bottom:18px">Mirage Studios · 1984</div>
-          <div class="scale-photo">
-            <span class="ph">TMNT #1 · 1984</span>
-            <img src="/Empires/TMNT/comic-01.jpg" alt="Teenage Mutant Ninja Turtles issue one, Mirage Studios, 1984" loading="lazy" onerror="this.remove()">
-          </div>
-          <div class="vcap" style="text-align:left">Issue one. Black and white, oversized, and printed on a gamble.</div>
-        </div>
       </div>
     </div>
-  </section>
+</section>
 
   <section class="band">
     <div class="wrap">
-      <div class="scale-grid">
-        <div class="story">
-          <div class="ey">The turning point</div>
-          <h2>1987: color, comedy and a license to print money.</h2>
+      <div class="story wide">
+        <div class="ey">The turning point</div>
+        <h2>1987: color, comedy and a license to print money.</h2>
+        <div class="pullquote">The comic was ninja-noir. The cartoon made it Saturday morning, and the toys made it a fortune.</div>
+        <div class="cols">
           <p>A licensing agent named Mark Freedman saw what the comic could become, and brought it to Playmates Toys, a modest California firm with no action-figure line of its own. Playmates was interested but cautious: they wanted the Turtles on television first, to prove the audience was really there. A five-part animated miniseries aired in December 1987, and it changed everything about them.</p>
-          <div class="pullquote">The comic was ninja-noir. The cartoon made it Saturday morning, and the toys made it a fortune.</div>
           <p>Television softened the Turtles into the version the world remembers. In the comic all four wore red masks; on screen each got his own color so children could tell them apart. Michelangelo got the nunchucks and the one-liners, pizza became an obsession, and a whole cast, Krang, Bebop and Rocksteady, the Technodrome, was invented for the show and the toys. When Playmates shipped the first figures in 1988 the line didn't just sell. Within two years the Turtles stood shoulder to shoulder with Star Wars and G.I. Joe as the best-selling toys on Earth.</p>
-        </div>
-
-        <div class="scale-visual">
-          <div class="ey" style="margin-bottom:18px">Playmates · 1988</div>
-          <div class="scale-photo">
-            <span class="ph">The first wave · 1988</span>
-            <img src="/Empires/TMNT/first-wave.jpg" alt="The 1988 Playmates Teenage Mutant Ninja Turtles first-wave figures" loading="lazy" onerror="this.remove()">
-          </div>
-          <div class="vcap" style="text-align:left">Four colors, four weapons. The 1988 line as most collectors first met it.</div>
         </div>
       </div>
     </div>
-  </section>
+</section>
 
   <section class="band">
     <div class="wrap">
@@ -1871,23 +1873,15 @@
         <p>Playmates didn't just make figures. It built a whole world in plastic, and these are the pieces collectors still chase.</p>
       </div>
 
-      <div class="scale-grid">
-        <div class="story">
-          <div class="ey">The crown jewel</div>
-          <h2>The Technodrome</h2>
+      <div class="story wide">
+        <div class="ey">The crown jewel</div>
+        <h2>The Technodrome</h2>
+        <div class="pullquote">A foot and a half of gray plastic menace, and the toy that emptied more piggy banks than any other in the line.</div>
+        <div class="cols">
           <p>If the figures were the army, the Technodrome was the empire's fortress. Released in 1990, it was Krang's rolling war-machine rendered in plastic: a giant motorized eyeball that rose from the top, prison cells, a working lift, escape hatches and a firing cannon.</p>
-          <div class="pullquote">A foot and a half of gray plastic menace, and the toy that emptied more piggy banks than any other in the line.</div>
           <p>It is the piece almost every collector remembers begging for, and the one that still anchors a serious Turtles collection today. Complete, boxed and unbroken, it is the blue-chip of the range.</p>
-          <p class="notforsale"><b>We do not have one.</b> The Technodrome is here because the story of this line cannot be told without it, not because it is stock. Nothing in this section is for sale. What we have handled is further down, photographed on our own bench, and the shop is the only place anything is actually offered.</p>
         </div>
-        <div class="scale-visual">
-          <div class="ey" style="margin-bottom:18px">Playmates · 1990</div>
-          <div class="scale-photo">
-            <span class="ph">Technodrome · 1990</span>
-            <img src="/Empires/TMNT/technodrome.jpg" alt="The Playmates Technodrome playset, 1990" loading="lazy" onerror="this.remove()">
-          </div>
-          <div class="vcap" style="text-align:left">Krang's fortress on wheels, the flagship of the entire line. Photograph pending: we have never had one through the door.</div>
-        </div>
+        <p class="notforsale"><b>We do not have one.</b> The Technodrome is here because the story of this line cannot be told without it, not because it is stock. Nothing in this section is for sale. What we have handled is further down, photographed on our own bench, and the shop is the only place anything is actually offered.</p>
       </div>
 
       <div class="empires" style="margin-top:56px">
