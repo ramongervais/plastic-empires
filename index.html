@@ -652,11 +652,32 @@
   }
   /* ---------- Sell / AI curation ---------- */
   .sell-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
-  .dropzone { display:block; border:1.5px dashed var(--line-2); border-radius:4px; padding:48px 24px; text-align:center; cursor:pointer; transition:border-color .15s ease, background .15s ease; }
-  .dropzone:hover, .dropzone.drag { border-color:var(--ink); background:var(--panel); }
+  /* The one thing a seller has to do on this page. It was a grey dashed outline
+     on a white page, which is the weight of a disabled field, and it sat below
+     the fold of attention on a screen that is otherwise all white. Solid fill,
+     inverted text, the same pair the primary button uses.
+     --accent rather than a literal #000: in the dark theme the page IS black,
+     and a black block would vanish into it. Accent inverts with the theme, so
+     the zone is the darkest thing on a light page and the lightest on a dark
+     one, which is what "pop" actually means. */
+  .dropzone { display:block; background:var(--accent); color:var(--accent-ink);
+    border:1.5px dashed color-mix(in srgb, var(--accent-ink) 32%, transparent);
+    border-radius:4px; padding:48px 24px; text-align:center; cursor:pointer;
+    transition:border-color .15s ease, box-shadow .15s ease; }
+  /* Hover draws an 8px stroke on the inside while the dashed outline stays put.
+     inset box-shadow rather than a second border: a border would change the
+     box's size and shove the 48px of padding around, and an outline would grow
+     outwards into the gap above the textarea. This paints inside the existing
+     edge and moves nothing. */
+  .dropzone:hover { border-color:color-mix(in srgb, var(--accent-ink) 72%, transparent);
+    box-shadow:inset 0 0 0 8px color-mix(in srgb, var(--accent-ink) 20%, transparent); }
+  /* Dragging a file over it is the moment to be unmistakable: same 8px, louder. */
+  .dropzone.drag { border-color:var(--accent-ink);
+    box-shadow:inset 0 0 0 8px color-mix(in srgb, var(--accent-ink) 42%, transparent); }
   .dz-plus { font-family:var(--body); font-size:40px; font-weight:300; line-height:1; }
   .dz-label { font-family:var(--label); font-size:13px; letter-spacing:.14em; text-transform:uppercase; margin-top:12px; }
-  .dz-hint { font-family:var(--body); font-size:13px; color:var(--ink-3); margin-top:8px; }
+  .dz-hint { font-family:var(--body); font-size:13px; color:color-mix(in srgb, var(--accent-ink) 66%, transparent); margin-top:8px; }
+  .dz-hint b { color:var(--accent-ink); }
   .thumbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
   .thumbs .th { position:relative; width:72px; height:72px; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
   .thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
@@ -821,6 +842,24 @@
     .hmr img { transform:rotate(-6deg); }
   }
   #view-sell .empire-title { font-size:clamp(38px, 5.6vw, 68px); line-height:1.02; }
+  /* The title types itself in, terminal style.
+     The finished text stays in the DOM as a hidden ghost so the heading already
+     occupies its final height before the first character lands. Without that, a
+     heading this size grows from one line to two mid-animation and shoves the
+     whole page down while somebody is reading it.
+     The typed layer sits on top, absolutely placed, and is aria-hidden: a screen
+     reader gets the h1's aria-label once instead of the same sentence rebuilt
+     character by character. */
+  .typer { position:relative; white-space:pre-wrap; }
+  .typer .tg { visibility:hidden; }
+  .typer .to { position:absolute; left:0; top:0; right:0; }
+  /* Solid while the characters are still arriving, blinking once it stops. A
+     caret that blinks mid-word reads as a stalled cursor rather than a hand
+     still typing, which is the opposite of the thing being imitated. */
+  .typer .tc { display:inline-block; width:.46em; height:.78em; background:currentColor;
+    vertical-align:-.04em; margin-left:.04em; }
+  .typer .tc.blink { animation:tblink 1.05s steps(1, end) infinite; }
+  @keyframes tblink { 0%, 50% { opacity:1 } 50.01%, 100% { opacity:0 } }
   @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
   @media (max-width:600px){ #view-sell .empire-title { font-size:34px; } }
   .rc-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
@@ -1291,7 +1330,7 @@
     <section class="hero">
       <div class="hero-copy">
         <div class="ey">Vintage Kenner · Star Wars · Ghostbusters</div>
-        <h1>Know the toy.<br>Then own it.</h1>
+        <h1>Know the toy.<br>Then own it</h1>
         <p class="lede">Hammer &amp; Mold brings together original vintage toys, the companies that made them and the stories that made them famous. Explore the history. Watch the commercials. Buy the originals.</p>
         <div class="cta-row">
           <a class="btn" href="#empires" data-nav="home">Meet the Molders</a>
@@ -3942,7 +3981,7 @@
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">About</span></div>
     <section class="empire-hero">
       <div class="ey">About</div>
-      <h1 class="empire-title">It started with a shelf.</h1>
+      <h1 class="empire-title">It started with a shelf</h1>
       <div class="empire-dek">Hammer &amp; Mold · Netherlands</div>
       <p class="empire-lede">A private collection that grew into something bigger. This is where it comes from, and what we hunt for.</p>
     </section>
@@ -3968,7 +4007,7 @@
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Sell</span></div>
     <section class="empire-hero">
       <div class="ey">Sell with us</div>
-      <h1 class="empire-title">Upload. AI builds the listing.</h1>
+      <h1 class="empire-title">Upload. AI builds the listing</h1>
       <div class="empire-dek">Photos in. Listing ready.</div>
       <p class="empire-lede">Upload a few clear photos. Our AI identifies the toy, dates it, checks the condition and builds the listing for you. It also reviews recent sales to suggest a fair starting price.<br><br>Identification is free. You only use a listing when you decide to sell.</p>
     </section>
@@ -4042,7 +4081,7 @@
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">We buy</span></div>
     <section class="empire-hero">
       <div class="ey">Sell it to us</div>
-      <h1 class="empire-title">Or skip the auction and take the money today.</h1>
+      <h1 class="empire-title">Or skip the auction and take the money today</h1>
       <div class="empire-dek">Whole collections and single pieces</div>
       <p class="empire-lede">You do not have to run an auction to get rid of a box of toys. Send us photographs, we tell you what it is worth, and we make you an offer for the lot. You post one parcel and we pay. No listing, no waiting, no wondering whether it sells.</p>
     </section>
@@ -5101,6 +5140,61 @@
     pageview(path);
   }
 
+  // Every page's main header arrives the way a terminal prints it.
+  //
+  // Once per view rather than once per session: each page gets its greeting the
+  // first time you reach it, and never again while you navigate back and forth,
+  // because a greeting repeated on every return is a stutter.
+  //
+  // Anyone who has asked for less motion gets the finished sentence at once,
+  // which is what `reduce` already governs for scrolling.
+  const titlesTyped = new Set();
+  function typeTitle(root, key){
+    if (titlesTyped.has(key)) return;
+    titlesTyped.add(key);
+    const h = root.querySelector('.empire-title, .hero h1');
+    if (!h || reduce) return;
+
+    // The home title carries a <br> inside the sentence. Reading textContent
+    // would flatten it to "Know the toy.Then own it", so the break survives as a
+    // sentinel through a real parse, which also decodes the entities, and the
+    // block is set pre-wrap to honour it. Each line is collapsed on its own so
+    // the source file's indentation never reaches the screen.
+    const tmp = document.createElement('div');
+    tmp.innerHTML = h.innerHTML.replace(/<br\s*\/?>/gi, '\uE000');
+    const text = tmp.textContent.split('\uE000')
+      .map(part => part.replace(/\s+/g, ' ').trim()).join('\n').trim();
+    if (!text) return;
+
+    h.setAttribute('aria-label', text.replace(/\n/g, ' '));
+    h.classList.add('typer');
+    h.textContent = '';
+
+    const ghost = document.createElement('span');
+    ghost.className = 'tg';
+    ghost.textContent = text;
+
+    const out = document.createElement('span');
+    out.className = 'to';
+    out.setAttribute('aria-hidden', 'true');
+    const written = document.createElement('span');
+    const caret = document.createElement('span');
+    caret.className = 'tc';
+    out.append(written, caret);
+    h.append(ghost, out);
+
+    let i = 0;
+    (function step(){
+      if (i >= text.length) { caret.classList.add('blink'); return; }
+      const ch = text[i++];
+      written.textContent = text.slice(0, i);
+      // A full stop is a beat, a line break a longer one, a space half. Even
+      // keystrokes read as a machine filling a field; the pauses are what make
+      // it read as typing.
+      setTimeout(step, ch === '.' ? 300 : ch === '\n' ? 220 : ch === ' ' ? 74 : 40);
+    })();
+  }
+
   function show(view, opts){
     const v = views[view] ? view : 'home';
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
@@ -5109,6 +5203,7 @@
     root.querySelectorAll('.film canvas.stars').forEach(c => c.dataset.done = '');
     window.scrollTo({ top:0, behavior: reduce ? 'auto':'smooth' });
     requestAnimationFrame(paintStars);
+    typeTitle(root, v);
     if (v === 'sell' && typeof refreshSellTokens === 'function') refreshSellTokens();
     if (v === 'sell' && typeof renderPlans === 'function') renderPlans();
     if (v === 'plans' && typeof renderPlans === 'function') renderPlans();
