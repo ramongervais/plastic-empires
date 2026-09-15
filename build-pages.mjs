@@ -74,7 +74,7 @@ const MOLDER_NAME = {
   dormei: "Dor Mei",
 };
 
-const SKIP = new Set(["lot", "seller", "account", "artifact", "home", "checkout"]);
+const SKIP = new Set(["lot", "seller", "account", "home", "checkout"]);
 
 let written = 0;
 const report = [];

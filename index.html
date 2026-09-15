@@ -207,9 +207,23 @@
   .moat { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
   .moat .cell { padding:30px; border-right:1px solid var(--line); }
   .moat .cell:last-child { border-right:0; }
+  /* Four steps do not divide by three. The Sell page's how-it-works ran on the
+     same three-column moat as the home page, so step 4 sat alone on a second
+     row with two thirds of the width empty beside it. A 2x2 reads as one block
+     and loses the hole.
+     Borders by position rather than by :last-child, which only knows about the
+     end of the list and not about which cells sit on an edge: no right border
+     on the right-hand column, no bottom border on the bottom row. */
+  .moat.two { grid-template-columns:repeat(2,1fr); }
+  .moat.two .cell { border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .moat.two .cell:nth-child(2n) { border-right:0; }
+  .moat.two .cell:nth-last-child(-n+2) { border-bottom:0; }
   .moat .num { font-family:var(--label); font-size:11px; letter-spacing:.16em; color:var(--accent); }
   .moat h4 { font-family:var(--display); font-weight:600; font-size:19px; margin:14px 0 8px; letter-spacing:-.01em; }
   .moat p { font-family:var(--body); font-size:15px; color:var(--ink-2); margin:0; }
+  /* Step one now carries three thoughts, and with margin:0 they read as one
+     paragraph. A gap between, none before the first. */
+  .moat p + p { margin-top:12px; }
 
   /* Collection grid */
   .collection, .featured-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
@@ -631,6 +645,9 @@
     .empires, .moat, .collection, .featured-grid { grid-template-columns:1fr; }
     .moat .cell { border-right:0; border-bottom:1px solid var(--line); }
     .moat .cell:last-child { border-bottom:0; }
+    .moat.two { grid-template-columns:1fr; }
+    .moat.two .cell { border-right:0; border-bottom:1px solid var(--line); }
+    .moat.two .cell:last-child { border-bottom:0; }
     .collection, .featured-grid { grid-template-columns:1fr 1fr; }
   }
   /* ---------- Sell / AI curation ---------- */
@@ -1452,111 +1469,6 @@
 </main>
 
 <!-- ============================ ARTIFACT ============================ -->
-<main class="view" id="view-artifact" hidden>
-  <div class="wrap">
-    <div class="crumb">
-      <a data-nav="home">The Molders</a><span class="sep">/</span>
-      <a href="/molders/kenner/" data-empire="kenner" style="color:var(--sw)">Star Wars</a><span class="sep">/</span>
-      <span class="here">Millennium Falcon</span>
-    </div>
-
-    <div class="art-top">
-      <div class="art-media">
-        <div class="vitrine wide" data-stars="1">
-          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
-          <div class="vlabel">
-            <div class="k">Kenner · Star Wars</div>
-            <div class="n">Millennium Falcon</div>
-            <div class="y">1979</div>
-          </div>
-          <div class="plinth"></div>
-        </div>
-        <div class="thumbs">
-          <div class="th active"></div><div class="th"></div><div class="th"></div><div class="th"></div>
-        </div>
-        <div class="vcap" style="text-align:left">Four studio angles to be placed. Every piece is photographed in-house before listing.</div>
-      </div>
-
-      <div class="art-detail">
-        <div class="art-sub">Kenner · 1979 · Star Wars line</div>
-        <h1 class="art-title">Millennium Falcon</h1>
-        <p style="font-family:var(--body); font-size:19px; color:var(--ink); margin:0; max-width:46ch;">The ship that didn't make the first wave. When it finally landed in 1979, it was the biggest, most coveted toy Kenner had ever built.</p>
-
-        <div class="spec">
-          <div class="row"><span class="k">Reference</span><span class="v">PE · SW · 001</span></div>
-          <div class="row"><span class="k">Maker</span><span class="v"><a href="/molders/kenner/" data-empire="kenner" style="text-decoration:underline; text-underline-offset:3px; cursor:pointer">Kenner, Cincinnati ↗</a></span></div>
-          <div class="row"><span class="k">Released</span><span class="v">1979</span></div>
-          <div class="row"><span class="k">Line</span><span class="v">Star Wars (1977 – 1985)</span></div>
-          <div class="row"><span class="k">Condition</span><span class="v good">Loose · near-complete</span></div>
-          <div class="row"><span class="k">Completeness</span><span class="v">Radar dish, cockpit, chess table present</span></div>
-        </div>
-
-        <div class="auction">
-          <div class="auction-row">
-            <div>
-              <div class="auc-label">Current bid · 7 bids</div>
-              <div class="auc-amount">€ 340</div>
-            </div>
-            <div>
-              <div class="auc-label">Ends in</div>
-              <div class="auc-countdown" data-cd data-ends="53">—</div>
-            </div>
-          </div>
-          <div class="buy-row">
-            <button class="btn accent" data-bid-btn data-name="Millennium Falcon" data-bid="340" data-bids="7">Place a bid</button>
-            <button class="btn ghost" data-buynow-btn data-name="Millennium Falcon" data-buynow="520">Buy now · € 520</button>
-          </div>
-          <div class="trust">
-            Bidding is binding and a hidden reserve may apply. We confirm condition, photos and shipping before any payment, every piece is hand-inspected, and the risk in transit is ours until it reaches you. Layout preview, so no real bids are placed.
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <hr class="rule" />
-
-  <section class="band">
-    <div class="wrap">
-      <div class="story">
-        <div class="ey">The story</div>
-        <h2>Kenner sold an empty box, and started an empire.</h2>
-        <p><span class="drop">I</span>n 1977, Kenner had the kind of problem most companies only dream about. <em>Star Wars</em> had become the biggest film on Earth, every child wanted the toys, and Kenner had almost nothing on the shelf. There was no way to tool, mold and ship figures in time for Christmas.</p>
-        <p>So they sold a promise. The Early Bird Certificate Package was, essentially, an empty box with a cardboard diorama and a mail-away voucher. Post it back, and sometime in early 1978 four action figures would arrive: Luke, Leia, R2-D2 and Chewbacca. It should have been a disaster. Instead it sold in the millions.</p>
-        <div class="pullquote">They wrapped up an empty box for Christmas. Children unwrapped a promise, and waited for the post.</div>
-        <p>The figures that followed in 1978 invented a format the whole industry would copy: the 3¾-inch action figure, small enough that a child could own a galaxy. Vehicles came next. But the one everybody wanted, the flagship itself, was held back.</p>
-        <p>The Millennium Falcon did not arrive until 1979. When it did, it was enormous for its day: a light-up cockpit, a spinning radar dish, a training remote, and the little chess table from the film. It was the toy you asked for and rarely got. Forty-odd years on, a complete one is a small monument to how much a plastic ship could mean.</p>
-      </div>
-
-      <div class="story archive">
-        <div class="ey">The archive</div>
-        <div class="film" id="filmBtn" title="Watch the 1979 Kenner Millennium Falcon commercial">
-          <canvas class="stars"></canvas>
-          <div class="scan"></div>
-          <span class="corner tl">Kenner</span>
-          <span class="corner tr">● REC 1979</span>
-          <span class="corner bl">Original television spot</span>
-          <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-        </div>
-        <div class="filmcap">
-          <span>The commercial that sold it, 1979.</span>
-          <span>Plays inline on hammerandmold.com · opens on YouTube here</span>
-        </div>
-      </div>
-
-      <div class="story empire-link" data-empire="kenner">
-        <div class="l">
-          <div class="eys">From the Molder</div>
-          <h3>Star Wars, built by Kenner</h3>
-          <p>The full story of the line: the Early Bird gamble, the figures that changed the industry, and the eleven years that followed. Every artifact links back here.</p>
-        </div>
-        <span class="btn ghost">Meet the Molder→</span>
-      </div>
-    </div>
-  </section>
-</main>
-
-<!-- ============================ EMPIRE: KENNER ============================ -->
 <main class="view" id="view-empire" hidden>
   <div class="wrap">
     <div class="crumb">
@@ -1663,12 +1575,12 @@
         <p>Kenner's licenses read like a childhood. These are the ones represented in the collection.</p>
       </div>
       <div class="empires">
-        <article class="empire" style="--sig:var(--sw)" data-nav="artifact">
+        <article class="empire" style="--sig:var(--sw)" data-empire="soon">
           <div class="chips"><span class="chip">Kenner</span></div>
           <h3>Star Wars</h3>
           <div class="era">1977 – 1985</div>
-          <p>The line that started with an empty box and ended up on every shelf. The Falcon is in the collection now.</p>
-          <span class="enter">View the toys <span class="arw">→</span></span>
+          <p>The line that started with an empty box and ended up on every shelf. Pieces arriving soon.</p>
+          <span class="enter">Coming soon <span class="arw">→</span></span>
         </article>
         <article class="empire" style="--sig:var(--gb)" data-empire="soon">
           <div class="chips"><span class="chip">Kenner</span></div>
@@ -4056,20 +3968,18 @@
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Sell</span></div>
     <section class="empire-hero">
       <div class="ey">Sell with us</div>
-      <h1 class="empire-title">Upload. Our AI does the rest.</h1>
-      <div class="empire-dek">Photos in. A full listing out.</div>
-      <p class="empire-lede">Add a few clear photos. Our AI identifies the toy, dates it, grades the condition and builds the listing for you. It also checks recent sales to suggest a fair starting price.<br><br>Identification is free. You only use a listing when you decide to sell.</p>
+      <h1 class="empire-title">Upload. AI builds the listing.</h1>
+      <div class="empire-dek">Photos in. Listing ready.</div>
+      <p class="empire-lede">Upload a few clear photos. Our AI identifies the toy, dates it, checks the condition and builds the listing for you. It also reviews recent sales to suggest a fair starting price.<br><br>Identification is free. You only use a listing when you decide to sell.</p>
     </section>
   </div>
   <section class="band">
     <div class="wrap">
       <div class="ey" style="margin-bottom:8px">How it works</div>
-      <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:-.015em;margin:0 0 28px">Upload photos. We do the rest.</h2>
-      <div class="moat">
-        <div class="cell"><div class="num">— 1 · Upload</div><h4>A few clear photos</h4><p>Add front, back, accessories and any visible flaws. Include one close-up of the moulded maker's stamp so we can date and identify the toy accurately.</p><p>A worn or partly legible stamp is fine.</p></div>
-        <div class="cell"><div class="num">— 2 · AI identification</div><h4>We identify and grade it</h4><p>Our AI identifies the toy, year, line and variant, then grades its condition and checks recent sales to suggest a price.</p><p>You can review the details and sources before listing.</p></div>
-        <div class="cell"><div class="num">— 3 · Confirm</div><h4>You stay in control</h4><p>Edit any detail, correct the variant, set your Reserve or Buy Now price, then approve the listing.</p></div>
-        <div class="cell"><div class="num">— 4 · Auction</div><h4>It goes live</h4><p>Your lot first appears in Preview so buyers can watch it. When the auction opens, bidding begins.</p><p>After the sale, we share the buyer's shipping details and they can leave a review.</p></div>
+      <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:.06em;text-transform:uppercase;margin:0 0 28px">From photos to listing in two steps</h2>
+      <div class="moat two">
+        <div class="cell"><div class="num">1 &middot; Upload &amp; guide</div><h4>Add photos and direction</h4><p>Add clear photos of the front, back, accessories and any visible flaws. Include a close-up of the maker's stamp where possible.</p><p>You can also add your own source or a note of direction, either to point us at something you already trust or to have the identification double-checked against it.</p><p>A worn or partly legible stamp is fine.</p></div>
+        <div class="cell"><div class="num">2 &middot; Review &amp; list</div><h4>We identify, check and grade it</h4><p>Our AI reads the toy the way Hammer &amp; Mold does, dating it from the moulded stamp rather than the box, then identifies the year, line and variant, grades the condition and reviews recent sales to suggest a price.</p><p>You see the identification, the sources, the condition, the pricing and the listing details before anything goes live. Change what you like, set your Reserve or Buy Now price, then approve the listing.</p></div>
       </div>
     </div>
   </section>
@@ -4083,7 +3993,7 @@
             <div class="dz-inner">
               <div class="dz-plus">+</div>
               <div class="dz-label">Add photos</div>
-              <div class="dz-hint">Add 3&ndash;5 clear photos: front, back, accessories and any flaws.<br><br><b>Include one close-up of the moulded maker's stamp.</b></div>
+              <div class="dz-hint">Add 3-5 clear photos: front, back, accessories and any flaws.<br><br><b>Include one close-up of the moulded maker's stamp.</b></div>
             </div>
           </label>
           <div class="thumbs" id="thumbs"></div>
@@ -4091,11 +4001,11 @@
                electronics still work and we were never asking, which on a toy
                that has them is the difference between EUR 15 and EUR 90. -->
           <label class="ef" id="sellerNotesWrap" style="margin-top:16px">
-            <span>Anything the photos can&rsquo;t show</span>
+            <span>Anything the photos can&rsquo;t show, or a source to check against</span>
             <textarea class="ei" id="sellerNotes" rows="3" maxlength="600"
-              placeholder="Does it work? Lights, sound, motor. Height with a tape measure. Battery corrosion, repairs, replaced parts, where you got it."></textarea>
+              placeholder="Does it work? Lights, sound, motor. Height with a tape measure. Battery corrosion, repairs, replaced parts, where you got it. A reference or link you already trust, if you have one."></textarea>
           </label>
-          <div class="sell-note" style="margin:-4px 0 14px">Optional, and worth a minute. We can grade what we can see, but we cannot tell from a photograph whether the eyes still light up, and on a toy that has electronics that is usually the largest single thing about what it is worth.</div>
+          <div class="sell-note" style="margin:-4px 0 14px">Optional, and worth a minute. We can grade what we can see, but we cannot tell from a photograph whether the eyes still light up, and on a toy that has electronics that is usually the largest single thing about what it is worth. If you already know the reference, the variant or a source that settles it, put it here and we will check against it.</div>
           <button class="btn accent" id="curateBtn" disabled>Identify my toy</button>
           <div class="sell-note" id="sellNote">Your photos stay in your browser until you start identification. Identification is free. A listing is only used when you choose to publish the item for sale.</div>
         </div>
@@ -4705,7 +4615,7 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.6 4.2 12 10.6l6.4-6.4 1.4 1.4L13.4 12l6.4 6.4-1.4 1.4L12 13.4l-6.4 6.4-1.4-1.4L10.6 12 4.2 5.6z"/></svg>
     </button>
     <div class="ey" id="modalEy">Reserved</div>
-    <h3 id="modalTitle">The Falcon is held for you.</h3>
+    <h3 id="modalTitle"></h3>
     <p id="modalBody"></p>
     <div class="bidform" id="bidForm" hidden>
       <label class="bidlabel" for="bidInput">Your bid (€)</label>
@@ -4764,7 +4674,6 @@
         <a data-nav="home">The Molders</a>
         <a data-nav="home">Shop</a>
         <a href="/results/" data-nav="sold">Sold archive</a>
-        <a data-nav="artifact">Millennium Falcon</a>
         <a href="/about/" data-nav="about">About</a>
         <a href="/retrobrighting/" data-nav="retrobright">Retro Brighting</a>
       </div>
@@ -5007,7 +4916,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), artifact: document.getElementById('view-artifact'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), dormei: document.getElementById('view-dormei'), retrobright: document.getElementById('view-retrobright'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy'), checkout: document.getElementById('view-checkout') };
+  const views = { home: document.getElementById('view-home'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), dormei: document.getElementById('view-dormei'), retrobright: document.getElementById('view-retrobright'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy'), checkout: document.getElementById('view-checkout') };
   // ---- Paths ----
   // Every view had the same URL, hammerandmold.com/, because nothing ever wrote
   // to the address bar. Three things were broken by that and only one of them is
@@ -5017,7 +4926,7 @@
   const PATHS = {
     home: '/', about: '/about', sell: '/sell', plans: '/packages', buy: '/we-buy',
     sold: '/results', account: '/account', terms: '/terms', privacy: '/privacy',
-    help: '/help', artifact: '/preview',
+    help: '/help',
     empire: '/molders/kenner', tmnt: '/molders/playmates', ljn: '/molders/ljn',
     galoob: '/molders/galoob', thinkway: '/molders/thinkway',
     kaiju: '/molders/kaiju', imperial: '/molders/imperial',
@@ -5048,7 +4957,6 @@
     terms:     ['Terms \u00b7 Hammer & Mold', 'Terms of sale for buyers and sellers: commission, packages, shipping, risk in transit and returns.'],
     privacy:   ['Privacy \u00b7 Hammer & Mold', 'What we collect, why, and what we do not do. No advertising trackers and no profiling.'],
     account:   ['Your account \u00b7 Hammer & Mold', 'Your lots, bids, wins and seller package.'],
-    artifact:  ['Preview \u00b7 Hammer & Mold', 'A layout preview of a Hammer & Mold lot page.'],
     empire:    ['Kenner \u00b7 The Molders \u00b7 Hammer & Mold', 'Named after a street in Cincinnati. Kenner made Star Wars 1977 to 1985 and The Real Ghostbusters, and shaped the shelves of nearly every toy shop in the West.'],
     tmnt:      ['Playmates \u00b7 The Molders \u00b7 Hammer & Mold', 'Playmates and the Teenage Mutant Ninja Turtles, 1988 to 1997: the line that turned a black-and-white comic into the biggest toy aisle of the decade.'],
     ljn:       ['LJN \u00b7 The Molders \u00b7 Hammer & Mold', 'LJN and E.T. the Extra-Terrestrial, 1982. The story of a licence nobody wanted and the toys it produced.'],
@@ -5530,14 +5438,6 @@
     };
     setTimeout(() => input.focus(), 40);
   }
-  document.querySelectorAll('[data-bid-btn]').forEach(b => b.addEventListener('click', e => {
-    e.preventDefault(); e.stopPropagation();
-    openBid(b.dataset.name, parseInt(b.dataset.bid, 10), parseInt(b.dataset.bids, 10));
-  }));
-  document.querySelectorAll('[data-buynow-btn]').forEach(b => b.addEventListener('click', e => {
-    e.preventDefault(); e.stopPropagation();
-    openModal('Buy now', b.dataset.name, 'Take it now for ' + eur(b.dataset.buynow) + ' and skip the auction. On the live shop this goes to checkout. Layout preview.');
-  }));
   const sellLink = document.getElementById('sellLink');
   if (sellLink) sellLink.addEventListener('click', () => {
     tipModal('sell', 'Sell with us', 'Upload photos. Our AI does the rest.',
@@ -6444,7 +6344,7 @@
       since: '2019', type: 'Dealer', verified: true, rating: 4.8, reviews: 214, sold: 1320, active: 4, followers: 486,
       bio: 'A vintage-toy dealer specialising in original Kenner Star Wars and The Real Ghostbusters. Twelve years on the show circuit before going online. Every piece is hand-inspected, photographed and shipped tracked.',
       lots: [
-        { name: 'Millennium Falcon', meta: 'Star Wars · Kenner · 1979', bid: 340, bids: 7, ends: 53, nav: 'artifact' },
+        { name: 'Millennium Falcon', meta: 'Star Wars · Kenner · 1979', bid: 340, bids: 7, ends: 53 },
         { name: 'X-Wing Fighter', meta: 'Star Wars · Kenner · 1978', bid: 145, bids: 4, ends: 20 },
         { name: 'Ecto-1', meta: 'Ghostbusters · Kenner · 1986', bid: 165, bids: 3, ends: 6 },
         { name: 'Slimer', meta: 'Ghostbusters · Kenner · 1986', bid: 40, bids: 2, ends: 96 },
