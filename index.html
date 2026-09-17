@@ -254,7 +254,15 @@
   .featured-strip { margin-bottom:36px; padding-bottom:32px; border-bottom:1px solid var(--line); }
   .featured-head { display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
   .featured-note { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
-  .artifact-card { cursor:pointer; }
+  /* A grid row stretches every card to the tallest one, but the contents used to
+     sit wherever the title left them, so in a row of four the prices and the
+     buttons landed at four different heights. The card is a column now and the
+     price block is pushed to the bottom, so those two lines are a baseline
+     across the row whatever the titles do. The photo must not stretch with it. */
+  .artifact-card { cursor:pointer; display:flex; flex-direction:column; }
+  .artifact-card > .vitrine { flex:none; }
+  .artifact-card > .label { flex:1; display:flex; flex-direction:column; }
+  .artifact-card .auc-card { margin-top:auto; }
   .artifact-card.disabled { cursor:default; opacity:.72; }
   .label { margin-top:14px; }
   .label .ln { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
@@ -1119,7 +1127,27 @@
 
   /* ---------- Phone tuning ---------- */
   @media (max-width:600px){
-    .collection, .featured-grid { grid-template-columns:1fr; }
+    /* Two columns on a phone. One column meant two lots per screen on a shop
+       with twenty-three of them, which is a scroll nobody finishes. The rest of
+       this block is what has to give for a card to still work at about 160px:
+       the column gap comes in so the cards get the width instead of the gutter,
+       and the type steps down with it. */
+    .collection, .featured-grid { grid-template-columns:1fr 1fr; gap:24px 10px; }
+    .label { margin-top:10px; }
+    .label .nm { font-size:13px; line-height:1.26; }
+    .label .meta { font-size:9px; letter-spacing:.06em; margin-top:4px; }
+    /* Price and countdown cannot share a line at this width. Stacked, not
+       shrunk to fit: a price is the thing being read, not the thing to sacrifice. */
+    .auc-card { flex-direction:column; align-items:flex-start; gap:3px;
+      margin-top:7px; padding-top:8px; }
+    .auc-card .amt { font-size:15px; }
+    .auc-card .sub { margin-left:5px; font-size:9px; }
+    .auc-card .cd { font-size:9.5px; }
+    .card-ended { font-size:9.5px; letter-spacing:.06em; padding:9px 6px; margin-top:9px; }
+    .card-badge { font-size:9px; letter-spacing:.1em; padding:4px 7px; top:8px; left:8px; }
+    /* .watch-btn is deliberately left at 34px. It is already under the 44px
+       touch target guidance and a narrower card is not a reason to make a
+       control harder to hit. */
     .wrap { padding:0 20px 56px; }
     .hero h1, .art-title, .empire-title { letter-spacing:.06em; }
     .hero h1 { font-size:30px; line-height:1.06; letter-spacing:.06em; }
@@ -4766,8 +4794,19 @@
   .reserve-note.met{ color:var(--ink); }
   .reserve-note.met::before{ content:"\2713  "; }
   .artifact-card.draft-lot .vitrine.closed{ opacity:.66; }
-  .card-badge{ position:absolute; top:12px; left:12px; z-index:2; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:2px; }
-  .card-badge.sand{ background:rgba(181,138,63,.16); color:#8a6a2e; border:1px solid rgba(181,138,63,.5); backdrop-filter:blur(2px); }
+  /* Capped as a guard, not a fix. Measured on a 143px card the badge ends at
+     88px and the button starts at 98, so today there is 10px of clearance; a
+     longer word would spend it, and the button sits above the badge in the
+     stacking order so it would win silently. */
+  .card-badge{ position:absolute; top:12px; left:12px; z-index:2;
+    max-width:calc(100% - 60px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:2px; }
+  /* The preview badge used to be gold text on 16% gold, which works over the
+     pale studio shots and disappears over a dark one: on the Imperial Godzilla
+     card it sat unreadable over the figure. Opaque enough to carry its own
+     contrast whatever is behind it, and the gold stays in the text and the
+     hairline where it reads as a label rather than a warning. */
+  .card-badge.sand{ background:rgba(255,251,242,.94); color:#7a5c22; border:1px solid rgba(181,138,63,.55); backdrop-filter:blur(3px); }
+  :root[data-theme="dark"] .card-badge.sand{ background:rgba(32,26,14,.88); color:#d8b878; border-color:rgba(181,138,63,.5); }
   .watch-btn{ position:absolute; top:10px; right:10px; z-index:3; width:34px; height:34px; border-radius:8px; border:0; background:#131313; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:transform .1s ease, box-shadow .15s ease; }
   .watch-btn:hover{ transform:scale(1.08); box-shadow:0 3px 10px rgba(0,0,0,.28); }
   .watch-btn .wstar{ display:block; }
@@ -4805,9 +4844,18 @@
   .shop-count{ min-width:13ch; }
   @media (max-width:600px){
     .shop-tools{ flex-direction:column; align-items:stretch; }
+    /* The hairline is --line, #e4e4e4, which on a phone held at arm's length in
+       daylight is close to invisible: the search field reads as loose text on
+       the page rather than as a control. Thicker AND darker, because doubling a
+       near-white line only gives you twice as much of a line nobody can see.
+       --ink-3 clears 3:1 against the page, the contrast floor for the boundary
+       of a control. The internal dividers follow at half strength so the three
+       parts stay legible as one object rather than three stacked boxes. */
+    .shop-tools{ border-width:2px; border-color:var(--ink-3); }
+    .shop-tools:focus-within{ border-color:var(--ink); }
     .shop-search{ border-radius:3px 3px 0 0; }
-    .shop-sort{ border-left:0; border-top:1px solid var(--line); }
-    .shop-count{ border-left:0; border-top:1px solid var(--line); padding:12px 16px; }
+    .shop-sort{ border-left:0; border-top:1px solid color-mix(in srgb, var(--ink-3) 45%, transparent); }
+    .shop-count{ border-left:0; border-top:1px solid color-mix(in srgb, var(--ink-3) 45%, transparent); padding:12px 16px; }
   }
   @media (max-width:600px){ .shop-search{ flex:1 1 100%; } .shop-sort{ flex:1 1 auto; } }
   .shop-empty{ font-family:var(--body); color:var(--ink-3); padding:8px 0 28px; }
