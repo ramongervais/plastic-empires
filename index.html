@@ -935,8 +935,13 @@
   .t-price { font-family:var(--body); font-weight:700; font-size:38px; letter-spacing:-.02em; margin-top:8px; line-height:1; }
   .t-price span { font-family:var(--label); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
   .t-list { list-style:none; padding:0; margin:20px 0 0; border-top:1px solid var(--line); }
-  .t-list li { font-family:var(--body); font-size:14px; line-height:1.5; padding:11px 0 11px 22px; border-bottom:1px solid var(--line-2); position:relative; }
-  .t-list li::before { content:"—"; position:absolute; left:0; color:var(--ink-3); }
+  .t-list li { font-family:var(--body); font-size:14px; line-height:1.5; padding:11px 0 11px 20px; border-bottom:1px solid var(--line-2); position:relative; }
+  /* A square, not a dash. The marker used to be an em dash, which reads as
+     punctuation interrupting the line rather than as a bullet; a middot was too
+     light to hold the well on its own. Top is set to the optical centre of the
+     first line (11px padding + half of a 21px line) so a two-line item keeps
+     its mark beside the first line rather than floating to the middle. */
+  .t-list li::before { content:""; position:absolute; left:0; top:19px; width:4px; height:4px; background:var(--ink-3); }
   .t-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:16px; line-height:1.6; }
   @media (max-width:700px){ .tiers { grid-template-columns:1fr; } }
   /* Three packages, so the grid is three wide. The sell page keeps two columns
@@ -1515,17 +1520,17 @@
       <img class="why-shot" src="/Empires/Brandedimages/kong-agfa.jpg" width="1800" height="1423" loading="lazy" decoding="async" alt="A vintage King Kong figure cranking the handle of an Agfa movie projector.">
       <div class="moat">
         <div class="cell">
-          <div class="num">— The Toy</div>
+          <div class="num">The Toy</div>
           <h4>Know what you're buying</h4>
           <p>Year, maker, series, scale, accessories and condition. The details collectors actually want to know.</p>
         </div>
         <div class="cell">
-          <div class="num">— The Story</div>
+          <div class="num">The Story</div>
           <h4>Know where it came from</h4>
           <p>Who made it, when it appeared and what made it special. The story behind the plastic.</p>
         </div>
         <div class="cell">
-          <div class="num">— The Commercial</div>
+          <div class="num">The Commercial</div>
           <h4>See how it was sold</h4>
           <p>The original TV commercials that introduced these toys to the world, right where they belong.</p>
         </div>
@@ -4581,7 +4586,7 @@
   <section class="band">
     <div class="wrap">
       <div class="story" style="margin:0; max-width:72ch">
-        <div class="terms-draft"><b>DRAFT — not legal advice.</b> A working starting point, not yet reviewed by a lawyer. Under EU and Dutch consumer law some clauses below may not apply to consumers, who keep their statutory rights.</div>
+        <div class="terms-draft"><b>DRAFT. Not legal advice.</b> A working starting point, not yet reviewed by a lawyer. Under EU and Dutch consumer law some clauses below may not apply to consumers, who keep their statutory rights.</div>
         <p><b>Operator:</b> RG Product Design, Da Costastraat 49, 2032 MG Haarlem, Netherlands. KvK 96149302, VAT NL005191127B77. Contact: <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a>. Last updated 31 August 2026.</p>
 
         <div class="terms-h">1 · Acceptance</div>
@@ -6204,7 +6209,7 @@
     function viewMode(){
       const c = current;
       const est = (c.estimateLow && c.estimateHigh) ? 'Est. ' + eur(c.estimateLow) + ' – ' + eur(c.estimateHigh) : '';
-      const condRow = '<div class="row"><span class="k">Condition</span><span class="v"><span class="cond-word">' + esc(c.condition || '—') + '</span> ' + stars(c.condition) + '</span></div>';
+      const condRow = '<div class="row"><span class="k">Condition</span><span class="v"><span class="cond-word">' + esc(c.condition || '-') + '</span> ' + stars(c.condition) + '</span></div>';
       const variantsHtml = (c.variants && c.variants.length)
         ? '<div class="variants"><div class="v-head">Variant · tap to correct</div>' + c.variants.map(v =>
             '<div class="variant"><div class="v-axis">' + esc(v.axis) + '</div><div class="v-opts">' +
@@ -6242,7 +6247,7 @@
           row('Shipping', 'Quoted to the buyer at checkout, and paid by them') + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting price') + '</div><div class="amt">' + eur(price) + '</div></div>' +
-        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '—') +
+        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '-') +
           (c.pricedFrom ? '<br>' + esc(c.pricedFrom === 'curator estimate' ? 'Curator estimate' : 'Estimate from ' + c.pricedFrom) : '') +
           (c.compsCached ? '<br>Comps from cache' : '') +
           (c.edited ? '<br>Edited' : '') + '</div></div>' +
@@ -6652,7 +6657,7 @@
           })() +
         '</div>' +
       '</section>' +
-      '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock(revCount ? avg.toFixed(1) : '—', 'Avg rating') + '</div>' +
+      '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock(revCount ? avg.toFixed(1) : '-', 'Avg rating') + '</div>' +
       (p.bio ? '<p class="seller-bio">' + e(p.bio) + '</p>' : '') +
       (reviews.length ? '<div class="seller-reviews"><div class="ey" style="margin:28px 0 10px">Reviews</div>' + reviews.map(r => '<div class="rev-item"><div class="rev-item-h">' + qstarsPct(Number(r.rating) / 5 * 100) + '<span class="rev-date">' + new Date(r.created_at).toLocaleDateString('en-GB') + '</span></div>' + (r.body ? '<div class="rev-body">' + e(r.body) + '</div>' : '') + '</div>').join('') + '</div>' : '');
     // If the logo file is gone, fall back to the monogram rather than leaving a
@@ -8145,7 +8150,7 @@
       rows.map(r => '<tr' + (r.p.key === best.p.key ? ' class="best"' : '') + '>' +
         '<td>' + mkEsc(r.p.name) + '</td>' +
         '<td class="n">' + eur(r.cost) + '</td>' +
-        '<td class="n">' + (monthly ? (r.cost / monthly * 100).toFixed(1) + '%' : '—') + '</td>' +
+        '<td class="n">' + (monthly ? (r.cost / monthly * 100).toFixed(1) + '%' : '-') + '</td>' +
         '<td>' + (r.fits ? 'Yes' : 'No, only ' + r.p.listings + ' listings') + '</td></tr>').join('') +
       '</tbody></table>' +
       '<div class="ch-note">' +
@@ -8785,7 +8790,7 @@
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
-            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '—'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
+            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '-'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
               (ended ? '' : '<div class="auc-del" id="lotDel">Working out delivery\u2026</div>' +
                  '<div class="del-panel" id="delPanel" hidden></div>') + '</div>' +
             '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Oct 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
