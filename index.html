@@ -1318,7 +1318,7 @@
 <body>
 
 <div class="promo-bar">
-  <span id="promoText">Now in beta. Auctions open in <b id="promoCount">…</b> &middot; 1 October 2026.</span>
+  <span id="promoText">We are live. The auctions are open.</span>
   <a id="authLinkB" class="promo-cta">Reserve your account &#8594;</a>
 </div>
 
@@ -6387,7 +6387,7 @@
             openModal(pre ? 'Lot in preview' : 'Lot listed',
               wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'),
               (urls.length ? 'Saved with ' + urls.length + ' photo' + (urls.length === 1 ? '' : 's') + '. ' : 'Saved. ') +
-              (pre ? 'It shows in Preview now and bidding opens automatically on 1 October 2026.'
+              (pre ? 'It shows in Preview now and opens for bidding when you take it live.'
                    : 'It now appears in the Shop.') +
               ' The page is cleared, so you can start the next one.');
           } catch (err) {
@@ -6782,7 +6782,7 @@
     const isClosed = isSold || ended;
     const badgeWord = isSold ? 'Sold' : 'Ended';
     const isFixed = l.saleType === 'fixed';
-    const endsTxt = isPreview ? 'Opens 1 Oct' : (isClosed ? badgeWord : (isFixed ? 'Direct sale' : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : ((l.days || 7) + ' days once bidding starts'))));
+    const endsTxt = isPreview ? 'In preview' : (isClosed ? badgeWord : (isFixed ? 'Direct sale' : (l.ends_at ? (() => { const ms = new Date(l.ends_at) - Date.now(); const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000); return d > 0 ? d + 'd ' + h + 'h left' : h + 'h left'; })() : ((l.days || 7) + ' days once bidding starts'))));
     return '<article class="artifact-card draft-lot">' +
       '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer;aspect-ratio:1' : ' style="aspect-ratio:1') + '">' +
         (l.img ? '<img class="cardimg" src="' + e(cardSrc(l.img)) + '" data-full="' + e(l.img) + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : '') +
@@ -6809,7 +6809,7 @@
         // a shopper scanning a wall of toys is choosing what to look at, not what
         // to pay. It belongs on the lot page, where someone has already decided
         // to consider this piece and the postage is part of the real total.
-        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Opens 1 October</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
+        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">In preview</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
       '</div></article>';
   }
 
@@ -8950,7 +8950,7 @@
                 (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : (isSold ? '<div class="won-h">Sold.</div><div class="won-sub">This lot has been purchased' + (lot.buy_now ? ' for ' + money(lot.buy_now) : '') + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>'))) +
             '</div>' :
             (isPreview ?
-              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item goes on sale 1 October 2026.' : 'Bidding opens 1 October 2026.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
+              '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item is not on sale yet.' : 'Bidding has not opened yet.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
               (isFixed ?
                 '<div class="buy-row"><button class="btn accent" type="button" id="lotBuy">Buy now &middot; ' + money(fixedPrice) + '</button></div>' :
                 '<div class="buy-row">' +
@@ -8961,7 +8961,7 @@
           // filled from an estimated table before the carriers were wired up, and
           // it printed EUR 15.00 under the buy button while the live quote three
           // rows above said EUR 3.85. One number, from the carrier, or none.
-          '<div class="trust">' + (isPreview ? (isFixed ? 'This item goes on sale on 1 October 2026.' : 'This lot goes live on 1 October 2026.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected, and the risk in transit is ours until it reaches you.' : 'Bidding is binding and a hidden reserve may apply. The clock starts on the first bid, not on a date, so this lot waits until someone wants it. Every piece is inspected, and the risk in transit is ours until it reaches you.'))) + '</div>' +
+          '<div class="trust">' + (isPreview ? (isFixed ? 'This item is not on sale yet.' : 'This lot is not open for bidding yet.') : (ended ? 'This lot is closed.' : (isFixed ? 'A direct-sale item, buy it now to purchase. Every piece is inspected, and the risk in transit is ours until it reaches you.' : 'Bidding is binding and a hidden reserve may apply. The clock starts on the first bid, not on a date, so this lot waits until someone wants it. Every piece is inspected, and the risk in transit is ours until it reaches you.'))) + '</div>' +
           // Sharing only became possible today: until this morning every lot had
           // the same URL, so a link sent to a friend opened the home page and the
           // toy was never seen. Native sheet where the browser has one, a copy
