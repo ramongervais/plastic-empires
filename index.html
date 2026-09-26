@@ -8541,7 +8541,7 @@
         // a free option at the top reads as the recommended one.
         if (cc === 'NL') {
           quoted.push({ id: 'pickup', label: 'Collect it yourself', carrier: null,
-            note: 'Haarlem, by appointment. Nothing is posted and no postage is charged.',
+            note: 'Da Costastraat 49, Haarlem, by appointment. Nothing is posted and no postage is charged.',
             price: 0, pickup: true });
         }
         chosen = quoted[0] || null;
@@ -8827,7 +8827,17 @@
       : (isOwner && s) ? '<div class="won-box"><div class="won-h">Ship to</div><div class="won-sub" style="white-space:pre-line">' + [s.name, s.line1, s.line2, [s.postal_code, s.city].filter(Boolean).join(' '), s.state, s.country].filter(Boolean).map(e).join('\n') + (s.phone ? '\n' + e(s.phone) : '') + (s.email ? '\n' + e(s.email) : '') + '</div></div>' : '';
     const isBuyer = authUser && s && s.email && authUser.email && s.email.toLowerCase() === authUser.email.toLowerCase();
     const shipped = !!lot.shipped_at;
-    const shipStatusHtml = !isSold ? '' : (
+    // A collected lot is never shipped, so offering a tracking number and a
+    // "mark as shipped" button is asking the seller to lie about a parcel that
+    // does not exist. The previous version showed that panel on every sold lot.
+    const collected = !!(s && s.pickup);
+    const shipStatusHtml = !isSold ? '' : collected ? (
+      shipped
+        ? '<div class="won-box"><div class="won-h">Collected</div><div class="won-sub">Handed over ' + new Date(lot.shipped_at).toLocaleDateString('en-GB') + '.</div></div>'
+        : (isOwner
+            ? '<div class="won-box"><div class="won-h">Waiting to be collected</div><div class="won-sub">' + e(s.name || 'The buyer') + ' is picking this up in person. Mark it off once they have.</div><button class="btn accent" id="shipBtn" type="button" style="margin-top:10px;width:100%">Mark as collected</button></div>'
+            : '<div class="won-box"><div class="won-h">Ready to collect</div><div class="won-sub" style="white-space:pre-line">Hammer &amp; Mold, Da Costastraat 49, 2032 MG Haarlem.\nBy appointment: message the seller from your account to agree a time before you travel.</div></div>')
+    ) : (
       shipped
         ? '<div class="won-box"><div class="won-h">Shipped</div><div class="won-sub">Sent ' + new Date(lot.shipped_at).toLocaleDateString('en-GB') + ((lot.tracking && (isOwner || isBuyer)) ? ' &middot; Tracking: ' + e(lot.tracking) : '') + '</div></div>'
         : (isOwner
