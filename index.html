@@ -6645,7 +6645,7 @@
   }
 
   async function renderSellerDB(id){
-    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const e = s => String(s == null ? '' : s).replace(/[<>&"']/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[ch]));
     // e() is for text between tags and leaves the double quote alone, which is fine
     // there and unsafe inside an attribute. Everything a seller can now type ends up
     // in one: the logo in src, the shop name in alt. A name of Bob's "Toys" would
@@ -6773,7 +6773,7 @@
   const cardSrc = u => String(u || '').replace(/\.(jpe?g|png|webp)(\?.*)?$/i, '_card.jpg$2');
 
   function lotCardHtml(l){
-    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const e = s => String(s == null ? '' : s).replace(/[<>&"']/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     const isPreview = l.state === 'preview';
     const isSold = l.state === 'sold';
@@ -6891,7 +6891,7 @@
     const grid = document.querySelector('#collection .collection');
     if (!grid) return;
     const gen = ++injectGen;
-    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const e = s => String(s == null ? '' : s).replace(/[<>&"']/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     let lots = [], activeTotal = 0, activeShown = 0;
     if (SB) {
@@ -7479,7 +7479,7 @@
     const body = document.getElementById('accountBody');
     show('account', { fromHistory: opts && opts.fromHistory });
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
-    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const e = s => String(s == null ? '' : s).replace(/[<>&"']/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[ch]));
     if (!SB || !authUser){ body.innerHTML = '<p style="font-family:var(--body);padding:48px 0">Sign in to see your account.</p>'; return; }
     body.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:48px 0">Loading your account…</p>';
     const uid = authUser.id, now = Date.now();
@@ -8729,7 +8729,7 @@
   // ----- Lot detail page (live, from DB) -----
   async function openLot(id, opts){
     const body = document.getElementById('lotBody');
-    const e = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
+    const e = s => String(s == null ? '' : s).replace(/[<>&"']/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[ch]));
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     // Long values (Completeness, Curator's notes) stack under their label. Right
     // -aligning six lines of prose reads as a layout fault, not as a choice.
