@@ -5013,6 +5013,15 @@
   const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
   const SB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
   let authUser = null;
+  // Every column of a lot except the two that belong to the buyer. select('*')
+  // used to be fine and is not: the address rode along with it to anyone
+  // holding the anon key, which is everyone, because it is in this file. The
+  // database now refuses those two columns and this list is the other side of
+  // that, so a query asks for what it is allowed rather than finding out.
+  // ship_to and tracking come from the lot_private() function instead, which
+  // checks who is asking.
+  const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,reserve,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year';
+
   const LAUNCH_TS = Date.parse('2026-10-01T00:00:00+02:00'); // launch: 1 October 2026 (Amsterdam)
   const preLaunch = () => Date.now() < LAUNCH_TS;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -8533,7 +8542,7 @@
     // The lot's own postage columns, so the total shown is the total charged.
     let lot = { shipping_eur: 0 };
     if (SB && opts.lotId){
-      const { data } = await SB.from('lots').select('*').eq('id', opts.lotId).single();
+      const { data } = await SB.from('lots').select(LOT_COLS_PUBLIC).eq('id', opts.lotId).single();
       if (data) lot = data;
     }
     askAddress(opts, lot);
@@ -8618,7 +8627,17 @@
     show('lot', { extra: id, fromHistory: opts && opts.fromHistory });
     track('lot_view', null, id);
     if (!SB || !id){ body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is only available on the live site.</p>'; return; }
-    const { data: lot, error } = await SB.from('lots').select('*').eq('id', id).single();
+    const { data: lot, error } = await SB.from('lots').select(LOT_COLS_PUBLIC).eq('id', id).single();
+    // The seller needs the address to post the parcel and the buyer needs the
+    // tracking. Asked for separately, and only when somebody is signed in,
+    // because the function refuses anyone who is neither.
+    if (lot && authUser){
+      try {
+        const { data: priv } = await SB.rpc('lot_private', { p_lot: id });
+        const p = Array.isArray(priv) ? priv[0] : priv;
+        if (p) { lot.ship_to = p.ship_to; lot.tracking = p.tracking; }
+      } catch (e) { /* not entitled, or not signed in: the page renders without them */ }
+    }
     if (error || !lot){
       // "It may have been removed" was the only thing this said, which sent me
       // looking for a deleted lot when the real problem was a malformed link: the
