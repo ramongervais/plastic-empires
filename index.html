@@ -1025,6 +1025,12 @@
   .cmp td.win { font-weight:700; color:var(--ink); }
   .cmp-scroll { overflow-x:auto; }
   .terms-draft { background:var(--ink); color:var(--paper); border-radius:3px; padding:16px 20px; font-size:13.5px; line-height:1.6; margin:0 0 28px; }
+  /* The model withdrawal form. Set apart from the prose because it is a thing to
+     copy rather than a thing to read, and monospaced so the blanks line up when
+     somebody prints it or pastes it into an email. */
+  .terms-form { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; line-height:1.9;
+    border:1px solid var(--line); border-radius:3px; padding:20px 22px; margin:22px 0; color:var(--ink-2); background:var(--paper-2); }
+  .terms-form b { font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); }
   .terms-h { font-family:var(--label); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); margin:34px 0 0; }
   .terms-h + p { margin-top:8px; }
   .acceptbox { display:flex; align-items:flex-start; gap:10px; font-family:var(--body); font-size:13px; color:var(--ink-2); margin:16px 0 4px; cursor:pointer; line-height:1.5; }
@@ -4412,14 +4418,14 @@
     <section class="empire-hero">
       <div class="ey">Legal</div>
       <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Privacy Policy</h1>
-      <div class="empire-dek">Draft v0.1 · pending legal review</div>
+      <div class="empire-dek">Version 1.0 · 26 September 2026</div>
     </section>
   </div>
   <section class="band">
     <div class="wrap">
       <div class="story" style="margin:0; max-width:72ch">
-        <div class="terms-draft"><b>DRAFT · not legal advice.</b> A working starting point, not yet reviewed by a lawyer or a privacy specialist. It describes what the Platform actually does with your data today. Complete the [bracketed] fields before publishing.</div>
-        <p><b>Controller:</b> RG Product Design, Da Costastraat 49, 2032 MG Haarlem, Netherlands. KvK 96149302. Privacy contact: <a href="mailto:privacy@hammerandmold.com">privacy@hammerandmold.com</a>. Last updated 31 August 2026.</p>
+        <div class="terms-draft"><b>This describes what the Platform actually does with your data.</b> Not what a template says a website might do. Every processor named in section 5 is one we genuinely use, and the retention periods in section 8 are the ones we apply.</div>
+        <p><b>Controller:</b> RG Product Design, Da Costastraat 49, 2032 MG Haarlem, Netherlands. KvK 96149302. Privacy contact: <a href="mailto:privacy@hammerandmold.com">privacy@hammerandmold.com</a>. Last updated 26 September 2026.</p>
         <p>This policy explains what personal data Hammer &amp; Mold collects, why, who it is shared with, how long it is kept and what rights you have. It covers hammerandmold.com and the accounts, listings, bidding and payment features on it.</p>
 
         <div class="terms-h">1 · The short version</div>
@@ -4489,7 +4495,7 @@
 
         <div class="terms-h">Contact</div>
         <p>RG Product Design &middot; Da Costastraat 49, 2032 MG Haarlem, Netherlands &middot; KvK 96149302 &middot; <a href="mailto:privacy@hammerandmold.com">privacy@hammerandmold.com</a></p>
-        <p style="color:var(--ink-3); font-size:13px">Draft v0.1 for review. Complete the [bracketed] fields and have a qualified adviser review before publishing. See also our <a href="/terms/" data-nav="terms" style="text-decoration:underline">Terms &amp; Conditions</a>.</p>
+        <p class="terms-note">See also our <a data-nav="terms" href="/terms/">Terms &amp; Conditions</a>.</p>
       </div>
     </div>
   </section>
@@ -4580,14 +4586,14 @@
     <section class="empire-hero">
       <div class="ey">Legal</div>
       <h1 class="empire-title" style="font-size:clamp(38px,5.6vw,68px);line-height:1.02">Terms &amp; Conditions</h1>
-      <div class="empire-dek">Draft v0.2 · pending legal review</div>
+      <div class="empire-dek">Version 1.0 · 26 September 2026</div>
     </section>
   </div>
   <section class="band">
     <div class="wrap">
       <div class="story" style="margin:0; max-width:72ch">
-        <div class="terms-draft"><b>DRAFT. Not legal advice.</b> A working starting point, not yet reviewed by a lawyer. Under EU and Dutch consumer law some clauses below may not apply to consumers, who keep their statutory rights.</div>
-        <p><b>Operator:</b> RG Product Design, Da Costastraat 49, 2032 MG Haarlem, Netherlands. KvK 96149302, VAT NL005191127B77. Contact: <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a>. Last updated 31 August 2026.</p>
+        <div class="terms-draft"><b>Written for this shop, not copied from a template.</b> These terms describe what actually happens here: how a sale works, who carries which risk, and which of your rights we cannot sign away. Where Dutch or EU consumer law gives you more than a clause below does, the law wins and the clause gives way.</div>
+        <p><b>Operator:</b> RG Product Design, Da Costastraat 49, 2032 MG Haarlem, Netherlands. KvK 96149302, VAT NL005191127B77. Contact: <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a>. Last updated 26 September 2026.</p>
 
         <div class="terms-h">1 · Acceptance</div>
         <p>By creating an account, listing an item, bidding or buying, you agree to these Terms. If you do not agree, do not use the Platform. We may update these Terms; continued use means you accept the revised version.</p>
@@ -4614,6 +4620,8 @@
         <p><b>Moving between packages.</b> Moving up takes effect immediately and your card is charged only the difference for the remainder of the period, not a further full period. Moving down takes effect at the end of the period you have already paid for: until then you keep the package you bought, and you may cancel the change before it takes effect. Unused tokens remain yours and roll over up to twice your monthly allowance; moving down does not remove tokens you already hold, it only reduces what you are topped up to afterwards.</p>
         <p>A membership renews automatically until cancelled; you may cancel at any time and keep access until the end of the paid period. Partial periods, tokens and token top-ups are non-refundable. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
 
+        <p><b>Prices include VAT, and the price you see is the price you pay.</b> Nothing is added at the end except the postage, which is shown separately before you confirm. Most of what we sell is second-hand and falls under the Dutch margin scheme for used goods, where VAT is accounted for on the margin rather than on the sale price. That is why an invoice for a second-hand lot shows no separate VAT amount. It is a tax treatment, not a discount, and it changes nothing about what you pay.</p>
+
         <div class="terms-h">7 · Featured placement and ranking</div>
         <p>Featured placement is advertising. A featured lot is shown in a promoted strip above the shop grid, labelled as a paid promotion. It is included in the Premium membership: while your membership is active you may have one lot promoted at a time, for up to seven days per lot, subject to fair use and to available slots (currently eight). Placement may also be bought separately at the price quoted at the time.</p>
         <p>Placement affects only where a lot is displayed. It does not change the lot, the reserve, the bidding, the commission or the outcome of a sale, and it gives no preference in any dispute. We do not guarantee views, bids, a sale or any particular result. We may refuse, reschedule or withdraw a placement, including where a lot is removed, breaches clause 4 or 13, or where the promoted strip is oversubscribed; if we withdraw a paid placement before it has run we refund the unused part. Once a placement has started, fees for it are otherwise non-refundable. Fees for placement are for an advertising service and are charged separately from seller commission.</p>
@@ -4622,35 +4630,57 @@
         <p><b>Every lot states its shipping cost, and the checkout total is what you pay.</b> A lot either includes postage in its price or shows a shipping amount, which is added once at checkout as part of the same payment. We never add postage afterwards and never invoice it separately. We currently ship to the Netherlands and the EU only, tracked. If you are outside that area, contact us before bidding.</p>
         <p><b>We quote the postage, not the Seller.</b> At checkout we ask the Buyer for a delivery address and price the parcel live with the carrier for that country, using the lot's packed weight. The Buyer chooses the service: through the letterbox where the item fits, collection from a pickup point, or delivery to the door. A Seller cannot set or change that amount.</p>
         <p><b>Commission is charged on the total the Buyer pays, postage included.</b> We charge on the total because the total is what we process, and we say so here rather than in a footnote. Postage is not a margin: it is passed to the carrier at the price quoted.</p>
-        <p>The Seller packs and dispatches promptly after payment, using the service the Buyer paid for, and must send with a valid tracking code.</p>
+        <p>The Seller packs and dispatches within three working days of payment clearing, using the service the Buyer paid for, and must send with a valid tracking code. If for any reason we cannot get a lot to you within thirty days of your order, which is the outer limit the law allows, you may cancel and we refund you in full.</p>
         <p><b>Risk in transit.</b> Where you buy as a consumer, the risk of loss or damage in transit stays with us until you take physical possession of the item, as Dutch and EU consumer law requires. That risk is ours whether or not a carrier pays anything out, and it is not something we could disclaim to a consumer. If an item arrives damaged, tell us <b>within 48 hours</b> with photographs and keep the packaging: a carrier claim needs both, and we cannot pursue one afterwards without them. If an item does not arrive at all, you are refunded in full. Between businesses, risk passes on dispatch.</p>
         <p><b>Returns and who pays the postage.</b> Two different situations, and the difference decides who is out of pocket. If an item arrives materially different from its listing, damaged, or not as described, return it and you are refunded in full including what you paid for postage, and we cover the cost of sending it back. If you change your mind, you may return an item within 14 days of receiving it, but you pay the return postage yourself and the refund covers the item rather than the original delivery. Tell us before you send anything back so the return is recorded and reaches the right address. This is stated here in advance deliberately: a buyer who is not told beforehand that a change-of-mind return is at their own cost cannot be charged for it.</p>
 
         <div class="terms-h">9 · Authenticity and "as-is"</div>
-        <p>Vintage toys are second-hand collectables sold "as-is, with all faults". Descriptions and curation are opinions on a best-effort basis, not guarantees of authenticity, completeness, grade or value. Buyers should inspect photos and ask before bidding. Statutory consumer rights are not removed by this clause.</p>
+        <p>Vintage toys are second-hand collectables and they are described as what they are: used objects, decades old, carrying the wear that comes with that. Every listing states the condition and what is missing, and the photographs are of the actual item rather than a stock picture. Descriptions and curation are our considered opinion on a best-effort basis, not guarantees of authenticity, completeness, grade or value, so read the photographs and ask before you bid.</p>
+
+        <p><b>What "as-is" does not mean.</b> Between businesses, a lot is sold as-is with all faults. To a consumer it cannot be, and we will not pretend otherwise: you are entitled to an item that matches its description and is fit to be the thing it was sold as, and second-hand does not remove that. Wear a listing describes is not a defect. Wear a listing hides is.</p>
 
         <div class="terms-h">10 · Consumer rights</div>
         <p>Where mandatory EU/Dutch consumer law applies, consumer Buyers keep their statutory rights, including the right of withdrawal and remedies for non-conforming goods.</p>
         <p><b>Winning at auction does not take away your fourteen days.</b> The exemption for public auctions covers sales a consumer can attend in person, and ours are online only, so it does not apply here. A consumer Buyer may return a lot within fourteen days of receiving it, whether it was won at auction or bought outright. Change of mind is at your own return postage; an item that is damaged or materially different from its listing is refunded in full, return postage included. Second-hand does not shorten any of this.</p>
 
-        <div class="terms-h">11 · Availability and downtime</div>
+        <p><b>How to withdraw.</b> Tell us within fourteen days of receiving the item, by email to <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a> or in writing. You do not have to give a reason, and a clear statement is enough. You then have a further fourteen days to send it back.</p>
+
+        <p><b>When you get your money.</b> We refund within fourteen days of receiving your withdrawal, to the same payment method you used, and we may wait until the item is back with us or until you show us it has been sent, whichever comes first. Where the return is because the item was damaged or materially different from its listing, the refund covers the original postage and the cost of sending it back as well.</p>
+
+        <p>You may use the form below, though nothing obliges you to.</p>
+
+        <div class="terms-form"><b>Model withdrawal form</b><br><br>
+        To Hammer &amp; Mold, RG Product Design, Da Costastraat 49, 2032 MG Haarlem, Netherlands, support@hammerandmold.com<br><br>
+        I hereby give notice that I withdraw from my contract of sale of the following item:<br><br>
+        Lot and description: ____________________<br>
+        Ordered on / received on: ____________________<br>
+        Name: ____________________<br>
+        Address: ____________________<br>
+        Date: ____________________</div>
+
+        <div class="terms-h">11 · Complaints</div>
+        <p><b>Tell us first, and tell us plainly.</b> Write to <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a> with your order and what went wrong. We confirm within two working days that it has reached a person, and answer properly within fourteen days. If an answer is going to take longer than that, we say so and tell you when to expect it, rather than letting it go quiet.</p>
+
+        <p>If we cannot settle it between us, you can take the matter to a consumer dispute body. We are not affiliated to one, so there is no scheme of ours to point you at; the European Commission keeps a list of the recognised bodies per country at <a href="https://consumer-redress.ec.europa.eu/dispute-resolution-bodies" target="_blank" rel="noopener noreferrer">consumer-redress.ec.europa.eu</a>. You may also simply go to court. The EU's own ODR platform closed on 20 July 2025 and no longer exists, which is why there is no link to it here: traders were required to take those links down.</p>
+
+        <div class="terms-h">12 · Availability and downtime</div>
         <p>The Platform is provided "as available". We do not guarantee uninterrupted or error-free operation and may suspend or change it. To the maximum extent permitted by law, we are not liable for loss from downtime, delay, data loss, or missed or unregistered bids.</p>
 
-        <div class="terms-h">12 · Limitation of liability</div>
-        <p>To the maximum extent permitted by law, we are not liable for indirect or consequential loss, or loss of profit, data or goodwill. Our total liability for any claim is limited to the greater of the commission we earned on the relevant transaction or [€100]. Nothing here limits liability that cannot be limited by law (e.g. death or personal injury by negligence, fraud, or mandatory consumer-law liability).</p>
+        <div class="terms-h">13 · Limitation of liability</div>
+        <p>To the maximum extent permitted by law, we are not liable for indirect or consequential loss, or loss of profit, data or goodwill. Our total liability for any claim is limited to the greater of the commission we earned on the relevant transaction or &euro;500. Nothing here limits liability that cannot be limited by law (e.g. death or personal injury by negligence, fraud, or mandatory consumer-law liability).</p>
 
-        <div class="terms-h">13 · Prohibited conduct</div>
+        <div class="terms-h">14 · Prohibited conduct</div>
         <p>No counterfeit, stolen, unsafe-recalled or illegally-exported items, misrepresentation, shill bidding, fee circumvention, or unlawful use. We may remove listings, void sales and close accounts for breaches. You indemnify us against claims arising from your listings, sales, shipments or breaches.</p>
 
-        <div class="terms-h">14 · Reviews</div>
+        <div class="terms-h">15 · Reviews</div>
         <p>After a completed purchase a Buyer may leave one review of the Seller. Reviews must be honest and based on a genuine transaction. No fake, incentivised, abusive, defamatory or unlawful reviews, and no reviewing your own listings. We may remove or withhold reviews that breach these rules, and reviews reflect the opinion of the Buyer, not of the Platform.</p>
 
-        <div class="terms-h">15 · Content, privacy, law</div>
+        <div class="terms-h">16 · Content, privacy, law</div>
         <p>You keep ownership of your photos and text and grant us a license to host and display them for the Platform. To complete a sale, a Buyer's shipping details are shared with the relevant Seller for fulfilment only. Your public seller page shows your display name, handle, seller type, location, bio, the date you joined, your listings and any reviews you have received; your email address, plan, token balance and notification settings are not published. We process personal data per our <a href="/privacy/" data-nav="privacy" style="text-decoration:underline">Privacy Policy</a> and the GDPR. These Terms are governed by the laws of the Netherlands, subject to any mandatory consumer protections in your own country.</p>
 
         <div class="terms-h">Contact</div>
         <p>RG Product Design &middot; Da Costastraat 49, 2032 MG Haarlem, Netherlands &middot; KvK 96149302 &middot; support@hammerandmold.com</p>
-        <p style="color:var(--ink-3); font-size:13px">Draft v0.2 for review. Complete the [bracketed] fields and have a qualified lawyer review before use.</p>
+        
       </div>
     </div>
   </section>
