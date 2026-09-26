@@ -4620,6 +4620,8 @@
         <p><b>Moving between packages.</b> Moving up takes effect immediately and your card is charged only the difference for the remainder of the period, not a further full period. Moving down takes effect at the end of the period you have already paid for: until then you keep the package you bought, and you may cancel the change before it takes effect. Unused tokens remain yours and roll over up to twice your monthly allowance; moving down does not remove tokens you already hold, it only reduces what you are topped up to afterwards.</p>
         <p>A membership renews automatically until cancelled; you may cancel at any time and keep access until the end of the paid period. Partial periods, tokens and token top-ups are non-refundable. Sellers handle their own tax and VAT. We are not a bank; funds are held and moved by the provider.</p>
 
+        <p><b>You get an invoice.</b> When a payment completes we email you a numbered invoice carrying our KvK and VAT numbers, what you bought, what you paid and which VAT treatment applied. The number also appears on the purchase in your account. Keep it: it is the document to quote if anything needs sorting out.</p>
+
         <p><b>Prices include VAT, and the price you see is the price you pay.</b> Nothing is added at the end except the postage, which is shown separately before you confirm. Most of what we sell is second-hand and falls under the Dutch margin scheme for used goods, where VAT is accounted for on the margin rather than on the sale price. That is why an invoice for a second-hand lot shows no separate VAT amount. It is a tax treatment, not a discount, and it changes nothing about what you pay.</p>
 
         <div class="terms-h">7 · Featured placement and ranking</div>
@@ -7479,7 +7481,7 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       // Was a filter on bidder_id, which is private now: anyone with the public
@@ -7576,7 +7578,10 @@
       const wd = l.withdrawn_at
         ? '<div class="st">Withdrawn ' + new Date(l.withdrawn_at).toLocaleDateString('en-GB') + '</div>'
         : (canWithdraw(l) ? '<button class="acct-signout" data-withdraw="' + e(l.id) + '" data-name="' + e(l.toy) + '">Withdraw purchase</button>' : '');
-      return row(l, '<div style="text-align:right;display:grid;gap:6px;justify-items:end">' + rev + wd + '</div>', 'Bought');
+      // The invoice number belongs on the purchase, not only in an email that
+      // gets filed away or lost. It is what a buyer quotes when they write in.
+      const sub = 'Bought' + (l.invoice_no ? ' \u00b7 Invoice ' + l.invoice_no : '');
+      return row(l, '<div style="text-align:right;display:grid;gap:6px;justify-items:end">' + rev + wd + '</div>', sub);
     }).join('') : '';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-2);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
