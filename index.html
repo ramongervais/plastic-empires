@@ -5060,7 +5060,8 @@
   // checks who is asking.
   const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,reserve,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
 
-  const LAUNCH_TS = Date.parse('2026-10-01T00:00:00+02:00'); // launch: 1 October 2026 (Amsterdam)
+  const LAUNCH_TS = Date.parse('2026-09-26T12:00:00+02:00'); // launched 26 September 2026, brought forward from 1 October so the first
+  // live weekend had somebody watching it
   const preLaunch = () => Date.now() < LAUNCH_TS;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -9424,7 +9425,7 @@
   // ----- Launch countdown in the beta ribbon -----
   (function(){
     const el = document.getElementById('promoCount'); if (!el) return;
-    const target = new Date('2026-10-01T00:00:00+02:00').getTime();
+    const target = new Date('2026-09-26T12:00:00+02:00').getTime();
     (function tick(){
       const ms = target - Date.now();
       if (ms <= 0){ const t = document.getElementById('promoText'); if (t) t.innerHTML = 'We are live. The auctions are open.'; return; }
