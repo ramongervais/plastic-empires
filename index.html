@@ -4645,7 +4645,7 @@
         <p>Where mandatory EU/Dutch consumer law applies, consumer Buyers keep their statutory rights, including the right of withdrawal and remedies for non-conforming goods.</p>
         <p><b>Winning at auction does not take away your fourteen days.</b> The exemption for public auctions covers sales a consumer can attend in person, and ours are online only, so it does not apply here. A consumer Buyer may return a lot within fourteen days of receiving it, whether it was won at auction or bought outright. Change of mind is at your own return postage; an item that is damaged or materially different from its listing is refunded in full, return postage included. Second-hand does not shorten any of this.</p>
 
-        <p><b>How to withdraw.</b> Tell us within fourteen days of receiving the item, by email to <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a> or in writing. You do not have to give a reason, and a clear statement is enough. You then have a further fourteen days to send it back.</p>
+        <p><b>How to withdraw.</b> The quickest way is the <b>Withdraw purchase</b> button next to the item in your account. One click, no reason needed, and we confirm it to you by email with the date and time so you have proof it was in time. You can also email <a href="mailto:support@hammerandmold.com">support@hammerandmold.com</a> or write to us, and the form below is there if you prefer it. Any of these counts; none of them is required over the others. You then have a further fourteen days to send the item back.</p>
 
         <p><b>When you get your money.</b> We refund within fourteen days of receiving your withdrawal, to the same payment method you used, and we may wait until the item is back with us or until you show us it has been sent, whichever comes first. Where the return is because the item was damaged or materially different from its listing, the refund covers the original postage and the cost of sending it back as well.</p>
 
@@ -5052,7 +5052,7 @@
   // that, so a query asks for what it is allowed rather than finding out.
   // ship_to and tracking come from the lot_private() function instead, which
   // checks who is asking.
-  const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,reserve,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year';
+  const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,reserve,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
 
   const LAUNCH_TS = Date.parse('2026-10-01T00:00:00+02:00'); // launch: 1 October 2026 (Amsterdam)
   const preLaunch = () => Date.now() < LAUNCH_TS;
@@ -7479,7 +7479,7 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       // Was a filter on bidder_id, which is private now: anyone with the public
@@ -7528,6 +7528,16 @@
     const stat = (n, k) => '<div class="acct-stat"><div class="n">' + n + '</div><div class="k">' + k + '</div></div>';
     const tog = (key, label, on) => '<div class="acct-toggle" data-pref="' + key + '"><span class="lbl">' + label + '</span><span class="sw' + (on !== false ? ' on' : '') + '"></span></div>';
     const stateOf = l => l.status === 'sold' ? 'Sold' : (l.status === 'unsold' ? 'Not sold' : (isEnded(l) ? 'Awaiting payment' : 'Live'));
+    // Withdrawal is offered while the clock could still be running. The period
+    // starts on delivery, so before delivery it has not begun and the right is
+    // already there; after delivery it runs fourteen days. Erring long on
+    // purpose: showing it a day too many costs nothing, a day too few is the
+    // thing the law is about.
+    const canWithdraw = (l) => {
+      if (!l || l.status !== 'sold' || l.withdrawn_at) return false;
+      if (!l.delivered_at) return true;
+      return (Date.now() - Date.parse(l.delivered_at)) < 14 * 86400000;
+    };
     const row = (l, right, sub) => '<div class="acct-row"><div class="th" data-nav="lot" data-lot="' + e(l.id) + '"' + (l.image_urls && l.image_urls[0] ? ' style="background-image:url(' + l.image_urls[0] + ')"' : '') + '></div><div class="info" data-nav="lot" data-lot="' + e(l.id) + '"><div class="t">' + e(l.toy) + '</div><div class="s">' + e(sub) + '</div></div>' + right + '</div>';
     const listingsHtml = lots.length ? lots.map(l => {
       // An unsold lot is out of the public shop and sits here instead, with the
@@ -7557,7 +7567,17 @@
         '</div><div class="st" style="text-align:right;margin-top:4px">' + n + ' photo' + (n === 1 ? '' : 's') + '</div></div></div>';
     }).join('') : '<div class="acct-empty"><b>No drafts yet.</b> Start a listing on the Sell page and choose Save as draft to keep it here. Saving a draft does not use one of your listings.</div>';
 
-    const purchasesHtml = purchases.length ? purchases.map(l => row(l, (reviewedLotIds.has(l.id) ? '<div class="st">Reviewed</div>' : (l.seller_id && l.seller_id !== uid ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>' : '<div class="st">Your lot</div>')), 'Bought')).join('') : '';
+    const purchasesHtml = purchases.length ? purchases.map(l => {
+      const rev = reviewedLotIds.has(l.id)
+        ? '<div class="st">Reviewed</div>'
+        : (l.seller_id && l.seller_id !== uid
+            ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>'
+            : '<div class="st">Your lot</div>');
+      const wd = l.withdrawn_at
+        ? '<div class="st">Withdrawn ' + new Date(l.withdrawn_at).toLocaleDateString('en-GB') + '</div>'
+        : (canWithdraw(l) ? '<button class="acct-signout" data-withdraw="' + e(l.id) + '" data-name="' + e(l.toy) + '">Withdraw purchase</button>' : '');
+      return row(l, '<div style="text-align:right;display:grid;gap:6px;justify-items:end">' + rev + wd + '</div>', 'Bought');
+    }).join('') : '';
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-2);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Listings left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
@@ -7598,6 +7618,32 @@
     // Relist. The RPC checks ownership, charges the token and clears the bids
     // from the auction that failed, so there is nothing to verify here beyond
     // asking once: it costs a token and the previous bids go.
+    // Withdrawing has to be no harder than buying was, which is the actual legal
+    // standard. One confirm, one click, and the confirmation arrives by email
+    // because that is the durable medium the law asks for.
+    body.querySelectorAll('[data-withdraw]').forEach(b => b.addEventListener('click', async () => {
+      const name = b.dataset.name || 'this purchase';
+      if (!confirm('Withdraw your purchase of ' + name + '?\n\nYou do not have to give a reason. We email you a confirmation with the time, and you then have fourteen days to send it back.')) return;
+      b.disabled = true; b.textContent = 'Withdrawing…';
+      try {
+        const { data: sess } = await SB.auth.getSession();
+        const token = sess && sess.session ? sess.session.access_token : '';
+        const r = await fetch(PAY_URL.replace(/\/checkout$/, '') + '/withdraw', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ lotId: b.dataset.withdraw }),
+        });
+        const d = await r.json();
+        if (!r.ok || d.error) throw new Error(d.error || 'Could not record it');
+        openModal('Withdrawal recorded', 'We have your withdrawal for ' + name + '.',
+          'A confirmation is on its way to your email with the date and time. Send the item back within fourteen days of that notice, and we refund within fourteen days of receiving the withdrawal. If it arrived damaged or not as described, tell us and the return postage is ours.');
+        renderAccount();
+      } catch (err) {
+        b.disabled = false; b.textContent = 'Withdraw purchase';
+        openModal('Could not withdraw', 'Something went wrong.', (err && err.message) || 'Please try again, or email support@hammerandmold.com. Your right to withdraw is not affected by this failing.');
+      }
+    }));
+
     body.querySelectorAll('[data-relist]').forEach(b => b.addEventListener('click', async () => {
       if (!confirm('Relist ' + (b.dataset.label || 'this lot') + '?\n\nIt uses one listing, and the bids from the auction that did not sell are cleared.')) return;
       b.disabled = true; b.textContent = 'Relisting…';
