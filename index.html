@@ -4628,6 +4628,8 @@
         <p><b>How lots are ranked.</b> In the shop, lots are ordered by the sort you choose (newest, ending soon, or price), and within the promoted strip by the order we set. Apart from the promoted strip, payment does not influence ranking: no plan, fee or membership moves a lot up the normal listings. The promoted strip is the only placement that can be paid for, and it is always labelled as such.</p>
         <div class="terms-h">8 · Shipping, loss and damage</div>
         <p><b>Every lot states its shipping cost, and the checkout total is what you pay.</b> A lot either includes postage in its price or shows a shipping amount, which is added once at checkout as part of the same payment. We never add postage afterwards and never invoice it separately. We currently ship to the Netherlands and the EU only, tracked. If you are outside that area, contact us before bidding.</p>
+
+        <p><b>Or collect it yourself.</b> On a Dutch delivery address the checkout also offers collection in Haarlem, by appointment, with no postage charged. Nothing is posted, so the shipping clauses below do not apply to a collected lot: you inspect it when you pick it up, and risk passes when you take it. Your statutory rights are unaffected, including the fourteen days, which for a collected item run from the day you take possession.</p>
         <p><b>We quote the postage, not the Seller.</b> At checkout we ask the Buyer for a delivery address and price the parcel live with the carrier for that country, using the lot's packed weight. The Buyer chooses the service: through the letterbox where the item fits, collection from a pickup point, or delivery to the door. A Seller cannot set or change that amount.</p>
         <p><b>Commission is charged on the total the Buyer pays, postage included.</b> We charge on the total because the total is what we process, and we say so here rather than in a footnote. Postage is not a margin: it is passed to the carrier at the price quoted.</p>
         <p>The Seller packs and dispatches within three working days of payment clearing, using the service the Buyer paid for, and must send with a valid tracking code. If for any reason we cannot get a lot to you within thirty days of your order, which is the outer limit the law allows, you may cancel and we refund you in full.</p>
@@ -8361,6 +8363,7 @@
     // single stored figure can be right for both, and a buyer should not be
     // charged the average of a spread they are not in.
     let chosen = null, quoted = [], point = null;
+    const collecting = () => !!(chosen && chosen.pickup);
 
     // The shops near the buyer. Marktplaats does this as postcode, a list with
     // distances, pick one; that is the shape a Dutch buyer already knows, so it
@@ -8494,9 +8497,19 @@
         (quoted.length > 1 ? '<div class="so-head">How it travels</div>' + quoted.map(opt).join('') : '') +
         ptRow +
         '<div class="del-row"><span>' + esc(opts.label || 'Lot') + '</span><span>' + money(opts.amount) + '</span></div>' +
-        '<div class="del-row"><span>Delivery' + (chosen && quoted.length === 1 ? ', ' + esc(chosen.label.toLowerCase()) : '') + '</span><span>' + (chosen ? money(ship) : '\u2014') + '</span></div>' +
+        (collecting()
+          ? '<div class="del-row"><span>Collection</span><span>Free</span></div>'
+          : '<div class="del-row"><span>Delivery' + (chosen && quoted.length === 1 ? ', ' + esc(chosen.label.toLowerCase()) : '') + '</span><span>' + (chosen ? money(ship) : '\u2014') + '</span></div>') +
         '<div class="del-row"><span><b>Total</b></span><span><b>' + (chosen ? money(Number(opts.amount) + ship) : '\u2014') + '</b></span></div>' +
         '<div class="del-note">Charged once, at Stripe. Nothing is invoiced afterwards.</div>';
+      // Asking for a delivery address for something nobody is delivering is the
+      // kind of form that makes people abandon a checkout. The name stays: we
+      // still need to know who is at the door.
+      const grid = f.querySelector('.ck-grid');
+      if (grid) grid.querySelectorAll('div').forEach(el => {
+        const keep = el.querySelector('#ckName');
+        el.hidden = collecting() && !keep;
+      });
       box.querySelectorAll('input[name=shipopt]').forEach((r) => r.addEventListener('change', () => {
         chosen = quoted.find((o) => o.id === r.value) || chosen;
         point = null;            // a shop chosen for DPD is not a shop for PostNL
@@ -8522,6 +8535,15 @@
         if (!quoted.length && d && typeof d.fallback === 'number'){
           quoted = [{ id: 'seller', label: 'Tracked', note: 'Posted by the seller.', price: d.fallback }];
         }
+        // Collection in person, offered only to a Dutch address because nobody
+        // flies in from Finland for a wrestling figure. Added after the carrier
+        // options rather than before them: posting is what most buyers want, and
+        // a free option at the top reads as the recommended one.
+        if (cc === 'NL') {
+          quoted.push({ id: 'pickup', label: 'Collect it yourself', carrier: null,
+            note: 'Haarlem, by appointment. Nothing is posted and no postage is charged.',
+            price: 0, pickup: true });
+        }
         chosen = quoted[0] || null;
       } catch (e) { quoted = []; chosen = null; }
       if (!quoted.length){
@@ -8537,7 +8559,12 @@
       const g = id => document.getElementById(id).value.trim();
       const hint = document.getElementById('ckHint');
       const addr = { name: g('ckName'), line1: g('ckLine1'), line2: g('ckLine2'), postal_code: g('ckZip'), city: g('ckCity'), country: g('ckCountry'), shipLevel: chosen ? chosen.id : null, point: point };
-      if (!addr.name || !addr.line1 || !addr.postal_code || !addr.city){
+      const collecting = !!(chosen && chosen.pickup);
+      if (collecting && !addr.name){
+        hint.textContent = 'We need a name, so we know who is coming.';
+        return;
+      }
+      if (!collecting && (!addr.name || !addr.line1 || !addr.postal_code || !addr.city)){
         hint.textContent = 'Name, street, postcode and city are all needed before we can post it.';
         return;
       }
@@ -8792,7 +8819,12 @@
         '<button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>'
       : '';
     const s = lot.ship_to;
-    const shipHtml = (isOwner && s) ? '<div class="won-box"><div class="won-h">Ship to</div><div class="won-sub" style="white-space:pre-line">' + [s.name, s.line1, s.line2, [s.postal_code, s.city].filter(Boolean).join(' '), s.state, s.country].filter(Boolean).map(e).join('\n') + (s.phone ? '\n' + e(s.phone) : '') + (s.email ? '\n' + e(s.email) : '') + '</div></div>' : '';
+    // A collected lot has no address to show, and showing an empty card would
+    // read as a fault. It says who is coming instead.
+    const shipHtml = (isOwner && s && s.pickup)
+      ? '<div class="won-box"><div class="won-h">Being collected</div><div class="won-sub">' +
+        e(s.name || 'The buyer') + ' is collecting this in person. Nothing to post.</div></div>'
+      : (isOwner && s) ? '<div class="won-box"><div class="won-h">Ship to</div><div class="won-sub" style="white-space:pre-line">' + [s.name, s.line1, s.line2, [s.postal_code, s.city].filter(Boolean).join(' '), s.state, s.country].filter(Boolean).map(e).join('\n') + (s.phone ? '\n' + e(s.phone) : '') + (s.email ? '\n' + e(s.email) : '') + '</div></div>' : '';
     const isBuyer = authUser && s && s.email && authUser.email && s.email.toLowerCase() === authUser.email.toLowerCase();
     const shipped = !!lot.shipped_at;
     const shipStatusHtml = !isSold ? '' : (
