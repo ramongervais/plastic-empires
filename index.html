@@ -671,6 +671,45 @@
      first and narrow, the editor beneath it across the full measure. */
   .sell-grid.reviewing { grid-template-columns:1fr; gap:40px; }
   .sell-grid.reviewing .sell-left { max-width:640px; }
+  /* Full width turned out to be too much: the completeness paragraph ran to
+     140 characters a line, which is roughly double a readable measure, and the
+     label/value rows put a metre of white between the two halves of one fact.
+     900px is the measure, and every piece of running text and every label in
+     here is set at one size. Hierarchy comes from caps, tracking and colour
+     instead of from size, which is the only way it still reads at 14px. The
+     lot title and the price keep their own size: they are the two things that
+     are meant to be seen before they are read. */
+  .sell-grid.reviewing { max-width:900px; margin-inline:auto; }
+  .sell-grid.reviewing .rc-sub,
+  .sell-grid.reviewing .rc-lede,
+  .sell-grid.reviewing .rc-notes,
+  .sell-grid.reviewing .rc-conf,
+  .sell-grid.reviewing .rc-empty,
+  .sell-grid.reviewing .rc-spec .row,
+  .sell-grid.reviewing .comps-h,
+  .sell-grid.reviewing .comps-sum,
+  .sell-grid.reviewing .comps-none,
+  .sell-grid.reviewing .comp-t,
+  .sell-grid.reviewing .comp-m,
+  .sell-grid.reviewing .comp-p,
+  .sell-grid.reviewing .comp-k,
+  .sell-grid.reviewing .comps-wait .t,
+  .sell-grid.reviewing .load-stage,
+  .sell-grid.reviewing .sale-toggle button,
+  .sell-grid.reviewing .sell-note,
+  .sell-grid.reviewing .ef > span,
+  .sell-grid.reviewing .ef-l,
+  .sell-grid.reviewing .ef-h,
+  .sell-grid.reviewing .ef-ro .ro-val,
+  .sell-grid.reviewing .ei { font-size:14px; }
+  /* Tracking that was set for 10px type reads as gapped letters at 14px. */
+  .sell-grid.reviewing .rc-sub,
+  .sell-grid.reviewing .rc-conf,
+  .sell-grid.reviewing .comps-h,
+  .sell-grid.reviewing .comp-m,
+  .sell-grid.reviewing .comp-k,
+  .sell-grid.reviewing .ef > span,
+  .sell-grid.reviewing .ef-l { letter-spacing:.06em; }
   #view-sell .sell-grid.reviewing { --edit-wide:1; }
   /* The one thing a seller has to do on this page. It was a grey dashed outline
      on a white page, which is the weight of a disabled field, and it sat below
@@ -781,6 +820,14 @@
   #curateBtn { display:block; width:100%; margin-top:20px; }
   #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
   .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
+  /* The field and the reason for it, side by side. Stacked, the explanation ran
+     the full column width and pushed Identify my toy below the fold on a laptop.
+     The 19px offset lines the prose up with the top of the textarea, not with
+     the label above it. */
+  .notes-2col { display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:start; margin:16px 0 22px; }
+  .notes-2col .ef { margin:0; }
+  .notes-2col .sell-note { margin:19px 0 0; }
+  @media (max-width:760px){ .notes-2col { grid-template-columns:1fr; gap:12px; } .notes-2col .sell-note { margin:0; } }
   .result-card { border:1px solid var(--line); border-radius:4px; padding:28px; min-height:280px; }
   .sell-grid.reviewing .result-card { padding:36px 40px; }
   /* Four options, four columns, one row. In half a screen they wrapped 3 + 1
@@ -4158,12 +4205,14 @@
           <!-- The one thing a camera cannot record. A seller knows whether the
                electronics still work and we were never asking, which on a toy
                that has them is the difference between EUR 15 and EUR 90. -->
-          <label class="ef" id="sellerNotesWrap" style="margin-top:16px">
-            <span>Anything the photos can&rsquo;t show, or a source to check against</span>
-            <textarea class="ei" id="sellerNotes" rows="3" maxlength="600"
-              placeholder="Does it work? Lights, sound, motor. Height with a tape measure. Battery corrosion, repairs, replaced parts, where you got it. A reference or link you already trust, if you have one."></textarea>
-          </label>
-          <div class="sell-note" style="margin:-4px 0 14px">Optional, and worth a minute. We can grade what we can see, but we cannot tell from a photograph whether the eyes still light up, and on a toy that has electronics that is usually the largest single thing about what it is worth. If you already know the reference, the variant or a source that settles it, put it here and we will check against it.</div>
+          <div class="notes-2col">
+            <label class="ef" id="sellerNotesWrap">
+              <span>Anything the photos can&rsquo;t show, or a source to check against</span>
+              <textarea class="ei" id="sellerNotes" rows="5" maxlength="600"
+                placeholder="Does it work? Lights, sound, motor. Height with a tape measure. Battery corrosion, repairs, replaced parts, where you got it. A reference or link you already trust, if you have one."></textarea>
+            </label>
+            <div class="sell-note">Optional, and worth a minute. We can grade what we can see, but we cannot tell from a photograph whether the eyes still light up, and on a toy that has electronics that is usually the largest single thing about what it is worth. If you already know the reference, the variant or a source that settles it, put it here and we will check against it.</div>
+          </div>
           <button class="btn accent" id="curateBtn" disabled>Identify my toy</button>
           <div class="sell-note" id="sellNote">Your photos stay in your browser until you start identification. Identification is free. A listing is only used when you choose to publish the item for sale.</div>
         </div>
