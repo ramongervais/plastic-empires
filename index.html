@@ -83,6 +83,9 @@
   a { color: inherit; text-decoration: none; }
   img { max-width:100%; display:block; }
   .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+  /* A form is not prose and does not want a 65-character measure. While a
+     curation is open the sell page uses the screen it has. */
+  #view-sell:has(.sell-grid.reviewing) .wrap { max-width:1560px; }
 
   /* labels / eyebrows */
   .ey { font-family:var(--label); font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-3); }
@@ -664,6 +667,11 @@
   }
   /* ---------- Sell / AI curation ---------- */
   .sell-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+  /* Reviewing a curation is the work, not uploading. One column, the upload box
+     first and narrow, the editor beneath it across the full measure. */
+  .sell-grid.reviewing { grid-template-columns:1fr; gap:40px; }
+  .sell-grid.reviewing .sell-left { max-width:640px; }
+  #view-sell .sell-grid.reviewing { --edit-wide:1; }
   /* The one thing a seller has to do on this page. It was a grey dashed outline
      on a white page, which is the weight of a disabled field, and it sat below
      the fold of attention on a screen that is otherwise all white. Solid fill,
@@ -774,6 +782,10 @@
   #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
   .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
   .result-card { border:1px solid var(--line); border-radius:4px; padding:28px; min-height:280px; }
+  .sell-grid.reviewing .result-card { padding:36px 40px; }
+  /* Four options, four columns, one row. In half a screen they wrapped 3 + 1
+     and the stray one read as a different kind of thing. */
+  .sell-grid.reviewing .sizepick { grid-template-columns:repeat(4, 1fr); }
   .result-card.empty { display:flex; align-items:center; justify-content:center; }
   .rc-empty { font-family:var(--label); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); text-align:center; max-width:34ch; line-height:1.6; }
   .rc-title { font-family:var(--body); font-weight:700; font-size:24px; letter-spacing:-.01em; line-height:1.1; }
@@ -875,9 +887,32 @@
   @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
   @media (max-width:600px){ #view-sell .empire-title { font-size:34px; } }
   .rc-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  /* Two buttons live in that corner now, so they get their own row and the
+     header keeps its 16px between the title and them. */
+  .rc-acts { display:flex; gap:8px; flex-shrink:0; }
+  /* One shop card, at the size it appears in the grid, centred in the notice. */
+  .pv-wrap { max-width:300px; margin:20px auto 0; }
   .rc-editbtn { flex-shrink:0; font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid var(--line); border-radius:2px; padding:6px 12px; cursor:pointer; color:var(--ink-2); }
   .rc-editbtn:hover { border-color:var(--ink); color:var(--ink); }
-  .ef { display:block; margin-bottom:12px; }
+  .ef { display:block; margin-bottom:26px; }
+  /* .ef-h is the sentence under a field that explains what ticking it does.
+     It had no rule at all, so it rendered at body size in body colour, the same
+     weight as the thing it was explaining, hard against the control above it.
+     Read as instruction, sized as help, with room on both sides. */
+  /* .ef-l is the field's name and had no rule, so it rendered at body size in
+     body colour: the same as the help text under it and the same as the value
+     inside the input. Three things that mean different things, all looking
+     alike, is why this screen was hard to scan. Set like every other label on
+     the site. */
+  .ef-l { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-3); margin-bottom:8px; }
+  .ef-h { font-family:var(--body); font-size:13.5px; line-height:1.6; color:var(--ink-3);
+    max-width:78ch; margin:10px 0 0; }
+  .ef-h b { color:var(--ink-2); font-weight:600; }
+  /* A form field is a target, not a paragraph. 44px is the floor for something
+     a thumb has to hit, and it stops inputs reading as text. */
+  .ef .ei, .ef input.ei, .ef select.ei { min-height:44px; }
+  .ef textarea.ei { min-height:120px; line-height:1.65; padding:12px 14px; }
   .ef > span { display:flex; align-items:center; gap:6px; font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px; }
   .ef-i { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; width:14px; height:14px; border:1px solid var(--ink-3); border-radius:50%; font-family:var(--body); font-size:9px; font-weight:700; font-style:normal; line-height:1; letter-spacing:0; text-transform:none; color:var(--ink-3); cursor:help; transition:border-color .12s, color .12s; }
   .ef-i:hover, .ef-i:focus-visible { border-color:var(--ink); color:var(--ink); outline:none; }
@@ -5618,7 +5653,7 @@
   // ----- Modal: bids / buy now / sell / info -----
   const modal = document.getElementById('modal');
   const bidForm = document.getElementById('bidForm');
-  function openModal(ey, title, body){
+  function openModal(ey, title, body, action){
     document.getElementById('modalEy').textContent = ey;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalBody').textContent = body;
@@ -5629,10 +5664,24 @@
     // and inserts it into this modal, and without this a second visit left two in
     // the document with the same ids, so getElementById would answer with the
     // stale one and the new form would do nothing.
-    modal.querySelectorAll('.ck-form').forEach(el => el.remove());
+    modal.querySelectorAll('.ck-form, .pv-wrap').forEach(el => el.remove());
     // The Close at the bottom is for plain notices. A form supplies its own
     // Cancel next to its confirm, and turns this back on when it leaves.
     const close = document.getElementById('modalClose');
+    // A notice that tells you where something went should be able to take you
+    // there. Rebuilt each time rather than hidden, so a modal without an action
+    // cannot inherit the last one's button.
+    const oldAct = document.getElementById('modalAction');
+    if (oldAct) oldAct.remove();
+    if (action && action.label && close && close.parentNode) {
+      const btn = document.createElement('button');
+      btn.id = 'modalAction';
+      btn.type = 'button';
+      btn.className = 'btn accent';
+      btn.textContent = action.label;
+      btn.addEventListener('click', () => { modal.hidden = true; action.go(); });
+      close.parentNode.insertBefore(btn, close);
+    }
     if (close) close.hidden = false;
     modal.hidden = false;
   }
@@ -5899,7 +5948,16 @@
     ['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
     dz.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files); });
 
-    function setCard(html, empty){ card.className = 'result-card' + (empty ? ' empty' : ''); card.innerHTML = html; }
+    function setCard(html, empty){
+      card.className = 'result-card' + (empty ? ' empty' : '');
+      card.innerHTML = html;
+      // Once there is something to edit, the two-column split has outlived its
+      // purpose: the left side is an upload box that has already been used, and
+      // the right side is a form with twenty fields squeezed into half a screen.
+      // The grid collapses and the editor takes the full measure.
+      const grid = card.closest('.sell-grid');
+      if (grid) grid.classList.toggle('reviewing', !empty);
+    }
     function row(k, v){
       if (!v) return '';
       // Long values stack under the label rather than being right-aligned.
@@ -6283,7 +6341,10 @@
       const html =
         '<div class="rc-head"><div><div class="rc-title">' + esc(c.toy || 'Unidentified') + '</div>' +
         '<div class="rc-sub">' + esc([c.maker, c.line, c.year].filter(Boolean).join(' · ')) + '</div></div>' +
-        '<button class="rc-editbtn" id="editLot" type="button">Edit</button></div>' +
+        '<div class="rc-acts">' +
+          '<button class="rc-editbtn" id="previewLot" type="button">Preview</button>' +
+          '<button class="rc-editbtn" id="editLot" type="button">Edit</button>' +
+        '</div></div>' +
         (c.blurb ? '<div class="rc-lede">' + esc(c.blurb) + '</div>' : '') +
         (c.stampVisible === false
           ? (c.noStamp
@@ -6322,6 +6383,39 @@
       editing = false;
       if (c.compsPending) bindCompWait();
       document.getElementById('editLot').addEventListener('click', editMode);
+
+      // See it the way a buyer will, before it is published. A seller has been
+      // staring at a form; the shop is a photograph, a title and a price, and
+      // those are different things. Built from the curation in hand rather than
+      // from the database, because the point is to check it BEFORE it exists.
+      const pv = document.getElementById('previewLot');
+      if (pv) pv.addEventListener('click', () => {
+        const cover = (files[0] && (files[0].cardUrl || files[0].dataUrl)) || (draftUrls && draftUrls[0]) || '';
+        const fixedSale = current.saleType === 'fixed';
+        const shown = fixedSale ? (current.buyNow || current.startingBid) : current.startingBid;
+        const meta = [current.line, current.maker, current.year].filter(Boolean).join(' \u00b7 ');
+        openModal('Preview', 'How it looks in the shop',
+          'This is the card a buyer sees in the grid. Nothing is published yet.');
+        const body = document.getElementById('modalBody');
+        if (!body) return;
+        const card = document.createElement('div');
+        card.className = 'pv-wrap';
+        card.innerHTML =
+          '<article class="artifact-card" style="pointer-events:none">' +
+            '<div class="vitrine" style="aspect-ratio:1">' +
+              (cover ? '<img class="cardimg" src="' + esc(cover) + '" alt="">' : '<span class="ph">No photo yet</span>') +
+              '<span class="tick tl"></span><span class="tick tr"></span>' +
+              '<span class="tick bl"></span><span class="tick br"></span>' +
+            '</div>' +
+            '<div class="label"><div class="ln"><span class="nm">' + esc(current.toy || 'Unidentified') + '</span></div>' +
+              '<div class="meta">' + esc(meta) + '</div>' +
+              '<div class="auc-card"><div><span class="amt">' + eur(shown || 0) + '</span>' +
+                '<span class="sub">' + (fixedSale ? 'Direct sale' : 'Starting bid') + '</span></div>' +
+                '<div class="cd">' + (fixedSale ? 'Direct sale' : '7 days from first bid') + '</div></div>' +
+            '</div>' +
+          '</article>';
+        body.parentNode.insertBefore(card, body.nextSibling);
+      });
       // The stamp is a requirement, not a nag, so the way past it is a recorded
       // choice rather than a dismissed banner.
       const sNone = document.getElementById('stampNone');
@@ -6351,7 +6445,8 @@
           const draftToy = current.toy || 'Your lot';
           resetSell();
           openModal('Draft saved', draftToy + ' is saved as a draft.',
-            'No listing was used. Find it under Drafts in your account, and publish when you are ready. The page is cleared, so you can start the next one.');
+            'No listing was used. It is under Drafts in your account, ready to publish when you are. This page is cleared so you can start the next one.',
+            { label: 'Open your drafts', go: () => routeTo('account') });
         } catch (err) {
           const msg = String((err && err.message) || err);
           openModal('Could not save the draft', 'Something went wrong.',
