@@ -361,6 +361,18 @@
             <label class="f"><input type="checkbox" id="le_letterbox" style="width:auto;margin-right:8px">Fits through a letterbox</label>
             <div class="s" style="margin-top:6px">Only tick this after laying it in an envelope. A letterbox parcel is about 3.2 cm thick, and the rate API checks weight but never thickness, so it will happily offer the cheap option for something that cannot possibly go through a door. Ticked, the buyer sees it. Unticked, they do not.</div>
           </div>
+          <!-- Sale type. Locked by the same rule as the money fields: a bid is an
+               offer on an auction, and turning that auction into a fixed price
+               underneath the bidder is not an edit. With no bids there is
+               nothing to protect, so it switches freely. -->
+          <div>
+            <label class="f" for="le_sale">Sale type</label>
+            <select class="f" id="le_sale">
+              <option value="auction">Auction</option>
+              <option value="fixed">Direct sale</option>
+            </select>
+            <div class="s" id="le_saleHint" style="margin-top:6px"></div>
+          </div>
           <div><label class="f" for="le_start">Starting bid &euro;</label><input class="f" id="le_start" type="number" step="1" min="0"></div>
           <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
           <div><label class="f" for="le_buynow">Buy now &euro;</label><input class="f" id="le_buynow" type="number" step="1" min="0"></div>
@@ -1036,6 +1048,7 @@
     v('le_shipNl', l.shipping_nl_eur); v('le_shipRow', l.shipping_row_eur);
     $('le_letterbox').checked = l.letterbox === true;
     shipOptions(l);
+    v('le_sale', l.sale_type === 'fixed' ? 'fixed' : 'auction');
     v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
     v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
     // '' when null, which selects the "Not stated" option rather than leaving the
@@ -1047,9 +1060,11 @@
       const el = $('le_' + (f === 'starting_bid' ? 'start' : f === 'buy_now' ? 'buynow' : 'reserve'));
       if (el) el.disabled = bids > 0;
     });
+    $('le_sale').disabled = bids > 0;
+    drawSale();
     $('lotLockNote').textContent = bids > 0
-      ? 'This lot has ' + bids + ' bid' + (bids === 1 ? '' : 's') + ', so the price fields are locked. Changing what a lot costs after someone has bid on it changes the deal they accepted. Descriptions, condition, notes and shipping can still be corrected.'
-      : 'No bids yet, so everything here can still be changed.';
+      ? 'This lot has ' + bids + ' bid' + (bids === 1 ? '' : 's') + ', so the sale type and the price fields are locked. Changing what a lot costs, or turning an auction into a fixed price, after someone has bid on it changes the deal they accepted. Descriptions, condition, notes and shipping can still be corrected.'
+      : 'No bids yet, so everything here can still be changed, including whether it is an auction or a direct sale.';
     $('lotEditTitle').textContent = 'Edit: ' + (l.toy || 'lot');
     $('lotEditBox').hidden = false;
     $('lotEditBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1062,6 +1077,27 @@
     openLotEdit(b.dataset.editlot);
   });
   $('lotCancel').addEventListener('click', closeLotEdit);
+  // A direct sale is one price and no clock, so the reserve stops meaning
+  // anything and Buy now stops being optional. Disabled rather than hidden: a
+  // field that disappears leaves you wondering whether the number is still in
+  // there. It is, and it gets cleared on save so the two cannot disagree.
+  function drawSale(){
+    const sel = $('le_sale'); if (!sel) return;
+    const fixed = sel.value === 'fixed';
+    const bids = editingLot ? (lotBids[editingLot.id] || { n: 0 }).n : 0;
+    const res = $('le_reserve');
+    if (res) res.disabled = bids > 0 || fixed;
+    $('le_saleHint').textContent = fixed
+      ? 'One price, bought outright, no bidding and no clock. Buy now is that price and has to be filled in. The reserve does not apply and is cleared when you save.'
+      : 'Bidding, with the seven days starting on the first bid rather than on the day you listed it. Reserve and Buy now are both optional.';
+  }
+  $('le_sale').addEventListener('change', () => {
+    // Same courtesy the sell page does: switching to a direct sale with no
+    // price in the box carries the starting bid across rather than saving a
+    // lot that costs nothing.
+    if ($('le_sale').value === 'fixed' && !$('le_buynow').value) $('le_buynow').value = $('le_start').value || '';
+    drawSale();
+  });
   $('le_shipPick').addEventListener('change', drawShip);
   $('le_weight').addEventListener('input', () => { if (editingLot) shipOptions(Object.assign({}, editingLot, { weight_kg: $('le_weight').value, size_class: $('le_shipPick').value })); });
 
@@ -1095,9 +1131,21 @@
     // Money only travels when nobody has bid. Not merely disabled in the form:
     // a disabled input is a hint, and the rule has to hold even if it is bypassed.
     if (bids === 0){
+      const fixed = $('le_sale').value === 'fixed';
+      patch.sale_type = fixed ? 'fixed' : 'auction';
       patch.starting_bid = num('le_start') || 0;
-      patch.reserve = num('le_reserve');
+      // A fixed-price lot with no price would show as free in the shop, and a
+      // reserve on it would be a floor under a price that has no bidding to
+      // reach it. Neither is a state worth writing.
+      patch.reserve = fixed ? null : num('le_reserve');
       patch.buy_now = num('le_buynow');
+      if (fixed && !(patch.buy_now > 0)){
+        say('lMsg', 'A direct sale needs a Buy now price. That is what the buyer pays, and without it the lot lists at nothing.', 'err');
+        return;
+      }
+      // No clock on a direct sale. With no bids ends_at is already null, but
+      // writing it keeps the two columns from ever disagreeing.
+      if (fixed) patch.ends_at = null;
     }
 
     const btn = $('lotSave'); btn.disabled = true; btn.textContent = 'Saving…';
