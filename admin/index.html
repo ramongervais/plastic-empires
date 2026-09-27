@@ -917,7 +917,18 @@
   }
 
   async function loadLots(){
-    const res = await SB.from('lots').select('*').order('created_at', { ascending: false });
+    // Not select('*'). The buyer's address and the tracking number were taken
+    // off lots for everyone on 26 September and moved behind lot_private(), so
+    // a star select now fails with 42501 and takes the whole console down. This
+    // console never reads either column, so it asks for what it uses.
+    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,' +
+      'starting_bid,reserve,buy_now,estimate_low,estimate_high,confidence,' +
+      'condition,completeness,blurb,notes,variants,image_urls,stamp_shown,' +
+      'care_level,care_note,letterbox,size_class,service_point,weight_kg,' +
+      'shipping_eur,shipping_nl_eur,shipping_row_eur,auction_days,extended,' +
+      'ends_at,closed_at,created_at,shipped_at,delivered_at,' +
+      'withdrawn_at,invoice_no,invoice_at';
+    const res = await SB.from('lots').select(LOT_COLS).order('created_at', { ascending: false });
     if (res.error){ say('lMsg', explain(res.error), 'err'); $('lotsBody').innerHTML = ''; $('lotsEmpty').hidden = false; return; }
     allLots = res.data || [];
     lotBids = {};
