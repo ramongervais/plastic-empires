@@ -909,6 +909,18 @@
   }
   .load-wrap { text-align:center; padding:18px 0 6px; }
   .load-wrap .hmr { width:112px; height:96px; }
+  /* Nothing here. The same mark the waiting state uses, because a dead end is
+     still this shop and a bare sentence in the default font was not. Still,
+     not swinging: the hammer coming down means something is being worked on,
+     and on this page nothing is. */
+  .hmr.still img { animation:none; transform:rotate(-14deg); }
+  .nf { text-align:center; padding:72px 0 96px; max-width:52ch; margin:0 auto; }
+  .nf .hmr { width:132px; height:113px; margin:0 auto 26px; }
+  .nf-ey { font-family:var(--label); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); }
+  .nf-t { font-family:var(--display); font-weight:700; font-size:clamp(24px,3.4vw,38px); line-height:1.1;
+    letter-spacing:.01em; text-transform:uppercase; margin:14px 0 0; text-wrap:balance; }
+  .nf-b { font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2); margin:18px 0 0; }
+  .nf .btn { margin-top:30px; }
   .load-stage { font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:18px; }
   .load-sec { font-variant-numeric:tabular-nums; color:var(--ink-3); }
   /* The same waiting mark, sized for a single line next to a button. Creating a
@@ -7599,6 +7611,21 @@
   const HAMMER = '<div class="hmr"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true">' +
     '<svg class="bang" viewBox="0 0 34 26" aria-hidden="true"><path d="M4 20 L0 24"/><path d="M15 17 L15 24"/><path d="M26 20 L31 25"/></svg></div>';
 
+  // A dead end, wearing the shop's own mark. There are three of them on a lot
+  // page and they used to be three bare <p> tags in the browser's default font,
+  // which is the one moment a visitor decides whether a site is looked after.
+  // The mark is the still version: the hammer swinging means we are working on
+  // something, and here we are not.
+  const HAMMER_STILL = '<div class="hmr still"><img src="/Empires/Brandedimages/hm-godzilla.svg" alt="" aria-hidden="true"></div>';
+  function deadEnd(ey, title, body){
+    return '<div class="nf">' + HAMMER_STILL +
+      '<div class="nf-ey">' + ey + '</div>' +
+      '<h2 class="nf-t">' + title + '</h2>' +
+      '<p class="nf-b">' + body + '</p>' +
+      '<a class="btn accent" href="/" data-nav="home">Back to the shop</a>' +
+    '</div>';
+  }
+
   // The initials the seller page falls back to when there is no logo.
   //
   // Defined once because it is now drawn in two places, the public page and the
@@ -9106,11 +9133,11 @@
       // address is wrong, not the lot gone. Worth separating: the two have
       // completely different causes.
       const looksLikeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
-      body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">' +
-        (looksLikeId
-          ? 'Lot not found. It may have been removed.'
-          : 'That is not a lot address. <a data-nav="home" href="/" style="text-decoration:underline;text-underline-offset:3px">Back to the shop</a>.') +
-        '</p>';
+      body.innerHTML = looksLikeId
+        ? deadEnd('Not found', 'This lot is not here any more',
+            'It was sold and archived, or the seller took it out of the shop. The catalogue turns over every week, so a link that worked last month can point at nothing today. Everything currently for sale is one click away.')
+        : deadEnd('Not a lot address', 'That address does not name a lot',
+            'A lot address ends in a long identifier made of letters and numbers, and this one does not. The link was most likely cut short somewhere between being copied and being opened.');
       return;
     }
     // An unsold lot is the seller's business, not a public record of a sale
@@ -9118,7 +9145,8 @@
     // the interface, not a security boundary: the row is still world-readable
     // over the API until the RLS note in section 11 of the schema is acted on.
     if (lot.status === 'unsold' && !(authUser && authUser.id === lot.seller_id)){
-      body.innerHTML = '<p style="padding:64px 0;font-family:var(--body)">This lot is not currently listed.</p>';
+      body.innerHTML = deadEnd('Not listed', 'This one is not in the shop right now',
+        'The seller has taken it out of the catalogue. That is usually temporary: a lot comes out to be re-photographed, corrected or held back, and goes up again afterwards. It may well return.');
       return;
     }
     // amount and created_at only: bidder_id is private, and the bid history on a
@@ -9219,7 +9247,7 @@
     const ownerHtml = isOwner
       ? '<div class="lot-owner"><span>This is your lot.</span>' +
         '<button class="lot-remove" id="lotEditLive" type="button" hidden>Edit this lot</button>' +
-        '<button class="lot-remove" id="lotRemove" type="button">Remove this lot</button></div>'
+        '<button class="lot-remove" id="lotRemove" type="button">Take out of the shop</button></div>'
       : '';
     const s = lot.ship_to;
     // A collected lot has no address to show, and showing an empty card would
@@ -9559,13 +9587,44 @@
       // routing broke it without touching this line. Same family as shipping.js.
       ed.addEventListener('click', () => { location.href = '/admin/#lot=' + encodeURIComponent(lot.id); });
     }
-    const rm = document.getElementById('lotRemove'); if (rm) rm.addEventListener('click', async () => {
-      if (!window.confirm('Remove this lot? This cannot be undone.')) return;
-      rm.disabled = true;
-      const { error: de } = await SB.from('lots').delete().eq('id', lot.id);
-      if (de){ document.getElementById('lotCrumb').textContent = lot.toy; rm.disabled = false; openModal('Could not remove', 'Something went wrong', de.message); return; }
-      show('home'); injectDraftLots();
-    });
+    // This button used to delete the row. It does not any more, and the reason
+    // is a lot that was taken out of the shop to be re-photographed and came
+    // back as nothing: the record gone, the five photographs orphaned in
+    // storage, and the address in a paid advertisement pointing at a hole.
+    //
+    // Taking a lot out of the shop and destroying it are two different acts and
+    // only one of them belongs on a product page. Withdrawing keeps the id, the
+    // photographs, the bids and the text, keeps any accounting row pointing at
+    // something real, and is undone by putting it back. Deleting is none of
+    // those and there is no version of this button worth that risk.
+    //
+    // 'unsold' is the status the shop already treats as invisible: both shop
+    // queries ask for live/preview or ended/sold, so this drops out of the
+    // catalogue without teaching the rest of the site a new state.
+    const rm = document.getElementById('lotRemove');
+    if (rm) {
+      rm.textContent = 'Take out of the shop';
+      rm.addEventListener('click', async () => {
+        if (!window.confirm('Take this lot out of the shop?\n\nIt leaves the catalogue and keeps its photos, text and bids. You can put it back from your account.')) return;
+        rm.disabled = true;
+        // .select() because RLS filtering every row away is a 204 and not an
+        // error, and a button that silently did nothing is worse than one that
+        // said why.
+        const { data, error } = await SB.from('lots').update({ status: 'unsold' }).eq('id', lot.id).select('id');
+        if (error){
+          rm.disabled = false;
+          openModal('Could not do that', 'Something went wrong', error.message);
+          return;
+        }
+        if (!data || !data.length){
+          rm.disabled = false;
+          openModal('Could not do that', 'Nothing changed',
+            'The database accepted the request and changed no rows, which means a row-level policy filtered it out. Take it out from the admin console instead.');
+          return;
+        }
+        show('home'); injectDraftLots();
+      });
+    }
   }
 
   // ----- Fullscreen zoom + pan lightbox (mouse wheel, double-click, drag, pinch) -----

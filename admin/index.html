@@ -106,6 +106,21 @@
   .btn.danger:hover { border-color:var(--bad); }
   .btn:disabled { opacity:.4; cursor:default; }
   .rowacts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+  /* Photographs on a lot. 4/5 like the shop card, so what you arrange here is
+     the crop a buyer actually gets rather than a square that lies about it. */
+  .lethumbs { display:flex; gap:8px; flex-wrap:wrap; }
+  .leth { position:relative; width:76px; aspect-ratio:4/5; background-size:cover; background-position:center;
+    background-color:var(--panel); border:1px solid var(--line); border-radius:3px; }
+  .leth.cover { border-color:var(--ink); }
+  .lethc { position:absolute; left:0; bottom:0; right:0; background:var(--ink); color:var(--accent-ink);
+    font-family:var(--label); font-size:8.5px; letter-spacing:.12em; text-transform:uppercase;
+    text-align:center; padding:3px 0; }
+  .lethb { position:absolute; width:20px; height:20px; padding:0; line-height:18px; text-align:center;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:3px;
+    font-size:12px; cursor:pointer; }
+  .lethb:hover { border-color:var(--ink); }
+  .lethb.rm { top:4px; right:4px; }
+  .lethb.up { bottom:4px; left:4px; }
   .rankcell { display:flex; align-items:center; gap:8px; }
   .rankno { font-family:var(--display); font-weight:600; font-size:15px; color:var(--ink-3); min-width:12px; }
   .rank-acts { display:flex; flex-direction:column; gap:2px; }
@@ -360,6 +375,33 @@
           <div class="wide">
             <label class="f"><input type="checkbox" id="le_letterbox" style="width:auto;margin-right:8px">Fits through a letterbox</label>
             <div class="s" style="margin-top:6px">Only tick this after laying it in an envelope. A letterbox parcel is about 3.2 cm thick, and the rate API checks weight but never thickness, so it will happily offer the cheap option for something that cannot possibly go through a door. Ticked, the buyer sees it. Unticked, they do not.</div>
+          </div>
+          <!-- Photographs. There was nowhere in the whole site to add a photo to a
+               lot that already existed: the only upload lived in the create flow,
+               so a lot photographed badly had to be deleted and made again, and
+               deleting is how five photographs ended up orphaned in storage with
+               a paid advertisement pointing at nothing. -->
+          <div class="wide">
+            <label class="f">Photographs</label>
+            <div id="le_thumbs" class="lethumbs"></div>
+            <div class="rowacts" style="margin-top:10px">
+              <label class="btn ghost sm" for="le_addPhotos" style="cursor:pointer;display:inline-block">Add photographs</label>
+              <input id="le_addPhotos" type="file" accept="image/*" multiple hidden>
+              <span class="s" id="le_photoMsg"></span>
+            </div>
+            <div class="s" style="margin-top:8px">The first one is the cover buyers see in the shop. Removing one here takes it off the lot and leaves the file in storage, so nothing is destroyed and a mistake is undone by re-adding it. Each upload is stored twice, full size and a card-sized copy, the same as the sell page does.</div>
+          </div>
+          <!-- Status. A lot comes out of the shop to be worked on and has to be
+               able to go back in, which until now needed a hand-written SQL
+               statement. -->
+          <div>
+            <label class="f" for="le_status">Status</label>
+            <select class="f" id="le_status">
+              <option value="live">Live in the shop</option>
+              <option value="unsold">Out of the shop</option>
+              <option value="preview">Preview only</option>
+            </select>
+            <div class="s" id="le_statusHint" style="margin-top:6px"></div>
           </div>
           <!-- Sale type. Locked by the same rule as the money fields: a bid is an
                offer on an auction, and turning that auction into a fixed price
@@ -1038,6 +1080,47 @@
     }
   }
 
+  // The working copy of the lot's photographs. Held apart from editingLot so a
+  // Cancel really cancels: nothing is written until Save.
+  let editingPhotos = [];
+
+  function drawThumbs(){
+    const box = $('le_thumbs'); if (!box) return;
+    if (!editingPhotos.length){
+      box.innerHTML = '<div class="s">No photographs on this lot.</div>';
+      return;
+    }
+    box.innerHTML = editingPhotos.map(function(u, i){
+      return '<div class="leth' + (i === 0 ? ' cover' : '') + '" style="background-image:url(' + esc(u) + ')">' +
+        (i === 0 ? '<span class="lethc">Cover</span>'
+                 : '<button type="button" class="lethb up" data-ph-cover="' + i + '" title="Make this the cover">&uarr;</button>') +
+        '<button type="button" class="lethb rm" data-ph-del="' + i + '" title="Take off the lot">&times;</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function drawStatus(){
+    const sel = $('le_status'); if (!sel || !editingLot) return;
+    const was = editingLot.status;
+    const hint = $('le_statusHint');
+    // A sold or ended lot is a record of something that happened. Putting it
+    // back in the shop from a dropdown would rewrite history, and relisting
+    // already exists for that, with the listing token it costs.
+    const frozen = was === 'sold' || was === 'ended';
+    sel.disabled = frozen;
+    if (frozen){
+      hint.textContent = 'This lot is ' + was + ', so its status is fixed here. Use Relist in the account if you want to sell it again: that charges a listing and clears the old bids.';
+      return;
+    }
+    const v = sel.value;
+    hint.textContent = v === 'live'
+      ? (was === 'live' ? 'In the catalogue and open for bidding.'
+         : 'Putting it back in the shop clears the old end date, so an auction starts its seven days again on the first bid rather than arriving already finished.')
+      : v === 'unsold'
+        ? 'Out of the catalogue. It keeps its photographs, text and bids, and only you can see the page.'
+        : 'Hidden from the shop until launch. This is the pre-launch state and you probably do not want it now.';
+  }
+
   function openLotEdit(id){
     const l = allLots.find(x => x.id === id); if (!l) return;
     editingLot = l;
@@ -1048,6 +1131,11 @@
     v('le_shipNl', l.shipping_nl_eur); v('le_shipRow', l.shipping_row_eur);
     $('le_letterbox').checked = l.letterbox === true;
     shipOptions(l);
+    editingPhotos = Array.isArray(l.image_urls) ? l.image_urls.slice() : [];
+    drawThumbs();
+    $('le_photoMsg').textContent = '';
+    v('le_status', ['live', 'unsold', 'preview'].indexOf(l.status) >= 0 ? l.status : 'live');
+    drawStatus();
     v('le_sale', l.sale_type === 'fixed' ? 'fixed' : 'auction');
     v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
     v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
@@ -1098,6 +1186,81 @@
     if ($('le_sale').value === 'fixed' && !$('le_buynow').value) $('le_buynow').value = $('le_start').value || '';
     drawSale();
   });
+  $('le_status').addEventListener('change', drawStatus);
+
+  $('le_thumbs').addEventListener('click', function(ev){
+    const del = ev.target.closest('[data-ph-del]');
+    if (del){ editingPhotos.splice(Number(del.dataset.phDel), 1); drawThumbs(); return; }
+    const cov = ev.target.closest('[data-ph-cover]');
+    if (cov){
+      const i = Number(cov.dataset.phCover);
+      editingPhotos.unshift(editingPhotos.splice(i, 1)[0]);
+      drawThumbs();
+    }
+  });
+
+  // A File, not a URL: reencode() upstream reads from a URL and this reads from
+  // the picker, so the two cannot share. Same sizes and the same white flatten,
+  // because a photo added here has to be indistinguishable from one added on the
+  // sell page.
+  function shrinkFile(file, maxDim, quality){
+    return new Promise(function(resolve, reject){
+      const fr = new FileReader();
+      fr.onerror = function(){ reject(new Error('could not read the file')); };
+      fr.onload = function(){
+        const img = new Image();
+        img.onerror = function(){ reject(new Error('not a readable image')); };
+        img.onload = function(){
+          try {
+            const sc = Math.min(1, maxDim / Math.max(img.width, img.height));
+            const w = Math.max(1, Math.round(img.width * sc)), h = Math.max(1, Math.round(img.height * sc));
+            const c = document.createElement('canvas'); c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            c.toBlob(function(b){ b ? resolve(b) : reject(new Error('encode failed')); }, 'image/jpeg', quality);
+          } catch (e) { reject(e); }
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  $('le_addPhotos').addEventListener('change', async function(ev){
+    const files = Array.from(ev.target.files || []); ev.target.value = '';
+    if (!files.length || !editingLot) return;
+    const msg = $('le_photoMsg');
+    // The lot's own folder, under the seller who owns it. Same shape the sell
+    // page writes, so the rebuild tool and the card lookup both still work.
+    const owner = editingLot.seller_id;
+    if (!owner){ msg.textContent = 'This lot has no seller, so there is nowhere to put a photograph.'; return; }
+    let added = 0;
+    for (let i = 0; i < files.length; i++){
+      msg.textContent = 'Uploading ' + (i + 1) + ' of ' + files.length + '…';
+      try {
+        const key = Math.random().toString(16).slice(2, 12);
+        const path = owner + '/' + editingLot.id + '/' + key + '.jpg';
+        const big = await shrinkFile(files[i], DISPLAY_MAX, DISPLAY_Q);
+        const up = await SB.storage.from('lots').upload(path, big, { contentType: 'image/jpeg', upsert: true });
+        if (up.error) throw up.error;
+        // The card copy is written too. Without it the shop falls back to the
+        // full-size file, which is the thing the rebuild tool exists to stop.
+        try {
+          const small = await shrinkFile(files[i], CARD_MAX, CARD_Q);
+          await SB.storage.from('lots').upload(cardPathOf(path), small, { contentType: 'image/jpeg', upsert: true });
+        } catch (e) { /* the lot still works off the full-size file */ }
+        editingPhotos.push(SB.storage.from('lots').getPublicUrl(path).data.publicUrl);
+        added++;
+        drawThumbs();
+      } catch (e){
+        msg.textContent = 'Upload failed: ' + ((e && e.message) || e);
+        return;
+      }
+    }
+    msg.textContent = added + ' added. Not saved yet, press Save changes.';
+  });
+
   $('le_shipPick').addEventListener('change', drawShip);
   $('le_weight').addEventListener('input', () => { if (editingLot) shipOptions(Object.assign({}, editingLot, { weight_kg: $('le_weight').value, size_class: $('le_shipPick').value })); });
 
@@ -1127,7 +1290,22 @@
       weight_kg: num('le_weight'),
       letterbox: $('le_letterbox').checked === true,
       size_class: (function(){ const v = $('le_shipPick').value; return SIZE_CLASSES.some(x => x.id === v) ? v : null; })(),
+      image_urls: editingPhotos,
     };
+    // Status, and only between the three a person is allowed to pick. A sold or
+    // ended lot keeps what it is: relisting is the route back, and it charges a
+    // listing and clears the bids, which a dropdown must not quietly skip.
+    if (l.status !== 'sold' && l.status !== 'ended'){
+      const st = $('le_status').value;
+      if (['live', 'unsold', 'preview'].indexOf(st) >= 0){
+        patch.status = st;
+        // Going back in the shop clears the clock. An auction that ended in
+        // August still carries that end date, and without this it would arrive
+        // in the catalogue already finished. ends_at is set by a trigger on the
+        // first bid, so null is the correct resting state.
+        if (st === 'live' && l.status !== 'live'){ patch.ends_at = null; patch.closed_at = null; }
+      }
+    }
     // Money only travels when nobody has bid. Not merely disabled in the form:
     // a disabled input is a hint, and the rule has to hold even if it is bypassed.
     if (bids === 0){
