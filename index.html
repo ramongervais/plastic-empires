@@ -5278,6 +5278,13 @@
   .acct-row .price{ font-variant-numeric:tabular-nums; font-weight:600; text-align:right; }
   .acct-row .st{ font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
   .acct-empty{ font-family:var(--body); color:var(--ink-3); padding:14px 0; font-size:14px; }
+  .sortrow{ display:flex; gap:6px; flex-wrap:wrap; padding:14px 0 4px; }
+  .sortpill{ font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    padding:6px 11px; border:1px solid var(--line); background:var(--paper); color:var(--ink-3);
+    border-radius:100px; cursor:pointer; transition:border-color .12s, color .12s, background .12s; }
+  .sortpill:hover{ border-color:var(--ink-3); color:var(--ink); }
+  .sortpill.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .sortpill:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
   .acct-toggle{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); font-family:var(--body); }
   .acct-toggle .lbl{ font-size:14px; }
   .acct-toggle .sw{ width:40px; height:22px; border-radius:100px; background:var(--line); position:relative; flex-shrink:0; }
@@ -8008,7 +8015,11 @@
     ]);
     const bidLots = bidLotsRes.data || [], watchLots = watchLotsRes.data || [];
     const topByLot = {};
-    (allBidsRes.data || []).forEach(b => { const t = topByLot[b.lot_id]; if (!t || Number(b.amount) > t.amount) topByLot[b.lot_id] = { amount: Number(b.amount) }; });
+    const bidCount = {};
+    (allBidsRes.data || []).forEach(b => {
+      const t = topByLot[b.lot_id]; if (!t || Number(b.amount) > t.amount) topByLot[b.lot_id] = { amount: Number(b.amount) };
+      bidCount[b.lot_id] = (bidCount[b.lot_id] || 0) + 1;
+    });
     // Which lots I lead, straight from the database. A lot is mine to win when
     // my own highest bid is the lot's highest, which cannot tie because a bid
     // has to beat the previous one.
@@ -8048,14 +8059,44 @@
       return (Date.now() - Date.parse(l.delivered_at)) < 14 * 86400000;
     };
     const row = (l, right, sub) => '<div class="acct-row"><div class="th" data-nav="lot" data-lot="' + e(l.id) + '"' + (l.image_urls && l.image_urls[0] ? ' style="background-image:url(' + l.image_urls[0] + ')"' : '') + '></div><div class="info" data-nav="lot" data-lot="' + e(l.id) + '"><div class="t">' + e(l.toy) + '</div><div class="s">' + e(sub) + '</div></div>' + right + '</div>';
-    const listingsHtml = lots.length ? lots.map(l => {
+    // Your listings, in an order you choose. Default stays newest first, the
+    // order the query returned, because that is what you want right after
+    // putting something up. Bids is the one worth having with thirty-odd lots:
+    // the question stops being what is on the shelf and becomes whether
+    // anything is moving.
+    //
+    // Kept in localStorage, because a sort you have to set again on every visit
+    // is a sort nobody uses twice.
+    let lsKey = 'newest';
+    try { lsKey = localStorage.getItem('hm_listsort') || 'newest'; } catch (err) {}
+    const stateRank = { live: 0, preview: 1, unsold: 2, ended: 3, sold: 4 };
+    const sortedLots = lots.slice();
+    if (lsKey !== 'newest') {
+      sortedLots.sort(function(x, y){
+        let c = 0;
+        if (lsKey === 'bids')  c = (bidCount[y.id] || 0) - (bidCount[x.id] || 0);
+        if (lsKey === 'price') c = finalPrice(y, myTop) - finalPrice(x, myTop);
+        if (lsKey === 'state') c = (stateRank[x.status] != null ? stateRank[x.status] : 9) - (stateRank[y.status] != null ? stateRank[y.status] : 9);
+        if (lsKey === 'name')  c = String(x.toy || '').localeCompare(String(y.toy || ''));
+        // Newest as the tiebreak, so two lots with nought bids hold their order
+        // instead of shuffling every time the page draws.
+        return c || (new Date(y.created_at) - new Date(x.created_at));
+      });
+    }
+    const SORTS = [['newest', 'Newest'], ['bids', 'Bids'], ['price', 'Price'], ['state', 'State'], ['name', 'A-Z']];
+    const listSortHtml = lots.length > 1
+      ? '<div class="sortrow">' + SORTS.map(function(o){
+          return '<button type="button" class="sortpill' + (o[0] === lsKey ? ' on' : '') + '" data-listsort="' + o[0] + '">' + o[1] + '</button>';
+        }).join('') + '</div>'
+      : '';
+    const listingsHtml = listSortHtml + (sortedLots.length ? sortedLots.map(l => {
       // An unsold lot is out of the public shop and sits here instead, with the
       // one action that matters. A price would be meaningless: nobody paid it.
       const right = l.status === 'unsold'
         ? '<div style="text-align:right"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 listing</div></div>'
         : '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>';
       return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
-    }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>';
+    }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>');
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">Lots you watch will appear here. <a data-nav="home" href="#collection" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Browse auctions</a></div>';
@@ -8381,6 +8422,13 @@
       renderAccount();
     }));
     const mMan = document.getElementById('mManage'); if (mMan) mMan.addEventListener('click', () => goCheckout(PORTAL_URL));
+    // Remembered, then the page is drawn again. renderAccount re-reads it, so
+    // there is one place that decides the order rather than two that can
+    // disagree.
+    body.querySelectorAll('[data-listsort]').forEach(b => b.addEventListener('click', () => {
+      try { localStorage.setItem('hm_listsort', b.dataset.listsort); } catch (err) {}
+      renderAccount();
+    }));
     body.querySelectorAll('.acct-toggle[data-pref]').forEach(t => t.addEventListener('click', async () => {
       const sw = t.querySelector('.sw'); const on = !sw.classList.contains('on'); sw.classList.toggle('on', on);
       try { await SB.from('profiles').update({ [t.dataset.pref]: on }).eq('id', uid); } catch (e) {}
