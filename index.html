@@ -9811,7 +9811,15 @@
   const authModal = document.getElementById('authModal');
   const escA = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
   function currentUser(){ if (authUser) return authUser.email || ''; try { return localStorage.getItem('pe_user') || ''; } catch (e) { return ''; } }
-  function refreshAuthUI(){ const u = currentUser(); document.querySelectorAll('[data-auth-label]').forEach(el => { el.textContent = u ? ('· ' + u.split('@')[0]) : 'Sign in'; }); }
+  function refreshAuthUI(){
+    const u = currentUser();
+    document.querySelectorAll('[data-auth-label]').forEach(el => { el.textContent = u ? ('· ' + u.split('@')[0]) : 'Sign in'; });
+    // The banner's own call to action. Its click handler always knew whether
+    // you were signed in; the label did not, so somebody who had just made an
+    // account was still being told to reserve one.
+    const ab = document.getElementById('authLinkB');
+    if (ab) ab.innerHTML = u ? 'Your account &#8594;' : 'Reserve your account &#8594;';
+  }
   function openAuth(){
     const u = currentUser(), b = document.getElementById('authBody');
     if (u){
@@ -9880,7 +9888,7 @@
         if (isNew){
           openModal('Welcome', 'Your account is ready',
             'Signed in as ' + who + ', and from here on that email is all you need: no password to invent and none to forget. You are back on the page you were reading. Bids, your watchlist and anything you list live in your account on every device you sign in on.',
-            { label: 'See my account', go: function(){ show('account'); } });
+            { label: 'See my account', go: function(){ routeTo('account'); } });
         } else {
           openModal('Signed in', 'Welcome back',
             'Signed in as ' + who + '. You are back on the page you asked the link from.');
