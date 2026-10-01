@@ -5246,6 +5246,24 @@
   .acct-stat{ background:var(--paper); padding:20px; }
   .acct-stat .n{ font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
   .acct-stat .k{ font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  .acct-sk{ padding:8px 0 40px; }
+  .acct-sk .sk-strip{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-top:22px; }
+  .acct-sk .sk-strip > div{ background:var(--paper); height:74px; }
+  .acct-sk .sk-row{ height:62px; border-bottom:1px solid var(--line-2); margin-top:0; }
+  @media (prefers-reduced-motion: no-preference){
+    .acct-sk{ animation:skpulse 1.4s ease-in-out infinite; }
+    @keyframes skpulse { 0%,100%{ opacity:1 } 50%{ opacity:.55 } }
+  }
+  /* The first thing a brand new account sees. Two real next steps and four
+     lots to start a watchlist from, instead of five boxes saying nothing yet. */
+  .firstrun{ border:1px solid var(--ink); padding:28px 30px; margin:8px 0 36px; }
+  .firstrun h2{ font-family:var(--display); font-weight:700; font-size:clamp(20px,2.6vw,28px);
+    text-transform:uppercase; letter-spacing:.03em; margin:10px 0 0; text-wrap:balance; }
+  .firstrun p{ font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2);
+    max-width:62ch; margin:14px 0 0; }
+  .firstrun .acts{ display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+  .firstrun .pick{ margin-top:30px; padding-top:20px; border-top:1px solid var(--line); }
   .acct-sec{ margin:36px 0; }
   .acct-sec .h{ font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); padding-bottom:10px; border-bottom:1px solid var(--ink); }
   .acct-row{ display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); font-family:var(--body); }
@@ -7878,7 +7896,18 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     const e = s => String(s == null ? '' : s).replace(/[<>&"']/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[ch]));
     if (!SB || !authUser){ body.innerHTML = '<p style="font-family:var(--body);padding:48px 0">Sign in to see your account.</p>'; return; }
-    body.innerHTML = '<p style="font-family:var(--body);color:var(--ink-3);padding:48px 0">Loading your account…</p>';
+    // A skeleton in the shape of the thing being loaded, rather than the word
+    // "Loading". The account makes seven round trips before it can draw, and a
+    // single grey sentence for that long reads as a page that failed.
+    body.innerHTML =
+      '<div class="sk acct-sk" aria-hidden="true">' +
+        '<div class="sk-l tall" style="width:42%"></div>' +
+        '<div class="sk-strip">' + '<div></div><div></div><div></div><div></div>' + '</div>' +
+        '<div class="sk-l w45" style="margin-top:34px"></div>' +
+        '<div class="sk-row"></div><div class="sk-row"></div>' +
+        '<div class="sk-l w45" style="margin-top:34px"></div>' +
+        '<div class="sk-row"></div><div class="sk-row"></div><div class="sk-row"></div>' +
+      '</div>';
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
@@ -7984,9 +8013,42 @@
       const sub = 'Bought' + (l.invoice_no ? ' \u00b7 Invoice ' + l.invoice_no : '');
       return row(l, '<div style="text-align:right;display:grid;gap:6px;justify-items:end">' + rev + wd + '</div>', sub);
     }).join('') : '';
+    // Nothing listed, nothing bid on, nothing watched, nothing bought, nothing
+    // drafted. Every section below has a polite empty line of its own, and all
+    // of them at once is five boxes telling a new arrival they have done
+    // nothing. One panel that says what to do instead, and four lots to do it
+    // with, because an empty watchlist is exactly where a suggestion belongs.
+    const brandNew = !lots.length && !bidLots.length && !watchLots.length && !purchases.length && !drafts.length;
+    let firstRunHtml = '';
+    if (brandNew){
+      let picks = [];
+      try {
+        const pr = await SB.from('lots').select(sel).in('status', ['live']).order('created_at', { ascending: false }).limit(4);
+        picks = pr.data || [];
+      } catch (err) { /* the panel still works without them */ }
+      const tokens = prefs.tokens != null ? prefs.tokens : 0;
+      firstRunHtml =
+        '<div class="firstrun">' +
+          '<div class="ey">New here</div>' +
+          '<h2>Nothing in your account yet, which is exactly right on day one</h2>' +
+          '<p>You have <b>' + tokens + ' listings</b> to use. Photographing a toy and having it identified, dated, graded and described costs nothing and uses none of them: a listing is only spent when you decide to put something up for sale. So the cheapest thing you can do here is find out what you own.</p>' +
+          '<div class="acts">' +
+            '<a class="btn accent" href="/sell/" data-nav="sell">Identify a toy, free</a>' +
+            '<a class="btn ghost" href="/" data-nav="home">Browse the auctions</a>' +
+          '</div>' +
+          (picks.length
+            ? '<div class="pick"><div class="ey" style="margin-bottom:12px">In the shop right now</div>' +
+              picks.map(function(l){
+                return row(l, '<div class="price">' + money(l.buy_now || l.starting_bid) + '</div>', [l.maker, l.year].filter(Boolean).join(' · '));
+              }).join('') +
+              '<div class="acct-empty">Tap the star on any lot to watch it. Watched lots show up here, and we email you before one ends.</div></div>'
+            : '') +
+        '</div>';
+    }
     body.innerHTML =
       '<div class="acct-head"><div><div class="ey">Account</div><h1 style="font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(30px,4.4vw,50px);margin:4px 0 0">' + e(authUser.email.split('@')[0]) + '</h1><div style="font-family:var(--body);color:var(--ink-2);font-size:14px;margin-top:4px">' + e(authUser.email) + '</div></div><button class="acct-signout" id="acctOut">Sign out</button></div>' +
       '<div class="acct-stats">' + stat((prefs.tokens != null ? prefs.tokens : 0), 'Listings left') + stat(lots.length, 'Listed') + stat(liveLots.length, 'Live') + stat(soldLots.length, 'Sold') + stat(money(earned), 'Earned') + stat(wins.length, 'Won') + '</div>' +
+      firstRunHtml +
       '<div class="acct-sec"><div class="h">Membership</div>' +
         membershipHtml(prefs) +
       '</div>' +
@@ -7998,9 +8060,9 @@
       // them nothing they can actually reach.
       '<div class="acct-sec"><div class="h">Getting paid</div>' + payoutHtml(prefs) + '</div>' +
       '<div class="acct-sec"><div class="h">Your storefront</div>' + shopfrontHtml(prefs) + '</div>' +
-      '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>' +
+      (brandNew ? '' : '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>') +
       (purchases.length ? '<div class="acct-sec"><div class="h">Your purchases</div>' + purchasesHtml + '</div>' : '') +
-      '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>' +
+      (brandNew ? '' : '<div class="acct-sec"><div class="h">Watching</div>' + watchHtml + '</div>') +
       '<div class="acct-sec"><div class="h">Shipping from</div>' +
         '<div class="acct-empty" style="padding-bottom:12px">We use your shipping country to calculate postage and determine whether customs may apply. This is required before you can list.</div>' +
         '<label class="ef" style="max-width:320px"><span>Country</span><select class="ei" id="acctCountry">' +
@@ -8009,9 +8071,9 @@
         '</select></label>' +
         '<div class="acct-empty" id="acctCountryMsg"></div>' +
       '</div>' +
-      '<div class="acct-sec"><div class="h">Drafts</div>' + draftsHtml + '</div>' +
-      '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>' +
-      '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>' +
+      (brandNew ? '' : '<div class="acct-sec"><div class="h">Drafts</div>' + draftsHtml + '</div>') +
+      (brandNew ? '' : '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>') +
+      (brandNew ? '' : '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>') +
       '<div class="acct-sec"><div class="h">Notifications</div>' +
         '<div class="acct-empty" style="padding-bottom:6px">Choose which emails you want to receive.</div>' +
         tog('notify_outbid', 'When I\'m outbid', prefs.notify_outbid) +
