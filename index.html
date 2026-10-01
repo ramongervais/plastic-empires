@@ -9342,6 +9342,24 @@
       // "admin". A lot id is always a uuid, so a value that is not one means the
       // address is wrong, not the lot gone. Worth separating: the two have
       // completely different causes.
+      // 42501 is permission denied, and on a lot query it never means the lot is
+      // gone. It means this tab is running JavaScript older than the database:
+      // it asked for a column that has since been locked down, so Postgres
+      // refused the whole row and the page concluded the lot had been deleted.
+      //
+      // That happened for real on 1 October. The reserve column was revoked a
+      // few minutes after the code that stopped asking for it went out, and
+      // every tab already open kept asking. "Code first, then SQL" turns out
+      // not to be enough: deployed is not the same as loaded. A reload fixes
+      // it in a second once you know that, and nothing on the page said so.
+      if (error && (error.code === '42501' || /permission denied/i.test(error.message || ''))) {
+        body.innerHTML = deadEnd('Out of date', 'This page is older than the shop',
+          'Nothing is wrong with the lot and nothing is wrong with your account. This tab has been open since before we last changed something, so it is asking for the catalogue in a way we no longer answer. One reload and it is current again.');
+        const b = body.querySelector('.btn');
+        if (b) { b.textContent = 'Reload the page'; b.removeAttribute('href'); b.removeAttribute('data-nav'); b.style.cursor = 'pointer'; b.addEventListener('click', function(){ location.reload(true); }); }
+        if (typeof track === 'function') track('stale_client', { where: 'lot' }, id);
+        return;
+      }
       const looksLikeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''));
       body.innerHTML = looksLikeId
         ? deadEnd('Not found', 'This lot is not here any more',
