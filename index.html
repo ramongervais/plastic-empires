@@ -5350,6 +5350,17 @@
   // on the lot page he had asked from, and was told nothing at all.
   const ARRIVED_BY_LINK = /[#&]access_token=|[#&]error_code=/.test(location.hash || '') ||
     /[?&]code=/.test(location.search || '');
+  // A link that has been opened once, or is over an hour old, comes back
+  // carrying an error instead of a token. There is no SIGNED_IN event for that,
+  // so without reading it here the page simply loads and says nothing, which is
+  // the same silence the confirmation above exists to end.
+  const AUTH_URL_ERROR = (function(){
+    const h = (location.hash || '').replace(/^#/, '') + '&' + (location.search || '').replace(/^\?/, '');
+    const p = new URLSearchParams(h);
+    const code = p.get('error_code') || p.get('error');
+    if (!code) return null;
+    return { code: code, text: p.get('error_description') || '' };
+  })();
   const SB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
   let authUser = null;
   // Every column of a lot except the two that belong to the buyer. select('*')
@@ -9839,6 +9850,17 @@
       // Fires on a restored session too, so the URL flag is what separates
       // "you just signed in" from "you were already signed in", and it is only
       // ever announced once.
+      // Said once, on arrival, before anything else can take the screen.
+      if (AUTH_URL_ERROR){
+        const expired = /expired|invalid/i.test(AUTH_URL_ERROR.code + ' ' + AUTH_URL_ERROR.text);
+        setTimeout(function(){
+          openModal('Sign-in link', expired ? 'That link has been used up' : 'That link did not work',
+            expired
+              ? 'A sign-in link works once and lasts an hour, so an opened one or an old one stops working. Nothing is wrong with your account. Ask for a new link and open the newest email, not the one above it.'
+              : ((AUTH_URL_ERROR.text || AUTH_URL_ERROR.code) + '. Ask for a new link and try again.'),
+            { label: 'Send me a new link', go: function(){ openAuth(); } });
+        }, 350);
+      }
       let welcomed = false;
       SB.auth.onAuthStateChange(async (ev, session) => {
         authUser = session ? session.user : null;
