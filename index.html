@@ -5162,6 +5162,10 @@
   .bidhist{ margin-top:8px; max-width:520px; }
   .bidrow{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0; border-bottom:1px solid var(--line); font-family:var(--body); font-size:15px; color:var(--ink-2); }
   .bidrow .amt{ font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink); }
+  .bidrow .who{ display:flex; flex-direction:column; gap:3px; }
+  .bidrow .when{ font-family:var(--label); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+  .bidrow.top .amt{ font-size:19px; }
+  .bidnote{ font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-3); padding:14px 0 0; max-width:520px; }
   .lot-owner{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--body); font-size:13px; color:var(--ink-3); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .lot-remove{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; background:none; border:1px solid var(--line); border-radius:3px; padding:8px 12px; color:var(--ink); cursor:pointer; transition:border-color .15s, color .15s; }
   .lot-remove:hover{ border-color:#c0392b; color:#c0392b; }
@@ -5993,7 +5997,7 @@
     return true;
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
-  function openBid(name, bid, bids, lotId, sellerId){
+  function openBid(name, bid, bids, lotId, sellerId, reserveAmt){
     track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
     const live = !!(SB && lotId);
@@ -6035,6 +6039,22 @@
         try { const nr = await fetch(NOTIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: lotId }) }); const nd = await nr.json(); if (nd && nd.ends_at) extended = true; } catch (e) {}
       }
       bidForm.hidden = true;
+      // Highest is not the same as winning. A lot with a reserve that nobody
+      // reaches simply does not sell, and until now the page congratulated the
+      // leader and said nothing, so the one person who could still fix it was
+      // the one person who did not know there was anything to fix.
+      //
+      // The amount stays unsaid. "Not yet" is the whole point of a hidden
+      // reserve; the number would hand them the floor and end the auction.
+      if (live && Number(reserveAmt) > 0 && v < Number(reserveAmt)) {
+        const next = v + Math.max(10, Math.round(v * 0.05));
+        openModal('Bid placed', 'Highest, but not enough to win',
+          eur(v) + ' on ' + name + ' is the leading bid and it is recorded. It has not reached the seller\'s minimum, though, so as things stand this lot does not sell and nobody gets it.' +
+          (extended ? ' The auction was extended by 2 minutes.' : '') +
+          ' You can go again now: ' + eur(next) + ' or more.',
+          { label: 'Bid ' + eur(next) + ' or more', go: function(){ openBid(name, v, (bids || 0) + 1, lotId, sellerId, reserveAmt); } });
+        return;
+      }
       document.getElementById('modalEy').textContent = 'Bid placed';
       document.getElementById('modalTitle').textContent = 'You are the highest bidder.';
       document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '.' + (live ? ' Your bid is recorded.' + (extended ? ' The auction was extended by 2 minutes.' : '') : ' Layout preview, so no real bid was placed.');
@@ -9474,7 +9494,23 @@
       '</div>';
     const hist = bids.length ?
       '<hr class="rule" /><section class="band"><div class="wrap"><div class="band-head"><div><div class="ey">Bid history</div><h2>' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') + '</h2></div></div>' +
-      '<div class="bidhist">' + bids.map((b, i) => '<div class="bidrow"><span>' + (i === 0 ? 'Highest bid' : 'Bid') + '</span><span class="amt">' + money(b.amount) + '</span></div>').join('') + '</div></div></section>' : '';
+      '<div class="bidhist">' + bids.map(function(b, i){
+        // Bidders are never named: the bids table stopped exposing bidder_id in
+        // August and the history never showed a name anyway. What was missing
+        // was when, which is the half that tells you whether a lot is moving or
+        // whether one person looked at it a week ago and nobody since.
+        const d = b.created_at ? new Date(b.created_at) : null;
+        const when = d ? d.toLocaleString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        return '<div class="bidrow' + (i === 0 ? ' top' : '') + '">' +
+          '<span class="who">' + (i === 0 ? 'Highest bid' : 'Bid') + (when ? '<span class="when">' + e(when) + '</span>' : '') + '</span>' +
+          '<span class="amt">' + money(b.amount) + '</span></div>';
+      }).join('') +
+      ((!ended && !isPreview && !isFixed && reserve)
+        ? '<div class="bidnote">' + (reserveMet
+            ? 'The reserve has been met, so this lot sells to whoever is in front when the clock runs out.'
+            : 'The reserve has not been met yet. If nobody goes higher, the lot does not sell and the highest bidder does not get it.') + '</div>'
+        : '') +
+      '</div></div></section>' : '';
     body.innerHTML = '<div class="art-top">' + gallery + detail + '</div>' + hist;
 
     // ---- Share ----
@@ -9628,7 +9664,7 @@
       // click opens fullscreen (unless it was a pan-drag)
       lotMain.addEventListener('click', ev => { if (ev.target.closest('.lot-nav') || moved) return; openZoom(imgs, mainIdx); });
     }
-    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id, lot.seller_id));
+    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id, lot.seller_id, reserve));
     const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'buynow', amount: lot.buy_now, label: lot.toy }));
     const payBtn = document.getElementById('lotPay'); if (payBtn) payBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'win', amount: cur, label: lot.toy }));
     const shipBtn = document.getElementById('shipBtn'); if (shipBtn) shipBtn.addEventListener('click', async () => {
