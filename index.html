@@ -8097,6 +8097,7 @@
         tog('notify_outbid', 'When I\'m outbid', prefs.notify_outbid) +
         tog('notify_ending', 'When a watched lot is ending', prefs.notify_ending) +
         tog('notify_won', 'When I win a lot', prefs.notify_won) +
+        tog('notify_bid', 'When someone bids on my lot', prefs.notify_bid) +
         tog('notify_sold', 'When one of my items sells', prefs.notify_sold) +
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });

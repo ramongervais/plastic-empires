@@ -108,6 +108,16 @@
   .rowacts { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
   /* Photographs on a lot. 4/5 like the shop card, so what you arrange here is
      the crop a buyer actually gets rather than a square that lies about it. */
+  .sortb { font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit;
+    background:none; border:0; padding:0; cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
+  .sortb:hover { color:var(--ink); }
+  .sortb::after { content:''; width:0; height:0; border-left:3.5px solid transparent; border-right:3.5px solid transparent;
+    border-top:4px solid currentColor; opacity:0; transition:opacity .12s, transform .12s; }
+  .sortb:hover::after { opacity:.35; }
+  .sortb.on { color:var(--ink); }
+  .sortb.on::after { opacity:1; }
+  .sortb.on.asc::after { transform:rotate(180deg); }
+  th.num .sortb { justify-content:flex-end; width:100%; }
   .lethumbs { display:flex; gap:8px; flex-wrap:wrap; }
   .leth { position:relative; width:76px; aspect-ratio:4/5; background-size:cover; background-position:center;
     background-color:var(--panel); border:1px solid var(--line); border-radius:3px; }
@@ -449,8 +459,12 @@
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Lot</th><th>Status</th><th class="num">Bids</th><th class="num">Price</th>
-            <th>Shipping</th><th>Stamp</th><th></th>
+            <th><button class="sortb" type="button" data-sort="toy">Lot</button></th>
+            <th><button class="sortb" type="button" data-sort="status">Status</button></th>
+            <th class="num"><button class="sortb" type="button" data-sort="bids">Bids</button></th>
+            <th class="num"><button class="sortb" type="button" data-sort="price">Price</button></th>
+            <th><button class="sortb" type="button" data-sort="weight">Shipping</button></th>
+            <th><button class="sortb" type="button" data-sort="stamp">Stamp</button></th><th></th>
           </tr></thead>
           <tbody id="lotsBody"></tbody>
         </table>
@@ -1002,7 +1016,47 @@
     $('tLotsClosed').textContent = by('sold') + by('ended');
 
     $('lotsEmpty').hidden = allLots.length > 0;
-    $('lotsBody').innerHTML = allLots.map(l => {
+    drawLots();
+  }
+
+  // Sorting. Default is what the query already returned, newest first, because
+  // that is the order you want when you have just listed something. Bids is the
+  // one worth having: with thirty-odd lots the question is never "what is on
+  // the shelf" but "is anything actually happening".
+  let lotSort = { key: null, asc: false };
+
+  function drawLots(){
+    const rows = allLots.slice();
+    if (lotSort.key){
+      // Status sorts by how far along a lot is rather than alphabetically.
+      // Alphabetical puts ended before live, which is nobody's question.
+      const rank = { live: 0, preview: 1, unsold: 2, ended: 3, sold: 4 };
+      const val = l => {
+        const b = lotBids[l.id] || { n: 0, max: 0 };
+        switch (lotSort.key){
+          case 'bids':   return b.n;
+          case 'price':  return Number(b.max || l.buy_now || l.starting_bid || 0);
+          case 'weight': return Number(l.weight_kg || 0);
+          case 'stamp':  return l.stamp_shown === true ? 1 : 0;
+          case 'status': return rank[l.status] != null ? rank[l.status] : 9;
+          default:       return String(l.toy || '').toLowerCase();
+        }
+      };
+      rows.sort((x, y) => {
+        const a = val(x), b = val(y);
+        const c = typeof a === 'string' ? a.localeCompare(b) : (a - b);
+        // A stable tiebreak on the name, so two lots with nought bids do not
+        // swap places every time the table is drawn.
+        return (lotSort.asc ? c : -c) || String(x.toy || '').localeCompare(String(y.toy || ''));
+      });
+    }
+    document.querySelectorAll('.sortb[data-sort]').forEach(b => {
+      const on = b.dataset.sort === lotSort.key;
+      b.classList.toggle('on', on);
+      b.classList.toggle('asc', on && lotSort.asc);
+      b.setAttribute('aria-sort', on ? (lotSort.asc ? 'ascending' : 'descending') : 'none');
+    });
+    $('lotsBody').innerHTML = rows.map(l => {
       const b = lotBids[l.id] || { n: 0, max: 0 };
       const cls = l.status === 'live' ? 'live' : (l.status === 'preview' ? 'sched' : (l.status === 'unsold' ? 'refunded' : 'done'));
       const label = l.status === 'ended' ? 'awaiting payment' : l.status;
@@ -1159,6 +1213,19 @@
   }
 
   function closeLotEdit(){ $('lotEditBox').hidden = true; editingLot = null; }
+
+  // Click a header to sort by it, click it again to turn it round. First click
+  // on a number column goes high to low, because "which lot has the most bids"
+  // is the question and nought is never the answer you came for. Text starts
+  // at A.
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.sortb[data-sort]');
+    if (!b) return;
+    const k = b.dataset.sort;
+    if (lotSort.key === k) lotSort.asc = !lotSort.asc;
+    else lotSort = { key: k, asc: k === 'toy' || k === 'status' };
+    drawLots();
+  });
 
   $('lotsBody').addEventListener('click', e => {
     const b = e.target.closest('[data-editlot]'); if (!b) return;
