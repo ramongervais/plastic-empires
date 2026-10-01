@@ -990,7 +990,7 @@
     // a star select now fails with 42501 and takes the whole console down. This
     // console never reads either column, so it asks for what it uses.
     const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,' +
-      'starting_bid,reserve,buy_now,estimate_low,estimate_high,confidence,' +
+      'starting_bid,buy_now,estimate_low,estimate_high,confidence,' +
       'condition,completeness,blurb,notes,variants,image_urls,stamp_shown,' +
       'care_level,care_note,letterbox,size_class,service_point,weight_kg,' +
       'shipping_eur,shipping_nl_eur,shipping_row_eur,auction_days,extended,' +
@@ -1191,7 +1191,19 @@
     v('le_status', ['live', 'unsold', 'preview'].indexOf(l.status) >= 0 ? l.status : 'live');
     drawStatus();
     v('le_sale', l.sale_type === 'fixed' ? 'fixed' : 'auction');
-    v('le_start', l.starting_bid); v('le_reserve', l.reserve); v('le_buynow', l.buy_now);
+    v('le_start', l.starting_bid); v('le_buynow', l.buy_now);
+    // The reserve is no longer in the table a browser can read: anyone with the
+    // publishable key could pull the figure and bid exactly it, which is a
+    // hidden reserve that is not hidden. lot_reserve() hands it back to the
+    // seller of the lot and to an admin, and to nobody else. Fetched per lot
+    // rather than with the list, because it is only needed once you open one.
+    v('le_reserve', '');
+    SB.rpc('lot_reserve', { p_lot: l.id }).then(function(r){
+      // Guard on editingLot: the fetch is async and you may have opened another
+      // lot in the meantime, and writing a stale reserve into the form would be
+      // worse than showing none.
+      if (editingLot && editingLot.id === l.id && !r.error && r.data != null) v('le_reserve', r.data);
+    }, function(){});
     v('le_blurb', l.blurb); v('le_completeness', l.completeness); v('le_notes', l.notes);
     // '' when null, which selects the "Not stated" option rather than leaving the
     // previous lot's value showing in the box.

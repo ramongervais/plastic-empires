@@ -5396,7 +5396,26 @@
   // that, so a query asks for what it is allowed rather than finding out.
   // ship_to and tracking come from the lot_private() function instead, which
   // checks who is asking.
-  const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,reserve,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
+  // 'reserve' is deliberately absent. It was readable by anyone holding the
+  // publishable key, which makes a hidden reserve a published one: read the
+  // number, bid exactly that, win on the floor. Same shape as the ship_to leak
+  // in September. The page only ever needed "is there one" and "is it met",
+  // and reserveState() asks the database for exactly those two booleans.
+  const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
+
+  // Booleans only, any number of lots at once. Returns an empty map rather than
+  // throwing when the function is not there yet, so this ships before the
+  // migration runs instead of depending on it.
+  async function reserveState(ids){
+    const out = {};
+    if (!SB || !ids || !ids.length) return out;
+    try {
+      const { data, error } = await SB.rpc('lots_reserve_state', { p_ids: ids });
+      if (error || !data) return out;
+      data.forEach(function(r){ out[r.lot_id] = { has: r.has_reserve === true, met: r.reserve_met === true }; });
+    } catch (e) { /* pre-migration, or offline: the page renders without the note */ }
+    return out;
+  }
 
   const LAUNCH_TS = Date.parse('2026-09-26T12:00:00+02:00'); // launched 26 September 2026, brought forward from 1 October so the first
   // live weekend had somebody watching it
@@ -5997,7 +6016,7 @@
     return true;
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
-  function openBid(name, bid, bids, lotId, sellerId, reserveAmt){
+  function openBid(name, bid, bids, lotId, sellerId){
     track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
     const live = !!(SB && lotId);
@@ -6046,13 +6065,25 @@
       //
       // The amount stays unsaid. "Not yet" is the whole point of a hidden
       // reserve; the number would hand them the floor and end the auction.
-      if (live && Number(reserveAmt) > 0 && v < Number(reserveAmt)) {
+      // Was a comparison against the reserve held in the browser. The figure is
+      // private now, so the question goes back to the database: one call, on an
+      // action the person just took deliberately, and it answers met or not
+      // without ever naming the number.
+      let underReserve = false;
+      if (live && lotId) {
+        try {
+          const rr = await reserveState([lotId]);
+          const st = rr[lotId];
+          underReserve = !!(st && st.has && !st.met);
+        } catch (e) { /* stay quiet rather than claim something untrue */ }
+      }
+      if (underReserve) {
         const next = v + Math.max(10, Math.round(v * 0.05));
         openModal('Bid placed', 'Highest, but not enough to win',
           eur(v) + ' on ' + name + ' is the leading bid and it is recorded. It has not reached the seller\'s minimum, though, so as things stand this lot does not sell and nobody gets it.' +
           (extended ? ' The auction was extended by 2 minutes.' : '') +
           ' You can go again now: ' + eur(next) + ' or more.',
-          { label: 'Bid ' + eur(next) + ' or more', go: function(){ openBid(name, v, (bids || 0) + 1, lotId, sellerId, reserveAmt); } });
+          { label: 'Bid ' + eur(next) + ' or more', go: function(){ openBid(name, v, (bids || 0) + 1, lotId, sellerId); } });
         return;
       }
       document.getElementById('modalEy').textContent = 'Bid placed';
@@ -7949,7 +7980,7 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,reserve,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       // Was a filter on bidder_id, which is private now: anyone with the public
@@ -7991,7 +8022,15 @@
     const soldLots = lots.filter(l => l.status === 'sold');
     const liveLots = lots.filter(l => !isEnded(l));
     const earned = soldLots.reduce((s, l) => s + finalPrice(l, myTop), 0);
-    const wins = bidLots.filter(l => isEnded(l) && bidTop[l.id] && iLead[l.id] && (!l.reserve || bidTop[l.id].amount >= Number(l.reserve)));
+    // Leading an ended auction is not winning it if the reserve was never met.
+    // That used to be read off lot.reserve; the number is private now, so the
+    // database answers the question instead of handing over the figure.
+    const rState = await reserveState(bidLots.map(l => l.id));
+    const wins = bidLots.filter(l => {
+      if (!isEnded(l) || !bidTop[l.id] || !iLead[l.id]) return false;
+      const r = rState[l.id];
+      return !r || !r.has || r.met;
+    });
     // my_top is already the highest, computed in the database, so there is no
     // longer a list of individual bids to fold down here.
     const myBidByLot = {}; myBids.forEach(b => { myBidByLot[b.lot_id] = Number(b.my_top); });
@@ -9285,8 +9324,11 @@
     const cur = bids.length ? Number(bids[0].amount) : Number(lot.starting_bid || 0);
     const ended = lot.status === 'ended' || lot.status === 'sold' || lot.status === 'unsold' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
     const topBid = bids.length ? bids[0] : null;
-    const reserve = Number(lot.reserve || 0);
-    const reserveMet = !reserve || (topBid && cur >= reserve);
+    // Two booleans, never the figure. One round trip, and the page still draws
+    // if it fails: no note rather than a wrong one.
+    const rs = (await reserveState([lot.id]))[lot.id] || { has: false, met: false };
+    const reserve = rs.has;
+    const reserveMet = !rs.has || rs.met;
     const iWon = ended && topBid && reserveMet && authUser && iAmLeading;
     const isSold = lot.status === 'sold';
     const isPreview = lot.status === 'preview';
@@ -9664,7 +9706,7 @@
       // click opens fullscreen (unless it was a pan-drag)
       lotMain.addEventListener('click', ev => { if (ev.target.closest('.lot-nav') || moved) return; openZoom(imgs, mainIdx); });
     }
-    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id, lot.seller_id, reserve));
+    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id, lot.seller_id));
     const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'buynow', amount: lot.buy_now, label: lot.toy }));
     const payBtn = document.getElementById('lotPay'); if (payBtn) payBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'win', amount: cur, label: lot.toy }));
     const shipBtn = document.getElementById('shipBtn'); if (shipBtn) shipBtn.addEventListener('click', async () => {
