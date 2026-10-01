@@ -5993,7 +5993,7 @@
     return true;
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
-  function openBid(name, bid, bids, lotId){
+  function openBid(name, bid, bids, lotId, sellerId){
     track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
     const live = !!(SB && lotId);
@@ -6011,7 +6011,25 @@
         const btn = document.getElementById('bidConfirm'); btn.disabled = true;
         const { error } = await SB.from('bids').insert({ lot_id: lotId, bidder_id: authUser.id, amount: v });
         btn.disabled = false;
-        if (error) { document.getElementById('bidHint').textContent = /row-level|policy/i.test(error.message) ? 'You cannot bid on your own lot.' : error.message; return; }
+        if (error) {
+          // This used to read every row-level error as "you cannot bid on your
+          // own lot", which was a guess, and for five weeks it was the wrong
+          // one: the bids table had no insert policy at all, so every bid by
+          // everybody failed and the page reported it as a house rule. A guess
+          // dressed as an explanation is worse than an error code, because
+          // nobody goes looking for a bug in a sentence that sounds deliberate.
+          //
+          // Ownership is knowable here, so it is checked rather than inferred.
+          // Anything else says what actually came back.
+          const own = sellerId && authUser && sellerId === authUser.id;
+          document.getElementById('bidHint').textContent = own
+            ? 'This is your own lot, so you cannot bid on it.'
+            : (error.code === '42501'
+                ? 'Your bid was refused by the database and that is a fault on our side, not yours. Nothing has been charged. Please email support@hammerandmold.com and we will fix it today.'
+                : (error.message || 'Your bid did not go through. Please try again.'));
+          if (typeof track === 'function') track('bid_failed', { code: error.code || '', msg: (error.message || '').slice(0, 120) }, lotId);
+          return;
+        }
         track('bid_placed', { amount: v }, lotId);
         injectDraftLots();
         try { const nr = await fetch(NOTIFY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ lotId: lotId }) }); const nd = await nr.json(); if (nd && nd.ends_at) extended = true; } catch (e) {}
@@ -9609,7 +9627,7 @@
       // click opens fullscreen (unless it was a pan-drag)
       lotMain.addEventListener('click', ev => { if (ev.target.closest('.lot-nav') || moved) return; openZoom(imgs, mainIdx); });
     }
-    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id));
+    const bidBtn = document.getElementById('lotBid'); if (bidBtn) bidBtn.addEventListener('click', () => openBid(lot.toy, cur, bids.length, lot.id, lot.seller_id));
     const buyBtn = document.getElementById('lotBuy'); if (buyBtn) buyBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'buynow', amount: lot.buy_now, label: lot.toy }));
     const payBtn = document.getElementById('lotPay'); if (payBtn) payBtn.addEventListener('click', () => startCheckout({ lotId: lot.id, kind: 'win', amount: cur, label: lot.toy }));
     const shipBtn = document.getElementById('shipBtn'); if (shipBtn) shipBtn.addEventListener('click', async () => {
