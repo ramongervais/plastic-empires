@@ -372,7 +372,11 @@
   .modal { background:var(--paper); border:1px solid var(--line); border-radius:4px; max-width:440px; width:100%; padding:34px;
     max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; }
   .modal .ey { margin-bottom:14px; }
-  .modal h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:0 0 12px; letter-spacing:-.01em; }
+  .modal h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:0 0 12px; letter-spacing:-.01em;
+    overflow-wrap:anywhere; text-wrap:balance; }
+  /* For a value inside running text that has no spaces to break at: an address,
+     a handle, a long id. Breaks only where it has to. */
+  .brk { overflow-wrap:anywhere; }
   .modal p { font-family:var(--body); font-size:16px; color:var(--ink); margin:0 0 22px; line-height:1.8; }
   .modal .close { margin-top:8px; }
   .modal-acts { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px; }
@@ -9823,7 +9827,7 @@
           const btn = b.querySelector('#authGo'); btn.disabled = true; b.querySelector('#authHint').textContent = 'Sending…';
           const { error } = await SB.auth.signInWithOtp({ email: v, options: { emailRedirectTo: location.origin + location.pathname } });
           if (error) { b.querySelector('#authHint').textContent = error.message; btn.disabled = false; return; }
-          b.innerHTML = '<div class="ey">Check your inbox</div><h3>Link sent to ' + escA(v) + '</h3><p>Open it on this device and it brings you back to this exact page, signed in. The link works once and expires after an hour. If it is not there in a minute, look in spam: it comes from hammerandmold.com.</p><button class="btn accent" type="button" id="authX">Done</button>';
+          b.innerHTML = '<div class="ey">Check your inbox</div><h3>Link sent</h3><p>To <b class="brk">' + escA(v) + '</b>. Open it on this device and it brings you back to this exact page, signed in. The link works once and expires after an hour. If it is not there in a minute, look in spam: it comes from hammerandmold.com.</p><button class="btn accent" type="button" id="authX">Done</button>';
           b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
           return;
         }
