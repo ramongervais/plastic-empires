@@ -5343,6 +5343,13 @@
   const COMMERCIAL = "https://www.youtube.com/watch?v=GVmwlCIPsgU";
   const SUPA_URL = 'https://yazoeshmplhmxefnovjy.supabase.co';
   const SUPA_KEY = 'sb_publishable_DgOPyLmmdXZLrArt8SFaIg_Tcibqvw-';
+  // Read before createClient, synchronously. Supabase clears the token out of
+  // the address bar the moment it has consumed it, and after that a sign-in
+  // that just happened is indistinguishable from a session restored out of
+  // storage. The first person to make an account here opened the link, landed
+  // on the lot page he had asked from, and was told nothing at all.
+  const ARRIVED_BY_LINK = /[#&]access_token=|[#&]error_code=/.test(location.hash || '') ||
+    /[?&]code=/.test(location.search || '');
   const SB = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPA_URL, SUPA_KEY) : null;
   let authUser = null;
   // Every column of a lot except the two that belong to the buyer. select('*')
@@ -9793,11 +9800,11 @@
   function openAuth(){
     const u = currentUser(), b = document.getElementById('authBody');
     if (u){
-      b.innerHTML = '<div class="ey">Account</div><h3>Signed in</h3><p>Signed in as ' + escA(u) + '. In this preview your account and draft lots are stored in this browser.</p><div class="buy-row"><button class="btn accent" type="button" id="authOut">Sign out</button><button class="btn ghost" type="button" id="authX">Close</button></div>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Signed in</h3><p>Signed in as ' + escA(u) + '. Your bids, your watchlist and anything you sell live in your account, on every device you sign in on.</p><div class="buy-row"><button class="btn accent" type="button" id="authOut">Sign out</button><button class="btn ghost" type="button" id="authX">Close</button></div>';
       b.querySelector('#authOut').addEventListener('click', async () => { if (SB) { await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
-      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password. We email you a magic link. In this layout preview it signs you in instantly.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a href="/terms/" data-nav="terms" id="authTermsL">Terms &amp; Conditions</a> and our <a href="/privacy/" data-nav="privacy">Privacy Policy</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Sign in with your email</h3><p>No password to invent or forget. We email you a link that signs you in, and it works once. Creating an account and signing in are the same step: if this email is new here, the account is made when you open the link.</p><div class="bidform"><label class="bidlabel" for="authEmail">Email</label><div class="bidinput-row"><input class="bidinput" id="authEmail" type="email" placeholder="you@email.com"><button class="btn accent" type="button" id="authGo">Send magic link</button></div><div class="acceptnote">By signing in you agree to our <a href="/terms/" data-nav="terms" id="authTermsL">Terms &amp; Conditions</a> and our <a href="/privacy/" data-nav="privacy">Privacy Policy</a>.</div><div class="bidhint" id="authHint"></div></div><button class="btn close" type="button" id="authX">Close</button>';
       const go = async () => {
         const v = b.querySelector('#authEmail').value.trim();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) { b.querySelector('#authHint').textContent = 'Enter a valid email address.'; return; }
@@ -9805,7 +9812,7 @@
           const btn = b.querySelector('#authGo'); btn.disabled = true; b.querySelector('#authHint').textContent = 'Sending…';
           const { error } = await SB.auth.signInWithOtp({ email: v, options: { emailRedirectTo: location.origin + location.pathname } });
           if (error) { b.querySelector('#authHint').textContent = error.message; btn.disabled = false; return; }
-          b.innerHTML = '<div class="ey">Check your inbox</div><h3>Magic link sent.</h3><p>We emailed a sign-in link to ' + escA(v) + '. Open it on this device to finish signing in.</p><button class="btn accent" type="button" id="authX">Done</button>';
+          b.innerHTML = '<div class="ey">Check your inbox</div><h3>Link sent to ' + escA(v) + '</h3><p>Open it on this device and it brings you back to this exact page, signed in. The link works once and expires after an hour. If it is not there in a minute, look in spam: it comes from hammerandmold.com.</p><button class="btn accent" type="button" id="authX">Done</button>';
           b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
           return;
         }
@@ -9829,7 +9836,30 @@
     refreshAuthUI();
     if (SB) {
       SB.auth.getSession().then(async ({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); await loadWatchlist(); injectDraftLots(); });
-      SB.auth.onAuthStateChange(async (_e, session) => { authUser = session ? session.user : null; refreshAuthUI(); await loadWatchlist(); injectDraftLots(); });
+      // Fires on a restored session too, so the URL flag is what separates
+      // "you just signed in" from "you were already signed in", and it is only
+      // ever announced once.
+      let welcomed = false;
+      SB.auth.onAuthStateChange(async (ev, session) => {
+        authUser = session ? session.user : null;
+        refreshAuthUI(); await loadWatchlist(); injectDraftLots();
+        if (!ARRIVED_BY_LINK || welcomed || ev !== 'SIGNED_IN' || !session || !session.user) return;
+        welcomed = true;
+        // A brand new account is worth a different sentence from a returning
+        // visitor. Two minutes is generous: the row is written when the link is
+        // opened, so the gap is a round trip and not a session.
+        const made = Date.parse(session.user.created_at || '') || 0;
+        const isNew = made > 0 && (Date.now() - made) < 120000;
+        const who = session.user.email || 'you';
+        if (isNew){
+          openModal('Welcome', 'Your account is ready',
+            'Signed in as ' + who + ', and from here on that email is all you need: no password to invent and none to forget. You are back on the page you were reading. Bids, your watchlist and anything you list live in your account on every device you sign in on.',
+            { label: 'See my account', go: function(){ show('account'); } });
+        } else {
+          openModal('Signed in', 'Welcome back',
+            'Signed in as ' + who + '. You are back on the page you asked the link from.');
+        }
+      });
     }
   }
   injectDraftLots();
