@@ -661,7 +661,12 @@
   .bidhint { font-family:var(--label); font-size:11px; letter-spacing:.04em; color:var(--ink-3); margin-top:12px; line-height:1.5; }
 
   /* Footer */
-  footer.foot { border-top:1px solid var(--line); padding:48px 0 60px; margin-top:40px; }
+  /* A ground, so the page has a floor. White on white left the footer looking
+     like content that had run out rather than the end of the page, and the
+     hairline on its own was not enough to say so. var(--paper-2) because it
+     has to be grey on a white page and lighter-than-black on a dark one, and
+     a literal can only do one of those. */
+  footer.foot { background:var(--paper-2); border-top:1px solid var(--line); padding:56px 0 64px; margin-top:64px; }
   .foot-in { display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap; }
   .foot .mark { font-family:var(--display); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:15px; }
   .foot .tl { font-family:var(--body); font-style:italic; color:var(--ink-2); margin-top:8px; font-size:15px; }
@@ -1044,9 +1049,35 @@
   .v-opt:hover { border-color:var(--ink-3); color:var(--ink); }
   .v-opt.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
   .tiers { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-  .tier { border:1px solid var(--line); border-radius:4px; padding:28px; position:relative; }
-  .tier.feat { border-color:var(--ink); }
+  .tiers .tier { border:1px solid var(--line); border-radius:4px; padding:28px; position:relative; }
+  .tiers .tier.feat { border-color:var(--ink); }
+  /* Near-black cards. Everything inside a tier already paints itself from the
+     tokens, so the card redefines them for its own subtree rather than every
+     child rule being rewritten: one block here instead of nine overrides, and
+     anything added to a card later inherits the inversion for free.
+     --ink-3 is lifted well above its light-theme value, because a grey chosen
+     to be quiet on white is close to unreadable on black. */
+  .tiers.three .tier {
+    --paper:#131313; --paper-2:#1b1b1b; --panel:#1f1f1f;
+    --ink:#f4f4f4; --ink-2:#c2c2c2; --ink-3:#8f8f8f;
+    --line:#333333; --line-2:#262626;
+    --accent:#f4f4f4; --accent-ink:#131313;
+    background:var(--paper); color:var(--ink);
+    border:1px solid #262626; border-radius:4px; padding:28px; position:relative;
+  }
+  /* On a dark page a near-black card would disappear into the background, so
+     it lifts instead of darkening. Same intent, opposite direction. */
+  :root[data-theme="dark"] .tiers.three .tier { --paper:#1c1c1c; --paper-2:#232323; --panel:#272727; border-color:#333333; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .tiers.three .tier { --paper:#1c1c1c; --paper-2:#232323; --panel:#272727; border-color:#333333; }
+  }
+  /* The featured card was marked by a black border, which says nothing against
+     a black card. A pale edge does the same job in the other direction. */
+  .tiers.three .tier.feat { border-color:#6a6a6a; }
   .t-tag { position:absolute; top:0; right:0; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:0 4px 0 4px; }
+  /* Inside a dark card the ghost button is the quiet one and has to stay quiet:
+     it inherits --ink, so it is already pale text on a pale-bordered box. */
+  .tiers.three .tier .btn.ghost:disabled { opacity:.55; }
   .t-name { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
   .t-price { font-family:var(--body); font-weight:700; font-size:38px; letter-spacing:-.02em; margin-top:8px; line-height:1; }
   .t-price span { font-family:var(--label); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
