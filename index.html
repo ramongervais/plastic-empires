@@ -666,7 +666,12 @@
      hairline on its own was not enough to say so. var(--paper-2) because it
      has to be grey on a white page and lighter-than-black on a dark one, and
      a literal can only do one of those. */
-  footer.foot { background:var(--paper-2); border-top:1px solid var(--line); padding:56px 0 64px; margin-top:64px; }
+  /* No top margin. A margin shows the page through, so the moment the footer
+     got a ground of its own that 64px became a white stripe between the dark
+     packages band and the grey footer: two coloured blocks with a gap of a
+     third colour between them. The space moves inside as padding, where it
+     carries the footer's own background and the join is a single edge. */
+  footer.foot { background:var(--paper-2); border-top:1px solid var(--line); padding:72px 0 64px; }
   .foot-in { display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap; }
   .foot .mark { font-family:var(--display); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:15px; }
   .foot .tl { font-family:var(--body); font-style:italic; color:var(--ink-2); margin-top:8px; font-size:15px; }
