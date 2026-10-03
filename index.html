@@ -1051,33 +1051,38 @@
   .tiers { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
   .tiers .tier { border:1px solid var(--line); border-radius:4px; padding:28px; position:relative; }
   .tiers .tier.feat { border-color:var(--ink); }
-  /* Near-black cards. Everything inside a tier already paints itself from the
-     tokens, so the card redefines them for its own subtree rather than every
-     child rule being rewritten: one block here instead of nine overrides, and
-     anything added to a card later inherits the inversion for free.
-     --ink-3 is lifted well above its light-theme value, because a grey chosen
-     to be quiet on white is close to unreadable on black. */
-  .tiers.three .tier {
-    --paper:#131313; --paper-2:#1b1b1b; --panel:#1f1f1f;
-    --ink:#f4f4f4; --ink-2:#c2c2c2; --ink-3:#8f8f8f;
-    --line:#333333; --line-2:#262626;
-    --accent:#f4f4f4; --accent-ink:#131313;
-    background:var(--paper); color:var(--ink);
-    border:1px solid #262626; border-radius:4px; padding:28px; position:relative;
+  /* The whole packages band goes near-black, not just the cards. Cards alone
+     left the section number, the heading and the two buttons stranded on white
+     around three black blocks, which reads as three images dropped onto a page
+     rather than as one band that happens to be dark.
+     Everything inside already paints itself from the tokens, so the band
+     redefines them for its entire subtree: one block, and anything added to it
+     later inherits the inversion for free. --ink-3 is lifted a long way,
+     because a grey picked to be quiet on white is close to unreadable here. */
+  .band.inverted {
+    --paper:#111111; --paper-2:#181818; --panel:#1d1d1d;
+    --ink:#f4f4f4; --ink-2:#c2c2c2; --ink-3:#919191;
+    --line:#333333; --line-2:#242424;
+    --accent:#f4f4f4; --accent-ink:#111111;
+    background:#111111; color:var(--ink);
+    padding-top:64px; padding-bottom:72px; border-top:0;
   }
-  /* On a dark page a near-black card would disappear into the background, so
-     it lifts instead of darkening. Same intent, opposite direction. */
-  :root[data-theme="dark"] .tiers.three .tier { --paper:#1c1c1c; --paper-2:#232323; --panel:#272727; border-color:#333333; }
+  /* On a dark page the band is already the page colour, so it lifts a little
+     to stay a band rather than disappearing into the background. */
+  :root[data-theme="dark"] .band.inverted { --paper:#1a1a1a; --paper-2:#212121; --panel:#252525; background:#1a1a1a; }
   @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]) .tiers.three .tier { --paper:#1c1c1c; --paper-2:#232323; --panel:#272727; border-color:#333333; }
+    :root:not([data-theme="light"]) .band.inverted { --paper:#1a1a1a; --paper-2:#212121; --panel:#252525; background:#1a1a1a; }
   }
-  /* The featured card was marked by a black border, which says nothing against
-     a black card. A pale edge does the same job in the other direction. */
-  .tiers.three .tier.feat { border-color:#6a6a6a; }
+  /* Cards sit ON the band, so they lift off it rather than matching it. The
+     hairline does most of the separating; the fill is a nudge. */
+  .band.inverted .tiers .tier { background:var(--paper-2); border-color:#303030; }
+  /* The featured card was marked by a black border, which says nothing now.
+     A pale edge does the same job in the other direction. */
+  .band.inverted .tiers .tier.feat { border-color:#787878; }
   .t-tag { position:absolute; top:0; right:0; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:0 4px 0 4px; }
   /* Inside a dark card the ghost button is the quiet one and has to stay quiet:
      it inherits --ink, so it is already pale text on a pale-bordered box. */
-  .tiers.three .tier .btn.ghost:disabled { opacity:.55; }
+  .band.inverted .btn.ghost:disabled { opacity:.55; }
   .t-name { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
   .t-price { font-family:var(--body); font-weight:700; font-size:38px; letter-spacing:-.02em; margin-top:8px; line-height:1; }
   .t-price span { font-family:var(--label); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
@@ -4449,7 +4454,7 @@
       </div>
     </div>
   </section>
-  <section class="band">
+  <section class="band inverted">
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Selling packages</div><h2>What it costs to sell</h2></div>
@@ -4590,7 +4595,7 @@
     <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a href="/sell/" data-nav="sell">Sell</a><span class="sep">/</span><span class="here">Packages</span></div>
   </div>
 
-  <section class="band">
+  <section class="band inverted">
     <div class="wrap">
       <div class="band-head">
         <div><div class="ey">Selling packages</div><h2>Pick the package that fits how you sell</h2></div>
