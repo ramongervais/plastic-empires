@@ -34,6 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history. The default is a one-commit clone, and build-pages
+          # reads "git log -1 -- index.html" to date the sitemap: in a shallow
+          # clone that finds nothing unless the newest commit happens to touch
+          # that file, which on a scheduled deploy it never does.
+          fetch-depth: 0
       # One real file per static path, so /packages returns 200 instead of the
       # 404 a Pages fallback gives, and so the head is already correct before any
       # JavaScript runs. That second part is the one that matters: WhatsApp,

@@ -17,6 +17,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const SRC = "index.html";
 const html = fs.readFileSync(SRC, "utf8");
@@ -182,12 +183,48 @@ const SUPA_KEY = (html.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
 const LOT_COLS = "id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at";
 
+// Honest lastmod needs a date the page's own content actually moved on.
+//
+// Google uses lastmod to decide what to recrawl and ignores a sitemap where
+// everything claims to have changed today, so the one thing that matters is
+// that these dates do NOT move on a deploy that changed nothing. The cron runs
+// twice a day; two of those a day stamping "now" on sixty URLs would be worse
+// than the no lastmod at all that we had.
+//
+// Static pages are all generated out of index.html, so the honest date is the
+// last commit that touched it. A lot page is its own row, so it is whichever of
+// the dates we hold is latest. updated_at is the right one and does not exist
+// yet; the query asks for it separately and falls back, so this ships before
+// that migration rather than waiting on it.
+function gitDate(file) {
+  try {
+    return execSync("git log -1 --format=%cI -- " + file, { encoding: "utf8" }).trim() || null;
+  } catch (e) { return null; }
+}
+const w3c = (d) => { const t = Date.parse(d); return isFinite(t) ? new Date(t).toISOString().slice(0, 19) + "+00:00" : null; };
+function lotLastmod(l) {
+  const dates = [l.updated_at, l.closed_at, l.created_at].filter(Boolean).map(Date.parse).filter(isFinite);
+  return dates.length ? new Date(Math.max(...dates)).toISOString().slice(0, 19) + "+00:00" : null;
+}
+
+// One probe, before the real query. PostgREST answers 42703 for a column that
+// is not there, and a build must not fall over because a migration has not run.
+let HAS_UPDATED_AT = false;
+async function probeUpdatedAt() {
+  if (!SUPA_URL || !SUPA_KEY) return;
+  try {
+    const r = await fetch(SUPA_URL + "/rest/v1/lots?select=updated_at&limit=1", { headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY } });
+    HAS_UPDATED_AT = r.ok;
+  } catch (e) { HAS_UPDATED_AT = false; }
+  console.log("lastmod: lots.updated_at " + (HAS_UPDATED_AT ? "present" : "absent, falling back to closed_at/created_at"));
+}
+
 async function fetchLots() {
   if (!SUPA_URL || !SUPA_KEY) throw new Error("could not read SUPA_URL/SUPA_KEY out of index.html");
   // Everything a buyer could land on. Drafts are nobody's business, and a sold
   // lot is the archive: "what did this actually fetch" is a real search and the
   // answer is a page we already own.
-  const url = SUPA_URL + "/rest/v1/lots?select=" + LOT_COLS +
+  const url = SUPA_URL + "/rest/v1/lots?select=" + LOT_COLS + (HAS_UPDATED_AT ? ",updated_at" : "") + ",created_at" +
     "&status=in.(live,preview,sold,unsold)&order=created_at.desc";
   const res = await fetch(url, { headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY } });
   if (!res.ok) throw new Error("lots fetch failed: HTTP " + res.status + " " + (await res.text()).slice(0, 200));
@@ -254,6 +291,7 @@ function lotSchema(l, url) {
   return node;
 }
 
+await probeUpdatedAt();
 const lots = await fetchLots();
 
 // Two of the same toy is normal in this shop: two Boba Fetts came through in
@@ -309,7 +347,7 @@ for (const l of lots) {
   const dir = "." + path;
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
-  lotLocs.push({ loc: url, status: l.status });
+  lotLocs.push({ loc: url, status: l.status, lastmod: lotLastmod(l) });
 }
 
 // A second sitemap rather than appending to the hand-kept one, because these
@@ -317,9 +355,9 @@ for (const l of lots) {
 // in robots.txt, so it is found without anybody having to submit it.
 if (lotLocs.length) {
   const body = lotLocs.map((x) =>
-    "  <url>\n    <loc>" + x.loc + "</loc>\n    <changefreq>" +
-    (x.status === "sold" || x.status === "unsold" ? "monthly" : "daily") +
-    "</changefreq>\n    <priority>" + (x.status === "sold" || x.status === "unsold" ? "0.4" : "0.7") +
+    "  <url>\n    <loc>" + x.loc + "</loc>\n" +
+    (x.lastmod ? "    <lastmod>" + x.lastmod + "</lastmod>\n" : "") +
+    "    <priority>" + (x.status === "sold" || x.status === "unsold" ? "0.4" : "0.7") +
     "</priority>\n  </url>"
   ).join("\n");
   fs.writeFileSync("sitemap-lots.xml",
@@ -332,6 +370,39 @@ console.log("lots: " + lotLocs.length + " pre-rendered, sitemap-lots.xml written
 // The app itself is the fallback for anything per-record that has no file:
 // /seller/<id>, and a /lot/<id> that was published after the last deploy.
 fs.copyFileSync(SRC, "404.html");
+
+// ---- lastmod on the hand-kept sitemap ----
+//
+// Those nineteen pages are all generated out of index.html, so the date that
+// is true for every one of them is the last commit that touched it. Written
+// into the deployed copy only: the file in the repo stays hand-kept and
+// stays clean in a diff, and the date cannot drift out of step with the
+// source because it is read from the source every build.
+//
+// Deliberately not "now". Two scheduled deploys a day stamping today on
+// nineteen URLs is a sitemap that claims the whole site changes twice daily,
+// which is the one thing that makes Google stop believing the field.
+if (fs.existsSync("sitemap.xml")) {
+  // No invented date. If git cannot tell us when index.html last changed, the
+  // honest answer is no lastmod at all: that is the state we were already in,
+  // and a date that says "today" on every deploy is worse than none, because
+  // it teaches Google to stop reading the field.
+  const srcDate = w3c(gitDate(SRC));
+  let sm = fs.readFileSync("sitemap.xml", "utf8");
+  if (!srcDate) console.log("sitemap: no git date for " + SRC + ", leaving lastmod off");
+  // Stripped before it is added, so this is idempotent. The file is tracked
+  // and written in place, so a second run, or a run over a copy that already
+  // carries a stamp, has to land on the same result rather than stacking a
+  // second lastmod inside every url. Found by running the build twice.
+  sm = sm.replace(/\n\s*<lastmod>[^<]*<\/lastmod>/g, "");
+  // changefreq goes with it. Google has said for years that it ignores the
+  // field, and here it was actively wrong: /molders/kenner/ claimed "yearly"
+  // about a page rewritten twice this week.
+  sm = sm.replace(/\n\s*<changefreq>[^<]*<\/changefreq>/g, "");
+  if (srcDate) sm = sm.replace(/(<loc>[^<]*<\/loc>)/g, "$1\n    <lastmod>" + srcDate + "</lastmod>");
+  fs.writeFileSync("sitemap.xml", sm);
+  console.log("sitemap: lastmod " + srcDate + " on " + (sm.match(/<lastmod>/g) || []).length + " urls, changefreq removed");
+}
 
 // The sitemap promises these paths exist. If it lists something this did not
 // write, the promise is broken, so fail the build rather than deploy it.
