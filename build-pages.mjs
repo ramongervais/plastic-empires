@@ -60,6 +60,26 @@ const FLAG_EN = '<svg class="lang-flag" viewBox="0 0 60 30" aria-hidden="true" f
   '<path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>';
 const NL_PREFIX = "/nl";
 
+// Every internal link on a Dutch page pointed at the English version of the
+// page it names. A reader never noticed, because the router rewrites the path
+// on click and keeps them in Dutch. A crawler is not clicking: it follows the
+// href, lands in English, and the Dutch tree has one way in and no way
+// through it. So the hrefs are rewritten too.
+//
+// Only paths the build actually owns, matched whole, so an external URL or a
+// fragment is never touched. The language button is replaced wholesale after
+// this runs and keeps its English target, which is the one link on the page
+// that is supposed to leave.
+function nlLinks(html, paths) {
+  let out = html;
+  for (const p of paths) {
+    if (p === "/") continue;
+    const slash = p.endsWith("/") ? p : p + "/";
+    out = out.split('href="' + slash + '"').join('href="' + NL_PREFIX + slash + '"');
+  }
+  return out.split('href="/"').join('href="' + NL_PREFIX + '/"');
+}
+
 // One switch. Flip to true when the dictionary is full enough to show a Dutch
 // reader a Dutch page, and the Dutch pages become indexable and enter the
 // sitemap in the same move.
@@ -261,6 +281,7 @@ for (const view of Object.keys(PATHS)) {
   // Translated from the finished English page, so every rewrite above has
   // already happened and there is one place that decides what a page says.
   let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
+  nl = nlLinks(nl, Object.values(PATHS));
   nl = nl
     .replace(/<html lang="en">/, '<html lang="nl">')
     .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
@@ -522,6 +543,7 @@ for (const l of lots) {
   // from the database at runtime and stays as the seller wrote it; what gets
   // translated is everything around it.
   let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
+  nl = nlLinks(nl, Object.values(PATHS));
   nl = nl
     .replace(/<html lang="en">/, '<html lang="nl">')
     .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
@@ -659,6 +681,7 @@ const sellerLocs = [];
     fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
 
     let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
+    nl = nlLinks(nl, Object.values(PATHS));
     nl = nl
       .replace(/<html lang="en">/, '<html lang="nl">')
       .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(titleNl) + "</title>")

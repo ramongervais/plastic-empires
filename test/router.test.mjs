@@ -74,7 +74,11 @@ t("navigating inside the Dutch site stays Dutch", async () => {
   const w = boot("nl/index.html", "/nl/");
   await settle();
   const d = w.document;
-  d.querySelector('a[href="/packages/"]').dispatchEvent(new w.MouseEvent("click", { bubbles: true, cancelable: true }));
+  // The href is the Dutch one now, which is the point of the rewrite: a
+  // crawler follows it into Dutch instead of out of it.
+  const link = d.querySelector('a[href="/nl/packages/"]');
+  assert.ok(link, "the Dutch home page should link to /nl/packages/");
+  link.dispatchEvent(new w.MouseEvent("click", { bubbles: true, cancelable: true }));
   await new Promise((r) => setTimeout(r, 120));
   assert.equal(shown(d), "view-plans");
   assert.equal(w.location.pathname, "/nl/packages/");
@@ -133,6 +137,25 @@ t("a seller who has listed something has a real page in both languages", async (
     assert.equal(JSON.parse(w.document.getElementById("sellerLd").textContent)["@type"], "ProfilePage");
     w.close();
   }
+});
+
+t("a Dutch page links to Dutch pages, not to their English twins", () => {
+  // A reader never noticed this, because the router rewrites the path on
+  // click. A crawler does not click: it follows the href, lands in English,
+  // and the Dutch tree has one way in and no way through it.
+  const nl = fs.readFileSync("nl/index.html", "utf8");
+  const home = nl.slice(nl.indexOf('id="view-home"'), nl.indexOf("</main>", nl.indexOf('id="view-home"')));
+  const english = [...home.matchAll(/href="(\/[^"]*)"/g)].map((m) => m[1]).filter((h) => !h.startsWith("/nl/"));
+  assert.deepEqual(english, [], "every internal link on the Dutch home page should stay in Dutch");
+  assert.ok(home.includes('href="/nl/molders/sofubi/"'), "and the molder cards are real links");
+
+  // Except the one link that is supposed to leave.
+  const lang = nl.match(/<a class="lang-btn"[^>]*href="([^"]*)"/)[1];
+  assert.equal(lang, "/");
+
+  // The English side is untouched apart from its own switch.
+  const en = fs.readFileSync("index.html", "utf8");
+  assert.equal([...en.matchAll(/href="(\/nl\/[^"]*)"/g)].length, 1);
 });
 
 t("the English fallback still finds the view behind a /nl path", async () => {
