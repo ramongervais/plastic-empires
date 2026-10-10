@@ -370,6 +370,19 @@ function lotDescription(l) {
   return s || (lotTitle(l).split(" \u00b7 Hammer")[0] + ", at Hammer & Mold.");
 }
 
+// The same description with the parts that are ours in Dutch. The blurb is the
+// seller's own English prose and is left exactly as they wrote it: translating
+// someone's description of their own toy is not this build's job.
+function lotDescriptionNl(l) {
+  const lead = clean(l.blurb) || clean(l.completeness) || clean(l.notes);
+  const tail = [];
+  const cond = clean(l.condition);
+  if (cond) tail.push("Staat " + (NL_JS[cond] || cond).toLowerCase());
+  if (clean(l.sale_type) === "auction") tail.push("op veiling");
+  const s = lead ? trim(lead, 150) + (tail.length ? " " + tail.join(", ") + "." : "") : "";
+  return s || (lotTitle(l).split(" \u00b7 Hammer")[0] + ", bij Hammer & Mold.");
+}
+
 function lotSchema(l, url) {
   const sold = l.status === "sold" || l.status === "unsold";
   const ended = l.ends_at && new Date(l.ends_at).getTime() < Date.now();
@@ -425,15 +438,32 @@ function uniqueTitle(l) {
 }
 
 const lotLocs = [];
+// A lot's title and description are the seller's words about their own toy.
+// They pass through the translator like everything else and come out
+// unchanged, which is correct, but they are content and not interface and have
+// no business on a worklist of strings somebody ought to translate.
+const lotContent = new Set();
 for (const l of lots) {
   if (!l || !l.id) continue;
   const path = "/lot/" + encodeURIComponent(l.id) + "/";
   const url = SITE + path;
+  const nlPath = NL_PREFIX + path;
+  const nlUrl = SITE + nlPath;
   const title = uniqueTitle(l);
   const desc = lotDescription(l);
+  lotContent.add(esc(title)); lotContent.add(esc(desc));
+  lotContent.add(title); lotContent.add(desc);
   const hero = (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean)[0] || "";
 
-  let out = html
+  // A lot inherited the home page's alternates from index.html, which told a
+  // crawler that the English version of this lot is the front page. Each lot
+  // names its own pair.
+  const alts =
+    '<link rel="alternate" hreflang="en" href="' + esc(url) + '">' +
+    '<link rel="alternate" hreflang="nl" href="' + esc(nlUrl) + '">' +
+    '<link rel="alternate" hreflang="x-default" href="' + esc(url) + '">';
+
+  let out = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
     .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
     .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
     .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(url) + "$2")
@@ -447,7 +477,7 @@ for (const l of lots) {
       .replace(/(<meta property="og:image" content=")[^"]*(")/, "$1" + esc(hero) + "$2")
       .replace(/(<meta name="twitter:image" content=")[^"]*(")/, "$1" + esc(hero) + "$2");
   }
-  out = out.replace("</head>", '<script id="lotLd" type="application/ld+json">' +
+  out = out.replace("</head>", alts + '<script id="lotLd" type="application/ld+json">' +
     JSON.stringify(lotSchema(l, url)) + "</script></head>");
 
   if (!out.includes('href="' + esc(url) + '"')) throw new Error(l.id + ": canonical was not rewritten");
@@ -456,6 +486,33 @@ for (const l of lots) {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
   lotLocs.push({ loc: url, status: l.status, lastmod: lotLastmod(l) });
+
+  // The Dutch sibling. Without a file here GitHub Pages answers 404.html, so a
+  // Dutch buyer who reloaded a lot or sent the link to someone got the English
+  // front page with a 404 status attached to it. The lot's own content comes
+  // from the database at runtime and stays as the seller wrote it; what gets
+  // translated is everything around it.
+  let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
+  nl = nl
+    .replace(/<html lang="en">/, '<html lang="nl">')
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
+    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
+    .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
+    .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
+    .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
+    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
+    .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
+    .replace(
+      /<a class="lang-btn"[^>]*>[^<]*<\/a>/,
+      '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">EN</a>'
+    );
+  if (!nl.includes('<html lang="nl">')) throw new Error(l.id + ": nl lang attribute was not set");
+  if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(l.id + ": nl canonical was not rewritten");
+  if (!NL_PUBLIC) nl = nl.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
+  nl = injectRuntime(nl, NL_RUNTIME);
+  fs.mkdirSync("." + nlPath, { recursive: true });
+  fs.writeFileSync(nlPath.replace(/^\//, "") + "index.html", nl);
+  if (NL_PUBLIC) lotLocs.push({ loc: nlUrl, status: l.status, lastmod: lotLastmod(l) });
 }
 
 // A second sitemap rather than appending to the hand-kept one, because these
@@ -547,7 +604,7 @@ if (fs.existsSync("sitemap.xml")) {
 {
   const total = i18nStats.hit + i18nStats.miss;
   const pct = total ? Math.round((i18nStats.hit / total) * 100) : 0;
-  const missed = [...i18nStats.missed];
+  const missed = [...i18nStats.missed].filter((k) => !lotContent.has(k));
   fs.mkdirSync("i18n", { recursive: true });
   fs.writeFileSync("i18n/untranslated.txt",
     "# " + missed.length + " strings without a Dutch entry, as at " + new Date().toISOString().slice(0, 10) + ".\n" +

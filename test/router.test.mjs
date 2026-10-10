@@ -92,6 +92,25 @@ t("the language button is a real navigation, not a routed one", async () => {
   w.close();
 });
 
+t("a lot has a Dutch file of its own and routes to the lot view", async () => {
+  // Without a file here GitHub Pages answers 404.html, and a Dutch buyer who
+  // reloaded a lot or sent the link on got the English front page with a 404
+  // attached. The id changes every build, so take whichever one is there.
+  const id = fs.readdirSync("nl/lot")[0];
+  assert.ok(id, "the build wrote no Dutch lot pages");
+  const w = boot("nl/lot/" + id + "/index.html", "/nl/lot/" + id + "/");
+  await settle();
+  assert.equal(shown(w.document), "view-lot");
+  assert.equal(w.document.documentElement.lang, "nl");
+  assert.equal(w.document.querySelector("link[rel=canonical]").href,
+    "https://hammerandmold.com/nl/lot/" + id + "/");
+  // and its alternates name the lot, not the front page it inherited them from
+  const alts = [...w.document.querySelectorAll("link[rel=alternate]")]
+    .map((a) => a.hreflang + " " + a.href.replace("https://hammerandmold.com", ""));
+  assert.deepEqual(alts, ["en /lot/" + id + "/", "nl /nl/lot/" + id + "/", "x-default /lot/" + id + "/"]);
+  w.close();
+});
+
 t("the Dutch pages boot without a JavaScript error", async () => {
   const errs = [];
   const { VirtualConsole } = await import("jsdom");
