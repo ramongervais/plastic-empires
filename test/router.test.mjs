@@ -85,18 +85,23 @@ t("navigating inside the Dutch site stays Dutch", async () => {
   w.close();
 });
 
-t("the language button is a real navigation, not a routed one", async () => {
+t("the language menu lists every language and leaves for real", async () => {
   const w = boot("nl/about/index.html", "/nl/about/");
   await settle();
-  const b = w.document.getElementById("langBtn");
-  assert.equal(b.getAttribute("href"), "/about/");
-  assert.ok(b.querySelector("svg.lang-flag"), "the switch carries a flag");
-  assert.equal(b.textContent.trim(), "EN", "and the two letters, which are the part that is true");
-  // Clicked on the flag rather than the anchor, because that is where a thumb
-  // lands and e.target is then the <svg> inside it.
+  // One flag was a toggle between two languages. With six it is a list, and
+  // every language names itself so a reader finds theirs by recognising it.
+  const menu = w.document.getElementById("ndLang");
+  assert.ok(menu, "the language menu is there");
+  const rows = [...menu.querySelectorAll('[role="menuitem"]')].map((a) => [a.getAttribute("lang"), a.getAttribute("href")]);
+  assert.deepEqual(rows, [
+    ["en", "/about/"], ["nl", "/nl/about/"], ["de", "/de/about/"],
+    ["fr", "/fr/about/"], ["es", "/es/about/"], ["it", "/it/about/"], ["ar", "/ar/about/"],
+  ]);
+  assert.equal(menu.querySelector('[aria-current="true"]').getAttribute("lang"), "nl", "and says which one you are in");
+  const en = menu.querySelector('[lang="en"]');
   const ev = new w.MouseEvent("click", { bubbles: true, cancelable: true });
-  b.querySelector("svg.lang-flag").dispatchEvent(ev);
-  assert.equal(ev.defaultPrevented, false, "the router must not swallow the language switch");
+  en.querySelector("svg.lang-flag").dispatchEvent(ev);
+  assert.equal(ev.defaultPrevented, false, "the router must not swallow a language change");
   w.close();
 });
 
@@ -150,12 +155,17 @@ t("a Dutch page links to Dutch pages, not to their English twins", () => {
   assert.ok(home.includes('href="/nl/molders/sofubi/"'), "and the molder cards are real links");
 
   // Except the one link that is supposed to leave.
-  const lang = nl.match(/<a class="lang-btn"[^>]*href="([^"]*)"/)[1];
-  assert.equal(lang, "/");
+  // and the one set of links that is supposed to leave: the language menu,
+  // where English is English and German is German.
+  const menu = nl.slice(nl.indexOf('id="ndLang"'), nl.indexOf("</div></div>", nl.indexOf('id="ndLang"')));
+  assert.ok(menu.includes('href="/"'), "English is reachable from the Dutch site");
+  assert.ok(menu.includes('href="/de/"'), "and so is German");
 
   // The English side is untouched apart from its own switch.
   const en = fs.readFileSync("index.html", "utf8");
-  assert.equal([...en.matchAll(/href="(\/nl\/[^"]*)"/g)].length, 1);
+  const enHome = en.slice(en.indexOf('id="view-home"'), en.indexOf("</main>", en.indexOf('id="view-home"')));
+  assert.equal([...enHome.matchAll(/href="(\/(?:nl|de|fr|es|it|ar)\/[^"]*)"/g)].length, 0,
+    "the English home page links only to English pages");
 });
 
 t("the English fallback still finds the view behind a /nl path", async () => {

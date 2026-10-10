@@ -73,7 +73,13 @@ t("a Shop category drives the same filter the chips do", async () => {
 t("the Dutch menu points at Dutch pages", async () => {
   const nl = fs.readFileSync("nl/index.html", "utf8");
   const nav = nl.slice(nl.indexOf('<nav class="top"'), nl.indexOf("</nav>", nl.indexOf('<nav class="top"')));
-  const items = [...nav.matchAll(/<a href="([^"]+)"[^>]*role="menuitem"/g)].map((m) => m[1]);
-  assert.ok(items.length >= 6);
-  assert.deepEqual(items.filter((h) => !h.startsWith("/nl/")), [], "every menu item stays in Dutch");
+  // The language menu is in the same nav and is the exception by design: it is
+  // the one place where English is English and German is German. Cut it out
+  // before holding the rest to the rule.
+  const lang = nav.indexOf('id="ndLang"');
+  const content = lang < 0 ? nav : nav.slice(0, lang);
+  const items = [...content.matchAll(/<a href="([^"]+)"[^>]*role="menuitem"/g)].map((m) => m[1]);
+  assert.ok(items.length >= 6, "the content menus are there");
+  assert.deepEqual(items.filter((h) => !h.startsWith("/nl/")), [], "and every one of their items stays in Dutch");
+  assert.ok(lang > 0 && nav.slice(lang).includes('href="/de/"'), "while the language menu leads out");
 });

@@ -36,53 +36,132 @@ const SRC = "index.html";
 // GitHub Pages serves one custom domain per repository: the CNAME holds
 // hammerandmold.com and two apex domains on one Pages site is not a thing
 // their platform does. The .nl can redirect here.
-const NL_DICT = loadDict(fs, "i18n/nl.json");
-const NL_HTML = loadDict(fs, "i18n/nl-html.json");
+// Every language this build writes, read from i18n/locales.json so the table
+// is data rather than code and a sixth language is a row, not a refactor.
+// Each carries its own dictionaries, its own statistics and its own list of
+// urls for the sitemap, because a half-finished language must not be able to
+// drag a finished one down with it.
+const LOCALES = JSON.parse(fs.readFileSync("i18n/locales.json", "utf8")).locales.map((L) => ({
+  ...L,
+  dict: loadDict(fs, "i18n/" + L.code + ".json"),
+  html: fs.existsSync("i18n/" + L.code + "-html.json") ? loadDict(fs, "i18n/" + L.code + "-html.json") : {},
+  js: loadDict(fs, "i18n/" + L.code + "-js.json"),
+  prefix: "/" + L.code,
+  // seen is every key this language actually looked up. An entry nothing looked
+  // up is dead weight, and that is a more honest test than searching the source:
+  // the per-page titles and descriptions are injected here and never appear in it.
+  stats: { hit: 0, miss: 0, missed: new Set(), seen: new Set() },
+  locs: [],                                     // static pages only: the others have their own sitemap
+  written: 0,
+}));
+const byCode = Object.fromEntries(LOCALES.map((L) => [L.code, L]));
 // The other half of the site is drawn by JavaScript after the page loads: the
 // lot page, bidding, the sell flow, checkout, the account. None of it is in
-// index.html, so the pass above cannot see it. Those pages carry a small
+// index.html, so the markup pass cannot see it. Those pages carry a small
 // observer instead, applying the same whole-text-node rule at runtime.
-const NL_JS = loadDict(fs, "i18n/nl-js.json");
 
-// The two flags, written once. A flag is a country and the button is a
-// language, so the letters stay next to it: the flag is what people look for,
-// the letters are what is actually true. The union flag is the centred
-// simplification rather than the counterchanged original, because at sixteen
-// pixels the offset is smaller than a pixel and the real one turns to mush.
-const FLAG_NL = '<svg class="lang-flag" viewBox="0 0 9 6" aria-hidden="true" focusable="false">' +
-  '<rect width="9" height="6" fill="#21468B"/><rect width="9" height="4" fill="#fff"/>' +
-  '<rect width="9" height="2" fill="#AE1C28"/></svg>';
-const FLAG_EN = '<svg class="lang-flag" viewBox="0 0 60 30" aria-hidden="true" focusable="false">' +
-  '<rect width="60" height="30" fill="#012169"/>' +
-  '<path d="M0,0 60,30 M60,0 0,30" stroke="#fff" stroke-width="6"/>' +
-  '<path d="M0,0 60,30 M60,0 0,30" stroke="#C8102E" stroke-width="2"/>' +
-  '<path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/>' +
-  '<path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>';
-const NL_PREFIX = "/nl";
+// One small flag per language, drawn rather than emoji: an emoji flag renders
+// as two letters on Windows and as a different shape on every platform.
+//
+// A flag is a country and the button is a language, which is why the name of
+// the language sits next to it and does the actual work. The flag is what
+// people look for; the name is what is true.
+const FLAGS = JSON.parse(fs.readFileSync("i18n/flags.json", "utf8"));
+const FLAG_EN = FLAGS.en;
+// ---------------------------------------------------------------------------
+// One page, in one language. The three places that used to write a Dutch
+// sibling by hand (the static pages, the lots, the sellers) now hand their
+// finished English page to this and get the translated one back, so a rule
+// about what a translated page looks like is written once.
 
-// Every internal link on a Dutch page pointed at the English version of the
-// page it names. A reader never noticed, because the router rewrites the path
-// on click and keeps them in Dutch. A crawler is not clicking: it follows the
-// href, lands in English, and the Dutch tree has one way in and no way
-// through it. So the hrefs are rewritten too.
+// hreflang has to name every version including the one it is on, or the set
+// does not reciprocate and Google ignores all of it. x-default points at
+// English because that is where a reader with no match should land.
+function alternatesFor(p) {
+  const canon = (q) => (q === "/" ? "/" : q.replace(/\/+$/, "") + "/");
+  const en = SITE + canon(p);
+  let out = '<link rel="alternate" hreflang="en" href="' + esc(en) + '">';
+  for (const L of LOCALES) {
+    if (!L.public) continue;                    // not offered yet, so not advertised
+    out += '<link rel="alternate" hreflang="' + L.code + '" href="' + esc(SITE + L.prefix + canon(p)) + '">';
+  }
+  return out + '<link rel="alternate" hreflang="x-default" href="' + esc(en) + '">';
+}
+
+// Every internal link on a translated page pointed at the English version of
+// the page it names. A reader never noticed, because the router rewrites the
+// path on click. A crawler is not clicking: it follows the href, lands in
+// English, and the translated tree has one way in and no way through it.
 //
 // Only paths the build actually owns, matched whole, so an external URL or a
-// fragment is never touched. The language button is replaced wholesale after
-// this runs and keeps its English target, which is the one link on the page
-// that is supposed to leave.
-function nlLinks(html, paths) {
+// fragment is never touched. The language switch is replaced afterwards and
+// keeps its English target, which is the one link that is supposed to leave.
+function localeLinks(html, paths, prefix) {
   let out = html;
-  for (const p of paths) {
-    if (p === "/") continue;
-    const slash = p.endsWith("/") ? p : p + "/";
-    out = out.split('href="' + slash + '"').join('href="' + NL_PREFIX + slash + '"');
+  for (const q of paths) {
+    if (q === "/") continue;
+    const slash = q.endsWith("/") ? q : q + "/";
+    out = out.split('href="' + slash + '"').join('href="' + prefix + slash + '"');
   }
-  // The home page with a fragment on it, "/#collection", is still the home
-  // page and belongs in Dutch too. It was the one shape the whole-path match
-  // above could not see.
-  out = out.replace(/href="\/#/g, 'href="' + NL_PREFIX + '/#');
-  return out.split('href="/"').join('href="' + NL_PREFIX + '/"');
+  out = out.replace(/href="\/#/g, 'href="' + prefix + '/#');
+  return out.split('href="/"').join('href="' + prefix + '/"');
 }
+
+// Every language this page exists in, as a menu. Each entry points at this
+// page's own twin and not at the home page: hard-coded it would drop a reader
+// of the Kenner essay somewhere else and make them find their place again.
+//
+// A language that is not public yet is still listed. Somebody has to be able
+// to read it in order to finish it, and a reader who finds it early sees a
+// page that falls back to English rather than a broken one.
+function langMenu(p, current) {
+  const canon = (q) => (q === "/" ? "/" : q.replace(/\/+$/, "") + "/");
+  const here = LOCALES.find((L) => L.code === current);
+  const rows = [{ code: "en", name: "English", href: canon(p) }]
+    .concat(LOCALES.map((L) => ({ code: L.code, name: L.name, href: L.prefix + canon(p) })));
+  return '<div class="navdrop langdrop" id="ndLang">' +
+    '<button class="navtop lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">' +
+      (here ? FLAGS[here.code] : FLAG_EN) + (here ? here.code.toUpperCase() : "EN") +
+      '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>' +
+    '</button><div class="dropmenu" role="menu">' +
+    rows.map((r) => '<a href="' + esc(r.href) + '" hreflang="' + r.code + '" lang="' + r.code + '" role="menuitem"' +
+      (r.code === (current || "en") ? ' aria-current="true"' : "") + '>' +
+      (FLAGS[r.code] || "") + esc(r.name) + '</a>').join("") +
+    "</div></div>";
+}
+
+function localePage(L, out, p, opts) {
+  const canon = (q) => (q === "/" ? "/" : q.replace(/\/+$/, "") + "/");
+  const lPath = L.prefix + canon(p);
+  const lUrl = SITE + lPath;
+  let x = applyHtmlRules(translate(out, L.dict, L.stats).html, L.html);
+  x = localeLinks(x, Object.values(PATHS), L.prefix);
+  // dir on the html element is what turns the whole layout around. The
+  // stylesheet is written in logical properties, so this one attribute does
+  // the work that a mirrored stylesheet would otherwise have to.
+  x = x
+    .replace(/<html lang="en">/, '<html lang="' + L.code + '"' + (L.dir === "rtl" ? ' dir="rtl"' : "") + ">")
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(lUrl) + "$2")
+    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(lUrl) + "$2")
+    .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1" + L.ogLocale + "$2")
+    .replace(/"inLanguage":"en"/g, '"inLanguage":"' + L.code + '"')
+    .replace(/<div class="navdrop langdrop"[\s\S]*?<\/div><\/div>/, langMenu(p, L.code));
+  if (opts && opts.head) x = opts.head(x);
+  if (!x.includes('<html lang="' + L.code + '"')) throw new Error(L.code + " " + p + ": lang attribute was not set");
+  if (!x.includes('href="' + esc(lUrl) + '"')) throw new Error(L.code + " " + p + ": canonical was not rewritten");
+  // A language stays reachable while it is being filled, and out of the index
+  // until it is worth reading. Half a page in English under a German lang
+  // attribute is the thin-and-duplicate verdict this site can least afford.
+  if (!L.public) x = x.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
+  x = injectRuntime(x, L.runtime);
+  fs.mkdirSync("." + lPath, { recursive: true });
+  fs.writeFileSync(lPath.replace(/^\//, "") + "index.html", x);
+  L.written++;                                  // what exists, whether or not it is advertised
+  return lUrl;
+}
+
+
+
 
 // One switch. Flip to true when the dictionary is full enough to show a Dutch
 // reader a Dutch page, and the Dutch pages become indexable and enter the
@@ -95,13 +174,11 @@ function nlLinks(html, paths) {
 // spends crawl budget that the English pages are currently short of, and
 // invites exactly the thin-and-duplicate verdict this site can least afford.
 // The pages are live and reachable at /nl/ either way.
-const NL_PUBLIC = true;
+
 // seen is every key the build actually looked up, across all generated pages.
 // A dictionary entry that was never looked up is dead, and that is a more
 // honest test than searching index.html: the per-page titles and descriptions
 // are injected by this build and never appear in the source file.
-const i18nStats = { hit: 0, miss: 0, missed: new Set(), seen: new Set() };
-const nlLocs = [];
 const html = fs.readFileSync(SRC, "utf8");
 
 // Every string literal the application's own scripts can produce, and the
@@ -109,7 +186,7 @@ const html = fs.readFileSync(SRC, "utf8");
 // would put a hundred kilobytes of Terms on every page for nothing; the
 // runtime only needs what JavaScript can actually write to the document.
 const JS_LITERALS = jsLiterals(html);
-const NL_RUNTIME = runtimeDict(NL_DICT, NL_JS, JS_LITERALS);
+for (const L of LOCALES) L.runtime = runtimeDict(L.dict, L.js, JS_LITERALS);
 
 // Pull the two tables out of the app and evaluate them, rather than keeping a
 // second copy here that would drift.
@@ -262,18 +339,12 @@ for (const view of Object.keys(PATHS)) {
   // the normal way a translated site loses to its own copy.
   // Same normalisation as the English url twenty lines up, or the two differ by
   // a trailing slash and the canonical points at an address that redirects.
-  const nlPath = NL_PREFIX + (p === "/" ? "/" : p.replace(/\/+$/, "") + "/");
-  const nlUrl = SITE + nlPath;
-  const alts =
-    '<link rel="alternate" hreflang="en" href="' + esc(url) + '">' +
-    '<link rel="alternate" hreflang="nl" href="' + esc(nlUrl) + '">' +
-    '<link rel="alternate" hreflang="x-default" href="' + esc(url) + '">';
+  const alts = alternatesFor(p);
 
   // The switch points at this page's own twin. Hard-coded in index.html it
   // said /nl/, which would drop a reader of the Kenner essay on the Dutch home
   // page and make them find their place again.
-  const enSwitch = '<a class="lang-btn" id="langBtn" href="' + esc(nlPath) + '" hreflang="nl" aria-label="Doorgaan in het Nederlands">' + FLAG_NL + 'NL</a>';
-  out = out.replace(/<a class="lang-btn"[\s\S]*?<\/a>/, enSwitch);
+  out = out.replace(/<a class="lang-btn"[\s\S]*?<\/a>/, langMenu(p, null));
 
   if (writeEn) {
     fs.writeFileSync(target, out.replace("</head>", alts + "</head>"));
@@ -281,34 +352,13 @@ for (const view of Object.keys(PATHS)) {
     report.push("  " + p.padEnd(22) + title.slice(0, 52));
   }
 
-  // ---- The Dutch sibling ----
+  // ---- and one sibling per language ----
   // Translated from the finished English page, so every rewrite above has
   // already happened and there is one place that decides what a page says.
-  let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
-  nl = nlLinks(nl, Object.values(PATHS));
-  nl = nl
-    .replace(/<html lang="en">/, '<html lang="nl">')
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
-    .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
-    .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
-    .replace(
-      /<a class="lang-btn"[\s\S]*?<\/a>/,
-      '<a class="lang-btn" id="langBtn" href="' + esc(p === "/" ? "/" : p.replace(/\/+$/, "") + "/") + '" hreflang="en" aria-label="Continue in English">' + FLAG_EN + 'EN</a>'
-    )
-    .replace("</head>", alts + "</head>");
-  if (!nl.includes('<html lang="nl">')) throw new Error(view + ": nl lang attribute was not set");
-  if (!nl.includes('hreflang="en" aria-label="Continue in English"')) throw new Error(view + ": nl language switch was not rewritten");
-  if (!NL_PUBLIC) {
-    nl = nl.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
-    if (!nl.includes('content="noindex, follow"')) throw new Error(view + ": nl noindex was not set");
+  for (const L of LOCALES) {
+    const u = localePage(L, out, p, { head: (x) => x.replace("</head>", alts + "</head>") });
+    if (L.public) L.locs.push({ loc: u });
   }
-  if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(view + ": nl canonical was not rewritten");
-  nl = injectRuntime(nl, NL_RUNTIME);
-  const nlDir = "." + nlPath;
-  fs.mkdirSync(nlDir, { recursive: true });
-  fs.writeFileSync(path.join(nlDir, "index.html"), nl);
-  nlLocs.push(nlUrl);
 }
 
 // ---------------------------------------------------------------------------
@@ -424,17 +474,25 @@ function lotDescription(l) {
   return s || (lotTitle(l).split(" \u00b7 Hammer")[0] + ", at Hammer & Mold.");
 }
 
-// The same description with the parts that are ours in Dutch. The blurb is the
-// seller's own English prose and is left exactly as they wrote it: translating
-// someone's description of their own toy is not this build's job.
-function lotDescriptionNl(l) {
+// The same description with the parts that are ours in the reader's language.
+// The blurb is the seller's own prose and is left exactly as they wrote it:
+// translating someone's description of their own toy is not this build's job,
+// and Ramon decided it stays as written.
+//
+// The two connectors come out of the dictionary like everything else, so a
+// language that has not been translated yet returns nothing and the English
+// description stands rather than a half-German sentence.
+function lotDescriptionIn(L, l) {
+  const t = (en) => L.dict[en] || L.js[en];
+  const condWord = t("Condition {c}"), aucWord = t("at auction");
+  if (!condWord && !aucWord) return null;
   const lead = clean(l.blurb) || clean(l.completeness) || clean(l.notes);
   const tail = [];
   const cond = clean(l.condition);
-  if (cond) tail.push("Staat " + (NL_JS[cond] || cond).toLowerCase());
-  if (clean(l.sale_type) === "auction") tail.push("op veiling");
+  if (cond && condWord) tail.push(condWord.replace("{c}", (L.js[cond] || cond).toLowerCase()));
+  if (clean(l.sale_type) === "auction" && aucWord) tail.push(aucWord);
   const s = lead ? trim(lead, 150) + (tail.length ? " " + tail.join(", ") + "." : "") : "";
-  return s || (lotTitle(l).split(" \u00b7 Hammer")[0] + ", bij Hammer & Mold.");
+  return s || null;
 }
 
 function lotSchema(l, url) {
@@ -501,8 +559,6 @@ for (const l of lots) {
   if (!l || !l.id) continue;
   const path = "/lot/" + encodeURIComponent(l.id) + "/";
   const url = SITE + path;
-  const nlPath = NL_PREFIX + path;
-  const nlUrl = SITE + nlPath;
   const title = uniqueTitle(l);
   const desc = lotDescription(l);
   lotContent.add(esc(title)); lotContent.add(esc(desc));
@@ -512,10 +568,7 @@ for (const l of lots) {
   // A lot inherited the home page's alternates from index.html, which told a
   // crawler that the English version of this lot is the front page. Each lot
   // names its own pair.
-  const alts =
-    '<link rel="alternate" hreflang="en" href="' + esc(url) + '">' +
-    '<link rel="alternate" hreflang="nl" href="' + esc(nlUrl) + '">' +
-    '<link rel="alternate" hreflang="x-default" href="' + esc(url) + '">';
+  const alts = alternatesFor(path);
 
   let out = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
     .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
@@ -541,33 +594,25 @@ for (const l of lots) {
   fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
   lotLocs.push({ loc: url, status: l.status, lastmod: lotLastmod(l) });
 
-  // The Dutch sibling. Without a file here GitHub Pages answers 404.html, so a
-  // Dutch buyer who reloaded a lot or sent the link to someone got the English
-  // front page with a 404 status attached to it. The lot's own content comes
-  // from the database at runtime and stays as the seller wrote it; what gets
-  // translated is everything around it.
-  let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
-  nl = nlLinks(nl, Object.values(PATHS));
-  nl = nl
-    .replace(/<html lang="en">/, '<html lang="nl">')
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
-    .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
-    .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
-    .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
-    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
-    .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
-    .replace(
-      /<a class="lang-btn"[\s\S]*?<\/a>/,
-      '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">' + FLAG_EN + 'EN</a>'
-    );
-  if (!nl.includes('<html lang="nl">')) throw new Error(l.id + ": nl lang attribute was not set");
-  if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(l.id + ": nl canonical was not rewritten");
-  if (!NL_PUBLIC) nl = nl.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
-  nl = injectRuntime(nl, NL_RUNTIME);
-  fs.mkdirSync("." + nlPath, { recursive: true });
-  fs.writeFileSync(nlPath.replace(/^\//, "") + "index.html", nl);
-  if (NL_PUBLIC) lotLocs.push({ loc: nlUrl, status: l.status, lastmod: lotLastmod(l) });
+  // One sibling per language. Without a file here GitHub Pages answers
+  // 404.html, so a buyer who reloaded a lot or sent the link to someone got
+  // the English front page with a 404 status attached to it.
+  //
+  // The lot's own words are the seller's and stay as written, by decision
+  // rather than by omission. What gets translated is everything around them,
+  // plus the one part of the description that is ours.
+  for (const L of LOCALES) {
+    const d = lotDescriptionIn(L, l);
+    const u = localePage(L, out, path, {
+      lastmod: lotLastmod(l),
+      head: (x) => (d
+        ? x.replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+           .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+           .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+        : x),
+    });
+    if (L.public) lotLocs.push({ loc: u, status: l.status, lastmod: lotLastmod(l) });
+  }
 }
 
 // A second sitemap rather than appending to the hand-kept one, because these
@@ -619,28 +664,25 @@ const sellerLocs = [];
     const kind = /dealer|shop|trader/i.test(clean(p.type)) ? "dealer" : "collector";
     const path = "/seller/" + encodeURIComponent(p.id) + "/";
     const url = SITE + path;
-    const nlPath = NL_PREFIX + path;
-    const nlUrl = SITE + nlPath;
-
-    const count = (n, one, many) => n + " " + (n === 1 ? one : many);
-    const facts = (en) => {
+    // The counts are a sentence like any other, so they come out of the
+    // dictionary and a language that has not been translated yet simply keeps
+    // the English description rather than growing a half-translated one.
+    const facts = (L) => {
+      const t = (en) => (L ? (L.dict[en] || L.js[en]) : en);
+      const one = t("{n} lot for sale"), many = t("{n} lots for sale"), sld = t("{n} sold");
+      if (!one || !many || !sld) return null;
       const bits = [];
-      if (live) bits.push(count(live, en ? "lot for sale" : "kavel te koop", en ? "lots for sale" : "kavels te koop"));
-      if (sold) bits.push(count(sold, en ? "sold" : "verkocht", en ? "sold" : "verkocht"));
+      if (live) bits.push((live === 1 ? one : many).replace("{n}", live));
+      if (sold) bits.push(sld.replace("{n}", sold));
       return bits.join(", ");
     };
     const bio = trim(clean(p.bio), 150);
     const where = clean(p.location);
     const desc = bio || [
       name + (where ? " in " + where : "") + " sells vintage toys at Hammer & Mold.",
-      facts(true) ? facts(true) + "." : "",
-    ].filter(Boolean).join(" ");
-    const descNl = bio || [
-      name + (where ? " in " + where : "") + " verkoopt vintage speelgoed op Hammer & Mold.",
-      facts(false) ? facts(false) + "." : "",
+      facts(null) ? facts(null) + "." : "",
     ].filter(Boolean).join(" ");
     const title = name + " \u00b7 " + (kind === "dealer" ? "Dealer" : "Seller") + " \u00b7 Hammer & Mold";
-    const titleNl = name + " \u00b7 Verkoper \u00b7 Hammer & Mold";
 
     const schema = {
       "@context": "https://schema.org",
@@ -654,10 +696,7 @@ const sellerLocs = [];
         ...(clean(p.logo_url) ? { image: clean(p.logo_url) } : {}),
       },
     };
-    const alts =
-      '<link rel="alternate" hreflang="en" href="' + esc(url) + '">' +
-      '<link rel="alternate" hreflang="nl" href="' + esc(nlUrl) + '">' +
-      '<link rel="alternate" hreflang="x-default" href="' + esc(url) + '">';
+    const alts = alternatesFor(path);
 
     const head = (t, d, canon) => html
       .replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
@@ -684,37 +723,33 @@ const sellerLocs = [];
     fs.mkdirSync("." + path, { recursive: true });
     fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
 
-    let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
-    nl = nlLinks(nl, Object.values(PATHS));
-    nl = nl
-      .replace(/<html lang="en">/, '<html lang="nl">')
-      .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(titleNl) + "</title>")
-      .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(titleNl) + "$2")
-      .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(titleNl) + "$2")
-      .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(descNl) + "$2")
-      .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(descNl) + "$2")
-      .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(descNl) + "$2")
-      .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
-      .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
-      .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
-      .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
-      .replace(
-        /<a class="lang-btn"[\s\S]*?<\/a>/,
-        '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">' + FLAG_EN + 'EN</a>'
-      );
-    if (!nl.includes('<html lang="nl">')) throw new Error(p.id + ": nl seller lang attribute was not set");
-    if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(p.id + ": nl seller canonical was not rewritten");
-    if (!NL_PUBLIC) nl = nl.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
-    nl = injectRuntime(nl, NL_RUNTIME);
-    fs.mkdirSync("." + nlPath, { recursive: true });
-    fs.writeFileSync(nlPath.replace(/^\//, "") + "index.html", nl);
-
     // The page moves when the seller's own lots move, which is the only signal
     // we have for it, plus the day they joined.
     const dates = [p.created_at, ...mine.map(lotLastmod)].filter(Boolean).map(Date.parse).filter(isFinite);
     const lastmod = dates.length ? new Date(Math.max(...dates)).toISOString().slice(0, 19) + "+00:00" : null;
     sellerLocs.push({ loc: url, lastmod });
-    if (NL_PUBLIC) sellerLocs.push({ loc: nlUrl, lastmod });
+
+    for (const L of LOCALES) {
+      const sellerWord = L.dict["Seller"] || L.js["Seller"];
+      const f = facts(L);
+      const t = sellerWord ? name + " \u00b7 " + sellerWord + " \u00b7 Hammer & Mold" : null;
+      const d = bio || (f ? name + (where ? " in " + where : "") + " \u00b7 " + f + "." : null);
+      const u = localePage(L, out, path, {
+        lastmod,
+        head: (x) => {
+          if (t) x = x
+            .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(t) + "</title>")
+            .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(t) + "$2")
+            .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(t) + "$2");
+          if (d) x = x
+            .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+            .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+            .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(d) + "$2");
+          return x;
+        },
+      });
+      if (L.public) sellerLocs.push({ loc: u, lastmod });
+    }
   }
 
   if (sellerLocs.length) {
@@ -770,10 +805,13 @@ if (fs.existsSync("sitemap.xml")) {
   // about a page rewritten twice this week.
   sm = sm.replace(/\n\s*<changefreq>[^<]*<\/changefreq>/g, "");
   if (srcDate) sm = sm.replace(/(<loc>[^<]*<\/loc>)/g, "$1\n    <lastmod>" + srcDate + "</lastmod>");
-  // The Dutch pages, appended rather than hand-kept: they are generated, so a
-  // person editing sitemap.xml should not have to remember them.
-  if (NL_PUBLIC && nlLocs.length) {
-    const body = nlLocs.map((u) =>
+  // The translated pages, appended rather than hand-kept: they are generated,
+  // so a person editing sitemap.xml should not have to remember them. A
+  // language that is not public yet contributes nothing here, which is the
+  // whole point of the flag.
+  const extra = LOCALES.filter((L) => L.public).flatMap((L) => L.locs.map((x) => x.loc));
+  if (extra.length) {
+    const body = extra.map((u) =>
       "  <url>\n    <loc>" + u + "</loc>\n" +
       (srcDate ? "    <lastmod>" + srcDate + "</lastmod>\n" : "") +
       "    <priority>0.6</priority>\n  </url>").join("\n");
@@ -796,50 +834,54 @@ if (fs.existsSync("sitemap.xml")) {
   console.log("sitemap: " + locs.length + " urls, all present");
 }
 
-// ---- Dutch coverage, and the worklist ----
+// ---- Coverage, per language, and the worklists ----
 //
 // The number that matters is the miss list, not the percentage: it is the
 // exact set of sentences still to write, in document order, so translating is
-// a file to work through rather than a site to read.
+// a file to work through rather than a site to read. One file per language,
+// because a worklist shared between six of them is nobody's worklist.
 {
-  const total = i18nStats.hit + i18nStats.miss;
-  const pct = total ? Math.round((i18nStats.hit / total) * 100) : 0;
-  const missed = [...i18nStats.missed].filter((k) => !lotContent.has(k));
+  const stamp = new Date().toISOString().slice(0, 10);
   fs.mkdirSync("i18n", { recursive: true });
-  fs.writeFileSync("i18n/untranslated.txt",
-    "# " + missed.length + " strings without a Dutch entry, as at " + new Date().toISOString().slice(0, 10) + ".\n" +
-    "# Copy a line into i18n/nl.json as the key, with the Dutch as its value.\n" +
-    "# A string that stops appearing here is either translated or no longer on the site.\n\n" +
-    missed.join("\n") + "\n");
-  console.log("nl: " + nlLocs.length + " pages written, " + pct + "% of " + total +
-    " strings translated, " + missed.length + " left in i18n/untranslated.txt");
-  // An entry nothing ever looked up is dead weight: either the English was
-  // rewritten and the key stopped matching, or the string lives in JavaScript
-  // and this pass cannot reach it. Both are worth knowing and neither is
-  // visible any other way.
-  const stale = Object.keys(NL_DICT).filter((k) => !k.startsWith("_") && !i18nStats.seen.has(k));
-  if (stale.length) {
-    fs.writeFileSync("i18n/unused.txt",
-      "# " + stale.length + " dictionary entries that no page looked up, as at " +
-      new Date().toISOString().slice(0, 10) + ".\n" +
-      "# Either the English changed, or the string is built in JavaScript and the\n" +
-      "# markup pass cannot see it. Neither is an error; both are worth checking.\n\n" +
-      stale.join("\n") + "\n");
-    console.log("nl: " + stale.length + " dictionary entries unused, listed in i18n/unused.txt");
-  } else if (fs.existsSync("i18n/unused.txt")) fs.rmSync("i18n/unused.txt");
 
-  // What the runtime half still cannot say in Dutch. Two different problems
-  // kept apart on purpose: a whole string with no entry is a translation to
-  // write, a fragment the application concatenates with data is a call site to
-  // rewrite, because no dictionary can reach half a sentence.
-  // Covered means "the dictionary has an opinion about it", not "it was
-  // shipped". An entry whose Dutch equals its English is deliberate (Mint,
-  // Japan, a brand name) and is dropped from what the browser gets, but it is
-  // a decision already taken and does not belong on a worklist.
+  for (const L of LOCALES) {
+    const total = L.stats.hit + L.stats.miss;
+    const pct = total ? Math.round((L.stats.hit / total) * 100) : 0;
+    const missed = [...L.stats.missed].filter((k) => !lotContent.has(k));
+    const file = "i18n/untranslated-" + L.code + ".txt";
+    if (missed.length) {
+      fs.writeFileSync(file,
+        "# " + missed.length + " strings with no " + L.english + " entry, as at " + stamp + ".\n" +
+        "# Copy a line into i18n/" + L.code + ".json as the key, with the " + L.english + " as its value.\n" +
+        "# A string that stops appearing here is either translated or no longer on the site.\n\n" +
+        missed.join("\n") + "\n");
+    } else if (fs.existsSync(file)) fs.rmSync(file);
+
+    // An entry nothing ever looked up is dead weight: either the English was
+    // rewritten and the key stopped matching, or the string lives in
+    // JavaScript and this pass cannot reach it. Both are worth knowing.
+    const stale = Object.keys(L.dict).filter((k) => !k.startsWith("_") && !L.stats.seen.has(k));
+    const sfile = "i18n/unused-" + L.code + ".txt";
+    if (stale.length) {
+      fs.writeFileSync(sfile,
+        "# " + stale.length + " " + L.english + " entries that no page looked up, as at " + stamp + ".\n" +
+        "# Either the English changed, or the string is built in JavaScript and\n" +
+        "# the markup pass cannot see it. Neither is an error; both are worth a look.\n\n" +
+        stale.join("\n") + "\n");
+    } else if (fs.existsSync(sfile)) fs.rmSync(sfile);
+
+    console.log(L.code + ": " + L.written + " pages, " + pct + "% of " + total +
+      " strings, " + missed.length + " left" + (L.public ? "" : "  (not public yet)"));
+  }
+
+  // The runtime half is measured against English, once: the same set of
+  // strings is open in every language that has not had them written yet, so
+  // six copies of the same list would say nothing six times.
+  const en = LOCALES[0];
   const covered = new Set([
-    ...Object.keys(NL_RUNTIME),
-    ...Object.keys(NL_DICT).map((k) => decodeEntities(k).replace(/\s+/g, " ").trim()),
-    ...Object.keys(NL_JS).map((k) => decodeEntities(k).replace(/\s+/g, " ").trim()),
+    ...Object.keys(en.runtime),
+    ...Object.keys(en.dict).map((k) => decodeEntities(k).replace(/\s+/g, " ").trim()),
+    ...Object.keys(en.js).map((k) => decodeEntities(k).replace(/\s+/g, " ").trim()),
   ]);
   const jsOpen = [], jsFrag = [];
   for (const raw of JS_LITERALS) {
@@ -862,10 +904,9 @@ if (fs.existsSync("sitemap.xml")) {
     fs.writeFileSync(file, head + "\n\n" + rows.map((r) => JSON.stringify(r)).join("\n") + "\n");
   };
   write("i18n/js-untranslated.txt",
-    "# " + jsOpen.length + " strings the application draws that have no Dutch entry, as at " +
-    new Date().toISOString().slice(0, 10) + ".\n" +
-    "# Copy one into i18n/nl-js.json as the key. Keys there are rendered text:\n" +
-    "# a real & and ·, no HTML entities, because that is what the observer sees.",
+    "# " + jsOpen.length + " strings the application draws that have no entry, as at " + stamp + ".\n" +
+    "# Copy one into i18n/<lang>-js.json as the key. Keys there are rendered text:\n" +
+    "# a real & and \u00b7, no HTML entities, because that is what the observer sees.",
     jsOpen);
   write("i18n/js-fragments.txt",
     "# " + jsFrag.length + " fragments the application glues to data at runtime.\n" +
@@ -878,18 +919,21 @@ if (fs.existsSync("sitemap.xml")) {
     "# addressed to whoever is running the migration. None of the three is text\n" +
     "# a buyer ever sees.",
     jsFrag);
-  // A phrase() the dictionary has never heard of is silent at runtime: it
-  // formats the English and carries on. Loud here instead.
-  const noPhrase = [...phraseKeys(html)].filter((k) => {
-    const d = decodeEntities(k).replace(/\s+/g, " ").trim();
-    return !(k in NL_JS) && !(d in NL_RUNTIME) && !covered.has(d);
-  });
-  if (noPhrase.length) throw new Error(
-    "phrase() keys with no Dutch entry, add them to i18n/nl-js.json:\n  " +
-    noPhrase.sort().map((k) => JSON.stringify(k)).join("\n  "));
 
-  console.log("nl: runtime dictionary " + Object.keys(NL_RUNTIME).length + " entries shipped, " +
-    phraseKeys(html).size + " phrase() keys all translated, " +
+  // A phrase() the dictionary has never heard of is silent at runtime: it
+  // formats the English and carries on. Loud here instead, but only for a
+  // language that is public, because an empty dictionary is not a bug.
+  for (const L of LOCALES.filter((x) => x.public)) {
+    const miss = [...phraseKeys(html)].filter((k) => {
+      const d = decodeEntities(k).replace(/\s+/g, " ").trim();
+      return !(k in L.js) && !(d in L.runtime) && !(d in L.dict);
+    });
+    if (miss.length) throw new Error(
+      "phrase() keys with no " + L.english + " entry, add them to i18n/" + L.code + "-js.json:\n  " +
+      miss.sort().map((k) => JSON.stringify(k)).join("\n  "));
+  }
+
+  console.log("i18n: " + phraseKeys(html).size + " phrase() keys, " +
     jsOpen.length + " js strings open, " + jsFrag.length + " fragments at call sites");
 }
 
