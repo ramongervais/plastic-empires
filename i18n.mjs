@@ -34,6 +34,23 @@ const ATTRS = ["alt", "title", "placeholder", "aria-label", "aria-description", 
 // translate charset, viewport and every URL in the head.
 const META_OK = /^(description|og:title|og:description|og:image:alt|twitter:title|twitter:description|apple-mobile-web-app-title|og:site_name)$/;
 
+// A handful of places where the Dutch needs different markup and not just
+// different words, which a text-node dictionary cannot express. The home h1
+// is the case that forced it: the English carries a <br> mid-sentence to break
+// "Know the toy." from "Then own it", and the longer Dutch line then wraps on
+// its own and lands in four. Kept deliberately small and exact: whole
+// fragments, matched once, so this stays a list of decisions rather than a
+// second find-and-replace pass over the document.
+export function applyHtmlRules(html, rules) {
+  let out = html;
+  for (const [from, to] of Object.entries(rules || {})) {
+    if (from.startsWith("_")) continue;
+    if (!out.includes(from)) continue;
+    out = out.split(from).join(to);
+  }
+  return out;
+}
+
 export function loadDict(fs, file) {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); }
   catch (e) { return {}; }

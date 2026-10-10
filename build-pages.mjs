@@ -18,7 +18,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
-import { translate, extractStrings, loadDict } from "./i18n.mjs";
+import { translate, extractStrings, loadDict, applyHtmlRules } from "./i18n.mjs";
 
 const SRC = "index.html";
 
@@ -36,6 +36,7 @@ const SRC = "index.html";
 // hammerandmold.com and two apex domains on one Pages site is not a thing
 // their platform does. The .nl can redirect here.
 const NL_DICT = loadDict(fs, "i18n/nl.json");
+const NL_HTML = loadDict(fs, "i18n/nl-html.json");
 const NL_PREFIX = "/nl";
 
 // One switch. Flip to true when the dictionary is full enough to show a Dutch
@@ -228,7 +229,7 @@ for (const view of Object.keys(PATHS)) {
   // ---- The Dutch sibling ----
   // Translated from the finished English page, so every rewrite above has
   // already happened and there is one place that decides what a page says.
-  let nl = translate(out, NL_DICT, i18nStats).html;
+  let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
   nl = nl
     .replace(/<html lang="en">/, '<html lang="nl">')
     .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")

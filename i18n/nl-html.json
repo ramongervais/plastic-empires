@@ -1,0 +1,5 @@
+{
+  "_readme": "Voor de paar plekken waar het Nederlands andere opmaak nodig heeft en niet alleen andere woorden. Sleutel = het exacte HTML-fragment in de al vertaalde pagina, waarde = wat ervoor in de plaats komt. Houd deze lijst kort: alles wat hier staat is een besluit, niet een vertaling.",
+
+  "<h1>Speelgoed van toen.<br>Voor liefhebbers van nu.</h1>": "<h1>Speelgoed van toen. Voor liefhebbers van nu.</h1>"
+}
