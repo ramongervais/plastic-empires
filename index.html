@@ -103,7 +103,6 @@
   /* The countdown's width is reserved before it has a value, so filling it in
      moves nothing. tabular-nums keeps every digit the same width, which is what
      stops the ribbon twitching as the seconds tick. */
-  #promoCount { display:inline-block; min-width:16ch; text-align:left; font-variant-numeric:tabular-nums; }
   .promo-bar .promo-cta { color:#fff; text-decoration:underline; text-underline-offset:2px; cursor:pointer; white-space:nowrap; transition:opacity .15s ease; }
   .promo-bar .promo-cta:hover { opacity:.65; }
   @media (max-width:600px){ .promo-bar { font-size:10px; letter-spacing:.08em; gap:8px; padding:8px 16px; } }
@@ -1471,8 +1470,8 @@
 <body>
 
 <div class="promo-bar">
-  <span id="promoText">We are live. The auctions are open.</span>
-  <a id="authLinkB" class="promo-cta">Reserve your account &#8594;</a>
+  <span id="promoText">Open your own shop. Identifying a toy is free.</span>
+  <a id="authLinkB" class="promo-cta">Create an account &#8594;</a>
 </div>
 
 <header class="mast">
@@ -10192,23 +10191,10 @@
     if (so) so.addEventListener('change', () => { shopSort = so.value; shopPage = 1; injectDraftLots(); });
   })();
 
-  // ----- Launch countdown in the beta ribbon -----
-  (function(){
-    const el = document.getElementById('promoCount'); if (!el) return;
-    const target = new Date('2026-09-26T12:00:00+02:00').getTime();
-    (function tick(){
-      const ms = target - Date.now();
-      if (ms <= 0){ const t = document.getElementById('promoText'); if (t) t.innerHTML = 'We are live. The auctions are open.'; return; }
-      const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000), m = Math.floor(ms % 3600000 / 60000), s = Math.floor(ms % 60000 / 1000);
-      // Padded to two digits so the string is always the same length. Without
-      // this it went from '9s' to '10s' and the ribbon reflowed, which is a
-      // layout shift every ten seconds on every page. Cloudflare reported the
-      // page as 80% poor for CLS and named this element twice.
-      const p2 = v => String(v).padStart(2, '0');
-      el.textContent = p2(d) + 'd ' + p2(h) + 'h ' + p2(m) + 'm ' + p2(s) + 's';
-      setTimeout(tick, 1000);
-    })();
-  })();
+  // The launch countdown lived here. It stopped running the day #promoCount was
+  // taken out of the ribbon, and the only thing it still carried was a copy of
+  // the old banner text that nothing could ever display. Removed rather than
+  // left as a second place where that sentence lives.
 
   // ----- Return from Stripe checkout -----
   (function(){
