@@ -19,7 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { translate, extractStrings, loadDict, applyHtmlRules } from "./i18n.mjs";
-import { jsLiterals, runtimeDict, injectRuntime, decodeEntities } from "./i18n-runtime.mjs";
+import { jsLiterals, phraseKeys, runtimeDict, injectRuntime, decodeEntities } from "./i18n-runtime.mjs";
 
 const SRC = "index.html";
 
@@ -613,9 +613,26 @@ if (fs.existsSync("sitemap.xml")) {
   write("i18n/js-fragments.txt",
     "# " + jsFrag.length + " fragments the application glues to data at runtime.\n" +
     "# These never exist as one text node, so no dictionary entry can reach them.\n" +
-    "# Translating one means rewriting its call site to emit a whole sentence.",
+    "# Translating one means rewriting its call site to emit a whole sentence\n" +
+    "# through phrase(), which is what was done to the rest of them.\n" +
+    "#\n" +
+    "# What is left here is not a backlog. A title suffix whose whole title is\n" +
+    "# already a dictionary key, an Authorization header, and a console.warn\n" +
+    "# addressed to whoever is running the migration. None of the three is text\n" +
+    "# a buyer ever sees.",
     jsFrag);
+  // A phrase() the dictionary has never heard of is silent at runtime: it
+  // formats the English and carries on. Loud here instead.
+  const noPhrase = [...phraseKeys(html)].filter((k) => {
+    const d = decodeEntities(k).replace(/\s+/g, " ").trim();
+    return !(k in NL_JS) && !(d in NL_RUNTIME) && !covered.has(d);
+  });
+  if (noPhrase.length) throw new Error(
+    "phrase() keys with no Dutch entry, add them to i18n/nl-js.json:\n  " +
+    noPhrase.sort().map((k) => JSON.stringify(k)).join("\n  "));
+
   console.log("nl: runtime dictionary " + Object.keys(NL_RUNTIME).length + " entries shipped, " +
+    phraseKeys(html).size + " phrase() keys all translated, " +
     jsOpen.length + " js strings open, " + jsFrag.length + " fragments at call sites");
 }
 

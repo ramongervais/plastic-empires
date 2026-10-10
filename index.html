@@ -4133,7 +4133,7 @@
           var b = document.createElement('button');
           b.className = 'rb-dot' + (k === 0 ? ' on' : '');
           b.type = 'button';
-          b.setAttribute('aria-label', 'Photograph ' + (k + 1) + ' of ' + c.imgs.length);
+          b.setAttribute('aria-label', phrase('Photograph {n} of {total}', { n: k + 1, total: c.imgs.length }));
           b.addEventListener('click', function(){ idx = k; paint(); go(); });
           c.dots.appendChild(b);
         });
@@ -6008,7 +6008,7 @@
     slides.forEach((_, n) => {
       const d = document.createElement('button');
       d.className = 'cdot' + (n === 0 ? ' on' : '');
-      d.setAttribute('aria-label', 'Photo ' + (n + 1));
+      d.setAttribute('aria-label', phrase('Photo {n}', { n: n + 1 }));
       d.addEventListener('click', () => go(n));
       dotsWrap.appendChild(d);
     });
@@ -6092,18 +6092,21 @@
     if (D && D[s] !== undefined) s = D[s];
     return s.replace(/\{(\w+)\}/g, (_, k) => (vals && vals[k] != null ? vals[k] : ''));
   }
+  // Dates follow the dictionary too. Seven calls were hard-wired to en-GB,
+  // which put "10 Oct 2026" in the middle of a Dutch sentence.
+  const LOC = () => (window.__NL__ ? 'nl-NL' : 'en-GB');
   function openBid(name, bid, bids, lotId, sellerId){
     track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
     const live = !!(SB && lotId);
-    openModal('Place a bid', name, 'Current bid ' + eur(bid) + ' · ' + bids + ' bids. Enter at least ' + eur(minNext) + '.');
+    openModal('Place a bid', name, phrase('Current bid {bid} · {n} bids. Enter at least {min}.', { bid: eur(bid), n: bids, min: eur(minNext) }));
     bidForm.hidden = false;
     const input = document.getElementById('bidInput');
     input.value = minNext; input.min = minNext;
     document.getElementById('bidHint').textContent = live ? 'Binding bid · a hidden reserve may apply.' : 'Binding bid · a hidden reserve may apply · layout preview only.';
     document.getElementById('bidConfirm').onclick = async () => {
       const v = parseInt(input.value, 10);
-      if (!v || v < minNext) { document.getElementById('bidHint').textContent = 'Enter at least ' + eur(minNext) + '.'; input.focus(); return; }
+      if (!v || v < minNext) { document.getElementById('bidHint').textContent = phrase('Enter at least {min}.', { min: eur(minNext) }); input.focus(); return; }
       let extended = false;
       if (live) {
         if (!authUser) { openAuth(); return; }
@@ -6342,9 +6345,13 @@
         const now = fresh.reduce((a, f) => a + (f.now || 0), 0);
         const note = document.createElement('div');
         note.className = 'dz-size';
-        note.textContent = files.length + (files.length === 1 ? ' photo' : ' photos')
-          + ' · first one is the cover buyers see'
-          + (fresh.length ? ' · ' + kb(now) + ' to upload' + (was > now * 1.15 ? ' (resized from ' + kb(was) + ')' : '') : '');
+        note.textContent =
+          phrase(files.length === 1 ? '{n} photo' : '{n} photos', { n: files.length })
+          + ' · ' + phrase('first one is the cover buyers see')
+          + (fresh.length
+            ? ' · ' + phrase('{size} to upload', { size: kb(now) })
+              + (was > now * 1.15 ? ' ' + phrase('(resized from {size})', { size: kb(was) }) : '')
+            : '');
         thumbs.appendChild(note);
       }
       curateBtn.disabled = files.filter(f => !f.existing).length === 0;
@@ -6727,7 +6734,7 @@
       }
       if (c.compsSkipped){
         return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span>not checked</span></div>' +
-          '<div class="comps-none">Below around ' + eur(c.compsSkipped) + ' a market search costs roughly what the lot is worth, and for inexpensive pieces it usually finds nothing genuinely comparable. The estimate above is the curator\'s reading of the photos. If you think this one is worth more than it looks, check it anyway.' +
+          '<div class="comps-none">' + phrase('Below around {amount} a market search costs roughly what the lot is worth, and for inexpensive pieces it usually finds nothing genuinely comparable. The estimate above is the curator\'s reading of the photos. If you think this one is worth more than it looks, check it anyway.', { amount: eur(c.compsSkipped) }) +
           '<button type="button" class="stamp-btn" id="compsForce" style="margin-top:12px">Check the market anyway</button></div></div>';
       }
       const comps = (c.comps || []).filter(k => k && k.url && k.priceEur);
@@ -6736,7 +6743,7 @@
           ? 'The market check could not run this time, so the estimate is the curator\'s own reading of the photos.'
           : 'No recent sales were found for this exact toy, so the estimate is our own reading of the photos.';
         return '<div class="comps"><div class="comps-h"><span>Price evidence</span><span>none found</span></div>' +
-          '<div class="comps-none">' + why + ' Treat it as a starting point, and set the price yourself if you know this toy better than we do.' +
+          '<div class="comps-none">' + why + ' ' + phrase('Treat it as a starting point, and set the price yourself if you know this toy better than we do.') +
           (c.compsSummary ? ' ' + esc(c.compsSummary) : '') + '</div></div>';
       }
       const rows = comps.map(k => {
@@ -6762,7 +6769,7 @@
     }
     function viewMode(){
       const c = current;
-      const est = (c.estimateLow && c.estimateHigh) ? 'Est. ' + eur(c.estimateLow) + ' – ' + eur(c.estimateHigh) : '';
+      const est = (c.estimateLow && c.estimateHigh) ? phrase('Est. {low} – {high}', { low: eur(c.estimateLow), high: eur(c.estimateHigh) }) : '';
       const condRow = '<div class="row"><span class="k">Condition</span><span class="v"><span class="cond-word">' + esc(c.condition || '-') + '</span> ' + stars(c.condition) + '</span></div>';
       const variantsHtml = (c.variants && c.variants.length)
         ? '<div class="variants"><div class="v-head">Variant · tap to correct</div>' + c.variants.map(v =>
@@ -6804,8 +6811,8 @@
           row('Shipping', 'Quoted to the buyer at checkout, and paid by them') + '</div>' +
         variantsHtml +
         '<div class="rc-bid"><div><div class="rc-conf" style="text-align:left">' + (fixed ? 'Fixed price' : 'Suggested starting price') + '</div><div class="amt">' + eur(price) + '</div></div>' +
-        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + 'Confidence: ' + esc(c.confidence || '-') +
-          (c.pricedFrom ? '<br>' + esc(c.pricedFrom === 'curator estimate' ? 'Curator estimate' : 'Estimate from ' + c.pricedFrom) : '') +
+        '<div class="rc-conf">' + (est ? esc(est) + '<br>' : '') + phrase('Confidence: {level}', { level: esc(c.confidence || '-') }) +
+          (c.pricedFrom ? '<br>' + (c.pricedFrom === 'curator estimate' ? phrase('Curator estimate') : phrase('Estimate from {source}', { source: esc(c.pricedFrom) })) : '') +
           (c.compsCached ? '<br>Comps from cache' : '') +
           (c.edited ? '<br>Edited' : '') + '</div></div>' +
         compsHtml(c) +
@@ -6878,7 +6885,7 @@
           if (error) throw error;
           const draftToy = current.toy || 'Your lot';
           resetSell();
-          openModal('Draft saved', draftToy + ' is saved as a draft.',
+          openModal('Draft saved', phrase('{lot} is saved as a draft.', { lot: draftToy }),
             'No listing was used. It is under Drafts in your account, ready to publish when you are. This page is cleared so you can start the next one.',
             { label: 'Open your drafts', go: () => routeTo('account') });
         } catch (err) {
@@ -6928,11 +6935,11 @@
             // Nobody listing a toy cares that we keep a database, and the (s) is
             // the machine showing through where a sentence should be.
             openModal(pre ? 'Lot in preview' : 'Lot listed',
-              wasToy + (pre ? ' is ready for launch.' : ' is live in the shop.'),
-              (urls.length ? 'Saved with ' + urls.length + ' photo' + (urls.length === 1 ? '' : 's') + '. ' : 'Saved. ') +
-              (pre ? 'It shows in Preview now and opens for bidding when you take it live.'
-                   : 'It now appears in the Shop.') +
-              ' The page is cleared, so you can start the next one.');
+              phrase(pre ? '{lot} is ready for launch.' : '{lot} is live in the shop.', { lot: wasToy }),
+              (urls.length ? phrase(urls.length === 1 ? 'Saved with {n} photo.' : 'Saved with {n} photos.', { n: urls.length }) : phrase('Saved.')) + ' ' +
+              phrase(pre ? 'It shows in Preview now and opens for bidding when you take it live.'
+                         : 'It now appears in the Shop.') + ' ' +
+              phrase('The page is cleared, so you can start the next one.'));
           } catch (err) {
             const msg = String((err && err.message) || err);
             if (/NO_TOKENS/.test(msg)) openModal('Out of listings', 'No listings left this month.', 'You need one listing to publish a lot. Open your account to buy more, or switch to Trader for 50 listings a month.');
@@ -6941,7 +6948,7 @@
           return;
         }
         saveDraftLot(current);
-        openModal('Lot submitted', (current.toy || 'Your toy') + ' is now in your shop.', 'Added to the Shop as a draft lot, stored in this browser for the preview.');
+        openModal('Lot submitted', phrase('{lot} is now in your shop.', { lot: current.toy || phrase('Your toy') }), 'Added to the Shop as a draft lot, stored in this browser for the preview.');
       });
     }
 
@@ -7073,7 +7080,7 @@
           // so they can set it. There is nothing to apply any more: the buyer is
           // quoted live for their own country and pays that.
           hint.innerHTML = why + ', which is <b>' + q.band.toLowerCase() + '</b>: about ' +
-            eur(q.nl) + ' within the Netherlands, ' + eur(q.eu) + ' to the EU, ' + eur(q.row) + ' beyond it. ' +
+            phrase('{nl} within the Netherlands, {eu} to the EU, {row} beyond it.', { nl: eur(q.nl), eu: eur(q.eu), row: eur(q.row) }) + ' ' +
             '<span style="color:var(--ink-3)">Your buyer is quoted their own country&rsquo;s rate at checkout and pays it.</span>';
         }
         if (sizeBox) sizeBox.addEventListener('click', e => {
@@ -7157,7 +7164,7 @@
         '<div class="seller-id">' +
           '<div class="ey">Seller · ' + s.type + ' · ' + s.location + '</div>' +
           '<h1 class="seller-name">' + s.name + '</h1>' +
-          '<div class="seller-meta">' + s.handle + ' · Member since ' + s.since + (s.verified ? ' · <span class="verified">✓ Verified</span>' : '') + '</div>' +
+          '<div class="seller-meta">' + s.handle + ' · ' + phrase('Member since {date}', { date: s.since }) + (s.verified ? ' · <span class="verified">✓ Verified</span>' : '') + '</div>' +
           '<div class="seller-rating">' + qstarsPct(s.rating / 5 * 100) + ' <b>' + s.rating.toFixed(1) + '</b> · ' + s.reviews + ' reviews</div>' +
           // Same controls as the real seller page. The demo sellers carry no social
           // handles, so there is nothing on the other side of a separator.
@@ -7166,10 +7173,10 @@
       '</section>' +
       '<div class="seller-stats">' + statBlock(nfmt(s.sold), 'Lots sold') + statBlock(s.active, 'Active lots') + statBlock(s.rating.toFixed(1), 'Avg rating') + statBlock(nfmt(s.followers), 'Followers') + '</div>' +
       '<p class="seller-bio">' + s.bio + '</p>';
-    document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + s.name + '.', 'On the live site you get notified when this seller lists a new lot. Layout preview.'));
+    document.getElementById('followBtn').addEventListener('click', () => openModal('Following', phrase('You follow {seller}.', { seller: s.name }), 'On the live site you get notified when this seller lists a new lot. Layout preview.'));
     document.getElementById('msgBtn').addEventListener('click', () => openModal('Message', 'Contact ' + s.name + '.', 'On the live site this opens a message thread with the seller. Layout preview.'));
 
-    document.getElementById('sellerLotsIntro').textContent = s.name + ' has ' + s.lots.length + ' lots live right now.';
+    document.getElementById('sellerLotsIntro').textContent = phrase('{seller} has {n} lots live right now.', { seller: s.name, n: s.lots.length });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = s.lots.map(l =>
       '<article class="artifact-card">' +
@@ -7235,7 +7242,7 @@
           '<h1 class="seller-name">' + e(name) + '</h1>' +
           // A handle only when there is one. The old fallback built one from the
           // email prefix, which produced '@ramongervais+1' on the second account.
-          (p.handle ? '<div class="seller-meta">@' + e(p.handle) + (since ? ' · Member since ' + since : '') + '</div>'
+          (p.handle ? '<div class="seller-meta">@' + e(p.handle) + (since ? ' · ' + phrase('Member since {date}', { date: since }) : '') + '</div>'
                     : (since ? '<div class="seller-meta">Member since ' + since + '</div>' : '')) +
           (revCount ? '<div class="seller-rating">' + qstarsPct(avg / 5 * 100) + ' <b>' + avg.toFixed(1) + '</b> · ' + revCount + ' review' + (revCount > 1 ? 's' : '') + '</div>' : '') +
           // One row: what you can do to this seller, then where else to find them.
@@ -7250,7 +7257,7 @@
       '</section>' +
       '<div class="seller-stats">' + statBlock(soldCount, 'Lots sold') + statBlock(liveLots.length, 'Active lots') + statBlock(lots.length, 'Total lots') + statBlock(revCount ? avg.toFixed(1) : '-', 'Avg rating') + '</div>' +
       (p.bio ? '<p class="seller-bio">' + e(p.bio) + '</p>' : '') +
-      (reviews.length ? '<div class="seller-reviews"><div class="ey" style="margin:28px 0 10px">Reviews</div>' + reviews.map(r => '<div class="rev-item"><div class="rev-item-h">' + qstarsPct(Number(r.rating) / 5 * 100) + '<span class="rev-date">' + new Date(r.created_at).toLocaleDateString('en-GB') + '</span></div>' + (r.body ? '<div class="rev-body">' + e(r.body) + '</div>' : '') + '</div>').join('') + '</div>' : '');
+      (reviews.length ? '<div class="seller-reviews"><div class="ey" style="margin:28px 0 10px">Reviews</div>' + reviews.map(r => '<div class="rev-item"><div class="rev-item-h">' + qstarsPct(Number(r.rating) / 5 * 100) + '<span class="rev-date">' + new Date(r.created_at).toLocaleDateString(LOC()) + '</span></div>' + (r.body ? '<div class="rev-body">' + e(r.body) + '</div>' : '') + '</div>').join('') + '</div>' : '');
     // If the logo file is gone, fall back to the monogram rather than leaving a
     // broken image in the hero. Done here instead of an inline onerror: the same
     // markup nested three levels of quotes and could not be read.
@@ -7259,9 +7266,11 @@
       const img = box && box.querySelector('img');
       if (img) img.addEventListener('error', () => { box.className = 'seller-mono'; box.textContent = mono; });
     }
-    document.getElementById('followBtn').addEventListener('click', () => openModal('Following', 'You follow ' + name + '.', 'You will be notified when this seller lists a new lot.'));
+    document.getElementById('followBtn').addEventListener('click', () => openModal('Following', phrase('You follow {seller}.', { seller: name }), 'You will be notified when this seller lists a new lot.'));
     document.getElementById('msgBtn').addEventListener('click', () => openMessage(id, name));
-    document.getElementById('sellerLotsIntro').textContent = liveLots.length ? (name + ' has ' + liveLots.length + ' lot' + (liveLots.length > 1 ? 's' : '') + ' live right now.') : (name + ' has no live lots right now.');
+    document.getElementById('sellerLotsIntro').textContent = liveLots.length
+      ? phrase(liveLots.length === 1 ? '{seller} has {n} lot live right now.' : '{seller} has {n} lots live right now.', { seller: name, n: liveLots.length })
+      : phrase('{seller} has no live lots right now.', { seller: name });
     const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
@@ -7559,7 +7568,7 @@
       }
       const b = more.querySelector('button');
       b.disabled = false;
-      b.textContent = 'Load more · ' + Math.min(SHOP_PAGE, activeTotal - activeShown) + ' of ' + (activeTotal - activeShown) + ' left';
+      b.textContent = phrase('Load more · {n} of {total} left', { n: Math.min(SHOP_PAGE, activeTotal - activeShown), total: activeTotal - activeShown });
       more.hidden = false;
     } else if (more) { more.hidden = true; }
   }
@@ -7659,7 +7668,7 @@
       if (mapped.length < total){
         moreEl.hidden = false;
         btn.disabled = false;
-        btn.textContent = 'Load more · ' + Math.min(SHOP_PAGE, total - mapped.length) + ' of ' + (total - mapped.length) + ' left';
+        btn.textContent = phrase('Load more · {n} of {total} left', { n: Math.min(SHOP_PAGE, total - mapped.length), total: total - mapped.length });
         if (!btn.dataset.w){
           btn.dataset.w = '1';
           btn.addEventListener('click', () => { btn.disabled = true; btn.textContent = 'Loading…'; soldPage++; renderSold(false); });
@@ -7988,8 +7997,8 @@
     const paying = !!mine && mine.cents > 0;
 
     const allowance = mine
-      ? mine.listings + ' added each month' + (mine.cap > mine.listings ? ' &middot; rolls over up to ' + mine.cap : '')
-      : 'monthly allowance';
+      ? phrase('{n} added each month', { n: mine.listings }) + (mine.cap > mine.listings ? ' &middot; ' + phrase('rolls over up to {cap}', { cap: mine.cap }) : '')
+      : phrase('monthly allowance');
 
     // Where the buttons go. Anything paid routes through data-plan, which the
     // one click handler turns into a purchase or a move as appropriate.
@@ -8007,14 +8016,14 @@
     // and cannot be planned around.
     const pendAt = prefs.plan_pending_at ? new Date(prefs.plan_pending_at) : null;
     const pendWhen = (pendAt && !isNaN(pendAt))
-      ? pendAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+      ? pendAt.toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' })
       : null;
 
     return '<div class="mship"><div class="mship-l">' +
         '<div class="mship-plan">' + mkEsc(mine ? mine.name : (key.charAt(0).toUpperCase() + key.slice(1))) +
           (paying ? '<span class="mship-badge">Active</span>' : '') + '</div>' +
-        '<div class="mship-tok">' + tokens + ' listing' + (tokens === 1 ? '' : 's') + ' left &middot; ' + allowance +
-          (mine ? ' &middot; ' + (mine.commission * 100).toFixed(0) + '% selling fee' : '') + '</div>' +
+        '<div class="mship-tok">' + phrase(tokens === 1 ? '{n} listing left' : '{n} listings left', { n: tokens }) + ' &middot; ' + allowance +
+          (mine ? ' &middot; ' + phrase('{pct}% selling fee', { pct: (mine.commission * 100).toFixed(0) }) : '') + '</div>' +
       '</div>' +
       '<div class="mship-r">' + btns +
         (paying ? '<button class="acct-signout" id="mManage" type="button">Billing</button>' : '') +
@@ -8170,7 +8179,7 @@
         : '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>';
       return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
     }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>');
-    const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), 'Won at ' + money(bidTop[l.id].amount))).join('') : '<div class="acct-empty">No lots won yet.</div>';
+    const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), phrase('Won at {amount}', { amount: money(bidTop[l.id].amount) }))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:right">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:right">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">Lots you watch will appear here. <a data-nav="home" href="#collection" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Browse auctions</a></div>';
     // lot_drafts may not exist yet if section 6 of the schema has not been run;
@@ -8183,7 +8192,7 @@
       const n = (d.image_urls || []).length;
       return '<div class="acct-row"><div class="th"' + (img ? ' style="background-image:url(' + img + ');background-size:cover;background-position:center"' : '') + '></div>' +
         '<div class="nm"><div class="t">' + e(pl.toy || 'Untitled draft') + '</div><div class="st">' + e(meta || 'Draft') +
-        ' · saved ' + e(new Date(d.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })) + '</div></div>' +
+        ' · ' + phrase('saved {date}', { date: e(new Date(d.updated_at).toLocaleDateString(LOC(), { day: '2-digit', month: 'short' })) }) + '</div></div>' +
         '<div><div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">' +
           '<button class="acct-pay" data-draft-open="' + e(d.id) + '" type="button">Open</button>' +
           '<button class="acct-signout" data-draft-del="' + e(d.id) + '" type="button">Delete</button>' +
@@ -8197,11 +8206,11 @@
             ? '<button class="acct-pay" data-review="' + e(l.id) + '" data-seller="' + e(l.seller_id) + '" data-name="' + e(l.toy) + '">Leave a review</button>'
             : '<div class="st">Your lot</div>');
       const wd = l.withdrawn_at
-        ? '<div class="st">Withdrawn ' + new Date(l.withdrawn_at).toLocaleDateString('en-GB') + '</div>'
+        ? '<div class="st">Withdrawn ' + new Date(l.withdrawn_at).toLocaleDateString(LOC()) + '</div>'
         : (canWithdraw(l) ? '<button class="acct-signout" data-withdraw="' + e(l.id) + '" data-name="' + e(l.toy) + '">Withdraw purchase</button>' : '');
       // The invoice number belongs on the purchase, not only in an email that
       // gets filed away or lost. It is what a buyer quotes when they write in.
-      const sub = 'Bought' + (l.invoice_no ? ' \u00b7 Invoice ' + l.invoice_no : '');
+      const sub = phrase('Bought') + (l.invoice_no ? ' \u00b7 ' + phrase('Invoice {no}', { no: l.invoice_no }) : '');
       return row(l, '<div style="text-align:right;display:grid;gap:6px;justify-items:end">' + rev + wd + '</div>', sub);
     }).join('') : '';
     // Nothing listed, nothing bid on, nothing watched, nothing bought, nothing
@@ -8283,7 +8292,7 @@
     // because that is the durable medium the law asks for.
     body.querySelectorAll('[data-withdraw]').forEach(b => b.addEventListener('click', async () => {
       const name = b.dataset.name || 'this purchase';
-      if (!confirm('Withdraw your purchase of ' + name + '?\n\nYou do not have to give a reason. We email you a confirmation with the time, and you then have fourteen days to send it back.')) return;
+      if (!confirm(phrase('Withdraw your purchase of {lot}?', { lot: name }) + '\n\n' + phrase('You do not have to give a reason. We email you a confirmation with the time, and you then have fourteen days to send it back.'))) return;
       b.disabled = true; b.textContent = 'Withdrawing…';
       try {
         const { data: sess } = await SB.auth.getSession();
@@ -8295,7 +8304,7 @@
         });
         const d = await r.json();
         if (!r.ok || d.error) throw new Error(d.error || 'Could not record it');
-        openModal('Withdrawal recorded', 'We have your withdrawal for ' + name + '.',
+        openModal('Withdrawal recorded', phrase('We have your withdrawal for {lot}.', { lot: name }),
           'A confirmation is on its way to your email with the date and time. Send the item back within fourteen days of that notice, and we refund within fourteen days of receiving the withdrawal. If it arrived damaged or not as described, tell us and the return postage is ours.');
         renderAccount();
       } catch (err) {
@@ -8315,7 +8324,7 @@
         else openModal('Could not relist', 'Something went wrong.', error.message || String(error));
         return;
       }
-      openModal('Relisted', (b.dataset.label || 'Your lot') + ' is back on.', 'It is back in the shop with the previous bids cleared, and it runs for another 7 days from the first new bid. One listing was used.');
+      openModal('Relisted', phrase('{lot} is back on.', { lot: b.dataset.label || phrase('Your lot') }), 'It is back in the shop with the previous bids cleared, and it runs for another 7 days from the first new bid. One listing was used.');
       renderAccount();
     }));
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
@@ -8324,8 +8333,8 @@
     if (cSel) cSel.addEventListener('change', async function(){
       var msg = document.getElementById('acctCountryMsg');
       var res = await SB.from('profiles').update({ country: cSel.value || null }).eq('id', uid);
-      msg.textContent = res.error ? ('Could not save: ' + res.error.message)
-        : (cSel.value ? 'Saved. You post from ' + countryName(cSel.value) + '.' : 'Cleared.');
+      msg.textContent = res.error ? phrase('Could not save: {reason}', { reason: res.error.message })
+        : (cSel.value ? phrase('Saved. You post from {country}.', { country: countryName(cSel.value) }) : phrase('Cleared.'));
     });
 
     // ----- Getting paid -----
@@ -8406,7 +8415,7 @@
           bfPick.textContent = 'Replace logo';
           bfMsg('Logo saved. It is on your public page now.', 'good');
         } catch (err){
-          bfMsg('Could not save the logo: ' + ((err && err.message) || String(err)), 'bad');
+          bfMsg(phrase('Could not save the logo: {reason}', { reason: (err && err.message) || String(err) }), 'bad');
         }
         bfPick.disabled = false;
       });
@@ -8416,7 +8425,7 @@
       if (!confirm('Remove your logo? Your page falls back to the monogram.')) return;
       bfDrop.disabled = true;
       const res = await SB.from('profiles').update({ logo_url: null }).eq('id', uid);
-      if (res.error){ bfDrop.disabled = false; bfMsg('Could not remove it: ' + res.error.message, 'bad'); return; }
+      if (res.error){ bfDrop.disabled = false; bfMsg(phrase('Could not remove it: {reason}', { reason: res.error.message }), 'bad'); return; }
       // Take the file too, not just the reference. A logo left in a public bucket
       // is still fetchable by anyone who saw the URL.
       try { await SB.storage.from('lots').remove([uid + '/profile/logo.png']); } catch (e) {}
@@ -8472,12 +8481,12 @@
         } else if (error.code === '23505' || /duplicate key|already exists/i.test(error.message || '')){
           bfMsg('That handle is taken. Try another.', 'bad');
         } else if (/violates check constraint/i.test(error.message || '')){
-          bfMsg('One of those values was refused: ' + error.message, 'bad');
+          bfMsg(phrase('One of those values was refused: {reason}', { reason: error.message }), 'bad');
         } else if (/permission denied|not allowed/i.test(error.message || '')){
           console.error('Shopfront save refused: run section 23 of admin/schema.sql.');
           bfMsg('We could not save that just now. Please try again in a moment.', 'bad');
         } else {
-          bfMsg('Could not save: ' + (error.message || String(error)), 'bad');
+          bfMsg(phrase('Could not save: {reason}', { reason: error.message || String(error) }), 'bad');
         }
         return;
       }
@@ -8576,7 +8585,8 @@
       if (!picked.length) return;
       const room = OFFER_MAX - shots.length;
       if (room <= 0){ say('Eight photographs is the most we need. Remove one to add another.', true); return; }
-      say('Preparing ' + Math.min(picked.length, room) + ' photo' + (Math.min(picked.length, room) === 1 ? '' : 's') + '\u2026');
+      const taking = Math.min(picked.length, room);
+      say(phrase(taking === 1 ? 'Preparing {n} photo\u2026' : 'Preparing {n} photos\u2026', { n: taking }));
       for (const f of picked.slice(0, room)){
         // 1400px at 0.7 keeps a figure readable and a maker's stamp legible while
         // landing around 150 kB, which matters because eight of them travel in one
@@ -8778,7 +8788,7 @@
       const isMine = p.key === mine;
       const cta = isMine
         ? '<button class="btn ghost t-cta" type="button" disabled>Current package</button>'
-        : '<button class="btn accent t-cta" type="button" data-plan="' + mkEsc(p.key) + '">' + (p.cents === 0 ? 'Switch to Starter' : 'Choose ' + mkEsc(p.name)) + '</button>';
+        : '<button class="btn accent t-cta" type="button" data-plan="' + mkEsc(p.key) + '">' + (p.cents === 0 ? phrase('Switch to Starter') : phrase('Choose {plan}', { plan: mkEsc(p.name) })) + '</button>';
       const fit = PLAN_FIT[p.key] || '';
       return '<div class="tier' + (isMine ? ' on' : '') + '">' +
         (p.key === 'trader' ? '<div class="t-tag">Most popular</div>' : '') +
@@ -8849,10 +8859,10 @@
       const lo = be[p.key], next = ordered[i + 1], hi = next ? be[next.key] : null;
       if (lo == null && hi != null) bands.push(mkEsc(p.name) + ' is cheapest below roughly ' + money0(hi) + ' a month');
       else if (lo != null && hi != null) bands.push(mkEsc(p.name) + ' is cheapest from roughly ' + money0(lo) + ' to ' + money0(hi));
-      else if (lo != null) bands.push(mkEsc(p.name) + ' is cheapest above ' + money0(lo));
+      else if (lo != null) bands.push(phrase('{plan} is cheapest above {amount}', { plan: mkEsc(p.name), amount: money0(lo) }));
     });
-    note.innerHTML = 'Bold shows the cheapest package at each sales level. ' +
-      bands.join('. ') + '. Total cost includes both the monthly package fee and selling fee.';
+    note.innerHTML = phrase('Bold shows the cheapest package at each sales level.') + ' ' +
+      bands.join('. ') + '. ' + phrase('Total cost includes both the monthly package fee and selling fee.');
   }
 
   // The plan on the account, read from whatever the last account render fetched.
@@ -8905,18 +8915,18 @@
         '<td>' + mkEsc(r.p.name) + '</td>' +
         '<td class="n">' + eur(r.cost) + '</td>' +
         '<td class="n">' + (monthly ? (r.cost / monthly * 100).toFixed(1) + '%' : '-') + '</td>' +
-        '<td>' + (r.fits ? 'Yes' : 'No, only ' + r.p.listings + ' listings') + '</td></tr>').join('') +
+        '<td>' + (r.fits ? phrase('Yes') : phrase('No, only {n} listings', { n: r.p.listings })) + '</td></tr>').join('') +
       '</tbody></table>' +
       '<div class="ch-note">' +
         (best.p.cents === 0
           ? 'At this volume the free package is the cheapest thing we have. Come back when you are selling more; nothing here gets better by paying sooner.'
-          : 'On Starter the same month would cost you ' + eur(planCost(plans[0], monthly)) + ', so ' + mkEsc(best.p.name) + ' saves you ' + eur(planCost(plans[0], monthly) - best.cost) + ' a month.') +
-        ' Catawiki would take ' + eur(monthly * 0.197) + ' of it, counting the 9% they charge your buyer.' +
+          : phrase('On Starter the same month would cost you {starter}, so {plan} saves you {saving} a month.', { starter: eur(planCost(plans[0], monthly)), plan: mkEsc(best.p.name), saving: eur(planCost(plans[0], monthly) - best.cost) })) +
+        ' ' + phrase('Catawiki would take {amount} of it, counting the 9% they charge your buyer.', { amount: eur(monthly * 0.197) }) +
       '</div>' +
       '<div class="ch-note">This counts one listing per sale. Not everything sells the first time it is listed, so if you relist much, pick the package with room above your number rather than the one that exactly matches it. Unused listings roll over, so headroom is not wasted.</div>' +
       (best.p.key === currentPlanKey()
         ? '<div class="ch-note">You are already on ' + mkEsc(best.p.name) + '.</div>'
-        : '<button class="btn accent" type="button" style="margin-top:18px" data-plan="' + mkEsc(best.p.key) + '">' + (best.p.cents === 0 ? 'Move to Starter' : 'Choose ' + mkEsc(best.p.name)) + '</button>');
+        : '<button class="btn accent" type="button" style="margin-top:18px" data-plan="' + mkEsc(best.p.key) + '">' + (best.p.cents === 0 ? phrase('Move to Starter') : phrase('Choose {plan}', { plan: mkEsc(best.p.name) })) + '</button>');
   }
   ['chSales', 'chPrice'].forEach(id => {
     document.addEventListener('input', e => { if (e.target && e.target.id === id) runChooser(); });
@@ -8978,16 +8988,16 @@
       // Choosing the package you are already on, with a move down booked, is the
       // cancel. The worker releases the Stripe schedule and answers this.
       if (d.cancelled){
-        openModal('Change cancelled', 'You are staying on ' + target.name + '.',
+        openModal('Change cancelled', phrase('You are staying on {plan}.', { plan: target.name }),
           'The booked move has been called off. Nothing about your package changes, and you can book it again whenever you want to.');
       } else if (d.unchanged){
-        openModal('Already on ' + target.name, 'Nothing to change.', 'You are on this package and it is billing correctly.');
+        openModal(phrase('Already on {plan}', { plan: target.name }), 'Nothing to change.', 'You are on this package and it is billing correctly.');
       } else if (going_down){
-        const when = d.at ? new Date(d.at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'the end of the period you have paid for';
-        openModal('Change booked', 'You move to ' + target.name + ' on ' + when + '.',
+        const when = d.at ? new Date(d.at * 1000).toLocaleDateString(LOC(), { day: 'numeric', month: 'long', year: 'numeric' }) : phrase('the end of the period you have paid for');
+        openModal('Change booked', phrase('You move to {plan} on {when}.', { plan: target.name, when: when }),
           'Nothing changes before then: you keep the package you paid for, and the listings you have built up stay yours. We will email you a few days before it happens, and you can cancel it from your account until then.');
       } else {
-        openModal('You are on ' + target.name, target.listings + ' listings a month and ' + (target.commission * 100).toFixed(0) + '% selling fee, from now.',
+        openModal(phrase('You are on {plan}', { plan: target.name }), phrase('{n} listings a month and {pct}% selling fee, from now.', { n: target.listings, pct: (target.commission * 100).toFixed(0) }),
           'Your card was charged only the difference for the rest of this month, not a second full month.');
       }
       PLAN_NOW = null;                        // the plan just moved, so re-read it
@@ -9306,7 +9316,7 @@
     const money = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
     if (SB && !authUser){ openAuth(); return; }
     if (!PAY_URL){
-      openModal('Secure checkout', opts.label || 'Payment', (opts.kind === 'win' ? 'This will take you to a secure Stripe checkout to pay ' + money(opts.amount) + ' for the lot you won.' : 'This will take you to a secure Stripe checkout to buy this lot now for ' + money(opts.amount) + '.') + ' Payments are being wired up and go live shortly.');
+      openModal('Secure checkout', opts.label || 'Payment', phrase(opts.kind === 'win' ? 'This will take you to a secure Stripe checkout to pay {amount} for the lot you won.' : 'This will take you to a secure Stripe checkout to buy this lot now for {amount}.', { amount: money(opts.amount) }) + ' ' + phrase('Payments are being wired up and go live shortly.'));
       return;
     }
     // The lot's own postage columns, so the total shown is the total charged.
@@ -9334,7 +9344,7 @@
       try {
         const r = await fetch(MSG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sellerId: sellerId, message: t, fromEmail: authUser ? authUser.email : '', origin: location.origin }) });
         const d = await r.json();
-        if (d && d.ok){ form.remove(); document.getElementById('modalEy').textContent = 'Sent'; document.getElementById('modalTitle').textContent = 'Your message is on its way.'; document.getElementById('modalBody').textContent = 'We emailed it to ' + sellerName + '. They will reply to your address.'; }
+        if (d && d.ok){ form.remove(); document.getElementById('modalEy').textContent = 'Sent'; document.getElementById('modalTitle').textContent = 'Your message is on its way.'; document.getElementById('modalBody').textContent = phrase('We emailed it to {seller}. They will reply to your address.', { seller: sellerName }); }
         else { document.getElementById('msgHint').textContent = (d && d.error) || 'Could not send. Please try again.'; btn.disabled = false; }
       } catch (err){ document.getElementById('msgHint').textContent = err.message; btn.disabled = false; }
     });
@@ -9349,11 +9359,11 @@
     // exactly the wrong conclusion. Someone not signed in used to see nothing at
     // all, and they are the person who most needs to hear it.
     const free = 'Identification is free';
-    if (!SB || !authUser){ el.innerHTML = free + ' &middot; a listing is only used when you sell'; return; }
+    if (!SB || !authUser){ el.innerHTML = free + ' &middot; ' + phrase('a listing is only used when you sell'); return; }
     try {
       const { data } = await SB.from('profiles').select('tokens').eq('id', authUser.id).single();
       const t = data ? data.tokens : null;
-      if (t == null){ el.innerHTML = free + ' &middot; a listing is only used when you sell'; return; }
+      if (t == null){ el.innerHTML = free + ' &middot; ' + phrase('a listing is only used when you sell'); return; }
       el.innerHTML = free + ' &middot; <b>' + t + '</b> listing' + (t === 1 ? '' : 's') + ' left'
         + (t <= 0 ? ' &middot; <a data-nav="account">buy more</a>' : '');
     } catch (e){ el.innerHTML = free; }
@@ -9362,7 +9372,7 @@
   // ----- Leave a seller review (buyer only, one per purchase) -----
   function openReview(sellerId, lotId, lotName){
     if (SB && !authUser){ openAuth(); return; }
-    openModal('Review', 'Rate this seller', 'How was your purchase of ' + (lotName || 'this lot') + '? Your review appears on the seller profile.');
+    openModal('Review', 'Rate this seller', phrase('How was your purchase of {lot}? Your review appears on the seller profile.', { lot: lotName || phrase('this lot') }));
     const body = document.getElementById('modalBody');
     const form = document.createElement('div'); form.className = 'bidform'; form.style.marginTop = '14px';
     form.innerHTML = '<div class="rev-stars" id="revStars">' + [1, 2, 3, 4, 5].map(n => '<button type="button" class="rev-star" data-n="' + n + '" aria-label="' + n + ' star' + (n > 1 ? 's' : '') + '">&#9733;</button>').join('') + '</div><textarea id="revText" class="ei" rows="3" placeholder="What was your experience? (optional)"></textarea><div class="bidinput-row" style="margin-top:10px"><button class="btn accent" type="button" id="revSend">Post review</button></div><div class="bidhint" id="revHint"></div>';
@@ -9379,7 +9389,7 @@
       form.remove();
       document.getElementById('modalEy').textContent = 'Thank you';
       document.getElementById('modalTitle').textContent = 'Review posted.';
-      document.getElementById('modalBody').textContent = 'Your review now appears on ' + (lotName ? 'the ' : 'the ') + 'seller profile.';
+      document.getElementById('modalBody').textContent = phrase('Your review now appears on the seller profile.');
       if (typeof renderAccount === 'function') renderAccount();
     });
   }
@@ -9541,7 +9551,7 @@
           '<div class="zoom-lens" id="zoomLens" hidden></div>' +
         '</div>' +
         (imgs.length > 1 ? '<div class="lot-thumbs">' + imgs.map((u, i) => '<button class="lot-th' + (i === 0 ? ' active' : '') + '" type="button" data-img="' + e(u) + '" style="background-image:url(' + e(u) + ')"></button>').join('') + '</div>' : '') +
-        '<div class="vcap" style="text-align:left">' + (imgs.length ? imgs.length + ' photo' + (imgs.length > 1 ? 's' : '') + ' from the seller.' : 'No photos yet.') + '</div>' +
+        '<div class="vcap" style="text-align:left">' + (imgs.length ? phrase(imgs.length === 1 ? '{n} photo from the seller.' : '{n} photos from the seller.', { n: imgs.length }) : 'No photos yet.') + '</div>' +
       '</div>';
     const isOwner = authUser && lot.seller_id && authUser.id === lot.seller_id;
     // Edit sits next to Remove, because this is where an owner looks for it. It
@@ -9568,13 +9578,13 @@
     const collected = !!(s && s.pickup);
     const shipStatusHtml = !isSold ? '' : collected ? (
       shipped
-        ? '<div class="won-box"><div class="won-h">Collected</div><div class="won-sub">Handed over ' + new Date(lot.shipped_at).toLocaleDateString('en-GB') + '.</div></div>'
+        ? '<div class="won-box"><div class="won-h">Collected</div><div class="won-sub">Handed over ' + new Date(lot.shipped_at).toLocaleDateString(LOC()) + '.</div></div>'
         : (isOwner
             ? '<div class="won-box"><div class="won-h">Waiting to be collected</div><div class="won-sub">' + e(s.name || 'The buyer') + ' is picking this up in person. Mark it off once they have.</div><button class="btn accent" id="shipBtn" type="button" style="margin-top:10px;width:100%">Mark as collected</button></div>'
             : '<div class="won-box"><div class="won-h">Ready to collect</div><div class="won-sub" style="white-space:pre-line">Hammer &amp; Mold, Da Costastraat 49, 2032 MG Haarlem.\nBy appointment: message the seller from your account to agree a time before you travel.</div></div>')
     ) : (
       shipped
-        ? '<div class="won-box"><div class="won-h">Shipped</div><div class="won-sub">Sent ' + new Date(lot.shipped_at).toLocaleDateString('en-GB') + ((lot.tracking && (isOwner || isBuyer)) ? ' &middot; Tracking: ' + e(lot.tracking) : '') + '</div></div>'
+        ? '<div class="won-box"><div class="won-h">Shipped</div><div class="won-sub">Sent ' + new Date(lot.shipped_at).toLocaleDateString(LOC()) + ((lot.tracking && (isOwner || isBuyer)) ? ' &middot; ' + phrase('Tracking: {code}', { code: e(lot.tracking) }) : '') + '</div></div>'
         : (isOwner
             ? '<div class="won-box"><div class="won-h">Mark as shipped</div><div class="won-sub">Add a tracking number (optional) and let the buyer know it is on the way.</div><input id="shipTrack" class="ei" placeholder="Tracking number (optional)" style="margin-top:10px"><button class="btn accent" id="shipBtn" type="button" style="margin-top:10px;width:100%">Mark as shipped</button></div>'
             : (isBuyer ? '<div class="won-box"><div class="won-h">Awaiting shipment</div><div class="won-sub">The seller has been notified and will ship your item.</div></div>' : '')));
@@ -9616,7 +9626,7 @@
         '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
-            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? 'Current bid · ' + bids.length + ' bid' + (bids.length > 1 ? 's' : '') : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '-'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
+            '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? phrase(bids.length === 1 ? 'Current bid · {n} bid' : 'Current bid · {n} bids', { n: bids.length }) : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '-'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
               (ended ? '' : '<div class="auc-del" id="lotDel">Working out delivery\u2026</div>' +
                  '<div class="del-panel" id="delPanel" hidden></div>') + '</div>' +
             '<div><div class="auc-label">' + (isPreview ? 'Opens' : (ended ? 'Auction' : (isFixed ? 'Sale' : 'Ends in'))) + '</div><div class="auc-countdown' + ((!ended && lot.extended) || isPreview ? ' ext' : '') + '">' + (isPreview ? '1 Oct 2026' : (ended ? 'Ended' : (isFixed ? 'Direct sale' : ends))) + '</div></div>' +
@@ -9701,7 +9711,7 @@
       // The text carries the toy and its maker even when a preview card does not
       // render, which matters: a link crawler does not run our JavaScript, so on
       // some apps this typed line is the only description that arrives.
-      const text = (lot.toy || 'A vintage toy') + (bits ? ', ' + bits : '') + ' at Hammer & Mold';
+      const text = phrase('{lot} at Hammer & Mold', { lot: (lot.toy || phrase('A vintage toy')) + (bits ? ', ' + bits : '') });
       const nat = document.getElementById('shNative');
       const cp = document.getElementById('shCopy');
       const wa = document.getElementById('shWa');
@@ -9885,7 +9895,7 @@
       const cheapest = opts[0];
       del.innerHTML = '+ ' + e(SHIPPING.eur(cheapest.price)) + ' delivery within ' + e(SELLER_HOME) +
         ' &middot; <button type="button" class="auc-del-more" id="delMore" aria-expanded="false">more options</button>';
-      if (sh) sh.textContent = opts.map(o => o.label + ' ' + SHIPPING.eur(o.price)).join(' \u00b7 ') + ' \u00b7 Tracked';
+      if (sh) sh.textContent = opts.map(o => o.label + ' ' + SHIPPING.eur(o.price)).join(' \u00b7 ') + ' \u00b7 ' + phrase('Tracked');
       dp.innerHTML = opts.map(o =>
         '<div class="del-row"><span>' + e(o.label) + '</span><span>' + e(SHIPPING.eur(o.price)) + '</span></div>').join('') +
         '<div class="del-note">Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.</div>';
@@ -10059,7 +10069,7 @@
       (images.length > 1 ? '<button class="zoom-nav prev" type="button" aria-label="Previous">&#8249;</button><button class="zoom-nav next" type="button" aria-label="Next">&#8250;</button>' : '') +
       '<div class="zoom-stage"><img class="zoom-img" alt="" draggable="false"></div>' +
       (images.length > 1 ? '<div class="zoom-count"></div>' : '') +
-      '<div class="zoom-hint">Scroll or double-click to zoom &middot; drag to pan &middot; saved images are watermarked' + (images.length > 1 ? ' &middot; &#8249; &#8250; to browse' : '') + '</div>';
+      '<div class="zoom-hint">' + phrase('Scroll or double-click to zoom &middot; drag to pan &middot; saved images are watermarked') + (images.length > 1 ? ' &middot; ' + phrase('&#8249; &#8250; to browse') : '') + '</div>';
     document.body.appendChild(ov);
     document.body.style.overflow = 'hidden';
     const img = ov.querySelector('.zoom-img');
@@ -10121,7 +10131,7 @@
   function openAuth(){
     const u = currentUser(), b = document.getElementById('authBody');
     if (u){
-      b.innerHTML = '<div class="ey">Account</div><h3>Signed in</h3><p>Signed in as ' + escA(u) + '. Your bids, your watchlist and anything you sell live in your account, on every device you sign in on.</p><div class="buy-row"><button class="btn accent" type="button" id="authOut">Sign out</button><button class="btn ghost" type="button" id="authX">Close</button></div>';
+      b.innerHTML = '<div class="ey">Account</div><h3>Signed in</h3><p>' + phrase('Signed in as {email}. Your bids, your watchlist and anything you sell live in your account, on every device you sign in on.', { email: escA(u) }) + '</p><div class="buy-row"><button class="btn accent" type="button" id="authOut">Sign out</button><button class="btn ghost" type="button" id="authX">Close</button></div>';
       b.querySelector('#authOut').addEventListener('click', async () => { if (SB) { await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); authModal.hidden = true; });
       b.querySelector('#authX').addEventListener('click', () => authModal.hidden = true);
     } else {
@@ -10185,11 +10195,11 @@
         const who = session.user.email || 'you';
         if (isNew){
           openModal('Welcome', 'Your account is ready',
-            'Signed in as ' + who + ', and from here on that email is all you need: no password to invent and none to forget. You are back on the page you were reading. Bids, your watchlist and anything you list live in your account on every device you sign in on.',
+            phrase('Signed in as {email}, and from here on that email is all you need: no password to invent and none to forget. You are back on the page you were reading. Bids, your watchlist and anything you list live in your account on every device you sign in on.', { email: who }),
             { label: 'See my account', go: function(){ routeTo('account'); } });
         } else {
           openModal('Signed in', 'Welcome back',
-            'Signed in as ' + who + '. You are back on the page you asked the link from.');
+            phrase('Signed in as {email}. You are back on the page you asked the link from.', { email: who }));
         }
       });
     }
@@ -10243,7 +10253,7 @@
         // so this line cannot welcome someone to a tier that no longer exists.
         const p = (PLAN_CACHE || []).find(x => x.key === account) || null;
         const nm = p ? p.name : (account.charAt(0).toUpperCase() + account.slice(1));
-        openModal('You are on ' + nm, 'Your package is active.',
+        openModal(phrase('You are on {plan}', { plan: nm }), 'Your package is active.',
           (p ? p.listings + ' listings a month and ' + (p.commission * 100).toFixed(0) + '% commission. ' : '') +
           'Your account updates in a moment. You can move up or down at any time, and billing is in your account.');
       }

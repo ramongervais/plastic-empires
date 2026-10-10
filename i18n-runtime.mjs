@@ -75,6 +75,25 @@ export function runtimeDict(dict, jsDict, literals) {
   return out;
 }
 
+// Every string handed to phrase() in the application. A phrase() key with no
+// dictionary entry falls back to English without complaining, which is the
+// right behaviour at runtime and the wrong thing to find out about in six
+// months, so the build lists them.
+export function phraseKeys(html) {
+  let js = "";
+  for (const m of html.matchAll(/<script(?![^>]*src=)(?![^>]*ld\+json)[^>]*>([\s\S]*?)<\/script>/g)) js += m[1] + "\n";
+  const unq = (raw) => raw
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/\\(['"`\\])/g, "$1");
+  const out = new Set();
+  // phrase('x', …) and the singular/plural form phrase(cond ? 'one' : 'many', …)
+  for (const m of js.matchAll(/phrase\(\s*'((?:[^'\\]|\\.)*)'/g)) out.add(unq(m[1]));
+  for (const m of js.matchAll(/phrase\(\s*[^'"`,)]+\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'/g)) {
+    out.add(unq(m[1])); out.add(unq(m[2]));
+  }
+  return out;
+}
+
 const OBSERVER = `(function(){
 var D=window.__NL__||{},SKIP={SCRIPT:1,STYLE:1,TEXTAREA:1,PRE:1,CODE:1},
 A=['placeholder','title','aria-label','alt'];
