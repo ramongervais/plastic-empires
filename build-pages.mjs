@@ -50,7 +50,7 @@ const NL_PREFIX = "/nl";
 // spends crawl budget that the English pages are currently short of, and
 // invites exactly the thin-and-duplicate verdict this site can least afford.
 // The pages are live and reachable at /nl/ either way.
-const NL_PUBLIC = false;
+const NL_PUBLIC = true;
 // seen is every key the build actually looked up, across all generated pages.
 // A dictionary entry that was never looked up is dead, and that is a more
 // honest test than searching index.html: the per-page titles and descriptions
