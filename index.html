@@ -1478,6 +1478,26 @@
   }
   #view-retrobright .rb-name span{ color:var(--ink-3); letter-spacing:.1em; }
 </style>
+<script>
+  // A sentence built out of fragments and numbers never exists as one text
+  // node, so the Dutch translator that watches the document cannot see it:
+  // it matches whole nodes, which is the rule that stops it rewriting a lot
+  // title that happens to contain an English word. So write the sentence
+  // whole, with {placeholders}, translate it, and fill the numbers in after.
+  // On the English site __NL__ is absent and this is a plain format call.
+  //
+  // In the head, and not in the main script block, because the page has more
+  // than one: the Retrobrighting carousel runs first and called this before
+  // the block that defined it had been reached.
+  function phrase(s, vals){
+    const D = window.__NL__;
+    if (D && D[s] !== undefined) s = D[s];
+    return s.replace(/\{(\w+)\}/g, (_, k) => (vals && vals[k] != null ? vals[k] : ''));
+  }
+  // Dates follow the dictionary too. Seven calls were hard-wired to en-GB,
+  // which put "10 Oct 2026" in the middle of a Dutch sentence.
+  const LOC = () => (window.__NL__ ? 'nl-NL' : 'en-GB');
+</script>
 </head>
 <body>
 
@@ -5540,6 +5560,16 @@
   };
   const VIEW_BY_PATH = Object.keys(PATHS).reduce((m, k) => { m[PATHS[k]] = k; return m; }, {});
 
+  // The Dutch site is this same application under /nl/, so the router has to
+  // know about the prefix or none of it adds up: /nl/terms matched nothing in
+  // the table, routeFromPath returned false, and the caller treated it as an
+  // unknown path and showed the home view. Every Dutch page except the home
+  // page replaced itself with the home page the moment JavaScript booted.
+  //
+  // Read off the lang attribute rather than the URL, because that attribute is
+  // what the build stamped on this file and so it cannot drift from it.
+  const LANG_PREFIX = document.documentElement.lang === 'nl' ? '/nl' : '';
+
   // ---- What each path tells a crawler and a share preview ----
   // The head was one title, one description and one canonical for the entire
   // site, hardcoded and never touched. Correct for a one-page site, wrong for a
@@ -5697,7 +5727,7 @@
     // answers 200 at its trailing-slash form like everything else. The address
     // bar has to write that form or the router would quietly replace the
     // canonical the crawler was served with one that redirects.
-    const path = canonPath(extra ? base + '/' + encodeURIComponent(extra) : base);
+    const path = LANG_PREFIX + canonPath(extra ? base + '/' + encodeURIComponent(extra) : base);
     if (location.pathname !== path) history.pushState({ view: view, extra: extra || null }, '', path);
     setMeta(view, path);
     pageview(path);
@@ -5803,7 +5833,8 @@
   // The path the visitor actually arrived on, which is how a shared link and a
   // page refresh both land somewhere other than the home page.
   function routeFromPath(fromHistory){
-    const raw = location.pathname.replace(/\/+$/, '') || '/';
+    let raw = location.pathname.replace(/\/+$/, '') || '/';
+    if (LANG_PREFIX && (raw === LANG_PREFIX || raw.startsWith(LANG_PREFIX + '/'))) raw = raw.slice(LANG_PREFIX.length) || '/';
     if (VIEW_BY_PATH[raw]){ routeTo(VIEW_BY_PATH[raw], null, fromHistory); return true; }
     const m = raw.match(/^(\/lot|\/seller|\/checkout)\/(.+)$/);
     if (m){ routeTo(VIEW_BY_PATH[m[1]], decodeURIComponent(m[2]), fromHistory); return true; }
@@ -6081,20 +6112,6 @@
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
 
-  // A sentence built out of fragments and numbers never exists as one text
-  // node, so the Dutch translator that watches the document cannot see it:
-  // it matches whole nodes, which is the rule that stops it rewriting a lot
-  // title that happens to contain an English word. So write the sentence
-  // whole, with {placeholders}, translate it, and fill the numbers in after.
-  // On the English site __NL__ is absent and this is a plain format call.
-  function phrase(s, vals){
-    const D = window.__NL__;
-    if (D && D[s] !== undefined) s = D[s];
-    return s.replace(/\{(\w+)\}/g, (_, k) => (vals && vals[k] != null ? vals[k] : ''));
-  }
-  // Dates follow the dictionary too. Seven calls were hard-wired to en-GB,
-  // which put "10 Oct 2026" in the middle of a Dutch sentence.
-  const LOC = () => (window.__NL__ ? 'nl-NL' : 'en-GB');
   function openBid(name, bid, bids, lotId, sellerId){
     track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
@@ -10215,9 +10232,10 @@
     if (!landed){
       // Unknown path, so treat it as the home page and correct the address bar
       // rather than leaving a URL that resolves to nothing.
-      setMeta('home', '/');
-      if (location.pathname !== '/') history.replaceState({ view: 'home' }, '', '/');
-      pageview('/');
+      const home = LANG_PREFIX + '/';
+      setMeta('home', home);
+      if (location.pathname !== home) history.replaceState({ view: 'home' }, '', home);
+      pageview(home);
     }
   })();
 

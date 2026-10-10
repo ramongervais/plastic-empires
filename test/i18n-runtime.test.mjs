@@ -25,11 +25,15 @@ const DICT = {
   "Netherlands and the EU": "Nederland en de EU",
 };
 
+const windows = [];
+test.after(() => windows.forEach((w) => w.close()));   // or node --test never exits
+
 function page() {
   const html = injectRuntime(
     '<!doctype html><html lang="nl"><head><title>Kavel</title></head><body>' +
     '<div id="app"></div><script id="code"></script></body></html>', DICT);
   const dom = new JSDOM(html, { runScripts: "dangerously" });
+  windows.push(dom.window);
   return dom.window.document;
 }
 const settle = () => new Promise((r) => setTimeout(r, 0));

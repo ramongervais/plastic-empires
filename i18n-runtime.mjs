@@ -112,8 +112,17 @@ function once(){walk(document.body||document.documentElement);var t=document.que
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',once);else once();
 })();`;
 
-// Inject before </body> so the observer is installed while the body is still
-// being parsed, and the application's own scripts run after it.
+// Two insertions, because they are needed at two different moments.
+//
+// The dictionary goes in the head: the page has several script blocks and the
+// first one runs long before </body>, so a phrase() call in it would format
+// the English and move on. Putting the dictionary last meant the top of the
+// page was quietly never translated.
+//
+// The observer goes before </body>. In the head it would see the whole body
+// being parsed as mutations, which on an 800KB page is a great deal of work
+// to discover that the markup is already Dutch. At the end it installs once
+// and walks the finished document a single time.
 export function injectRuntime(html, dict) {
   // An entry that translates to itself used to hang the page: writing the same
   // value back fires characterData, which calls the handler, which writes it
@@ -124,8 +133,11 @@ export function injectRuntime(html, dict) {
     if (k === v) throw new Error("runtime dictionary: " + JSON.stringify(k) + " translates to itself");
   }
   const json = JSON.stringify(dict).replace(/</g, "\\u003c");
-  const tag = '<script>window.__NL__=' + json + ";" + OBSERVER + "</script>";
+  const head = "<script>window.__NL__=" + json + "</script>";
+  const body = "<script>" + OBSERVER + "</script>";
+  if (!html.includes("</head>")) throw new Error("no </head> to inject the dictionary into");
   if (!html.includes("</body>")) throw new Error("no </body> to inject the runtime translator before");
-  new vm.Script(tag.slice(8, -9));  // a syntax error here would be silent in the browser
-  return html.replace("</body>", tag + "</body>");
+  new vm.Script("window.__NL__=" + json);
+  new vm.Script(OBSERVER);  // a syntax error here would be silent in the browser
+  return html.replace("</head>", head + "</head>").replace("</body>", body + "</body>");
 }
