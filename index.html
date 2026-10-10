@@ -124,9 +124,20 @@
   .theme-btn { background:transparent; border:0; padding:6px; margin:0; cursor:pointer; display:inline-flex; align-items:center; }
   .theme-icon { display:block; width:20px; height:20px; border-radius:50%; border:1px solid var(--ink-3); background:linear-gradient(90deg, var(--ink) 0 50%, var(--paper) 50% 100%); transition:transform .5s ease, border-color .2s ease; }
   .theme-btn:hover .theme-icon { border-color:var(--ink); }
-  .lang-btn { font-family:var(--label); font-size:11px; letter-spacing:.1em; color:var(--ink-3);
-    border:1px solid var(--line); border-radius:3px; padding:5px 7px; line-height:1;
+  .lang-btn { display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--label); font-size:11px; letter-spacing:.1em; color:var(--ink-3);
+    border:1px solid var(--line); border-radius:3px; padding:4px 7px; line-height:1;
     transition:color .15s, border-color .15s; }
+  /* The one piece of colour on a monochrome site, which is the argument for
+     putting it on a flag and nowhere else: it reads as an identifier rather
+     than as decoration. The inset hairline keeps the white band off a white
+     page and the dark field off a dark one. */
+  /* Width only. The two flags are not the same shape, the Dutch one is 3:2 and
+     the union flag 2:1, and a fixed height stretches one of them. They never
+     appear together, so there is nothing to line up with. */
+  .lang-flag { display:block; width:16px; height:auto; border-radius:1px; flex:none;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); }
+  :root[data-theme="dark"] .lang-flag { box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); }
   .lang-btn:hover { color:var(--ink); border-color:var(--ink); }
   .lang-btn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   :root[data-theme="dark"] .theme-icon { transform:rotate(180deg); }
@@ -1517,11 +1528,13 @@
       <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
       <a href="/sell/" class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
       <a class="hide-sm" id="authLink" data-auth-label style="cursor:pointer">Sign in</a>
-      <!-- Two letters, not a flag. A flag is a country and this is a language:
-           a Belgian reading Dutch is not served by a Dutch flag, and English is
-           not the United Kingdom. The current language is the one NOT shown,
-           because the button is the thing you press to leave where you are. -->
-      <a class="lang-btn" id="langBtn" href="/nl/" hreflang="nl" aria-label="Doorgaan in het Nederlands">NL</a>
+      <!-- A flag is a country and this is a language: a Belgian reading Dutch
+           is not served by a Dutch flag, and English is not the United
+           Kingdom. The letters stay for that reason and the flag is there
+           because it is what people actually look for. The language shown is
+           the one you are NOT in, because the button is what you press to
+           leave where you are. -->
+      <a class="lang-btn" id="langBtn" href="/nl/" hreflang="nl" aria-label="Doorgaan in het Nederlands"><svg class="lang-flag" viewBox="0 0 9 6" aria-hidden="true" focusable="false"><rect width="9" height="6" fill="#21468B"/><rect width="9" height="4" fill="#fff"/><rect width="9" height="2" fill="#AE1C28"/></svg>NL</a>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle light or dark"><span class="theme-icon"></span></button>
       <button class="navtoggle" id="navToggle" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
     </nav>

@@ -86,8 +86,12 @@ t("the language button is a real navigation, not a routed one", async () => {
   await settle();
   const b = w.document.getElementById("langBtn");
   assert.equal(b.getAttribute("href"), "/about/");
+  assert.ok(b.querySelector("svg.lang-flag"), "the switch carries a flag");
+  assert.equal(b.textContent.trim(), "EN", "and the two letters, which are the part that is true");
+  // Clicked on the flag rather than the anchor, because that is where a thumb
+  // lands and e.target is then the <svg> inside it.
   const ev = new w.MouseEvent("click", { bubbles: true, cancelable: true });
-  b.dispatchEvent(ev);
+  b.querySelector("svg.lang-flag").dispatchEvent(ev);
   assert.equal(ev.defaultPrevented, false, "the router must not swallow the language switch");
   w.close();
 });

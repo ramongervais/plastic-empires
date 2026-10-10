@@ -43,6 +43,21 @@ const NL_HTML = loadDict(fs, "i18n/nl-html.json");
 // index.html, so the pass above cannot see it. Those pages carry a small
 // observer instead, applying the same whole-text-node rule at runtime.
 const NL_JS = loadDict(fs, "i18n/nl-js.json");
+
+// The two flags, written once. A flag is a country and the button is a
+// language, so the letters stay next to it: the flag is what people look for,
+// the letters are what is actually true. The union flag is the centred
+// simplification rather than the counterchanged original, because at sixteen
+// pixels the offset is smaller than a pixel and the real one turns to mush.
+const FLAG_NL = '<svg class="lang-flag" viewBox="0 0 9 6" aria-hidden="true" focusable="false">' +
+  '<rect width="9" height="6" fill="#21468B"/><rect width="9" height="4" fill="#fff"/>' +
+  '<rect width="9" height="2" fill="#AE1C28"/></svg>';
+const FLAG_EN = '<svg class="lang-flag" viewBox="0 0 60 30" aria-hidden="true" focusable="false">' +
+  '<rect width="60" height="30" fill="#012169"/>' +
+  '<path d="M0,0 60,30 M60,0 0,30" stroke="#fff" stroke-width="6"/>' +
+  '<path d="M0,0 60,30 M60,0 0,30" stroke="#C8102E" stroke-width="2"/>' +
+  '<path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/>' +
+  '<path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>';
 const NL_PREFIX = "/nl";
 
 // One switch. Flip to true when the dictionary is full enough to show a Dutch
@@ -230,8 +245,8 @@ for (const view of Object.keys(PATHS)) {
   // The switch points at this page's own twin. Hard-coded in index.html it
   // said /nl/, which would drop a reader of the Kenner essay on the Dutch home
   // page and make them find their place again.
-  const enSwitch = '<a class="lang-btn" id="langBtn" href="' + esc(nlPath) + '" hreflang="nl" aria-label="Doorgaan in het Nederlands">NL</a>';
-  out = out.replace(/<a class="lang-btn"[^>]*>[^<]*<\/a>/, enSwitch);
+  const enSwitch = '<a class="lang-btn" id="langBtn" href="' + esc(nlPath) + '" hreflang="nl" aria-label="Doorgaan in het Nederlands">' + FLAG_NL + 'NL</a>';
+  out = out.replace(/<a class="lang-btn"[\s\S]*?<\/a>/, enSwitch);
 
   if (writeEn) {
     fs.writeFileSync(target, out.replace("</head>", alts + "</head>"));
@@ -250,8 +265,8 @@ for (const view of Object.keys(PATHS)) {
     .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
     .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
     .replace(
-      /<a class="lang-btn"[^>]*>[^<]*<\/a>/,
-      '<a class="lang-btn" id="langBtn" href="' + esc(p === "/" ? "/" : p.replace(/\/+$/, "") + "/") + '" hreflang="en" aria-label="Continue in English">EN</a>'
+      /<a class="lang-btn"[\s\S]*?<\/a>/,
+      '<a class="lang-btn" id="langBtn" href="' + esc(p === "/" ? "/" : p.replace(/\/+$/, "") + "/") + '" hreflang="en" aria-label="Continue in English">' + FLAG_EN + 'EN</a>'
     )
     .replace("</head>", alts + "</head>");
   if (!nl.includes('<html lang="nl">')) throw new Error(view + ": nl lang attribute was not set");
@@ -514,8 +529,8 @@ for (const l of lots) {
     .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(lotDescriptionNl(l)) + "$2")
     .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
     .replace(
-      /<a class="lang-btn"[^>]*>[^<]*<\/a>/,
-      '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">EN</a>'
+      /<a class="lang-btn"[\s\S]*?<\/a>/,
+      '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">' + FLAG_EN + 'EN</a>'
     );
   if (!nl.includes('<html lang="nl">')) throw new Error(l.id + ": nl lang attribute was not set");
   if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(l.id + ": nl canonical was not rewritten");
@@ -654,8 +669,8 @@ const sellerLocs = [];
       .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
       .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
       .replace(
-        /<a class="lang-btn"[^>]*>[^<]*<\/a>/,
-        '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">EN</a>'
+        /<a class="lang-btn"[\s\S]*?<\/a>/,
+        '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">' + FLAG_EN + 'EN</a>'
       );
     if (!nl.includes('<html lang="nl">')) throw new Error(p.id + ": nl seller lang attribute was not set");
     if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(p.id + ": nl seller canonical was not rewritten");
