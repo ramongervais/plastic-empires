@@ -127,7 +127,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei", "sofubi"]);
 // Not a molder, but the same kind of page: researched, argued, signed. It gets
 // the same Article node, with a subject that is a process rather than a company.
-const ARTICLE_SUBJECT = { retrobright: "Retrobrighting" };
+const ARTICLE_SUBJECT = { retrobright: "Retrobrighting", moulds: "Toy manufacturing" };
 const MOLDER_NAME = {
   empire: "Kenner Products",
   tmnt: "Playmates Toys",
