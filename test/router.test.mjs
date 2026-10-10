@@ -111,6 +111,19 @@ t("a lot has a Dutch file of its own and routes to the lot view", async () => {
   w.close();
 });
 
+t("the English fallback still finds the view behind a /nl path", async () => {
+  // /seller, /checkout and /account have no file, so GitHub Pages answers
+  // 404.html, which is a copy of the English page. It has to understand a
+  // Dutch URL anyway or it shows the home page to someone who asked for their
+  // account.
+  for (const [path, view] of [["/nl/account/", "view-account"], ["/nl/seller/cornerstone/", "view-seller"]]) {
+    const w = boot("404.html", path);
+    await settle();
+    assert.equal(shown(w.document), view, path);
+    w.close();
+  }
+});
+
 t("the Dutch pages boot without a JavaScript error", async () => {
   const errs = [];
   const { VirtualConsole } = await import("jsdom");

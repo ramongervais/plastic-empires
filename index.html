@@ -5833,8 +5833,15 @@
   // The path the visitor actually arrived on, which is how a shared link and a
   // page refresh both land somewhere other than the home page.
   function routeFromPath(fromHistory){
+    // Strip /nl whatever file this is, not only when the file is a Dutch one.
+    // /seller, /checkout and /account have no file behind them, so GitHub
+    // Pages answers with 404.html, which is a copy of the English page: its
+    // LANG_PREFIX is empty, and without this it would read /nl/account as an
+    // unknown path and show a Dutch visitor the home page instead of their
+    // account. The page stays English, because the fallback file is, but at
+    // least it is the page they asked for.
     let raw = location.pathname.replace(/\/+$/, '') || '/';
-    if (LANG_PREFIX && (raw === LANG_PREFIX || raw.startsWith(LANG_PREFIX + '/'))) raw = raw.slice(LANG_PREFIX.length) || '/';
+    if (raw === '/nl' || raw.startsWith('/nl/')) raw = raw.slice(3) || '/';
     if (VIEW_BY_PATH[raw]){ routeTo(VIEW_BY_PATH[raw], null, fromHistory); return true; }
     const m = raw.match(/^(\/lot|\/seller|\/checkout)\/(.+)$/);
     if (m){ routeTo(VIEW_BY_PATH[m[1]], decodeURIComponent(m[2]), fromHistory); return true; }
