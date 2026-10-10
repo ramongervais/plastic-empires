@@ -124,7 +124,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // The documentary pages, and the company each one is about. "about" is the field
 // that tells a machine these are pages concerning a real manufacturer rather than
 // pages that merely mention one.
-const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei"]);
+const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei", "sofubi"]);
 // Not a molder, but the same kind of page: researched, argued, signed. It gets
 // the same Article node, with a subject that is a process rather than a company.
 const ARTICLE_SUBJECT = { retrobright: "Retrobrighting" };
@@ -138,6 +138,9 @@ const MOLDER_NAME = {
   imperial: "Imperial Toy Corporation",
   palitoy: "Palitoy",
   dormei: "Dor Mei",
+  // Not a company: a material and the trade around it. The Article subject is
+  // the craft, the way Retrobrighting's is.
+  sofubi: "Sofubi",
 };
 
 // "home" is not in here any more. / is served by index.html itself, so there
