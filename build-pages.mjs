@@ -18,8 +18,44 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
+import { translate, extractStrings, loadDict } from "./i18n.mjs";
 
 const SRC = "index.html";
+
+// ---------------------------------------------------------------------------
+// Dutch.
+//
+// Every page this build writes gets a sibling under /nl/, translated by exact
+// text node against i18n/nl.json. A string with no entry falls through to
+// English, so a dictionary that is one page full produces a working site
+// rather than a broken one, and the untranslated remainder is written to
+// i18n/untranslated.txt as the worklist for the next pass.
+//
+// Under /nl/ on the same domain rather than on hammerandmold.nl, because
+// GitHub Pages serves one custom domain per repository: the CNAME holds
+// hammerandmold.com and two apex domains on one Pages site is not a thing
+// their platform does. The .nl can redirect here.
+const NL_DICT = loadDict(fs, "i18n/nl.json");
+const NL_PREFIX = "/nl";
+
+// One switch. Flip to true when the dictionary is full enough to show a Dutch
+// reader a Dutch page, and the Dutch pages become indexable and enter the
+// sitemap in the same move.
+//
+// Until then they carry noindex and stay out of the sitemap, for a reason
+// specific to this site rather than a general caution: of 63 urls submitted,
+// Google has indexed 22 and has not discovered 25. Handing it nineteen more
+// pages that are ninety-five per cent English under a Dutch lang attribute
+// spends crawl budget that the English pages are currently short of, and
+// invites exactly the thin-and-duplicate verdict this site can least afford.
+// The pages are live and reachable at /nl/ either way.
+const NL_PUBLIC = false;
+// seen is every key the build actually looked up, across all generated pages.
+// A dictionary entry that was never looked up is dead, and that is a more
+// honest test than searching index.html: the per-page titles and descriptions
+// are injected by this build and never appear in the source file.
+const i18nStats = { hit: 0, miss: 0, missed: new Set(), seen: new Set() };
+const nlLocs = [];
 const html = fs.readFileSync(SRC, "utf8");
 
 // Pull the two tables out of the app and evaluate them, rather than keeping a
@@ -75,7 +111,12 @@ const MOLDER_NAME = {
   dormei: "Dor Mei",
 };
 
-const SKIP = new Set(["lot", "seller", "account", "home", "checkout"]);
+// "home" is not in here any more. / is served by index.html itself, so there
+// is no English file to generate, but /nl/ is a real file and has to be
+// written or the Dutch home page does not exist. The loop skips its English
+// write, in NO_EN_FILE below, and goes on to the Dutch one.
+const SKIP = new Set(["lot", "seller", "account", "checkout"]);
+const NO_EN_FILE = new Set(["home"]);
 
 let written = 0;
 const report = [];
@@ -92,7 +133,10 @@ for (const view of Object.keys(PATHS)) {
 
   // Replace, never append: a second <title> or canonical is worse than a wrong
   // one, because which of them a crawler believes is not defined anywhere.
-  let out = html
+  // index.html is the home page AND the template for every other page, so any
+  // alternates written into its head for / would ride along into all eighteen.
+  // Stripped here, added per page below.
+  let out = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
     .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
     .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
     .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(url) + "$2")
@@ -153,11 +197,60 @@ for (const view of Object.keys(PATHS)) {
 
   const dir = "." + p;
   const target = path.join(dir, "index.html");
-  if (path.resolve(target) === path.resolve(SRC)) throw new Error("refusing to write over the source: " + view);
-  fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(target, out);
-  written++;
-  report.push("  " + p.padEnd(22) + title.slice(0, 52));
+  const writeEn = !NO_EN_FILE.has(view);
+  if (writeEn && path.resolve(target) === path.resolve(SRC)) throw new Error("refusing to write over the source: " + view);
+  if (writeEn) fs.mkdirSync(dir, { recursive: true });
+
+  // Both languages carry both alternates and an x-default. Without them Google
+  // reads /sell/ and /nl/sell/ as the same page twice and picks one, which is
+  // the normal way a translated site loses to its own copy.
+  // Same normalisation as the English url twenty lines up, or the two differ by
+  // a trailing slash and the canonical points at an address that redirects.
+  const nlPath = NL_PREFIX + (p === "/" ? "/" : p.replace(/\/+$/, "") + "/");
+  const nlUrl = SITE + nlPath;
+  const alts =
+    '<link rel="alternate" hreflang="en" href="' + esc(url) + '">' +
+    '<link rel="alternate" hreflang="nl" href="' + esc(nlUrl) + '">' +
+    '<link rel="alternate" hreflang="x-default" href="' + esc(url) + '">';
+
+  // The switch points at this page's own twin. Hard-coded in index.html it
+  // said /nl/, which would drop a reader of the Kenner essay on the Dutch home
+  // page and make them find their place again.
+  const enSwitch = '<a class="lang-btn" id="langBtn" href="' + esc(nlPath) + '" hreflang="nl" aria-label="Doorgaan in het Nederlands">NL</a>';
+  out = out.replace(/<a class="lang-btn"[^>]*>[^<]*<\/a>/, enSwitch);
+
+  if (writeEn) {
+    fs.writeFileSync(target, out.replace("</head>", alts + "</head>"));
+    written++;
+    report.push("  " + p.padEnd(22) + title.slice(0, 52));
+  }
+
+  // ---- The Dutch sibling ----
+  // Translated from the finished English page, so every rewrite above has
+  // already happened and there is one place that decides what a page says.
+  let nl = translate(out, NL_DICT, i18nStats).html;
+  nl = nl
+    .replace(/<html lang="en">/, '<html lang="nl">')
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
+    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
+    .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
+    .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
+    .replace(
+      /<a class="lang-btn"[^>]*>[^<]*<\/a>/,
+      '<a class="lang-btn" id="langBtn" href="' + esc(p === "/" ? "/" : p.replace(/\/+$/, "") + "/") + '" hreflang="en" aria-label="Continue in English">EN</a>'
+    )
+    .replace("</head>", alts + "</head>");
+  if (!nl.includes('<html lang="nl">')) throw new Error(view + ": nl lang attribute was not set");
+  if (!nl.includes('hreflang="en" aria-label="Continue in English"')) throw new Error(view + ": nl language switch was not rewritten");
+  if (!NL_PUBLIC) {
+    nl = nl.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
+    if (!nl.includes('content="noindex, follow"')) throw new Error(view + ": nl noindex was not set");
+  }
+  if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(view + ": nl canonical was not rewritten");
+  const nlDir = "." + nlPath;
+  fs.mkdirSync(nlDir, { recursive: true });
+  fs.writeFileSync(path.join(nlDir, "index.html"), nl);
+  nlLocs.push(nlUrl);
 }
 
 // ---------------------------------------------------------------------------
@@ -390,6 +483,11 @@ if (fs.existsSync("sitemap.xml")) {
   const srcDate = w3c(gitDate(SRC));
   let sm = fs.readFileSync("sitemap.xml", "utf8");
   if (!srcDate) console.log("sitemap: no git date for " + SRC + ", leaving lastmod off");
+  // Anything this build appended last time comes out first. sitemap.xml is
+  // tracked and written in place, so without this a second run appends the
+  // eighteen Dutch urls again: 19 became 37 became 55. Found by running it
+  // twice, which is the only way this class of bug ever shows up.
+  sm = sm.replace(/\n  <url>\n    <loc>[^<]*\/nl\/[^<]*<\/loc>[\s\S]*?<\/url>/g, "");
   // Stripped before it is added, so this is idempotent. The file is tracked
   // and written in place, so a second run, or a run over a copy that already
   // carries a stamp, has to land on the same result rather than stacking a
@@ -400,6 +498,15 @@ if (fs.existsSync("sitemap.xml")) {
   // about a page rewritten twice this week.
   sm = sm.replace(/\n\s*<changefreq>[^<]*<\/changefreq>/g, "");
   if (srcDate) sm = sm.replace(/(<loc>[^<]*<\/loc>)/g, "$1\n    <lastmod>" + srcDate + "</lastmod>");
+  // The Dutch pages, appended rather than hand-kept: they are generated, so a
+  // person editing sitemap.xml should not have to remember them.
+  if (NL_PUBLIC && nlLocs.length) {
+    const body = nlLocs.map((u) =>
+      "  <url>\n    <loc>" + u + "</loc>\n" +
+      (srcDate ? "    <lastmod>" + srcDate + "</lastmod>\n" : "") +
+      "    <priority>0.6</priority>\n  </url>").join("\n");
+    sm = sm.replace("</urlset>", body + "\n</urlset>");
+  }
   fs.writeFileSync("sitemap.xml", sm);
   console.log("sitemap: lastmod " + srcDate + " on " + (sm.match(/<lastmod>/g) || []).length + " urls, changefreq removed");
 }
@@ -415,6 +522,39 @@ if (fs.existsSync("sitemap.xml")) {
   });
   if (missing.length) throw new Error("sitemap lists paths with no page: " + missing.join(", "));
   console.log("sitemap: " + locs.length + " urls, all present");
+}
+
+// ---- Dutch coverage, and the worklist ----
+//
+// The number that matters is the miss list, not the percentage: it is the
+// exact set of sentences still to write, in document order, so translating is
+// a file to work through rather than a site to read.
+{
+  const total = i18nStats.hit + i18nStats.miss;
+  const pct = total ? Math.round((i18nStats.hit / total) * 100) : 0;
+  const missed = [...i18nStats.missed];
+  fs.mkdirSync("i18n", { recursive: true });
+  fs.writeFileSync("i18n/untranslated.txt",
+    "# " + missed.length + " strings without a Dutch entry, as at " + new Date().toISOString().slice(0, 10) + ".\n" +
+    "# Copy a line into i18n/nl.json as the key, with the Dutch as its value.\n" +
+    "# A string that stops appearing here is either translated or no longer on the site.\n\n" +
+    missed.join("\n") + "\n");
+  console.log("nl: " + nlLocs.length + " pages written, " + pct + "% of " + total +
+    " strings translated, " + missed.length + " left in i18n/untranslated.txt");
+  // An entry nothing ever looked up is dead weight: either the English was
+  // rewritten and the key stopped matching, or the string lives in JavaScript
+  // and this pass cannot reach it. Both are worth knowing and neither is
+  // visible any other way.
+  const stale = Object.keys(NL_DICT).filter((k) => !k.startsWith("_") && !i18nStats.seen.has(k));
+  if (stale.length) {
+    fs.writeFileSync("i18n/unused.txt",
+      "# " + stale.length + " dictionary entries that no page looked up, as at " +
+      new Date().toISOString().slice(0, 10) + ".\n" +
+      "# Either the English changed, or the string is built in JavaScript and the\n" +
+      "# markup pass cannot see it. Neither is an error; both are worth checking.\n\n" +
+      stale.join("\n") + "\n");
+    console.log("nl: " + stale.length + " dictionary entries unused, listed in i18n/unused.txt");
+  } else if (fs.existsSync("i18n/unused.txt")) fs.rmSync("i18n/unused.txt");
 }
 
 console.log("pre-rendered " + written + " pages, plus 404.html");

@@ -18,6 +18,14 @@ admin/*.sql
 /help/
 /molders/
 /lot/
+# Dutch, generated the same way: one translated copy per path.
+/nl/
+
+# The two reports build-pages writes after every run. Generated, and they change
+# on every build, so they stay out of the history; i18n/nl.json is the file a
+# person edits and that one IS tracked.
+i18n/untranslated.txt
+i18n/unused.txt
 /retrobrighting/
 /sitemap-lots.xml
 
