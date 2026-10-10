@@ -6080,6 +6080,18 @@
     return true;
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
+
+  // A sentence built out of fragments and numbers never exists as one text
+  // node, so the Dutch translator that watches the document cannot see it:
+  // it matches whole nodes, which is the rule that stops it rewriting a lot
+  // title that happens to contain an English word. So write the sentence
+  // whole, with {placeholders}, translate it, and fill the numbers in after.
+  // On the English site __NL__ is absent and this is a plain format call.
+  function phrase(s, vals){
+    const D = window.__NL__;
+    if (D && D[s] !== undefined) s = D[s];
+    return s.replace(/\{(\w+)\}/g, (_, k) => (vals && vals[k] != null ? vals[k] : ''));
+  }
   function openBid(name, bid, bids, lotId, sellerId){
     track('bid_open', null, lotId);
     const minNext = bid + Math.max(10, Math.round(bid * 0.05));
@@ -6144,15 +6156,19 @@
       if (underReserve) {
         const next = v + Math.max(10, Math.round(v * 0.05));
         openModal('Bid placed', 'Highest, but not enough to win',
-          eur(v) + ' on ' + name + ' is the leading bid and it is recorded. It has not reached the seller\'s minimum, though, so as things stand this lot does not sell and nobody gets it.' +
-          (extended ? ' The auction was extended by 2 minutes.' : '') +
-          ' You can go again now: ' + eur(next) + ' or more.',
-          { label: 'Bid ' + eur(next) + ' or more', go: function(){ openBid(name, v, (bids || 0) + 1, lotId, sellerId); } });
+          phrase('{amount} on {lot} is the leading bid and it is recorded. It has not reached the seller\'s minimum, though, so as things stand this lot does not sell and nobody gets it.', { amount: eur(v), lot: name }) +
+          (extended ? ' ' + phrase('The auction was extended by 2 minutes.') : '') +
+          ' ' + phrase('You can go again now: {amount} or more.', { amount: eur(next) }),
+          { label: phrase('Bid {amount} or more', { amount: eur(next) }), go: function(){ openBid(name, v, (bids || 0) + 1, lotId, sellerId); } });
         return;
       }
       document.getElementById('modalEy').textContent = 'Bid placed';
       document.getElementById('modalTitle').textContent = 'You are the highest bidder.';
-      document.getElementById('modalBody').textContent = eur(v) + ' on ' + name + '.' + (live ? ' Your bid is recorded.' + (extended ? ' The auction was extended by 2 minutes.' : '') : ' Layout preview, so no real bid was placed.');
+      document.getElementById('modalBody').textContent =
+        phrase('{amount} on {lot}.', { amount: eur(v), lot: name }) +
+        (live
+          ? ' ' + phrase('Your bid is recorded.') + (extended ? ' ' + phrase('The auction was extended by 2 minutes.') : '')
+          : ' ' + phrase('Layout preview, so no real bid was placed.'));
     };
     setTimeout(() => input.focus(), 40);
   }

@@ -33,3 +33,6 @@ i18n/unused.txt
 # is public, so a committed .bak is a second copy of the site on the internet.
 *.bak
 .wrangler/
+node_modules/
+i18n/js-untranslated.txt
+i18n/js-fragments.txt

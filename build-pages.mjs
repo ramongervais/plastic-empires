@@ -19,6 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import { translate, extractStrings, loadDict, applyHtmlRules } from "./i18n.mjs";
+import { jsLiterals, runtimeDict, injectRuntime, decodeEntities } from "./i18n-runtime.mjs";
 
 const SRC = "index.html";
 
@@ -37,6 +38,11 @@ const SRC = "index.html";
 // their platform does. The .nl can redirect here.
 const NL_DICT = loadDict(fs, "i18n/nl.json");
 const NL_HTML = loadDict(fs, "i18n/nl-html.json");
+// The other half of the site is drawn by JavaScript after the page loads: the
+// lot page, bidding, the sell flow, checkout, the account. None of it is in
+// index.html, so the pass above cannot see it. Those pages carry a small
+// observer instead, applying the same whole-text-node rule at runtime.
+const NL_JS = loadDict(fs, "i18n/nl-js.json");
 const NL_PREFIX = "/nl";
 
 // One switch. Flip to true when the dictionary is full enough to show a Dutch
@@ -58,6 +64,13 @@ const NL_PUBLIC = true;
 const i18nStats = { hit: 0, miss: 0, missed: new Set(), seen: new Set() };
 const nlLocs = [];
 const html = fs.readFileSync(SRC, "utf8");
+
+// Every string literal the application's own scripts can produce, and the
+// subset of both dictionaries that matches one. Shipping the whole dictionary
+// would put a hundred kilobytes of Terms on every page for nothing; the
+// runtime only needs what JavaScript can actually write to the document.
+const JS_LITERALS = jsLiterals(html);
+const NL_RUNTIME = runtimeDict(NL_DICT, NL_JS, JS_LITERALS);
 
 // Pull the two tables out of the app and evaluate them, rather than keeping a
 // second copy here that would drift.
@@ -248,6 +261,7 @@ for (const view of Object.keys(PATHS)) {
     if (!nl.includes('content="noindex, follow"')) throw new Error(view + ": nl noindex was not set");
   }
   if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(view + ": nl canonical was not rewritten");
+  nl = injectRuntime(nl, NL_RUNTIME);
   const nlDir = "." + nlPath;
   fs.mkdirSync(nlDir, { recursive: true });
   fs.writeFileSync(path.join(nlDir, "index.html"), nl);
@@ -556,6 +570,53 @@ if (fs.existsSync("sitemap.xml")) {
       stale.join("\n") + "\n");
     console.log("nl: " + stale.length + " dictionary entries unused, listed in i18n/unused.txt");
   } else if (fs.existsSync("i18n/unused.txt")) fs.rmSync("i18n/unused.txt");
+
+  // What the runtime half still cannot say in Dutch. Two different problems
+  // kept apart on purpose: a whole string with no entry is a translation to
+  // write, a fragment the application concatenates with data is a call site to
+  // rewrite, because no dictionary can reach half a sentence.
+  // Covered means "the dictionary has an opinion about it", not "it was
+  // shipped". An entry whose Dutch equals its English is deliberate (Mint,
+  // Japan, a brand name) and is dropped from what the browser gets, but it is
+  // a decision already taken and does not belong on a worklist.
+  const covered = new Set([
+    ...Object.keys(NL_RUNTIME),
+    ...Object.keys(NL_DICT).map((k) => decodeEntities(k).replace(/\s+/g, " ").trim()),
+    ...Object.keys(NL_JS).map((k) => decodeEntities(k).replace(/\s+/g, " ").trim()),
+  ]);
+  const jsOpen = [], jsFrag = [];
+  for (const raw of JS_LITERALS) {
+    if (raw !== decodeEntities(raw)) continue;
+    const k = raw.replace(/\s+/g, " ").trim();
+    if (!k || k.length < 3 || k.length > 700) continue;
+    if (covered.has(k)) continue;
+    if (/[<>{}$"=_\\]/.test(k) || /[\/@*]/.test(k)) continue;
+    if (/^[,?:;)%\]#[(.-]/.test(k)) continue;
+    if (!/[a-z]{2}/.test(k)) continue;
+    if (/^[a-z]/.test(k) && !/ /.test(k)) continue;
+    if (/^[A-Z][a-z]+[A-Z]/.test(k) && !/ /.test(k)) continue;
+    if (/,\S/.test(k) || /^\d/.test(k)) continue;
+    if (/^[a-z][a-z-]*( [a-z][a-z-]*)*$/.test(k) && k.length < 26) continue;
+    (/^\s|\s$/.test(raw) ? jsFrag : jsOpen).push(raw);
+  }
+  const write = (file, head, rows) => {
+    if (!rows.length) { if (fs.existsSync(file)) fs.rmSync(file); return; }
+    rows.sort((a, b) => a.localeCompare(b));
+    fs.writeFileSync(file, head + "\n\n" + rows.map((r) => JSON.stringify(r)).join("\n") + "\n");
+  };
+  write("i18n/js-untranslated.txt",
+    "# " + jsOpen.length + " strings the application draws that have no Dutch entry, as at " +
+    new Date().toISOString().slice(0, 10) + ".\n" +
+    "# Copy one into i18n/nl-js.json as the key. Keys there are rendered text:\n" +
+    "# a real & and ·, no HTML entities, because that is what the observer sees.",
+    jsOpen);
+  write("i18n/js-fragments.txt",
+    "# " + jsFrag.length + " fragments the application glues to data at runtime.\n" +
+    "# These never exist as one text node, so no dictionary entry can reach them.\n" +
+    "# Translating one means rewriting its call site to emit a whole sentence.",
+    jsFrag);
+  console.log("nl: runtime dictionary " + Object.keys(NL_RUNTIME).length + " entries shipped, " +
+    jsOpen.length + " js strings open, " + jsFrag.length + " fragments at call sites");
 }
 
 console.log("pre-rendered " + written + " pages, plus 404.html");
