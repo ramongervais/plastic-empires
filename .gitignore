@@ -9,8 +9,8 @@ admin/*.sql
 # index.html changes.
 /404.html
 /index.html
-/app.css
-/app.js
+/app.*.css
+/app.*.js
 /about/
 /sell/
 /packages/
@@ -36,6 +36,7 @@ admin/*.sql
 i18n/untranslated-*.txt
 i18n/unused-*.txt
 /retrobrighting/
+/moulds/
 /sitemap-lots.xml
 /sitemap-sellers.xml
 
