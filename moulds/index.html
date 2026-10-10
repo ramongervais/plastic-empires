@@ -121,6 +121,33 @@
   nav.top { display:flex; align-items:center; gap:26px; }
   nav.top a { font-family:var(--label); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
   nav.top a:hover { color:var(--ink); }
+  /* Two of the four nav items open. The documentary pages and the workshop
+     pieces were reachable only from the footer, which is where links go to
+     be ignored, and the shop had no way in except scrolling to it. */
+  .navdrop { position:relative; display:flex; align-items:center; }
+  .navdrop > .navtop { font-family:var(--label); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-2); background:none; border:0; padding:0; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .navdrop > .navtop:hover, .navdrop[data-open] > .navtop { color:var(--ink); }
+  .navdrop > .navtop svg { width:8px; height:8px; flex:none; transition:transform .18s ease; }
+  .navdrop[data-open] > .navtop svg { transform:rotate(180deg); }
+  .dropmenu { position:absolute; top:calc(100% + 14px); left:-16px; min-width:214px; z-index:60;
+    background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:8px 0;
+    box-shadow:0 14px 34px rgba(0,0,0,.10);
+    opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .16s ease, transform .16s ease, visibility .16s; }
+  .navdrop[data-open] .dropmenu { opacity:1; visibility:visible; transform:none; }
+  /* The gap between the label and the panel would close the menu on the way
+     down to it, so the gap is part of the target. */
+  .dropmenu::before { content:""; position:absolute; left:0; right:0; top:-14px; height:14px; }
+  .dropmenu a { display:block; padding:7px 18px; font-family:var(--label); font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-2); white-space:nowrap; }
+  .dropmenu a:hover, .dropmenu a:focus-visible { color:var(--ink); background:var(--paper-2); }
+  .drop-sep { height:1px; background:var(--line); margin:8px 0; }
+  .drop-lbl { padding:8px 18px 4px; font-family:var(--label); font-size:9.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-3); opacity:.7; }
+  .dropmenu:empty, .drop-dyn:empty { display:none; }
+  .mob-lbl { display:block; font-family:var(--label); font-size:9.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-3); opacity:.7; margin:14px 0 2px; }
+  @media (max-width: 860px){ .navdrop.hide-sm { display:none; } }
   .theme-btn { background:transparent; border:0; padding:6px; margin:0; cursor:pointer; display:inline-flex; align-items:center; }
   .theme-icon { display:block; width:20px; height:20px; border-radius:50%; border:1px solid var(--ink-3); background:linear-gradient(90deg, var(--ink) 0 50%, var(--paper) 50% 100%); transition:transform .5s ease, border-color .2s ease; }
   .theme-btn:hover .theme-icon { border-color:var(--ink); }
@@ -186,6 +213,12 @@
   .vitrine .vlabel .y { font-family:var(--label); font-size:12px; letter-spacing:.14em; color:var(--ink-3); margin-top:8px; }
   .vitrine .plinth { position:absolute; left:0; right:0; bottom:0; height:34%; background:linear-gradient(to top, color-mix(in srgb, var(--ink) 8%, transparent), transparent); pointer-events:none; }
   .vcap { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-3); margin-top:12px; text-align:center; }
+  /* Who took the photograph and under what licence. CC BY-SA asks for the
+     author, the licence and a link, and a folder full of files does not
+     satisfy that: the page the picture appears on has to say it. */
+  .credit { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-4,var(--ink-3)); opacity:.75; margin-top:6px; }
+  .credit a { color:inherit; text-decoration:underline; text-underline-offset:2px; }
+  .credit a:hover { color:var(--ink); opacity:1; }
 
 
   /* Hero logo. Contained, not bled: a mark that runs off the page edge reads as
@@ -1524,8 +1557,27 @@
       <span class="est">Est. 2026</span>
     </div>
     <nav class="top">
-      <a href="#empires" class="hide-sm" data-nav="home">The Molders</a>
-      <a href="#collection" class="hide-sm" data-nav="home">Shop</a>
+      <div class="navdrop hide-sm" id="ndMolders">
+        <button class="navtop" type="button" aria-haspopup="true" aria-expanded="false">The Molders <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
+        <div class="dropmenu" role="menu">
+          <a href="/#empires" data-nav="home" role="menuitem">All the molders</a>
+          <div class="drop-sep"></div>
+          <div class="drop-lbl">The workshop</div>
+          <a href="/retrobrighting/" data-nav="retrobright" role="menuitem">Retrobrighting</a>
+          <a href="/moulds/" data-nav="moulds" role="menuitem">Moulds</a>
+        </div>
+      </div>
+      <div class="navdrop hide-sm" id="ndShop">
+        <button class="navtop" type="button" aria-haspopup="true" aria-expanded="false">Shop <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
+        <div class="dropmenu" role="menu">
+          <a href="/#collection" data-shopmk="" role="menuitem">Everything for sale</a>
+          <div class="drop-lbl drop-dyn" id="shopDropLbl"></div>
+          <div class="drop-dyn" id="shopDropMakers"></div>
+          <div class="drop-sep"></div>
+          <a href="/results/" data-nav="sold" role="menuitem">Past results</a>
+          <a href="/we-buy/" data-nav="buy" role="menuitem">We buy collections</a>
+        </div>
+      </div>
       <a href="/sell/" class="hide-sm" id="sellLink" data-nav="sell" style="cursor:pointer">Sell</a>
       <a class="hide-sm" id="authLink" data-auth-label style="cursor:pointer">Sign in</a>
       <!-- A flag is a country and this is a language: a Belgian reading Dutch
@@ -1540,13 +1592,16 @@
     </nav>
   </div>
   <div class="mobile-panel" id="mobilePanel">
-    <a href="#empires" data-nav="home">The Molders</a>
-    <a href="#collection" data-nav="home">Shop</a>
+    <a href="/#empires" data-nav="home">The Molders</a>
+    <a href="/#collection" data-nav="home">Shop</a>
+    <a href="/results/" data-nav="sold">Past results</a>
+    <span class="mob-lbl">The workshop</span>
+    <a href="/retrobrighting/" data-nav="retrobright">Retrobrighting</a>
+    <a href="/moulds/" data-nav="moulds">Moulds</a>
+    <span class="mob-lbl">Selling</span>
     <a href="/sell/" data-nav="sell">Sell</a>
     <a href="/packages/" data-nav="plans">Packages</a>
     <a href="/we-buy/" data-nav="buy">We buy</a>
-    <a href="/retrobrighting/" data-nav="retrobright">Retro Brighting</a>
-    <a href="/moulds/" data-nav="moulds">Moulds</a>
     <a href="https://www.instagram.com/meetthemolders/" target="_blank" rel="noopener">Instagram</a>
     <a href="https://x.com/meetthemolders" target="_blank" rel="noopener">X</a>
     <a href="https://www.facebook.com/profile.php?id=61594005643865" target="_blank" rel="noopener">Facebook</a>
@@ -4766,6 +4821,14 @@
       <div class="scale-grid" style="margin-top:26px">
         <div class="scale-visual">
           <div class="scale-photo">
+            <span class="ph">An open tool, and what came out of it</span>
+            <img src="/Empires/Moulds/injection-tool.jpg" alt="One half of an open steel injection mould, the polished cavity and its slides, with the moulded plastic part lying beside it" loading="lazy" onerror="this.remove()">
+          </div>
+          <div class="vcap" style="text-align:left">The cavity on the left, the part it made on the right. Every ridge in the steel is a groove in the plastic, and the other way round.</div>
+          <div class="credit" style="text-align:left">Photograph <a href="https://commons.wikimedia.org/wiki/File:Mold_for_plastic_injection_with_workpiece.jpg" target="_blank" rel="noopener noreferrer">Bricetofly</a>, released into the public domain &#8599;</div>
+        </div>
+        <div class="scale-visual">
+          <div class="scale-photo">
             <span class="ph">One playset, sorted by shot</span>
             <img src="/Empires/TMNT/parts.jpg" alt="A Playmates Turtles Sewer playset laid out in pieces, grouped by colour: green pipes, brown posts, red railings, grey walls" loading="lazy" onerror="this.remove()">
           </div>
@@ -4825,6 +4888,16 @@
         <p>A flat sheet of plastic is heated until it sags, laid over a tool, and the air underneath is sucked out so the sheet is pulled down onto the shape. No second half, no injection, no pressure to speak of. Minutes of work and a tool that can be made of wood or resin instead of hardened steel.</p>
         <p>You can read it instantly once you know: the inside is a perfect negative of the outside, because there is only one surface. It <b>thins at the corners</b>, where the sheet had to stretch furthest, so deep detail goes pale and slightly translucent. And there is no parting line anywhere, because the mould never closed on anything.</p>
         <p>Playset terrain, the trays inside a carded blister, and the blister itself are all this process.</p>
+      </div>
+      <div class="scale-grid" style="margin-top:26px">
+        <div class="scale-visual">
+          <div class="scale-photo">
+            <span class="ph">The buck, and the shell off it</span>
+            <img src="/Empires/Moulds/vacuum-buck.jpg" alt="A wooden former beside the blue plastic shell that was vacuum formed over it" loading="lazy" onerror="this.remove()">
+          </div>
+          <div class="vcap" style="text-align:left">The tool is a block of wood. The shell on the right is one surface with no second half and no seam anywhere on it.</div>
+          <div class="credit" style="text-align:left">Photograph <a href="https://commons.wikimedia.org/wiki/File:Vacuum_Forming_mould.JPG" target="_blank" rel="noopener noreferrer">Pizza1512</a>, <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a> &#8599;</div>
+        </div>
       </div>
       <div class="pullquote">Look for: one shell with no second half, thinning and translucency at the deepest corners, soft rounded detail, and no seam at all.</div>
     </div>
@@ -8191,7 +8264,61 @@
     bar.hidden = false;
     box.innerHTML = '<button class="fchip' + (shopMaker ? '' : ' on') + '" data-mk="">All</button>' +
       makers.map(m => '<button class="fchip' + (shopMaker === m ? ' on' : '') + '" data-mk="' + mkEsc(m) + '">' + mkEsc(m) + '</button>').join('');
+    fillShopMenu(makers);
   }
+
+  // The Shop menu lists whoever currently has stock, from the same data as the
+  // filter bar above the grid. A menu built by hand would go stale the first
+  // time a maker sold out, and offer a category that answers with nothing.
+  function fillShopMenu(makers){
+    const box = document.getElementById('shopDropMakers');
+    const lbl = document.getElementById('shopDropLbl');
+    if (!box) return;
+    if (!makers || makers.length < 2){ box.innerHTML = ''; if (lbl) lbl.textContent = ''; return; }
+    if (lbl) lbl.textContent = 'By molder';
+    box.innerHTML = makers.map(m =>
+      '<a href="/#collection" data-shopmk="' + mkEsc(m) + '" role="menuitem">' + mkEsc(m) + '</a>').join('');
+  }
+
+  // ----- The two nav menus -----
+  (function(){
+    const drops = [...document.querySelectorAll('.navdrop')];
+    if (!drops.length) return;
+    const close = (d) => { d.removeAttribute('data-open'); d.querySelector('.navtop').setAttribute('aria-expanded', 'false'); };
+    const open = (d) => { drops.forEach(x => x !== d && close(x)); d.setAttribute('data-open', ''); d.querySelector('.navtop').setAttribute('aria-expanded', 'true'); };
+    // Hover is the desktop affordance and a trap on a touch screen, where the
+    // first tap would both open and follow. Pointer query, not screen width.
+    const hoverable = window.matchMedia && window.matchMedia('(hover:hover)').matches;
+    drops.forEach(d => {
+      const btn = d.querySelector('.navtop');
+      btn.addEventListener('click', (e) => { e.stopPropagation(); d.hasAttribute('data-open') ? close(d) : open(d); });
+      if (hoverable){
+        d.addEventListener('mouseenter', () => open(d));
+        d.addEventListener('mouseleave', () => close(d));
+      }
+      d.addEventListener('focusout', (e) => { if (!d.contains(e.relatedTarget)) close(d); });
+    });
+    document.addEventListener('click', (e) => { if (!e.target.closest('.navdrop')) drops.forEach(close); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') drops.forEach(close); });
+  })();
+
+  // A category in the menu is the filter chip in the shop, so there is one
+  // definition of what a category is and the two can never disagree.
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-shopmk]');
+    if (!a) return;
+    e.preventDefault();
+    document.querySelectorAll('.navdrop').forEach(d => { d.removeAttribute('data-open'); const b = d.querySelector('.navtop'); if (b) b.setAttribute('aria-expanded', 'false'); });
+    shopMaker = a.dataset.shopmk || '';
+    shopPage = 1;
+    document.querySelectorAll('#makerFilter .fchip').forEach(x => x.classList.toggle('on', (x.dataset.mk || '') === shopMaker));
+    const go = () => {
+      if (typeof injectDraftLots === 'function') injectDraftLots();
+      const t = document.getElementById('collection') || document.getElementById('makerBar');
+      if (t) t.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    };
+    if (views && views.home && views.home.hidden){ show('home'); setTimeout(go, 60); } else go();
+  });
 
   document.addEventListener('click', e => {
     const b = e.target.closest('#makerFilter .fchip');

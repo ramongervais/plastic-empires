@@ -77,6 +77,10 @@ function nlLinks(html, paths) {
     const slash = p.endsWith("/") ? p : p + "/";
     out = out.split('href="' + slash + '"').join('href="' + NL_PREFIX + slash + '"');
   }
+  // The home page with a fragment on it, "/#collection", is still the home
+  // page and belongs in Dutch too. It was the one shape the whole-path match
+  // above could not see.
+  out = out.replace(/href="\/#/g, 'href="' + NL_PREFIX + '/#');
   return out.split('href="/"').join('href="' + NL_PREFIX + '/"');
 }
 
