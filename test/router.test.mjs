@@ -122,10 +122,23 @@ t("a lot has a Dutch file of its own and routes to the lot view", async () => {
   assert.equal(w.document.documentElement.lang, "nl");
   assert.equal(w.document.querySelector("link[rel=canonical]").href,
     "https://hammerandmold.com/nl/lot/" + id + "/");
-  // and its alternates name the lot, not the front page it inherited them from
+  // and its alternates name the lot, not the front page it inherited them from.
+  // The list is read off locales.json rather than written out here: a language
+  // going public adds a lot sibling and an alternate with it, and a hard-coded
+  // list would fail the day German shipped while the site was perfectly right.
   const alts = [...w.document.querySelectorAll("link[rel=alternate]")]
     .map((a) => a.hreflang + " " + a.href.replace("https://hammerandmold.com", ""));
-  assert.deepEqual(alts, ["en /lot/" + id + "/", "nl /nl/lot/" + id + "/", "x-default /lot/" + id + "/"]);
+  const live = JSON.parse(fs.readFileSync("i18n/locales.json", "utf8")).locales.filter((l) => l.public);
+  assert.deepEqual(alts, [
+    "en /lot/" + id + "/",
+    ...live.map((l) => l.code + " /" + l.code + "/lot/" + id + "/"),
+    "x-default /lot/" + id + "/",
+  ]);
+  // every one of those has to be a file, or the alternate points at a 404
+  for (const l of live) {
+    assert.ok(fs.existsSync(l.code + "/lot/" + id + "/index.html"),
+      "no " + l.code + " file behind the " + l.code + " alternate");
+  }
   w.close();
 });
 

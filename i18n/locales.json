@@ -2,7 +2,7 @@
   "_note": "Every language the site is built in, besides English. code is the URL prefix and the lang attribute. dir flips the whole layout. name is what the language calls itself, which is what belongs in a language switcher: a German reader looks for Deutsch, not for German. ogLocale is what Facebook wants. public false keeps a language reachable but out of the sitemap and behind noindex, which is where a language lives until its dictionary is full enough to be worth reading.",
   "locales": [
     { "code": "nl", "dir": "ltr", "name": "Nederlands", "english": "Dutch",   "ogLocale": "nl_NL", "public": true },
-    { "code": "de", "dir": "ltr", "name": "Deutsch",    "english": "German",  "ogLocale": "de_DE", "public": false },
+    { "code": "de", "dir": "ltr", "name": "Deutsch",    "english": "German",  "ogLocale": "de_DE", "public": true  },
     { "code": "fr", "dir": "ltr", "name": "Français",   "english": "French",  "ogLocale": "fr_FR", "public": false },
     { "code": "es", "dir": "ltr", "name": "Español",    "english": "Spanish", "ogLocale": "es_ES", "public": false },
     { "code": "it", "dir": "ltr", "name": "Italiano",   "english": "Italian", "ogLocale": "it_IT", "public": false },

@@ -588,6 +588,15 @@
   .empire-title { letter-spacing:.045em; }
   /* Main page headline of each top view: heavy weight, tight leading, wide Swiss tracking */
   .hero h1, .art-title, .empire-title { font-weight:800; line-height:1; letter-spacing:.2em; }
+  /* A headline word can be longer than the column it sits in: Retrobrighting at
+     130px, or any of the compounds German and Dutch build. Let the browser
+     hyphenate it over two lines rather than run it off the page, and keep
+     break-word as the last resort for a word no dictionary knows. */
+  .hero h1, .art-title, .empire-title { overflow-wrap:break-word; hyphens:auto; -webkit-hyphens:auto; }
+  /* The one title big enough that a single word can outrun the page. Its break
+     point is set in the copy with a soft hyphen rather than left to the browser's
+     dictionary, which splits Retrobrighting as RETROB-RIGHTING in German. */
+  .empire-title { hyphens:manual; -webkit-hyphens:manual; }
   /* the hero line is two full sentences, so it gets tighter tracking to hold two lines */
   .hero h1 { letter-spacing:.1em; }
   .brand .mark, .foot .mark { font-family:var(--label); font-weight:600; letter-spacing:.18em; }
@@ -1051,8 +1060,13 @@
   /* Solid while the characters are still arriving, blinking once it stops. A
      caret that blinks mid-word reads as a stalled cursor rather than a hand
      still typing, which is the opposite of the thing being imitated. */
+  /* The caret hangs: it is drawn at full width but its negative end margin
+     cancels the advance, so line breaking never counts it. Otherwise a last
+     line that only just fits wraps the moment the caret is appended, the typed
+     layer grows a line the hidden ghost never measured, and the heading lands
+     on the paragraph under it. German and Dutch find that edge; English does not. */
   .typer .tc { display:inline-block; width:.46em; height:.78em; background:currentColor;
-    vertical-align:-.04em; margin-inline-start:.04em; }
+    vertical-align:-.04em; margin-inline-start:.04em; margin-inline-end:-.5em; }
   .typer .tc.blink { animation:tblink 1.05s steps(1, end) infinite; }
   @keyframes tblink { 0%, 50% { opacity:1 } 50.01%, 100% { opacity:0 } }
   @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
