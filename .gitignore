@@ -18,6 +18,7 @@ admin/*.sql
 /help/
 /molders/
 /lot/
+/seller/
 # Dutch, generated the same way: one translated copy per path.
 /nl/
 
@@ -28,6 +29,7 @@ i18n/untranslated.txt
 i18n/unused.txt
 /retrobrighting/
 /sitemap-lots.xml
+/sitemap-sellers.xml
 
 # Local safety copies taken before a large edit. Never serve these: the repo
 # is public, so a committed .bak is a second copy of the site on the internet.

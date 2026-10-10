@@ -289,7 +289,7 @@ for (const view of Object.keys(PATHS)) {
 const SUPA_URL = (html.match(/SUPA_URL = '([^']+)'/) || [])[1];
 const SUPA_KEY = (html.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
-const LOT_COLS = "id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at";
+const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at";
 
 // Honest lastmod needs a date the page's own content actually moved on.
 //
@@ -338,6 +338,17 @@ async function fetchLots() {
   if (!res.ok) throw new Error("lots fetch failed: HTTP " + res.status + " " + (await res.text()).slice(0, 200));
   const rows = await res.json();
   if (!Array.isArray(rows)) throw new Error("lots fetch returned " + typeof rows);
+  return rows;
+}
+
+// seller_public is the public view: the columns a visitor is allowed to read,
+// which is why this works on the anon key at all. profiles itself is own-row.
+async function fetchSellers() {
+  const url = SUPA_URL + "/rest/v1/seller_public?select=id,display_name,handle,type,location,bio,created_at,logo_url";
+  const res = await fetch(url, { headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY } });
+  if (!res.ok) throw new Error("sellers fetch failed: HTTP " + res.status + " " + (await res.text()).slice(0, 200));
+  const rows = await res.json();
+  if (!Array.isArray(rows)) throw new Error("sellers fetch returned " + typeof rows);
   return rows;
 }
 
@@ -531,6 +542,150 @@ if (lotLocs.length) {
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + body + "\n</urlset>\n");
 }
 console.log("lots: " + lotLocs.length + " pre-rendered, sitemap-lots.xml written");
+
+// ---------------------------------------------------------------------------
+// Sellers.
+//
+// A seller's shop page had no file either, so it answered 404.html: it drew
+// correctly for a person and was a 404 to everything else. That is the one
+// page a seller would send to a buyer, and the only page on this site that
+// says who the people selling on it are.
+//
+// Only sellers who have actually listed something. Three of the four rows in
+// the table are test accounts with no lots, no bio and no location, and three
+// near-empty profile pages is the thin-content verdict this site can least
+// afford while twenty-five of its URLs are still undiscovered.
+const sellerLocs = [];
+{
+  const sellers = await fetchSellers();
+  const bySeller = new Map();
+  for (const l of lots) {
+    if (!l || !l.seller_id) continue;
+    const arr = bySeller.get(l.seller_id) || [];
+    arr.push(l);
+    bySeller.set(l.seller_id, arr);
+  }
+  const listed = sellers.filter((p) => p && p.id && (bySeller.get(p.id) || []).length);
+
+  for (const p of listed) {
+    const mine = bySeller.get(p.id) || [];
+    const sold = mine.filter((l) => l.status === "sold").length;
+    const live = mine.filter((l) => l.status === "live" || l.status === "preview").length;
+    const name = clean(p.display_name) || "Seller";
+    const kind = /dealer|shop|trader/i.test(clean(p.type)) ? "dealer" : "collector";
+    const path = "/seller/" + encodeURIComponent(p.id) + "/";
+    const url = SITE + path;
+    const nlPath = NL_PREFIX + path;
+    const nlUrl = SITE + nlPath;
+
+    const count = (n, one, many) => n + " " + (n === 1 ? one : many);
+    const facts = (en) => {
+      const bits = [];
+      if (live) bits.push(count(live, en ? "lot for sale" : "kavel te koop", en ? "lots for sale" : "kavels te koop"));
+      if (sold) bits.push(count(sold, en ? "sold" : "verkocht", en ? "sold" : "verkocht"));
+      return bits.join(", ");
+    };
+    const bio = trim(clean(p.bio), 150);
+    const where = clean(p.location);
+    const desc = bio || [
+      name + (where ? " in " + where : "") + " sells vintage toys at Hammer & Mold.",
+      facts(true) ? facts(true) + "." : "",
+    ].filter(Boolean).join(" ");
+    const descNl = bio || [
+      name + (where ? " in " + where : "") + " verkoopt vintage speelgoed op Hammer & Mold.",
+      facts(false) ? facts(false) + "." : "",
+    ].filter(Boolean).join(" ");
+    const title = name + " \u00b7 " + (kind === "dealer" ? "Dealer" : "Seller") + " \u00b7 Hammer & Mold";
+    const titleNl = name + " \u00b7 Verkoper \u00b7 Hammer & Mold";
+
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      mainEntity: {
+        "@type": kind === "dealer" ? "Organization" : "Person",
+        name,
+        url,
+        ...(where ? { address: where } : {}),
+        ...(clean(p.bio) ? { description: trim(clean(p.bio), 300) } : {}),
+        ...(clean(p.logo_url) ? { image: clean(p.logo_url) } : {}),
+      },
+    };
+    const alts =
+      '<link rel="alternate" hreflang="en" href="' + esc(url) + '">' +
+      '<link rel="alternate" hreflang="nl" href="' + esc(nlUrl) + '">' +
+      '<link rel="alternate" hreflang="x-default" href="' + esc(url) + '">';
+
+    const head = (t, d, canon) => html
+      .replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
+      .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(t) + "</title>")
+      .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+      .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(canon) + "$2")
+      .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(t) + "$2")
+      .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+      .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(canon) + "$2")
+      .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(t) + "$2")
+      .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
+      .replace("</head>", alts + '<script id="sellerLd" type="application/ld+json">' +
+        JSON.stringify(schema) + "</script></head>");
+
+    lotContent.add(esc(title)); lotContent.add(esc(desc));
+    lotContent.add(title); lotContent.add(desc);
+    let out = head(title, desc, url);
+    if (clean(p.logo_url)) {
+      out = out
+        .replace(/(<meta property="og:image" content=")[^"]*(")/, "$1" + esc(clean(p.logo_url)) + "$2")
+        .replace(/(<meta name="twitter:image" content=")[^"]*(")/, "$1" + esc(clean(p.logo_url)) + "$2");
+    }
+    if (!out.includes('href="' + esc(url) + '"')) throw new Error(p.id + ": seller canonical was not rewritten");
+    fs.mkdirSync("." + path, { recursive: true });
+    fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
+
+    let nl = applyHtmlRules(translate(out, NL_DICT, i18nStats).html, NL_HTML);
+    nl = nl
+      .replace(/<html lang="en">/, '<html lang="nl">')
+      .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(titleNl) + "</title>")
+      .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(titleNl) + "$2")
+      .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(titleNl) + "$2")
+      .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(descNl) + "$2")
+      .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(descNl) + "$2")
+      .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(descNl) + "$2")
+      .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
+      .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(nlUrl) + "$2")
+      .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1nl_NL$2")
+      .replace(/"inLanguage":"en"/g, '"inLanguage":"nl"')
+      .replace(
+        /<a class="lang-btn"[^>]*>[^<]*<\/a>/,
+        '<a class="lang-btn" id="langBtn" href="' + esc(path) + '" hreflang="en" aria-label="Continue in English">EN</a>'
+      );
+    if (!nl.includes('<html lang="nl">')) throw new Error(p.id + ": nl seller lang attribute was not set");
+    if (!nl.includes('href="' + esc(nlUrl) + '"')) throw new Error(p.id + ": nl seller canonical was not rewritten");
+    if (!NL_PUBLIC) nl = nl.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
+    nl = injectRuntime(nl, NL_RUNTIME);
+    fs.mkdirSync("." + nlPath, { recursive: true });
+    fs.writeFileSync(nlPath.replace(/^\//, "") + "index.html", nl);
+
+    // The page moves when the seller's own lots move, which is the only signal
+    // we have for it, plus the day they joined.
+    const dates = [p.created_at, ...mine.map(lotLastmod)].filter(Boolean).map(Date.parse).filter(isFinite);
+    const lastmod = dates.length ? new Date(Math.max(...dates)).toISOString().slice(0, 19) + "+00:00" : null;
+    sellerLocs.push({ loc: url, lastmod });
+    if (NL_PUBLIC) sellerLocs.push({ loc: nlUrl, lastmod });
+  }
+
+  if (sellerLocs.length) {
+    fs.writeFileSync("sitemap-sellers.xml",
+      '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      "<!-- Generated by build-pages.mjs at deploy. Do not edit, and do not commit. -->\n" +
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+      sellerLocs.map((x) =>
+        "  <url>\n    <loc>" + x.loc + "</loc>\n" +
+        (x.lastmod ? "    <lastmod>" + x.lastmod + "</lastmod>\n" : "") +
+        "    <priority>0.5</priority>\n  </url>").join("\n") +
+      "\n</urlset>\n");
+  } else if (fs.existsSync("sitemap-sellers.xml")) fs.rmSync("sitemap-sellers.xml");
+  console.log("sellers: " + sellerLocs.length + " pre-rendered of " + sellers.length +
+    " profiles, " + (sellers.length - listed.length) + " skipped for having listed nothing");
+}
 
 // The app itself is the fallback for anything per-record that has no file:
 // /seller/<id>, and a /lot/<id> that was published after the last deploy.

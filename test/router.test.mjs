@@ -111,6 +111,26 @@ t("a lot has a Dutch file of its own and routes to the lot view", async () => {
   w.close();
 });
 
+t("a seller who has listed something has a real page in both languages", async () => {
+  // It answered 404.html before: it drew correctly for a person and was a 404
+  // to everything else, on the one page a seller would send to a buyer.
+  const id = fs.readdirSync("seller")[0];
+  assert.ok(id, "the build wrote no seller pages");
+  for (const [dir, path, lang, title] of [
+    ["seller/" + id, "/seller/" + id + "/", "en", "Ramon Gervais · Seller · Hammer & Mold"],
+    ["nl/seller/" + id, "/nl/seller/" + id + "/", "nl", "Ramon Gervais · Verkoper · Hammer & Mold"],
+  ]) {
+    const w = boot(dir + "/index.html", path);
+    await settle();
+    assert.equal(shown(w.document), "view-seller", path);
+    assert.equal(w.document.documentElement.lang, lang);
+    assert.equal(w.document.title, title);
+    assert.equal(w.document.querySelector("link[rel=canonical]").href, "https://hammerandmold.com" + path);
+    assert.equal(JSON.parse(w.document.getElementById("sellerLd").textContent)["@type"], "ProfilePage");
+    w.close();
+  }
+});
+
 t("the English fallback still finds the view behind a /nl path", async () => {
   // /seller, /checkout and /account have no file, so GitHub Pages answers
   // 404.html, which is a copy of the English page. It has to understand a

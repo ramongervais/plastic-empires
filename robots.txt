@@ -41,3 +41,6 @@ Sitemap: https://hammerandmold.com/sitemap.xml
 # Lots, generated at deploy. Separate file because they come and go with the
 # auctions and sitemap.xml is kept by hand.
 Sitemap: https://hammerandmold.com/sitemap-lots.xml
+# Seller shop pages, generated at deploy from whoever has actually listed
+# something. Same reason as above: they come and go, sitemap.xml is by hand.
+Sitemap: https://hammerandmold.com/sitemap-sellers.xml
