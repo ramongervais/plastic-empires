@@ -9,7 +9,9 @@ const built = fs.existsSync("nl/index.html");
 const why = !JSDOM ? "jsdom not installed" : !built ? "run build-pages.mjs first" : false;
 
 function boot(file, path) {
+  const app = fs.readdirSync(".").find((f) => /^app\..*\.js$/.test(f));
   const page = fs.readFileSync(file, "utf8")
+    .replace(/<script src="\/app\.[^"]*"><\/script>/, "<script>" + fs.readFileSync(app, "utf8") + "</script>")
     .replace('<script src="/shipping.js"></script>', "<script>" + fs.readFileSync("shipping.js", "utf8") + "</script>")
     .replace(/<script src="https:\/\/cdn\.jsdelivr[^>]*><\/script>/, "<script>window.supabase={createClient:function(){return null}}</script>");
   const dom = new JSDOM(page, { url: "https://hammerandmold.com" + path, runScripts: "dangerously", pretendToBeVisual: true,

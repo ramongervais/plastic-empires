@@ -6216,7 +6216,13 @@
   //
   // Read off the lang attribute rather than the URL, because that attribute is
   // what the build stamped on this file and so it cannot drift from it.
-  const LANG_PREFIX = document.documentElement.lang === 'nl' ? '/nl' : '';
+  // Every language the site is built in. The build checks this against
+  // i18n/locales.json and refuses to run if the two have drifted, because a
+  // router that does not know about a language sends its readers to the home
+  // page and nothing else goes wrong loudly enough to notice.
+  const LOCALE_CODES = ['nl', 'de', 'fr', 'es', 'it', 'ar'];
+  const LANG_PREFIX = LOCALE_CODES.indexOf(document.documentElement.lang) >= 0
+    ? '/' + document.documentElement.lang : '';
 
   // ---- What each path tells a crawler and a share preview ----
   // The head was one title, one description and one canonical for the entire
@@ -6486,12 +6492,13 @@
     // Strip /nl whatever file this is, not only when the file is a Dutch one.
     // /seller, /checkout and /account have no file behind them, so GitHub
     // Pages answers with 404.html, which is a copy of the English page: its
-    // LANG_PREFIX is empty, and without this it would read /nl/account as an
+    // LANG_PREFIX is empty, and without this it would read /de/account as an
     // unknown path and show a Dutch visitor the home page instead of their
     // account. The page stays English, because the fallback file is, but at
     // least it is the page they asked for.
     let raw = location.pathname.replace(/\/+$/, '') || '/';
-    if (raw === '/nl' || raw.startsWith('/nl/')) raw = raw.slice(3) || '/';
+    const pre = LOCALE_CODES.filter(c => raw === '/' + c || raw.indexOf('/' + c + '/') === 0)[0];
+    if (pre) raw = raw.slice(pre.length + 1) || '/';
     if (VIEW_BY_PATH[raw]){ routeTo(VIEW_BY_PATH[raw], null, fromHistory); return true; }
     const m = raw.match(/^(\/lot|\/seller|\/checkout)\/(.+)$/);
     if (m){ routeTo(VIEW_BY_PATH[m[1]], decodeURIComponent(m[2]), fromHistory); return true; }

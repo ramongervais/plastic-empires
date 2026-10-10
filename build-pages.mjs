@@ -18,10 +18,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
+import crypto from "node:crypto";
 import { translate, extractStrings, loadDict, applyHtmlRules } from "./i18n.mjs";
 import { jsLiterals, phraseKeys, runtimeDict, injectRuntime, decodeEntities } from "./i18n-runtime.mjs";
 
-const SRC = "index.html";
+// The source moved out of the web root the day the stylesheet and the scripts
+// were lifted out of it. Before that the file served at / was also the file the
+// build read, so stripping anything out of a page meant stripping it out of the
+// source. Generated output must never be able to touch its input.
+const SRC = "src/index.html";
 
 // ---------------------------------------------------------------------------
 // Dutch.
@@ -179,29 +184,96 @@ function localePage(L, out, p, opts) {
 // A dictionary entry that was never looked up is dead, and that is a more
 // honest test than searching index.html: the per-page titles and descriptions
 // are injected by this build and never appear in the source file.
-const html = fs.readFileSync(SRC, "utf8");
+// ---------------------------------------------------------------------------
+// The stylesheet and the scripts, lifted out of the page.
+//
+// Every page carried its own copy of 142KB of CSS and 337KB of JavaScript,
+// which is fine for one page and absurd for sixty-six of them in seven
+// languages: 432MB published, against a 1GB ceiling, with forty-four lots in
+// the shop. Hoisted into two files it is 190MB, and a reader downloads them
+// once instead of on every click.
+//
+// The filename carries a hash of its own contents. A deploy that changes the
+// JavaScript changes the name, so nobody is served last week's script out of
+// their cache, and a deploy that changes nothing changes no name.
+const rawHtml = fs.readFileSync(SRC, "utf8");
+const assetHash = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 10);
+
+const html = (() => {
+  let out = rawHtml;
+
+  // One stylesheet. There is only one <style> and it is the whole design.
+  const styles = [...out.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)];
+  const css = styles.map((m) => m[1]).join("\n");
+  const cssName = "app." + assetHash(css) + ".css";
+  fs.writeFileSync(cssName, css);
+  out = out.replace(styles[0][0], '<link rel="stylesheet" href="/' + cssName + '">');
+  for (const m of styles.slice(1)) out = out.replace(m[0], "");
+
+  // One script, in document order. They already shared one global scope as
+  // separate blocks, so joining them changes nothing about what sees what.
+  // External scripts and the JSON-LD stay where they are: one is somebody
+  // else's file and the other is different on every page.
+  const inline = [...out.matchAll(/<script(?![^>]*\bsrc=)(?![^>]*ld\+json)[^>]*>([\s\S]*?)<\/script>/g)];
+  const js = inline.map((m) => m[1]).join("\n;\n");
+  const jsName = "app." + assetHash(js) + ".js";
+  fs.writeFileSync(jsName, js);
+  // The app goes last, where the whole document exists. The blocks that used
+  // to run mid-page only ever reached backwards, so later is safer, not
+  // riskier: more of the page is there by the time they look for it.
+  for (const m of inline) out = out.replace(m[0], "");
+  out = out.replace("</body>", '<script src="/' + jsName + '"></script></body>');
+
+  // Nothing of ours may be left behind in the page, or it ships twice.
+  for (const m of [...styles, ...inline]) {
+    if (out.includes(m[0])) throw new Error("asset extraction left a block behind");
+  }
+  console.log("assets: " + cssName + " " + (css.length / 1024 | 0) + "KB, " +
+    jsName + " " + (js.length / 1024 | 0) + "KB, page now " + (out.length / 1024 | 0) + "KB");
+  // Last deploy's hashed files are not ours to keep.
+  for (const f of fs.readdirSync(".")) {
+    if (/^app\.[0-9a-f]{10}\.(css|js)$/.test(f) && f !== cssName && f !== jsName) fs.rmSync(f);
+  }
+  return out;
+})();
 
 // Every string literal the application's own scripts can produce, and the
 // subset of both dictionaries that matches one. Shipping the whole dictionary
 // would put a hundred kilobytes of Terms on every page for nothing; the
 // runtime only needs what JavaScript can actually write to the document.
-const JS_LITERALS = jsLiterals(html);
+const JS_LITERALS = jsLiterals(rawHtml);
 for (const L of LOCALES) L.runtime = runtimeDict(L.dict, L.js, JS_LITERALS);
 
 // Pull the two tables out of the app and evaluate them, rather than keeping a
 // second copy here that would drift.
 function grab(name) {
-  const i = html.indexOf("const " + name + " = {");
+  const i = rawHtml.indexOf("const " + name + " = {");
   if (i < 0) throw new Error("could not find " + name + " in " + SRC);
-  const open = html.indexOf("{", i);
+  const open = rawHtml.indexOf("{", i);
   let depth = 0, end = -1;
-  for (let j = open; j < html.length; j++) {
-    const c = html[j];
+  for (let j = open; j < rawHtml.length; j++) {
+    const c = rawHtml[j];
     if (c === "{") depth++;
     else if (c === "}") { depth--; if (depth === 0) { end = j; break; } }
   }
   if (end < 0) throw new Error("unbalanced braces reading " + name);
-  return new Function("return " + html.slice(open, end + 1))();
+  return new Function("return " + rawHtml.slice(open, end + 1))();
+}
+
+// The router carries its own copy of the language list, because it runs in a
+// browser and cannot read i18n/locales.json. Two copies drift, so the build
+// refuses to run when they have: a router that does not know about a language
+// quietly sends its readers to the home page, which is the kind of fault that
+// looks like nothing at all.
+{
+  const m = rawHtml.match(/const LOCALE_CODES = \[([^\]]*)\]/);
+  if (!m) throw new Error("could not find LOCALE_CODES in " + SRC);
+  const inApp = m[1].split(",").map((x) => x.trim().replace(/^'|'$/g, "")).filter(Boolean).sort();
+  const inFile = LOCALES.map((L) => L.code).sort();
+  if (inApp.join() !== inFile.join()) {
+    throw new Error("LOCALE_CODES in " + SRC + " is [" + inApp.join(", ") +
+      "] but i18n/locales.json has [" + inFile.join(", ") + "]");
+  }
 }
 
 const PATHS = grab("PATHS");
@@ -249,7 +321,10 @@ const MOLDER_NAME = {
 // written or the Dutch home page does not exist. The loop skips its English
 // write, in NO_EN_FILE below, and goes on to the Dutch one.
 const SKIP = new Set(["lot", "seller", "account", "checkout"]);
-const NO_EN_FILE = new Set(["home"]);
+// Empty now. / used to be served by the source file itself, so there was
+// nothing to generate; since the stylesheet and the scripts came out of it,
+// the page at / is built like every other one.
+const NO_EN_FILE = new Set();
 
 let written = 0;
 const report = [];
@@ -379,8 +454,8 @@ for (const view of Object.keys(PATHS)) {
 // The credentials are the ones already in index.html and already in every
 // visitor's browser: a publishable key against row-level security. Read once
 // from the source rather than copied here, so there is one definition.
-const SUPA_URL = (html.match(/SUPA_URL = '([^']+)'/) || [])[1];
-const SUPA_KEY = (html.match(/SUPA_KEY = '([^']+)'/) || [])[1];
+const SUPA_URL = (rawHtml.match(/SUPA_URL = '([^']+)'/) || [])[1];
+const SUPA_KEY = (rawHtml.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
 const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at";
 
@@ -399,7 +474,9 @@ const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,
 // that migration rather than waiting on it.
 function gitDate(file) {
   try {
-    return execSync("git log -1 --format=%cI -- " + file, { encoding: "utf8" }).trim() || null;
+    // --follow, because the file moved into src/ and its history did not
+    // start over when it did.
+    return execSync("git log -1 --follow --format=%cI -- " + file, { encoding: "utf8" }).trim() || null;
   } catch (e) { return null; }
 }
 const w3c = (d) => { const t = Date.parse(d); return isFinite(t) ? new Date(t).toISOString().slice(0, 19) + "+00:00" : null; };
@@ -769,7 +846,7 @@ const sellerLocs = [];
 
 // The app itself is the fallback for anything per-record that has no file:
 // /seller/<id>, and a /lot/<id> that was published after the last deploy.
-fs.copyFileSync(SRC, "404.html");
+fs.writeFileSync("404.html", html);
 
 // ---- lastmod on the hand-kept sitemap ----
 //
@@ -924,7 +1001,7 @@ if (fs.existsSync("sitemap.xml")) {
   // formats the English and carries on. Loud here instead, but only for a
   // language that is public, because an empty dictionary is not a bug.
   for (const L of LOCALES.filter((x) => x.public)) {
-    const miss = [...phraseKeys(html)].filter((k) => {
+    const miss = [...phraseKeys(rawHtml)].filter((k) => {
       const d = decodeEntities(k).replace(/\s+/g, " ").trim();
       return !(k in L.js) && !(d in L.runtime) && !(d in L.dict);
     });
@@ -933,7 +1010,7 @@ if (fs.existsSync("sitemap.xml")) {
       miss.sort().map((k) => JSON.stringify(k)).join("\n  "));
   }
 
-  console.log("i18n: " + phraseKeys(html).size + " phrase() keys, " +
+  console.log("i18n: " + phraseKeys(rawHtml).size + " phrase() keys, " +
     jsOpen.length + " js strings open, " + jsFrag.length + " fragments at call sites");
 }
 

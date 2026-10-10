@@ -8,6 +8,9 @@ admin/*.sql
 # app per static path would be 7 MB of duplication that goes stale the moment
 # index.html changes.
 /404.html
+/index.html
+/app.css
+/app.js
 /about/
 /sell/
 /packages/

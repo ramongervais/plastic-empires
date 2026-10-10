@@ -1,0 +1,1719 @@
+
+  :root {
+    --paper: #ffffff;
+    --paper-2: #f5f5f5;
+    --panel: #f1f1f1;
+    --ink: #131313;
+    --ink-2: #4d4d4d;
+    --ink-3: #8c8c8c;
+    --line: #e4e4e4;
+    --line-2: #efefef;
+    --accent: #131313;
+    --accent-ink: #ffffff;
+    --sw: #141414;      /* empire signature — greys, no hue */
+    --gb: #6b6b6b;
+    --jp: #a2a2a2;
+    --good: #131313;
+
+    /* Pure Swiss: everything in Helvetica Neue (a macOS/system grotesque, no Adobe kit needed — works live everywhere).
+       Roles kept as separate tokens but all resolve to the same face; hierarchy comes from size / weight / case / tracking. */
+    --display: "Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;   /* titles */
+    --body: "Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;      /* body */
+    --label: "Helvetica Neue", Helvetica, Arial, "Inter", system-ui, sans-serif;     /* labels */
+  }
+  /* Default is LIGHT for everyone, regardless of OS setting. Dark is available only via the Theme toggle. */
+  :root[data-theme="light"] {
+    --paper:#ffffff; --paper-2:#f5f5f5; --panel:#f1f1f1; --ink:#131313; --ink-2:#4d4d4d; --ink-3:#8c8c8c;
+    --line:#e4e4e4; --line-2:#efefef; --accent:#131313; --accent-ink:#ffffff; --sw:#141414; --gb:#6b6b6b; --jp:#a2a2a2; --good:#131313;
+  }
+  :root[data-theme="dark"] {
+    --paper:#0e0e0e; --paper-2:#151515; --panel:#191919; --ink:#f2f2f2; --ink-2:#b3b3b3; --ink-3:#7d7d7d;
+    --line:#2a2a2a; --line-2:#202020; --accent:#f2f2f2; --accent-ink:#0e0e0e; --sw:#ededed; --gb:#9a9a9a; --jp:#6e6e6e; --good:#f2f2f2;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--body); -webkit-font-smoothing:antialiased; line-height:1.2; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width:100%; display:block; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+  /* A form is not prose and does not want a 65-character measure. While a
+     curation is open the sell page uses the screen it has. */
+  #view-sell:has(.sell-grid.reviewing) .wrap { max-width:1560px; }
+
+  /* labels / eyebrows */
+  .ey { font-family:var(--label); font-size:11px; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-3); }
+  .rule { height:1px; background:var(--line); border:0; margin:0; }
+
+  /* ---------- Masthead ---------- */
+  .promo-bar { display:flex; justify-content:center; align-items:center; gap:12px; flex-wrap:wrap; background:#0a0a0a; color:#fff; text-align:center; padding:8px 20px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+  /* The countdown's width is reserved before it has a value, so filling it in
+     moves nothing. tabular-nums keeps every digit the same width, which is what
+     stops the ribbon twitching as the seconds tick. */
+  .promo-bar .promo-cta { color:#fff; text-decoration:underline; text-underline-offset:2px; cursor:pointer; white-space:nowrap; transition:opacity .15s ease; }
+  .promo-bar .promo-cta:hover { opacity:.65; }
+  @media (max-width:600px){ .promo-bar { font-size:10px; letter-spacing:.08em; gap:8px; padding:8px 16px; } }
+  header.mast { position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .mast-in { max-width:1180px; margin:0 auto; padding:14px 28px; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+  .brand { display:flex; align-items:baseline; gap:12px; cursor:pointer; }
+  .brand .mark { font-family:var(--display); font-weight:600; font-size:19px; letter-spacing:.14em; text-transform:uppercase; }
+  .brand .est { font-family:var(--label); font-size:10px; letter-spacing:.16em; color:var(--ink-3); text-transform:uppercase; }
+  nav.top { display:flex; align-items:center; gap:26px; }
+  nav.top a { font-family:var(--label); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-2); }
+  nav.top a:hover { color:var(--ink); }
+  /* Two of the four nav items open. The documentary pages and the workshop
+     pieces were reachable only from the footer, which is where links go to
+     be ignored, and the shop had no way in except scrolling to it. */
+  .navdrop { position:relative; display:flex; align-items:center; }
+  .navdrop > .navtop { font-family:var(--label); font-size:11.5px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink-2); background:none; border:0; padding:0; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+  .navdrop > .navtop:hover, .navdrop[data-open] > .navtop { color:var(--ink); }
+  .navdrop > .navtop svg { width:8px; height:8px; flex:none; transition:transform .18s ease; }
+  .navdrop[data-open] > .navtop svg { transform:rotate(180deg); }
+  .dropmenu { position:absolute; top:calc(100% + 14px); inset-inline-start:-16px; min-width:214px; z-index:60;
+    background:var(--paper); border:1px solid var(--line); border-radius:3px; padding:8px 0;
+    box-shadow:0 14px 34px rgba(0,0,0,.10);
+    opacity:0; visibility:hidden; transform:translateY(-4px); transition:opacity .16s ease, transform .16s ease, visibility .16s; }
+  .navdrop[data-open] .dropmenu { opacity:1; visibility:visible; transform:none; }
+  /* The gap between the label and the panel would close the menu on the way
+     down to it, so the gap is part of the target. */
+  .dropmenu::before { content:""; position:absolute; inset-inline-start:0; inset-inline-end:0; top:-14px; height:14px; }
+  .dropmenu a { display:block; padding:7px 18px; font-family:var(--label); font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-2); white-space:nowrap; }
+  .dropmenu a:hover, .dropmenu a:focus-visible { color:var(--ink); background:var(--paper-2); }
+  .drop-sep { height:1px; background:var(--line); margin:8px 0; }
+  .drop-lbl { padding:8px 18px 4px; font-family:var(--label); font-size:9.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-3); opacity:.7; }
+  .dropmenu:empty, .drop-dyn:empty { display:none; }
+  .mob-lbl { display:block; font-family:var(--label); font-size:9.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--ink-3); opacity:.7; margin:14px 0 2px; }
+  @media (max-width: 860px){ .navdrop.hide-sm { display:none; } }
+  .theme-btn { background:transparent; border:0; padding:6px; margin:0; cursor:pointer; display:inline-flex; align-items:center; }
+  .theme-icon { display:block; width:20px; height:20px; border-radius:50%; border:1px solid var(--ink-3); background:linear-gradient(90deg, var(--ink) 0 50%, var(--paper) 50% 100%); transition:transform .5s ease, border-color .2s ease; }
+  .theme-btn:hover .theme-icon { border-color:var(--ink); }
+  .lang-btn { display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--label); font-size:11px; letter-spacing:.1em; color:var(--ink-3);
+    border:1px solid var(--line); border-radius:3px; padding:4px 7px; line-height:1;
+    transition:color .15s, border-color .15s; }
+  /* The one piece of colour on a monochrome site, which is the argument for
+     putting it on a flag and nowhere else: it reads as an identifier rather
+     than as decoration. The inset hairline keeps the white band off a white
+     page and the dark field off a dark one. */
+  /* Width only. The two flags are not the same shape, the Dutch one is 3:2 and
+     the union flag 2:1, and a fixed height stretches one of them. They never
+     appear together, so there is nothing to line up with. */
+  .lang-flag { display:block; width:16px; height:auto; border-radius:1px; flex:none;
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.18); }
+  :root[data-theme="dark"] .lang-flag { box-shadow:inset 0 0 0 1px rgba(255,255,255,.22); }
+  .lang-btn:hover { color:var(--ink); border-color:var(--ink); }
+  .lang-btn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  /* One flag was a toggle between two languages. With six it has to be a
+     list, and the list names each language the way that language names
+     itself: a German reader is looking for Deutsch, not for German. */
+  .langdrop { position:relative; display:flex; align-items:center; }
+  .langdrop .dropmenu { min-width:186px; left:auto; right:-8px; top:calc(100% + 12px); }
+  [dir="rtl"] .langdrop .dropmenu { right:auto; left:-8px; }
+  .langdrop .dropmenu a { display:flex; align-items:center; gap:10px; text-transform:none;
+    letter-spacing:.04em; font-size:12px; }
+  .langdrop .dropmenu a .lang-flag { width:18px; }
+  .langdrop .dropmenu a[aria-current="true"] { color:var(--ink); background:var(--paper-2); }
+  :root[data-theme="dark"] .theme-icon { transform:rotate(180deg); }
+  @media (max-width: 860px){ nav.top a.hide-sm { display:none; } }
+
+  .view[hidden] { display:none; }
+  .view { animation: fade .4s ease both; counter-reset: sec; }
+  @keyframes fade { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+
+  /* ---------- Hero ---------- */
+  .dateline { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:11px 0; border-top:2px solid var(--ink); border-bottom:1px solid var(--line); font-family:var(--label); font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-2); }
+  .dateline b { color:var(--ink); font-weight:600; }
+  @media (max-width:640px){ .dateline { font-size:9px; letter-spacing:.08em; } }
+  .hero { padding: 40px 0 64px; display:grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 40px; align-items:center; }
+  .hero-copy .ey { margin-bottom: 26px; }
+  .hero h1 { font-family:var(--display); font-weight:600; font-size: clamp(32px, 4.3vw, 54px); line-height:1.02; letter-spacing:-.02em; margin:0 0 26px; max-width: 24ch; }
+  .hero p.lede { font-family:var(--body); font-weight:600; font-size: clamp(19px, 1.8vw, 22px); line-height:1.4; color:var(--ink); max-width: 46ch; margin:0 0 32px; }
+  .cta-row { display:flex; gap:14px; flex-wrap:wrap; }
+  .btn { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; padding:14px 22px; border-radius:2px; cursor:pointer; border:1px solid var(--ink); background:var(--ink); color:var(--paper); transition:transform .12s, background .12s, color .12s; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.ghost { background:transparent; color:var(--ink); border-color:var(--line); }
+  .btn.ghost:hover { border-color:var(--ink); }
+  .btn.accent { background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+
+  /* Vitrine (museum display placeholder) */
+  /* 4/5, portrait. Every card used to override this to a square inline, and
+     a square crop on a photograph of a standing figure takes the head or the
+     feet: a Snowtrooper lost the tip of his blaster and an Ugnaught lost the
+     plinth he is standing on. Toys are photographed upright, so the frame is
+     upright. The skeleton placeholder was already 4/5, so the grid also stops
+     jumping height the moment the real cards arrive. */
+  .vitrine { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:3px; aspect-ratio: 4/5; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .vitrine.wide { aspect-ratio: 4/3; }
+  .vitrine .cardimg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .dz-size { grid-column:1 / -1; font-family:var(--label); font-size:11px; letter-spacing:.06em; color:var(--ink-3); margin-top:4px; }
+  .dropzone.busy { opacity:.6; pointer-events:none; }
+  .vitrine canvas.stars { position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .vitrine .tick { position:absolute; width:9px; height:9px; border-color:var(--ink-3); opacity:.5; }
+  .vitrine .tick.tl { top:12px; inset-inline-start:12px; border-top:1px solid; border-inline-start:1px solid; }
+  .vitrine .tick.tr { top:12px; inset-inline-end:12px; border-top:1px solid; border-inline-end:1px solid; }
+  .vitrine .tick.bl { bottom:12px; inset-inline-start:12px; border-bottom:1px solid; border-inline-start:1px solid; }
+  .vitrine .tick.br { bottom:12px; inset-inline-end:12px; border-bottom:1px solid; border-inline-end:1px solid; }
+  .vitrine .vlabel { position:relative; text-align:center; z-index:2; padding:20px; }
+  .vitrine .vlabel .k { font-family:var(--label); font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-3); }
+  .vitrine .vlabel .n { font-family:var(--display); font-weight:600; font-size:26px; letter-spacing:-.01em; margin-top:10px; }
+  .vitrine .vlabel .y { font-family:var(--label); font-size:12px; letter-spacing:.14em; color:var(--ink-3); margin-top:8px; }
+  .vitrine .plinth { position:absolute; inset-inline-start:0; inset-inline-end:0; bottom:0; height:34%; background:linear-gradient(to top, color-mix(in srgb, var(--ink) 8%, transparent), transparent); pointer-events:none; }
+  .vcap { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-3); margin-top:12px; text-align:center; }
+  /* Who took the photograph and under what licence. CC BY-SA asks for the
+     author, the licence and a link, and a folder full of files does not
+     satisfy that: the page the picture appears on has to say it. */
+  .credit { font-family:var(--label); font-size:10px; letter-spacing:.06em; color:var(--ink-4,var(--ink-3)); opacity:.75; margin-top:6px; }
+  .credit a { color:inherit; text-decoration:underline; text-underline-offset:2px; }
+  .credit a:hover { color:var(--ink); opacity:1; }
+
+
+  /* Hero logo. Contained, not bled: a mark that runs off the page edge reads as
+     broken, unlike a photograph. The art is black on transparent, so the dark
+     theme inverts it to white rather than needing a second file. */
+  .hero-logo { display:block; width:100%; max-width:430px; height:auto; margin:0 auto; }
+  :root[data-theme="dark"] .hero-logo { filter:invert(1); }
+  @media (max-width:900px){ .hero-logo { max-width:320px; margin:0; } }
+
+  /* The Kong photograph, now illustrating "Not just a grid of photos" */
+  .why-shot { display:block; width:100%; max-width:780px; height:auto; margin:0 auto 44px; }
+
+  /* ---------- Section frame ---------- */
+  section.band { padding: 64px 0; border-top:1px solid var(--line); }
+  .band-head { display:grid; grid-template-columns:auto 1.5fr 1fr; gap:0 36px; align-items:end; margin-bottom:40px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+  .band-head::before { counter-increment:sec; content:counter(sec, decimal-leading-zero); font-family:var(--body); font-weight:700; font-size:clamp(36px,5vw,72px); line-height:.76; letter-spacing:-.03em; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .band-head > div { border-inline-start:1px solid var(--line); padding-inline-start:32px; }
+  .band-head p { border-inline-start:1px solid var(--line); padding-inline-start:32px; }
+  @media (max-width:760px){ .band-head { grid-template-columns:auto 1fr; gap:0 20px; } .band-head p { grid-column:1 / -1; border-inline-start:0; padding-inline-start:0; margin-top:16px; } }
+  .band-head h2 { font-family:var(--display); font-weight:600; font-size: clamp(26px, 3.4vw, 38px); letter-spacing:-.015em; margin:6px 0 0; }
+  .band-head p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:40ch; margin:0; }
+  /* A second paragraph inside the one cell the grid gives this column. */
+  .band-head p .bh-p { display:block; margin-top:14px; }
+
+  /* Empires */
+  /* Filter + sort bar (publisher = empire) */
+  /* The chip bar is built from whatever makers have lots, so it cannot be in the
+     HTML, and it used to arrive after first paint and push the whole shop down.
+     Skeleton cards held the height of the cards but not of the bar above them,
+     which is why CLS stayed red after yesterday's fix.
+     It occupies its height from the first paint now: hidden means invisible, not
+     absent, so filling it in moves nothing. One row of chips is 33px. */
+  .collectionbar { display:flex; justify-content:space-between; align-items:center; gap:16px 24px; flex-wrap:wrap; margin:0 0 26px; min-height:33px; }
+  .collectionbar[hidden] { display:flex; visibility:hidden; }
+  .filterbar { display:flex; flex-wrap:wrap; gap:8px; }
+  .fchip { font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:100px; padding:8px 15px; cursor:pointer; transition:background .12s, color .12s, border-color .12s, transform .12s; }
+  .fchip:hover { color:var(--ink); border-color:var(--ink-3); }
+  .fchip.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .sortbar { display:flex; align-items:center; gap:10px; }
+  .sortbar .sortlabel { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .sbtn { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); background:transparent; border:0; padding:6px 2px; cursor:pointer; border-bottom:1px solid transparent; }
+  .sbtn:hover { color:var(--ink); }
+  .sbtn.on { color:var(--ink); border-bottom-color:var(--ink); }
+  .empires { display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; }
+  .empire { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:3px; padding:28px; display:flex; flex-direction:column; min-height:260px; cursor:pointer; transition:transform .14s, border-color .14s; overflow:hidden; }
+  .empire:hover { transform:translateY(-3px); border-color:var(--ink-3); }
+  a.empire { color:inherit; text-decoration:none; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-2); background:color-mix(in srgb, var(--ink) 7%, transparent); border:1px solid var(--line); border-radius:100px; padding:4px 10px; line-height:1; }
+  .empire h3 { font-family:var(--display); font-weight:600; font-size:30px; letter-spacing:-.01em; margin:14px 0 4px; }
+  .empire .era { font-family:var(--label); font-size:12px; color:var(--ink-3); letter-spacing:.08em; }
+  .empire p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); margin:16px 0 0; max-width:34ch; }
+  .empire .enter { margin-top:auto; padding-top:22px; font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); display:inline-flex; gap:8px; align-items:center; }
+  .empire .enter .arw { transition:transform .14s; }
+  .empire:hover .enter .arw { transform:translateX(4px); }
+
+  /* Moat / three principles */
+  .moat { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .moat .cell { padding:30px; border-inline-end:1px solid var(--line); }
+  .moat .cell:last-child { border-inline-end:0; }
+  /* Four steps do not divide by three. The Sell page's how-it-works ran on the
+     same three-column moat as the home page, so step 4 sat alone on a second
+     row with two thirds of the width empty beside it. A 2x2 reads as one block
+     and loses the hole.
+     Borders by position rather than by :last-child, which only knows about the
+     end of the list and not about which cells sit on an edge: no right border
+     on the right-hand column, no bottom border on the bottom row. */
+  .moat.two { grid-template-columns:repeat(2,1fr); }
+  .moat.two .cell { border-inline-end:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .moat.two .cell:nth-child(2n) { border-inline-end:0; }
+  .moat.two .cell:nth-last-child(-n+2) { border-bottom:0; }
+  .moat .num { font-family:var(--label); font-size:11px; letter-spacing:.16em; color:var(--accent); }
+  .moat h4 { font-family:var(--display); font-weight:600; font-size:19px; margin:14px 0 8px; letter-spacing:-.01em; }
+  .moat p { font-family:var(--body); font-size:15px; color:var(--ink-2); margin:0; }
+  /* Step one now carries three thoughts, and with margin:0 they read as one
+     paragraph. A gap between, none before the first. */
+  .moat p + p { margin-top:12px; }
+
+  /* Collection grid */
+  .collection, .featured-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  /* Placeholders that hold the shop's height until the real lots arrive. The
+     grid was empty in the HTML and then eighteen cards were inserted, so
+     everything below it, the Molders section included, jumped five rows down
+     the page. Cloudflare blamed #empires for that shift, which is the section
+     that got pushed rather than the one that caused it.
+     Same box, same aspect ratio, same line heights, so nothing moves when a
+     real card replaces one. */
+  .sk { pointer-events:none; }
+  .sk .sk-img { aspect-ratio:4/5; background:var(--panel); border:1px solid var(--line); border-radius:3px; }
+  .sk .sk-l { height:11px; background:var(--line-2); border-radius:2px; margin-top:14px; }
+  .sk .sk-l.w70 { width:70%; }
+  .sk .sk-l.w45 { width:45%; margin-top:9px; }
+  .sk .sk-l.tall { height:26px; margin-top:16px; }
+  .sk .sk-l.btn { height:38px; margin-top:14px; }
+  @media (prefers-reduced-motion: no-preference){
+    .sk { animation:skf 1.4s ease-in-out infinite; }
+    @keyframes skf { 0%,100%{ opacity:.55 } 50%{ opacity:.85 } }
+  }
+  /* Featured lots: a paid promotion strip above the shop grid. Max two rows. */
+  /* Deliberately NOT given a reserved height. There are no featured lots today,
+     so holding space for them would leave a permanent empty gap above the shop.
+     It appears only when a placement has been paid for, and then it stays, so it
+     shifts the page once rather than on every load. If featured placement ever
+     becomes the normal state, reserve it the way the chip bar is reserved. */
+  .featured-strip { margin-bottom:36px; padding-bottom:32px; border-bottom:1px solid var(--line); }
+  .featured-head { display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .featured-note { font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  /* A grid row stretches every card to the tallest one, but the contents used to
+     sit wherever the title left them, so in a row of four the prices and the
+     buttons landed at four different heights. The card is a column now and the
+     price block is pushed to the bottom, so those two lines are a baseline
+     across the row whatever the titles do. The photo must not stretch with it. */
+  .artifact-card { cursor:pointer; display:flex; flex-direction:column; }
+  .artifact-card > .vitrine { flex:none; }
+  .artifact-card > .label { flex:1; display:flex; flex-direction:column; }
+  .artifact-card .auc-card { margin-top:auto; }
+  .artifact-card.disabled { cursor:default; opacity:.72; }
+  .label { margin-top:14px; }
+  .label .ln { display:flex; justify-content:space-between; gap:10px; align-items:baseline; }
+  .label .nm { font-family:var(--display); font-weight:600; font-size:15px; letter-spacing:-.01em; }
+  .label .pr { font-family:var(--label); font-size:13px; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+  .label .meta { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:5px; }
+  .label .status { font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); margin-top:8px; }
+
+  /* ---------- Artifact page ---------- */
+  .crumb { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:30px 0 0; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .crumb a { color:var(--ink-3); } .crumb a:hover { color:var(--ink); }
+  .crumb .sep { opacity:.5; }
+  .crumb .here { color:var(--ink); }
+  .art-top { display:grid; grid-template-columns: 1.05fr .95fr; gap:52px; padding:30px 0 60px; align-items:start; }
+  .art-media { position:sticky; top:84px; }
+  .thumbs { display:flex; gap:10px; margin-top:12px; }
+  .thumbs .th { flex:1; aspect-ratio:1; background:var(--panel); border:1px solid var(--line); border-radius:2px; }
+  .thumbs .th.active { border-color:var(--ink); }
+
+  .art-title { font-family:var(--display); font-weight:600; font-size: clamp(34px, 4.4vw, 52px); letter-spacing:-.02em; line-height:1.02; margin:6px 0 10px; }
+  .art-sub { font-family:var(--label); font-size:12.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--sw); }
+  .spec { border-top:1px solid var(--line); margin-top:26px; }
+  .spec .row { display:flex; justify-content:space-between; gap:20px; padding:12px 0; border-bottom:1px solid var(--line-2); font-size:14px; }
+  .spec .row .k { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .spec .row .v { font-family:var(--display); color:var(--ink); text-align:end; }
+  .spec .row .v.good { color:var(--good); }
+  /* Prose values (Completeness, Curator's notes) stack under their label and
+     read left to right, like text. Right-aligned paragraphs look like a fault. */
+  .spec .row.col { display:block; }
+  .spec .row.col .v { display:block; text-align:start; margin-top:8px; font-family:var(--body); line-height:1.65; color:var(--ink-2); }
+
+  .price-block { margin-top:30px; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+  .price-block .pr { font-family:var(--body); font-weight:700; font-size:34px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .price-block .prnote { font-family:var(--label); font-size:11px; color:var(--ink-3); letter-spacing:.06em; }
+  .buy-row { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; }
+  .buy-row .btn { flex:1; min-width:170px; text-align:center; }
+  /* Buyer protection, collapsed by default so it informs without shouting */
+  .protect { margin-top:18px; border-top:1px solid var(--line); }
+  .protect-h { width:100%; display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:none; border:0; padding:14px 0; cursor:pointer; color:var(--ink);
+    font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+  .protect-h:hover { color:var(--ink-2); }
+  .protect-x { font-family:var(--body); font-size:15px; color:var(--ink-3); line-height:1; }
+  .protect-list { list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:14px; }
+  .protect-list[hidden] { display:none; }
+  .protect-list li { display:flex; flex-direction:column; gap:3px; }
+  .protect-list b { font-family:var(--body); font-weight:600; font-size:13.5px; color:var(--ink); }
+  .protect-list span { font-family:var(--body); font-size:13px; line-height:1.6; color:var(--ink-3); }
+  .trust { font-family:var(--label); font-size:11px; color:var(--ink-3); letter-spacing:.04em; margin-top:16px; line-height:1.7; }
+  .trust b { color:var(--ink-2); font-weight:400; }
+
+  /* Story */
+  .story { max-width: 680px; margin: 0 auto; }
+  .story .ey { margin-bottom:18px; }
+  .story h2 { font-family:var(--display); font-weight:600; font-size:clamp(26px,3vw,34px); letter-spacing:-.015em; margin:0 0 24px; }
+  .story p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); margin:0 0 22px; }
+
+  /* ---- Right to left ----
+     The layout crossed over on its own: grid, flex and the logical
+     properties above all follow the writing direction. What is left is the
+     short list of things that are physical on purpose.
+
+     The dropped capital, because float:inline-start only reached Safari in
+     17.4 and Chrome in 118, which is too recent to stake a page on.
+
+     The arrows, because an arrow is a direction and not a character. In a
+     right-to-left sentence "read on" points the other way, and a glyph that
+     does not turn around reads as a mistake. Flipping the glyph rather than
+     swapping the character keeps one piece of copy in the dictionary. */
+  [dir="rtl"] .story p .drop { float:right; padding:6px 0 0 12px; }
+  [dir="rtl"] .arw { display:inline-block; transform:scaleX(-1); }
+  [dir="rtl"] .enter .arw { margin-inline-start:0; }
+  /* A carousel moves with the text, so its chevrons turn too. */
+  [dir="rtl"] .rb-nav svg, [dir="rtl"] .vid-play svg { transform:scaleX(-1); }
+
+  .story p .drop { float:left; font-family:var(--display); font-weight:600; font-size:58px; line-height:.8; padding:6px 12px 0 0; color:var(--accent); }
+  .pullquote { font-family:var(--body); font-style:italic; font-size:26px; line-height:1.4; color:var(--ink); border-inline-start:3px solid var(--accent); padding:6px 0 6px 26px; margin:34px 0; }
+  .notforsale { border-top:1px solid var(--line); margin-top:30px; padding-top:18px; font-size:15px; color:var(--ink-3); }
+  .notforsale b { color:var(--ink); }
+
+  /* Archive footage */
+  .archive { margin-top:60px; }
+  .film { position:relative; aspect-ratio:16/9; background:#0c0b08; border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .film canvas.stars { position:absolute; inset:0; opacity:.5; }
+  .film .scan { position:absolute; inset:0; background:repeating-linear-gradient(to bottom, rgba(255,255,255,.03) 0 2px, transparent 2px 4px); pointer-events:none; }
+  .film .play { position:relative; z-index:2; width:78px; height:78px; border-radius:50%; background:rgba(243,241,234,.1); border:1px solid rgba(243,241,234,.5); display:flex; align-items:center; justify-content:center; transition:transform .16s, background .16s; }
+  .film:hover .play { transform:scale(1.08); background:rgba(243,241,234,.16); border-color:rgba(243,241,234,.9); }
+  .film .play svg { width:26px; height:26px; margin-inline-start:4px; fill:#f3f1ea; }
+  .film .corner { position:absolute; z-index:2; font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(243,241,234,.72); }
+  .film .corner.tl { top:16px; inset-inline-start:18px; } .film .corner.tr { top:16px; inset-inline-end:18px; color:rgba(243,241,234,.6); }
+  .film .corner.bl { bottom:16px; inset-inline-start:18px; }
+  .filmcap { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.05em; color:var(--ink-3); }
+
+  /* Empire link + related */
+  .empire-link { margin-top:60px; border:1px solid var(--line); border-radius:3px; padding:30px; display:flex; justify-content:space-between; align-items:center; gap:24px; background:var(--panel); position:relative; overflow:hidden; cursor:pointer; }
+  /* signature line removed */
+  .empire-link .l .eys { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .empire-link .l h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:8px 0 6px; letter-spacing:-.01em; }
+  .empire-link .l p { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); margin:0; max-width:48ch; }
+
+  /* Reserve modal */
+  .modal-bg { position:fixed; inset:0; background:rgba(10,9,6,.55); backdrop-filter:blur(3px); z-index:80; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .modal-bg[hidden]{ display:none; }
+  /* A dialogue taller than the screen used to run off both ends: the title above
+     the top edge, the buttons below the bottom, and no way to reach either. The
+     delivery form with its address, carrier options and total is well past that
+     height on a laptop. Capping and scrolling is the floor, not the fix. The fix
+     is that a checkout is a page and not a dialogue, which is next. */
+  .modal { background:var(--paper); border:1px solid var(--line); border-radius:4px; max-width:440px; width:100%; padding:34px;
+    max-height:calc(100vh - 48px); overflow-y:auto; overscroll-behavior:contain; }
+  .modal .ey { margin-bottom:14px; }
+  .modal h3 { font-family:var(--display); font-weight:600; font-size:24px; margin:0 0 12px; letter-spacing:-.01em;
+    overflow-wrap:anywhere; text-wrap:balance; }
+  /* For a value inside running text that has no spaces to break at: an address,
+     a handle, a long id. Breaks only where it has to. */
+  .brk { overflow-wrap:anywhere; }
+  .modal p { font-family:var(--body); font-size:16px; color:var(--ink); margin:0 0 22px; line-height:1.8; }
+  .modal .close { margin-top:8px; }
+  .modal-acts { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  .modal-acts .close { margin-top:0; }
+  /* The dismiss in the corner. position:relative goes on .modal above so this can
+     sit against its padding rather than the viewport. */
+  .modal { position:relative; }
+  .modal-x { position:absolute; top:12px; inset-inline-end:12px; width:32px; height:32px; display:inline-flex;
+    align-items:center; justify-content:center; padding:0; border:0; border-radius:2px;
+    background:transparent; color:var(--ink-3); cursor:pointer; transition:color .12s, background .12s; }
+  .modal-x:hover { color:var(--ink); background:var(--paper-2); }
+  .modal-x:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .modal-x svg { width:15px; height:15px; fill:currentColor; display:block; }
+  /* Landscape. Three packages have to sit next to each other or there is nothing
+     to compare, and the card grid already falls to one column under 900px. */
+  .modal.wide { max-width:1020px; padding:34px 34px 30px; }
+  .modal.wide h3 { margin-bottom:10px; }
+  .pm-lead { font-size:14.5px !important; line-height:1.7 !important; color:var(--ink-2) !important; max-width:80ch; margin:0 0 24px !important; }
+  .pm-lead b { color:var(--ink); }
+  /* The card box is a three-column grid, so the waiting mark and the failure line
+     have to be told to span it or they sit squeezed into the first column. */
+  #plansModalCards .pay-wait, #plansModalCards .acct-empty { grid-column:1 / -1; justify-content:center; padding:30px 0; margin:0; }
+  /* First-hand evidence, shown as such. A photograph of the object we actually
+     handled is the one thing a page about an undocumented maker can offer that
+     a compiler of other people's listings cannot. */
+  .ev-grid { display:grid; gap:24px; margin-top:8px; }
+  @media (min-width:760px){ .ev-grid { grid-template-columns:1fr 1fr; } }
+  .ev { margin:0; }
+  .ev img { width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:4px; }
+  .ev figcaption { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:12px; max-width:56ch; }
+  .ev figcaption b { color:var(--ink); }
+
+  /* The byline. Nine essays written from toys in someone's hands were reading as
+     nine anonymous pages, which is the one thing Google's guidance says not to
+     be and the one thing this site had least excuse for. */
+  .byline { display:flex; align-items:baseline; gap:8px 14px; flex-wrap:wrap;
+    font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-3); margin-top:22px; padding-top:14px; border-top:1px solid var(--line); }
+  .byline b { color:var(--ink); font-weight:600; }
+  .byline .sep { color:var(--line-2); }
+
+  /* ---- Sources, and the way onward ------------------------------------
+     A molder page used to end. You read to the bottom of Galoob and the site
+     simply stopped: no way back up, and nowhere to go next, which on a set of
+     eight documentary pages is the one thing that makes them a set. */
+  .src { border-top:1px solid var(--ink); padding-top:18px; }
+  .src-note { font-family:var(--body); font-size:14px; color:var(--ink-2); max-width:62ch; margin:0 0 16px; }
+  .src-list { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:10px 12px; }
+  .src-list a { display:inline-flex; align-items:baseline; gap:8px; font-family:var(--body); font-size:14px;
+    color:var(--ink); text-decoration:none; border:1px solid var(--line); border-radius:3px; padding:9px 13px;
+    transition:border-color .15s ease, background .15s ease; }
+  .src-list a:hover { border-color:var(--ink); background:var(--paper-2); }
+  .src-w { font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+
+  .onward { border-top:1px solid var(--ink); padding-top:18px; margin-top:56px; }
+  .onward-head { display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+  .totop { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-2); background:transparent; border:1px solid var(--line); border-radius:3px;
+    padding:8px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .totop:hover { border-color:var(--ink); color:var(--ink); }
+  .totop svg { width:11px; height:11px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .nextgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+  @media (max-width:900px){ .nextgrid { grid-template-columns:repeat(3,1fr); } }
+  @media (max-width:560px){ .nextgrid { grid-template-columns:repeat(2,1fr); } }
+  .nexttile { background:var(--paper); padding:16px 16px 18px; cursor:pointer; border:0; text-align:start;
+    font-family:inherit; display:flex; flex-direction:column; gap:4px; transition:background .15s ease; }
+  .nexttile { text-decoration:none; color:inherit; }
+  .nexttile:hover { background:var(--paper-2); }
+  .nexttile .nm { font-family:var(--display); font-weight:600; font-size:16px; letter-spacing:-.01em; color:var(--ink); }
+  .nexttile .yr { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+  .nexttile .fo { font-family:var(--body); font-size:12.5px; color:var(--ink-2); line-height:1.45; }
+  .nexttile.is-here { background:var(--panel); cursor:default; }
+  .nexttile.is-here .nm { color:var(--ink-3); }
+
+  /* Points with a mark. The icon sits in its own column so the second and third
+     lines of text align under the first rather than under the glyph, which is the
+     thing that makes a bulleted paragraph read as a list instead of a ragged wall. */
+  .pts { list-style:none; margin:0; padding:0; max-width:74ch; display:grid; gap:22px; }
+  .pt { display:grid; grid-template-columns:26px minmax(0,1fr); gap:0 18px; align-items:start; }
+  .pt-i { display:flex; align-items:center; justify-content:center; width:26px; height:26px; margin-top:1px; }
+  .pt-i svg { width:20px; height:20px; display:block; fill:none; stroke:var(--ink);
+    stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+  .pt-t { font-family:var(--body); font-size:16px; line-height:1.75; color:var(--ink); }
+  .pt-t b { font-weight:700; }
+  @media (max-width:520px){ .pt { grid-template-columns:22px minmax(0,1fr); gap:0 14px; } .pt-i svg { width:17px; height:17px; } }
+  .pm-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    margin-top:24px; padding-top:20px; border-top:1px solid var(--line); font-family:var(--body); font-size:14px; color:var(--ink-2); }
+  /* Confirm and cancel on one line, sharing a baseline. The confirm carries the
+     fill and the cancel does not: two controls side by side must not read as
+     equal weight. */
+  .ck-acts { display:flex; gap:10px; margin-top:14px; }
+  .ck-acts .btn { flex:1; margin-top:0; }
+  /* Search over the pickup points. Small type on purpose: it sits inside a list
+     and must not compete with the shop names it filters. */
+  .pt-search { font-size:14px; font-weight:500; padding:9px 11px; width:100%; margin:8px 0 4px; }
+
+  /* ---------- Empire (maker) documentary page ---------- */
+  .empire-hero { padding: 56px 0 40px; }
+  .empire-hero .ey { margin-bottom:22px; }
+  .empire-title { font-family:var(--display); font-weight:600; font-size:clamp(56px, 12vw, 130px); line-height:.9; letter-spacing:-.03em; margin:0; }
+  .empire-dek { font-family:var(--label); font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-top:18px; }
+  .empire-lede { font-family:var(--body); font-size:clamp(20px,2vw,24px); line-height:1.6; color:var(--ink); max-width:58ch; margin:26px 0 0; }
+  .factbar { display:grid; grid-template-columns:repeat(4,1fr); margin-top:46px; border-top:1px solid var(--line); }
+  .factbar .fact { padding:22px 26px; border-inline-end:1px solid var(--line); }
+  .factbar .fact:first-child { padding-inline-start:0; }
+  .factbar .fact:last-child { border-inline-end:0; }
+  .factbar .fn { font-family:var(--body); font-weight:700; font-size:clamp(26px,3.2vw,38px); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .factbar .fl { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:8px; }
+
+  .timeline { list-style:none; margin:0; padding:0; border-top:1px solid var(--line); }
+  .timeline li { display:grid; grid-template-columns:120px 1fr; gap:28px; padding:20px 0; border-bottom:1px solid var(--line-2); align-items:baseline; }
+  .timeline .ty { font-family:var(--body); font-weight:700; font-size:22px; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+  .timeline .td { font-family:var(--body); font-size:17px; color:var(--ink-2); }
+  .timeline .td b { color:var(--ink); font-weight:400; }
+
+  @media (max-width:900px){
+    .factbar { grid-template-columns:1fr 1fr; }
+    .factbar .fact:nth-child(2){ border-inline-end:0; }
+    .timeline li { grid-template-columns:64px 1fr; gap:16px; }
+  }
+
+  /* Full-caps Helvetica titles. Helvetica wordmark + body. Italic pull-quote. Pure Swiss, one grotesque. */
+  .hero h1, .art-title, .empire-title, .band-head h2, .story h2, .empire h3, .empire-link .l h3,
+  .moat h4, .label .nm, .vitrine .vlabel .n, .modal h3 { text-transform:uppercase; letter-spacing:.1em; }
+  .empire-title { letter-spacing:.045em; }
+  /* Main page headline of each top view: heavy weight, tight leading, wide Swiss tracking */
+  .hero h1, .art-title, .empire-title { font-weight:800; line-height:1; letter-spacing:.2em; }
+  /* the hero line is two full sentences, so it gets tighter tracking to hold two lines */
+  .hero h1 { letter-spacing:.1em; }
+  .brand .mark, .foot .mark { font-family:var(--label); font-weight:600; letter-spacing:.18em; }
+  .pullquote { font-family:var(--display); font-style:italic; }
+  nav.top a, .btn, .ey { letter-spacing:.16em; }
+
+  /* Hover: text turns italic inside a skewed (diagonal) diapositive block that hugs the text only. */
+  .empire h3 { align-self:flex-start; }          /* stop the title stretching to the full row */
+  .empire-link .l h3 { display:inline-block; }
+  .foot .col a { width:fit-content; }
+  nav.top a, .foot .col a, .crumb a,
+  .empire h3, .artifact-card .nm, .empire-link .l h3 { transition:transform .16s ease, background .14s ease, color .14s ease; }
+  nav.top a:hover, .foot .col a:hover, .crumb a:hover,
+  .empire:hover h3, .artifact-card:hover .nm, .empire-link:hover .l h3 {
+    font-style:italic; background:var(--ink); color:var(--paper);
+    box-shadow:0 0 0 .14em var(--ink); transform:skewX(-8deg);
+  }
+  .empire:hover .enter, .btn:hover { font-style:italic; }
+
+  /* Origins: two columns (story + photo carousel) */
+  .origins-grid, .scale-grid { display:grid; grid-template-columns:1.05fr .95fr; gap:56px; align-items:start; }
+  /* Two columns of prose, where a photograph would have been.
+     Origins and the turning point were built as story-plus-picture and the
+     picture never arrived: Empires/TMNT held no comic-01.jpg and no
+     first-wave.jpg, so half the width was a labelled empty box on every visit.
+     Setting the prose in two columns uses the measure the grid was already
+     holding open, and the section gets SHORTER rather than emptier, which an
+     empty panel never does.
+     The head stays outside .cols so it spans the full measure; only the body
+     is divided. A paragraph may not be cut by the column break, or its lead-in
+     arrives without the sentence it introduces. */
+  .story.wide { max-width:none; margin:0; }
+  .story .cols { columns:2; column-gap:56px; }
+  .story .cols p { break-inside:avoid; }
+  .story .cols p:last-child { margin-bottom:0; }
+  @media (max-width:900px){ .story .cols { columns:1; } }
+  /* The pull quote sits between the head and the columns, as a deck. It stays
+     out of .cols on purpose: 26px italic inside a half-width column is cramped,
+     and this is the line the section is about. Capped rather than run the full
+     1124px, which at this size would strand a half line. */
+  .story.wide .pullquote { max-width:640px; margin:2px 0 34px; }
+  .origins-grid .story, .scale-grid .story { max-width:none; margin:0; }
+  .carousel { position:sticky; top:88px; }
+  .carousel-viewport { position:relative; overflow:hidden; border:1px solid var(--line); border-radius:3px; background:var(--panel); }
+  .carousel-track { display:flex; transition:transform .45s cubic-bezier(.4,0,.1,1); }
+  .slide { min-width:100%; margin:0; }
+  .slide-img { position:relative; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--panel-2), var(--panel)); overflow:hidden; }
+  .slide-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+
+  /* Scale comparison visual */
+  .scale-visual { position:sticky; top:88px; }
+  .scale-photo { position:relative; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:var(--panel); min-height:140px; display:flex; align-items:center; justify-content:center; }
+  .scale-photo img { width:100%; height:auto; display:block; position:relative; }
+  .scale-photo .ph { position:absolute; font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .scale-svg { width:100%; height:auto; display:block; margin:0 auto; max-width:420px; }
+  .scale-svg .s-base { stroke:var(--ink-3); stroke-width:1; }
+  .scale-svg .s-dim { stroke:var(--ink-2); stroke-width:1; }
+  .scale-svg .s-dimlabel { fill:var(--ink); font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; text-anchor:middle; }
+  .scale-svg .s-fig { fill:var(--ink); }
+  .scale-svg .s-can rect, .scale-svg .s-can ellipse { fill:color-mix(in srgb, var(--ink) 7%, transparent); stroke:var(--ink-2); stroke-width:1.5; }
+  .scale-svg .s-tab { stroke:var(--ink-2); stroke-width:1.5; }
+  .scale-svg .s-cap { fill:var(--ink-2); font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
+  .slide-img .ph { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .carousel-ui { display:flex; align-items:center; justify-content:space-between; margin-top:14px; }
+  .carousel-arrow { font-family:var(--label); font-size:15px; line-height:1; background:transparent; border:1px solid var(--line); border-radius:100px; width:42px; height:42px; cursor:pointer; color:var(--ink-2); transition:color .12s, border-color .12s, transform .12s; }
+  .carousel-arrow:hover { color:var(--ink); border-color:var(--ink-3); transform:translateY(-1px); }
+  .carousel-dots { display:flex; gap:9px; }
+  .carousel-dots .cdot { width:8px; height:8px; padding:0; border-radius:50%; border:1px solid var(--ink-3); background:transparent; cursor:pointer; transition:background .12s, border-color .12s; }
+  .carousel-dots .cdot.on { background:var(--ink); border-color:var(--ink); }
+  @media (max-width:900px){ .origins-grid, .scale-grid { grid-template-columns:1fr; gap:36px; } .carousel, .scale-visual { position:static; } }
+
+  /* Video grid (YouTube archive) */
+  .vidgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px 16px; }
+  .vid { margin:0; }
+  .vid-thumb { position:relative; display:block; width:100%; aspect-ratio:16/9; border:1px solid var(--line); border-radius:3px; overflow:hidden; background:var(--panel); cursor:pointer; padding:0; }
+  .vid-thumb img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .vid-ph { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--label); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+  .vid-play { position:absolute; inset-inline-start:50%; top:50%; transform:translate(-50%,-50%); width:54px; height:54px; border-radius:50%; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.75); display:flex; align-items:center; justify-content:center; transition:transform .15s, background .15s; }
+  .vid-thumb:hover .vid-play { transform:translate(-50%,-50%) scale(1.08); background:rgba(0,0,0,.78); }
+  .vid-play svg { width:20px; height:20px; fill:#fff; margin-inline-start:3px; }
+  .vid-frame { position:relative; aspect-ratio:16/9; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .vid-frame iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .vid figcaption { margin-top:10px; font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; }
+  .vid figcaption a { color:var(--ink-2); text-decoration:none; }
+  .vid figcaption a:hover { color:var(--ink); }
+  @media (max-width:900px){ .vidgrid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:560px){ .vidgrid { grid-template-columns:1fr; } }
+
+  /* ---------- Auction / bidding ---------- */
+  .auction { margin-top:30px; }
+  .auction-row { display:flex; gap:40px; flex-wrap:wrap; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:18px 0; margin-bottom:20px; }
+  .auc-label { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:9px; }
+  .auc-amount, .auc-countdown { font-family:var(--body); font-weight:700; font-size:30px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .auc-card { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; padding-top:10px; border-top:1px solid var(--line-2); }
+  .auc-card .amt { font-family:var(--body); font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .auc-card .sub { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-inline-start:6px; white-space:nowrap; }
+  .auc-del { font-family:var(--body); font-size:14px; color:var(--ink-3); margin-top:6px; font-variant-numeric:tabular-nums; }
+  .auc-del-more { font:inherit; color:var(--ink-3); background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  .auc-del-more:hover { color:var(--ink); }
+  .del-panel { margin-top:12px; border:1px solid var(--line); border-radius:4px; padding:12px 14px; }
+  .del-panel[hidden] { display:none; }
+  .del-row { display:flex; justify-content:space-between; gap:16px; font-family:var(--body); font-size:13.5px; padding:6px 0; border-bottom:1px solid var(--line-2); font-variant-numeric:tabular-nums; }
+  .del-row:last-of-type { border-bottom:0; }
+  .pt-pick { border:1px solid var(--line); border-radius:4px; padding:10px 12px; margin-bottom:8px; }
+  .pt-chosen { font-family:var(--body); font-size:13.5px; line-height:1.5; }
+  .pt-chosen span { display:block; color:var(--ink-3); font-size:12.5px; }
+  .pt-row { display:flex; width:100%; align-items:center; justify-content:space-between; gap:12px; text-align:start; background:none; border:0; border-bottom:1px solid var(--line-2); padding:9px 0; cursor:pointer; font:inherit; }
+  .pt-row:last-child { border-bottom:0; }
+  .pt-row:hover .pt-n { text-decoration:underline; }
+  .pt-n { font-family:var(--body); font-size:13.5px; line-height:1.4; }
+  .pt-n i { display:block; font-style:normal; font-size:12px; color:var(--ink-3); margin-top:2px; }
+  .pt-d { font-family:var(--body); font-size:12.5px; color:var(--ink-3); white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .so-head { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:8px; }
+  .ship-opt { display:block; border:1px solid var(--line); border-radius:4px; padding:10px 12px; margin-bottom:8px; cursor:pointer; }
+  .ship-opt.on { border-color:var(--ink); }
+  /* Collection is not another carrier, it is the other way of getting the toy.
+     Three pixels rather than one, so the eye separates it from the list of
+     postage options above it. */
+  .ship-opt.pickup { border-width:3px; }
+  .ship-opt input { margin-inline-end:8px; }
+  .ship-opt .so-t { font-family:var(--body); font-size:14px; display:flex; justify-content:space-between; gap:12px; font-variant-numeric:tabular-nums; }
+  /* The carrier sits between the service and the price, so the row reads as one
+     sentence: what it is, who carries it, what it costs. */
+  .ship-opt .so-c { font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-2); background:var(--paper-2); border:1px solid var(--line); border-radius:2px;
+    padding:3px 7px; margin-inline-start:auto; margin-inline-end:12px; white-space:nowrap; align-self:center; }
+  .ship-opt.on .so-c { border-color:var(--ink); color:var(--ink); }
+  .ship-opt .so-t b { margin-inline-start:0; }
+  .ship-opt .so-n { display:block; font-family:var(--body); font-size:12px; line-height:1.5; color:var(--ink-3); margin-top:4px; }
+  .del-note { font-family:var(--body); font-size:12px; line-height:1.6; color:var(--ink-3); margin-top:10px; }
+  .auc-card .cd { font-family:var(--label); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-2); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
+  .card-bid:hover { transform:translateY(-2px); }
+  .bidform { margin:2px 0 20px; }
+  /* The delivery form. Two columns on anything wider than a phone, one below, and
+     smaller type than a bid: a bid is a single number and earns 20px bold, an
+     address is seven fields and at that size it shouts and does not fit.
+     minmax(0,1fr) rather than 1fr, because a grid column defaults to min-content
+     and an input's intrinsic width would push it past the modal, which is exactly
+     what the flex version did to the city field. */
+  /* The checkout page. Held to a reading width rather than stretched across a
+     desktop: an address form a metre wide is harder to fill in, not easier. */
+  .ck-page { max-width:560px; margin:0 auto; padding:8px 0 64px; }
+  .ck-title { font-family:var(--display); font-weight:600; font-size:clamp(24px,3.4vw,34px); letter-spacing:-.015em; line-height:1.15; margin:10px 0 14px; text-wrap:balance; }
+  .ck-lede { font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2); margin:0 0 22px; max-width:52ch; }
+  .ck-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px 12px; }
+  .ck-grid .wide { grid-column:1 / -1; }
+  .ck-form .bidlabel { margin-bottom:4px; }
+  .ck-form .bidinput { font-size:15px; font-weight:500; padding:10px 12px; width:100%; }
+  @media (max-width:540px){ .ck-grid { grid-template-columns:1fr; } }
+  .bidlabel { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:10px; }
+  .bidinput-row { display:flex; gap:10px; }
+  .bidinput { flex:1; min-width:0; font-family:var(--body); font-size:20px; font-weight:700; padding:12px 14px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); font-variant-numeric:tabular-nums; }
+  .bidinput:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+  .bidhint { font-family:var(--label); font-size:11px; letter-spacing:.04em; color:var(--ink-3); margin-top:12px; line-height:1.5; }
+
+  /* Footer */
+  /* A ground, so the page has a floor. White on white left the footer looking
+     like content that had run out rather than the end of the page, and the
+     hairline on its own was not enough to say so. var(--paper-2) because it
+     has to be grey on a white page and lighter-than-black on a dark one, and
+     a literal can only do one of those. */
+  /* No top margin. A margin shows the page through, so the moment the footer
+     got a ground of its own that 64px became a white stripe between the dark
+     packages band and the grey footer: two coloured blocks with a gap of a
+     third colour between them. The space moves inside as padding, where it
+     carries the footer's own background and the join is a single edge. */
+  footer.foot { background:var(--paper-2); border-top:1px solid var(--line); padding:72px 0 64px; }
+  .foot-in { display:flex; justify-content:space-between; gap:30px; flex-wrap:wrap; }
+  .foot .mark { font-family:var(--display); font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:15px; }
+  .foot .tl { font-family:var(--body); font-style:italic; color:var(--ink-2); margin-top:8px; font-size:15px; }
+  .foot .cols { display:flex; gap:56px; flex-wrap:wrap; }
+  .foot .col a, .foot .col span { display:block; font-family:var(--label); font-size:11.5px; letter-spacing:.08em; color:var(--ink-3); margin-bottom:9px; }
+  .foot .col a:hover { color:var(--ink); }
+  .foot .col .h { color:var(--ink); text-transform:uppercase; letter-spacing:.14em; margin-bottom:14px; }
+
+  @media (max-width: 900px){
+    .hero { grid-template-columns:1fr; gap:40px; }
+    .hero-artifact { margin-inline-end:0; }
+    .art-top { grid-template-columns:1fr; gap:34px; }
+    .art-media { position:static; }
+    .empires, .moat, .collection, .featured-grid { grid-template-columns:1fr; }
+    .moat .cell { border-inline-end:0; border-bottom:1px solid var(--line); }
+    .moat .cell:last-child { border-bottom:0; }
+    .moat.two { grid-template-columns:1fr; }
+    .moat.two .cell { border-inline-end:0; border-bottom:1px solid var(--line); }
+    .moat.two .cell:last-child { border-bottom:0; }
+    .collection, .featured-grid { grid-template-columns:1fr 1fr; }
+  }
+  /* ---------- Sell / AI curation ---------- */
+  .sell-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+  /* Reviewing a curation is the work, not uploading. One column, the upload box
+     first and narrow, the editor beneath it across the full measure. */
+  .sell-grid.reviewing { grid-template-columns:1fr; gap:40px; }
+  .sell-grid.reviewing .sell-left { max-width:640px; }
+  /* Full width turned out to be too much: the completeness paragraph ran to
+     140 characters a line, which is roughly double a readable measure, and the
+     label/value rows put a metre of white between the two halves of one fact.
+     900px is the measure, and every piece of running text and every label in
+     here is set at one size. Hierarchy comes from caps, tracking and colour
+     instead of from size, which is the only way it still reads at 14px. The
+     lot title and the price keep their own size: they are the two things that
+     are meant to be seen before they are read. */
+  .sell-grid.reviewing { max-width:900px; margin-inline:auto; }
+  .sell-grid.reviewing .rc-sub,
+  .sell-grid.reviewing .rc-lede,
+  .sell-grid.reviewing .rc-notes,
+  .sell-grid.reviewing .rc-conf,
+  .sell-grid.reviewing .rc-empty,
+  .sell-grid.reviewing .rc-spec .row,
+  .sell-grid.reviewing .comps-h,
+  .sell-grid.reviewing .comps-sum,
+  .sell-grid.reviewing .comps-none,
+  .sell-grid.reviewing .comp-t,
+  .sell-grid.reviewing .comp-m,
+  .sell-grid.reviewing .comp-p,
+  .sell-grid.reviewing .comp-k,
+  .sell-grid.reviewing .comps-wait .t,
+  .sell-grid.reviewing .load-stage,
+  .sell-grid.reviewing .sale-toggle button,
+  .sell-grid.reviewing .sell-note,
+  .sell-grid.reviewing .ef > span,
+  .sell-grid.reviewing .ef-l,
+  .sell-grid.reviewing .ef-h,
+  .sell-grid.reviewing .ef-ro .ro-val,
+  .sell-grid.reviewing .ei { font-size:14px; }
+  /* Tracking that was set for 10px type reads as gapped letters at 14px. */
+  .sell-grid.reviewing .rc-sub,
+  .sell-grid.reviewing .rc-conf,
+  .sell-grid.reviewing .comps-h,
+  .sell-grid.reviewing .comp-m,
+  .sell-grid.reviewing .comp-k,
+  .sell-grid.reviewing .ef > span,
+  .sell-grid.reviewing .ef-l { letter-spacing:.06em; }
+  #view-sell .sell-grid.reviewing { --edit-wide:1; }
+  /* The one thing a seller has to do on this page. It was a grey dashed outline
+     on a white page, which is the weight of a disabled field, and it sat below
+     the fold of attention on a screen that is otherwise all white. Solid fill,
+     inverted text, the same pair the primary button uses.
+     --accent rather than a literal #000: in the dark theme the page IS black,
+     and a black block would vanish into it. Accent inverts with the theme, so
+     the zone is the darkest thing on a light page and the lightest on a dark
+     one, which is what "pop" actually means. */
+  .dropzone { display:block; background:var(--accent); color:var(--accent-ink);
+    border:1.5px dashed color-mix(in srgb, var(--accent-ink) 32%, transparent);
+    border-radius:4px; padding:48px 24px; text-align:center; cursor:pointer;
+    transition:border-color .15s ease, box-shadow .15s ease; }
+  /* Hover draws an 8px stroke on the inside while the dashed outline stays put.
+     inset box-shadow rather than a second border: a border would change the
+     box's size and shove the 48px of padding around, and an outline would grow
+     outwards into the gap above the textarea. This paints inside the existing
+     edge and moves nothing. */
+  .dropzone:hover { border-color:color-mix(in srgb, var(--accent-ink) 72%, transparent);
+    box-shadow:inset 0 0 0 8px color-mix(in srgb, var(--accent-ink) 20%, transparent); }
+  /* Dragging a file over it is the moment to be unmistakable: same 8px, louder. */
+  .dropzone.drag { border-color:var(--accent-ink);
+    box-shadow:inset 0 0 0 8px color-mix(in srgb, var(--accent-ink) 42%, transparent); }
+  .dz-plus { font-family:var(--body); font-size:40px; font-weight:300; line-height:1; }
+  .dz-label { font-family:var(--label); font-size:13px; letter-spacing:.14em; text-transform:uppercase; margin-top:12px; }
+  .dz-hint { font-family:var(--body); font-size:13px; color:color-mix(in srgb, var(--accent-ink) 66%, transparent); margin-top:8px; }
+  .dz-hint b { color:var(--accent-ink); }
+  .thumbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  .thumbs .th { position:relative; width:72px; height:72px; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  .thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
+  .thumbs .th button { position:absolute; top:2px; inset-inline-end:2px; width:18px; height:18px; border:0; background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; font-size:12px; line-height:18px; padding:0; }
+  /* Sell uploader thumbnails — square, overrides the Falcon-page .thumbs rules (same class) */
+  #thumbs { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
+  #thumbs .th { position:relative; flex:0 0 auto; width:84px; height:84px; aspect-ratio:1; border:1px solid var(--line); border-radius:3px; overflow:hidden; }
+  #thumbs .th img { width:100%; height:100%; object-fit:cover; display:block; }
+  #thumbs .th { transition:border-color .14s; }
+  #thumbs .th.cover { border-color:var(--ink); }
+  #thumbs .th .th-x, #ofThumbs .th .th-x { position:absolute; top:2px; inset-inline-end:2px; width:18px; height:18px; }
+  /* The offer form's thumbnails, sized like the sell page's so the two look
+     like one product. The remove button reuses .th-x rather than inventing a
+     second one that would drift out of step with it. */
+  #ofThumbs { display:flex; flex-wrap:wrap; gap:8px; }
+  #ofThumbs .th { position:relative; width:72px; height:72px; border:1px solid var(--line); border-radius:3px; overflow:hidden; flex:0 0 auto; }
+  #ofThumbs .th .th-x { display:flex; align-items:center; justify-content:center; border:0; border-radius:2px;
+    background:rgba(0,0,0,.66); color:#fff; font-size:13px; line-height:1; cursor:pointer; padding:0; }
+  #ofThumbs .th .th-x:hover { background:rgba(0,0,0,.85); }
+  #ofThumbs .th .th-x:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+  /* reorder controls, revealed on hover or keyboard focus so the photo stays visible */
+  #thumbs .th .th-move { position:absolute; inset-inline-start:0; inset-inline-end:0; bottom:0; display:flex; opacity:0; transition:opacity .14s; }
+  #thumbs .th:hover .th-move, #thumbs .th:focus-within .th-move { opacity:1; }
+  #thumbs .th .th-move button { position:static; flex:1; height:20px; border:0; background:rgba(19,19,19,.82); color:#fff; font-size:11px; line-height:1; cursor:pointer; padding:0; }
+  #thumbs .th .th-move button:hover:not(:disabled) { background:#131313; }
+  #thumbs .th .th-move button:disabled { opacity:.3; cursor:default; }
+  #thumbs .th .th-cover { position:absolute; top:2px; inset-inline-start:2px; font-family:var(--label); font-size:8px; letter-spacing:.1em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:2px 4px; border-radius:2px; }
+  @media (hover:none){ #thumbs .th .th-move { opacity:1; } }
+  .ef-ro .ro-val { font-family:var(--body); font-size:14px; color:var(--ink-3); padding:9px 0; line-height:1.2; }
+  .ef-top .ef-ro .ro-val { text-align:end; }
+  .ef-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin:0 0 16px; }
+  .ef-top .rc-sub { margin:0; }
+  .ef-top .ef { width:132px; flex:0 0 auto; margin-bottom:0; }
+  .ef-top .ef > span { justify-content:flex-end; }
+  .ef-top .ef .ef-i::after { inset-inline-start:auto; inset-inline-end:0; }
+  @media (max-width:520px){ .ef-top { flex-direction:column; } .ef-top .ef { width:100%; } .ef-top .ef > span { justify-content:flex-start; } }
+  .sold-count { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 20px; }
+  .shop-more { display:flex; justify-content:center; margin-top:34px; }
+  .shop-more[hidden] { display:none; }
+  .empire.has-shot { padding-top:0; }
+  .empire .empire-shot { margin:0 -28px 22px; background:var(--paper); border-bottom:1px solid var(--line); }
+  .empire .empire-shot img { display:block; width:100%; height:250px; object-fit:contain; padding:14px; box-sizing:border-box; }
+  @media (max-width:600px){ .empire .empire-shot img { height:180px; } }
+  .zone-list { list-style:none; padding:0; margin:14px 0 0; display:flex; flex-direction:column; gap:12px; }
+  .zone-list li { display:flex; flex-direction:column; gap:2px; font-family:var(--body); }
+  .zone-list b { font-size:14.5px; }
+  .zone-list span { font-size:14px; line-height:1.6; color:var(--ink-3); }
+  .calc-eg { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink-2); border-inline-start:2px solid var(--ink); padding-inline-start:14px; margin-top:16px; }
+  .tbl-wrap { overflow-x:auto; margin-top:22px; }
+  .ship-table { width:100%; border-collapse:collapse; font-family:var(--body); font-size:13.5px; min-width:760px; }
+  .ship-table th { font-family:var(--label); font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); font-weight:400; text-align:start; padding:0 14px 10px 0; border-bottom:1px solid var(--ink); vertical-align:bottom; }
+  .ship-table td { padding:12px 14px 12px 0; border-bottom:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  .ship-table tbody tr:hover { background:var(--paper-2); }
+  .calc { display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:start; }
+  .calc-form { display:flex; flex-direction:column; gap:14px; }
+  .calc-out { border:1px solid var(--line); padding:24px; }
+  .calc-rows { display:flex; flex-direction:column; }
+  .calc-row { display:flex; justify-content:space-between; gap:16px; padding:11px 0; border-bottom:1px solid var(--line-2); font-family:var(--body); font-size:14px; color:var(--ink-2); }
+  .calc-row .num { font-variant-numeric:tabular-nums; color:var(--ink); }
+  .calc-row.total { border-bottom:0; border-top:2px solid var(--ink); margin-top:6px; padding-top:14px; font-weight:600; color:var(--ink); font-size:16px; }
+  .calc-note { font-family:var(--body); font-size:13px; line-height:1.65; color:var(--ink-3); margin:16px 0 0; }
+  @media (max-width:820px){ .calc { grid-template-columns:1fr; gap:24px; } }
+  .ship-hint { font-family:var(--body); font-size:12.5px; line-height:1.6; color:var(--ink-3); margin:-4px 0 12px; }
+  .ship-hint b { color:var(--ink-2); font-weight:600; }
+  .hint-apply { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; background:var(--ink); color:var(--paper); border:0; border-radius:2px; padding:4px 8px; cursor:pointer; }
+  .hint-apply:hover { opacity:.85; }
+  .price-err { font-family:var(--body); font-size:13px; line-height:1.6; color:#c0392b; border:1px solid #c0392b; border-radius:3px; padding:11px 13px; margin-top:16px; }
+  .price-err[hidden] { display:none; }
+  .sell-tokens { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; }
+  .sell-tokens b { color:var(--ink); font-size:13px; }
+  .sell-tokens a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; }
+  .lb-check { display:flex; align-items:flex-start; gap:9px; font-family:var(--body); font-size:14px; line-height:1.5; cursor:pointer; }
+  .lb-check input { margin-top:3px; }
+  .stamp-btn { display:block; margin-top:10px; font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid rgba(181,138,63,.55); color:#8a6a2e; border-radius:3px; padding:7px 11px; cursor:pointer; }
+  .stamp-btn:hover { border-color:#8a6a2e; }
+  .stamp-warn { font-family:var(--body); font-size:13px; color:#8a6a2e; background:rgba(181,138,63,.12); border:1px solid rgba(181,138,63,.4); border-radius:4px; padding:12px 14px; margin:16px 0 4px; line-height:1.5; }
+  .sale-toggle { display:flex; margin:16px 0; border:1px solid var(--line); border-radius:4px; overflow:hidden; max-width:320px; }
+  .sale-toggle button { flex:1; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:11px; border:0; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s, color .12s; }
+  .sale-toggle button + button { border-inline-start:1px solid var(--line); }
+  .sale-toggle button.on { background:var(--ink); color:var(--paper); }
+  #curateBtn { display:block; width:100%; margin-top:20px; }
+  #curateBtn:disabled { opacity:.4; cursor:not-allowed; }
+  .sell-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:14px; line-height:1.7; }
+  /* The field and the reason for it, side by side. Stacked, the explanation ran
+     the full column width and pushed Identify my toy below the fold on a laptop.
+     The 19px offset lines the prose up with the top of the textarea, not with
+     the label above it. */
+  .notes-2col { display:grid; grid-template-columns:1fr 1fr; gap:34px; align-items:start; margin:16px 0 22px; }
+  .notes-2col .ef { margin:0; }
+  .notes-2col .sell-note { margin:19px 0 0; }
+  @media (max-width:760px){ .notes-2col { grid-template-columns:1fr; gap:12px; } .notes-2col .sell-note { margin:0; } }
+  .result-card { border:1px solid var(--line); border-radius:4px; padding:28px; min-height:280px; }
+  .sell-grid.reviewing .result-card { padding:36px 40px; }
+  /* Four options, four columns, one row. In half a screen they wrapped 3 + 1
+     and the stray one read as a different kind of thing. */
+  .sell-grid.reviewing .sizepick { grid-template-columns:repeat(4, 1fr); }
+  .result-card.empty { display:flex; align-items:center; justify-content:center; }
+  .rc-empty { font-family:var(--label); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); text-align:center; max-width:34ch; line-height:1.6; }
+  .rc-title { font-family:var(--body); font-weight:700; font-size:24px; letter-spacing:-.01em; line-height:1.1; }
+  .rc-sub { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:8px; }
+  .rc-spec { margin-top:20px; border-top:1px solid var(--line); }
+  .rc-spec .row { display:flex; justify-content:space-between; gap:20px; padding:11px 0; border-bottom:1px solid var(--line-2); font-family:var(--body); font-size:14px; line-height:1.5; }
+  .rc-spec .row .k { color:var(--ink-3); white-space:nowrap; }
+  .rc-spec .row .v { text-align:end; }
+  /* A long value (Completeness runs to several lines) reads as broken
+     when it is right-aligned, so it stacks under its label instead. */
+  .rc-spec .row.col { display:block; }
+  .rc-spec .row.col .v { display:block; text-align:start; margin-top:8px; }
+  .rc-bid { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-top:20px; }
+  .rc-bid .amt { font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .rc-conf { font-family:var(--label); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); line-height:1.6; text-align:end; }
+  .rc-notes { font-family:var(--body); font-size:14px; line-height:1.7; color:var(--ink-2); margin-top:16px; }
+  /* The lead. Set larger than the evidence below it, because it is what
+     a buyer actually reads before deciding to care. */
+  .rc-lede { font-family:var(--body); font-size:16.5px; line-height:1.6; color:var(--ink); margin-top:14px; }
+  /* Price evidence: the comparables the estimate was built from. */
+  .comps { margin-top:20px; border-top:1px solid var(--line); padding-top:16px; }
+  .comps-h { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  .comps-sum { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:10px; }
+  .comp { display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid var(--line-2); }
+  .comp:last-child { border-bottom:0; }
+  .comp-l { min-width:0; }
+  .comp-t { font-family:var(--body); font-size:13.5px; line-height:1.45; }
+  .comp-t a { color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
+  .comp-t a:hover { border-color:var(--ink); }
+  .comp-m { font-family:var(--label); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin-top:5px; line-height:1.6; }
+  .comp-r { text-align:end; flex-shrink:0; }
+  .comp-p { font-family:var(--body); font-weight:700; font-size:15px; font-variant-numeric:tabular-nums; }
+  .comp-k { font-family:var(--label); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; margin-top:4px; }
+  .comp-k.sold { color:#2f6b3a; }
+  .comp-k.asking, .comp-k.guide { color:var(--ink-3); }
+  .comps-none { font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin-top:10px; }
+  /* Waiting state. The curation is two calls and the second one searches the
+     web, so the wait runs to a minute and a half. A spinner says nothing for
+     that long, so the brand mark brings the hammer down instead, with a stage
+     line and a running count so nobody wonders whether it has died. */
+  .hmr { position:relative; margin:0 auto; }
+  .hmr img { position:absolute; inset-inline-start:0; bottom:0; width:100%; display:block;
+             transform-origin:62% 100%; animation:hmrslam 1.25s cubic-bezier(.4,0,.55,1) infinite; }
+  .hmr .bang { position:absolute; inset-inline-start:0; top:6%; width:38%; opacity:0; animation:hmrbang 1.25s linear infinite; }
+  .hmr .bang path { stroke:currentColor; stroke-width:3; stroke-linecap:round; fill:none; }
+  @keyframes hmrslam {
+    0%   { transform:rotate(-14deg) }
+    28%  { transform:rotate(-18deg) }
+    40%  { transform:rotate(8deg) }
+    48%  { transform:rotate(2deg) }
+    56%  { transform:rotate(5deg) }
+    82%  { transform:rotate(-14deg) }
+    100% { transform:rotate(-14deg) }
+  }
+  @keyframes hmrbang {
+    0%,37% { opacity:0; transform:scale(.6) }
+    41%    { opacity:1; transform:scale(1) }
+    54%    { opacity:0; transform:scale(1.5) }
+    100%   { opacity:0; transform:scale(.6) }
+  }
+  .load-wrap { text-align:center; padding:18px 0 6px; }
+  .load-wrap .hmr { width:112px; height:96px; }
+  /* Nothing here. The same mark the waiting state uses, because a dead end is
+     still this shop and a bare sentence in the default font was not. Still,
+     not swinging: the hammer coming down means something is being worked on,
+     and on this page nothing is. */
+  .hmr.still img { animation:none; transform:rotate(-14deg); }
+  .nf { text-align:center; padding:72px 0 96px; max-width:52ch; margin:0 auto; }
+  .nf .hmr { width:132px; height:113px; margin:0 auto 26px; }
+  .nf-ey { font-family:var(--label); font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); }
+  .nf-t { font-family:var(--display); font-weight:700; font-size:clamp(24px,3.4vw,38px); line-height:1.1;
+    letter-spacing:.01em; text-transform:uppercase; margin:14px 0 0; text-wrap:balance; }
+  .nf-b { font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2); margin:18px 0 0; }
+  .nf .btn { margin-top:30px; }
+  .load-stage { font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:18px; }
+  .load-sec { font-variant-numeric:tabular-nums; color:var(--ink-3); }
+  /* The same waiting mark, sized for a single line next to a button. Creating a
+     Stripe account and an onboarding link is two round trips and runs to several
+     seconds, which is long enough that a still page reads as a dead button and
+     gets clicked again. */
+  .pay-wait { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .pay-wait .hmr { width:34px; height:29px; margin:0; flex-shrink:0; }
+  .pay-wait .t { font-family:var(--body); font-size:13px; color:var(--ink-2); }
+  .comps-wait { display:flex; align-items:center; gap:14px; margin-top:12px; }
+  .comps-wait .hmr { width:68px; height:58px; margin:0; flex-shrink:0; }
+  .comps-wait .t { font-family:var(--body); font-size:13.5px; line-height:1.6; color:var(--ink-2); }
+  :root[data-theme="dark"] .hmr img { filter:invert(1); }
+  @media (prefers-reduced-motion: reduce) {
+    .hmr img, .hmr .bang { animation:none; }
+    .hmr img { transform:rotate(-6deg); }
+  }
+  #view-sell .empire-title { font-size:clamp(38px, 5.6vw, 68px); line-height:1.02; }
+  /* The title types itself in, terminal style.
+     The finished text stays in the DOM as a hidden ghost so the heading already
+     occupies its final height before the first character lands. Without that, a
+     heading this size grows from one line to two mid-animation and shoves the
+     whole page down while somebody is reading it.
+     The typed layer sits on top, absolutely placed, and is aria-hidden: a screen
+     reader gets the h1's aria-label once instead of the same sentence rebuilt
+     character by character. */
+  .typer { position:relative; white-space:pre-wrap; }
+  .typer .tg { visibility:hidden; }
+  .typer .to { position:absolute; inset-inline-start:0; top:0; inset-inline-end:0; }
+  /* Solid while the characters are still arriving, blinking once it stops. A
+     caret that blinks mid-word reads as a stalled cursor rather than a hand
+     still typing, which is the opposite of the thing being imitated. */
+  .typer .tc { display:inline-block; width:.46em; height:.78em; background:currentColor;
+    vertical-align:-.04em; margin-inline-start:.04em; }
+  .typer .tc.blink { animation:tblink 1.05s steps(1, end) infinite; }
+  @keyframes tblink { 0%, 50% { opacity:1 } 50.01%, 100% { opacity:0 } }
+  @media (max-width:900px){ .sell-grid { grid-template-columns:1fr; gap:32px; } }
+  @media (max-width:600px){ #view-sell .empire-title { font-size:34px; } }
+  .rc-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  /* Two buttons live in that corner now, so they get their own row and the
+     header keeps its 16px between the title and them. */
+  .rc-acts { display:flex; gap:8px; flex-shrink:0; }
+  /* One shop card, at the size it appears in the grid, centred in the notice. */
+  .pv-wrap { max-width:300px; margin:20px auto 0; }
+  .rc-editbtn { flex-shrink:0; font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid var(--line); border-radius:2px; padding:6px 12px; cursor:pointer; color:var(--ink-2); }
+  .rc-editbtn:hover { border-color:var(--ink); color:var(--ink); }
+  .ef { display:block; margin-bottom:26px; }
+  /* .ef-h is the sentence under a field that explains what ticking it does.
+     It had no rule at all, so it rendered at body size in body colour, the same
+     weight as the thing it was explaining, hard against the control above it.
+     Read as instruction, sized as help, with room on both sides. */
+  /* .ef-l is the field's name and had no rule, so it rendered at body size in
+     body colour: the same as the help text under it and the same as the value
+     inside the input. Three things that mean different things, all looking
+     alike, is why this screen was hard to scan. Set like every other label on
+     the site. */
+  .ef-l { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--ink-3); margin-bottom:8px; }
+  .ef-h { font-family:var(--body); font-size:13.5px; line-height:1.6; color:var(--ink-3);
+    max-width:78ch; margin:10px 0 0; }
+  .ef-h b { color:var(--ink-2); font-weight:600; }
+  /* A form field is a target, not a paragraph. 44px is the floor for something
+     a thumb has to hit, and it stops inputs reading as text. */
+  .ef .ei, .ef input.ei, .ef select.ei { min-height:44px; }
+  .ef textarea.ei { min-height:120px; line-height:1.65; padding:12px 14px; }
+  .ef > span { display:flex; align-items:center; gap:6px; font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px; }
+  .ef-i { position:relative; display:inline-flex; align-items:center; justify-content:center; flex:none; width:14px; height:14px; border:1px solid var(--ink-3); border-radius:50%; font-family:var(--body); font-size:9px; font-weight:700; font-style:normal; line-height:1; letter-spacing:0; text-transform:none; color:var(--ink-3); cursor:help; transition:border-color .12s, color .12s; }
+  .ef-i:hover, .ef-i:focus-visible { border-color:var(--ink); color:var(--ink); outline:none; }
+  .ef-i::after { content:attr(data-tip); position:absolute; inset-inline-start:0; bottom:calc(100% + 9px); width:max-content; max-width:min(280px, 60vw); background:var(--ink); color:var(--paper); font-family:var(--body); font-size:12px; font-weight:400; line-height:1.55; letter-spacing:0; text-transform:none; text-align:start; padding:9px 11px; border-radius:4px; opacity:0; visibility:hidden; transition:opacity .12s ease; z-index:60; pointer-events:none; }
+  .ef-i:hover::after, .ef-i:focus::after, .ef-i:focus-visible::after { opacity:1; visibility:visible; }
+  @media (max-width:600px){ .ef-i::after { inset-inline-start:auto; inset-inline-end:0; max-width:70vw; } }
+  .ei { width:100%; box-sizing:border-box; font-family:var(--body); font-size:14px; padding:9px 11px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); }
+  .ei:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+  textarea.ei { resize:vertical; line-height:1.5; }
+  /* Pick-one-of-a-few, as cards rather than a select, so each option can carry the
+     line that explains it. Used by parcel size and by restoration.
+     These classes had no CSS at all: the parcel size picker has been rendering as
+     three bare browser buttons since it was built. Found while adding the second
+     picker that reuses them, so this fixes both.
+     auto-fit, so three options and four both fill the row without a second rule. */
+  .sizepick { display:grid; grid-template-columns:repeat(auto-fit, minmax(148px, 1fr)); gap:8px; }
+  .sizebtn { display:flex; flex-direction:column; align-items:flex-start; gap:3px; text-align:start; padding:10px 12px; border:1px solid var(--line); border-radius:3px; background:var(--paper); color:var(--ink); cursor:pointer; transition:border-color .12s, background .12s, color .12s; }
+  .sizebtn:hover { border-color:var(--ink); }
+  .sizebtn b { font-family:var(--body); font-weight:700; font-size:13px; }
+  .sizebtn span { font-family:var(--body); font-size:11.5px; line-height:1.4; color:var(--ink-3); }
+  .sizebtn i { font-family:var(--label); font-style:normal; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+  /* Inverted when chosen, the same way this site marks a primary control. */
+  .sizebtn.on { background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .sizebtn.on span, .sizebtn.on i { color:var(--paper); opacity:.72; }
+  .sizebtn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  /* .ei is shared by input and select. On a select the browser draws its own
+     chevron inside the right padding, and 11px is not enough room, so the arrow
+     ends up hard against the border while the text sits 11px off the left: it
+     reads as a mistake because it is asymmetric. Ours instead, with real inset,
+     the same treatment .shop-sort already uses. Fixes all five at once. */
+  select.ei {
+    -webkit-appearance:none; appearance:none;
+    padding-inline-end:36px; cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23131313' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 13px center; background-size:11px 8px;
+  }
+  :root[data-theme="dark"] select.ei {
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) select.ei {
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+  }
+  .ef-row { display:flex; gap:12px; }
+  .ef-row .ef { flex:1; min-width:0; }
+  .variants { margin-top:20px; padding-top:18px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:14px; }
+  .v-head { font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); }
+  .variant .v-axis { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-2); margin-bottom:8px; }
+  .v-opts { display:flex; flex-wrap:wrap; gap:8px; }
+  .v-opt { font-family:var(--label); font-size:11px; letter-spacing:.04em; padding:8px 12px; border:1px solid var(--line); border-radius:2px; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease; }
+  .v-opt:hover { border-color:var(--ink-3); color:var(--ink); }
+  .v-opt.on { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .tiers { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .tiers .tier { border:1px solid var(--line); border-radius:4px; padding:28px; position:relative; }
+  .tiers .tier.feat { border-color:var(--ink); }
+  /* The whole packages band goes near-black, not just the cards. Cards alone
+     left the section number, the heading and the two buttons stranded on white
+     around three black blocks, which reads as three images dropped onto a page
+     rather than as one band that happens to be dark.
+     Everything inside already paints itself from the tokens, so the band
+     redefines them for its entire subtree: one block, and anything added to it
+     later inherits the inversion for free. --ink-3 is lifted a long way,
+     because a grey picked to be quiet on white is close to unreadable here. */
+  .band.inverted {
+    --paper:#111111; --paper-2:#181818; --panel:#1d1d1d;
+    --ink:#f4f4f4; --ink-2:#c2c2c2; --ink-3:#919191;
+    --line:#333333; --line-2:#242424;
+    --accent:#f4f4f4; --accent-ink:#111111;
+    background:#111111; color:var(--ink);
+    padding-top:64px; padding-bottom:72px; border-top:0;
+  }
+  /* On a dark page the band is already the page colour, so it lifts a little
+     to stay a band rather than disappearing into the background. */
+  :root[data-theme="dark"] .band.inverted { --paper:#1a1a1a; --paper-2:#212121; --panel:#252525; background:#1a1a1a; }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]) .band.inverted { --paper:#1a1a1a; --paper-2:#212121; --panel:#252525; background:#1a1a1a; }
+  }
+  /* Cards sit ON the band, so they lift off it rather than matching it. The
+     hairline does most of the separating; the fill is a nudge. */
+  .band.inverted .tiers .tier { background:var(--paper-2); border-color:#303030; }
+  /* The featured card was marked by a black border, which says nothing now.
+     A pale edge does the same job in the other direction. */
+  .band.inverted .tiers .tier.feat { border-color:#787878; }
+  .t-tag { position:absolute; top:0; inset-inline-end:0; font-family:var(--label); font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:0 4px 0 4px; }
+  /* Inside a dark card the ghost button is the quiet one and has to stay quiet:
+     it inherits --ink, so it is already pale text on a pale-bordered box. */
+  .band.inverted .btn.ghost:disabled { opacity:.55; }
+  .t-name { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); }
+  .t-price { font-family:var(--body); font-weight:700; font-size:38px; letter-spacing:-.02em; margin-top:8px; line-height:1; }
+  .t-price span { font-family:var(--label); font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); font-weight:400; }
+  .t-list { list-style:none; padding:0; margin:20px 0 0; border-top:1px solid var(--line); }
+  .t-list li { font-family:var(--body); font-size:14px; line-height:1.5; padding:11px 0 11px 20px; border-bottom:1px solid var(--line-2); position:relative; }
+  /* A square, not a dash. The marker used to be an em dash, which reads as
+     punctuation interrupting the line rather than as a bullet; a middot was too
+     light to hold the well on its own. Top is set to the optical centre of the
+     first line (11px padding + half of a 21px line) so a two-line item keeps
+     its mark beside the first line rather than floating to the middle. */
+  .t-list li::before { content:""; position:absolute; inset-inline-start:0; top:19px; width:4px; height:4px; background:var(--ink-3); }
+  .t-note { font-family:var(--label); font-size:11px; letter-spacing:.03em; color:var(--ink-3); margin-top:16px; line-height:1.6; }
+  @media (max-width:700px){ .tiers { grid-template-columns:1fr; } }
+  /* Three packages, so the grid is three wide. The sell page keeps two columns
+     for its own summary; only the plans page asks for three. */
+  .tiers.three { grid-template-columns:repeat(3,1fr); }
+  /* Dealer carries one bullet more than the others, so without this the three
+     buttons sit at three different heights and the row reads as unfinished.
+     The card becomes a column and the button is pushed to the floor of it. */
+  .tiers.three .tier { display:flex; flex-direction:column; }
+  .tiers.three .tier .t-list { flex:1 1 auto; }
+  .tiers.three .tier .t-cta { margin-top:auto; }
+  @media (max-width:900px){ .tiers.three { grid-template-columns:1fr; } }
+  .tier.on { outline:2px solid var(--ink); outline-offset:-1px; }
+  /* Share row on a lot. Quiet by default: this is a catalogue, not a growth
+     funnel, so it sits as a line of small type rather than a wall of buttons. */
+  /* Social row. Monochrome and currentColor, so the icons follow the theme and
+     no second asset is needed for dark mode. Sits under the wordmark in the
+     footer, which is where people look for it. */
+  .soc-h { font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-top:26px; }
+  .socials { display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .soc-n { font-family:var(--body); font-size:12.5px; line-height:1.55; color:var(--ink-3); margin-top:10px; max-width:34ch; }
+  .socials a { display:flex; align-items:center; justify-content:center; width:38px; height:38px;
+    border:1px solid var(--line); border-radius:3px; color:var(--ink-2);
+    transition:border-color .15s ease, color .15s ease, background .15s ease; }
+  .socials a:hover { border-color:var(--ink); color:var(--ink); background:var(--paper-2); }
+  .socials a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .socials svg { width:17px; height:17px; display:block; fill:currentColor; }
+  .socials .hh { font-family:var(--label); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin-inline-start:4px; }
+  .share { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-top:22px; padding-top:18px; border-top:1px solid var(--line); }
+  .share .sl { font-family:var(--label); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-inline-end:4px; }
+  .share button, .share a { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    background:transparent; border:1px solid var(--line); color:var(--ink); padding:8px 13px; border-radius:3px;
+    cursor:pointer; text-decoration:none; line-height:1; transition:border-color .15s ease, background .15s ease;
+    display:inline-flex; align-items:center; gap:7px; }
+  /* Optically slightly larger than the 10.5px label beside it: a glyph at the same
+     nominal size reads smaller than letters do. currentColor so it inverts with the
+     button when Copy link turns black on success. */
+  .share svg { width:13px; height:13px; flex:none; fill:currentColor; display:block; }
+  /* The outline pair. Named so it beats the fill:currentColor above, which is what
+     the two solid platform marks need and what would turn an outline into a blob. */
+  .share svg.ln { width:14px; height:14px; fill:none; stroke:currentColor; }
+  .share button:hover, .share a:hover { border-color:var(--ink); background:var(--paper-2); }
+  .share button:focus-visible, .share a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .share .done { border-color:var(--ink); background:var(--ink); color:var(--paper); }
+  /* On a phone the row is four controls wide and one of them was dropping to a
+     line of its own, which reads as a mistake rather than as a wrap. Tighter
+     tracking and padding fit them across; the icons carry the meaning anyway. */
+  @media (max-width:600px){
+    .share { gap:8px; }
+    .share button, .share a { padding:8px 10px; letter-spacing:.05em; gap:6px; }
+  }
+  .t-fit { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  /* The break-even line, directly under the price it justifies. A rule above it so
+     it reads as a note on the price rather than the first item in the list. */
+  .t-be { font-family:var(--body); font-size:13px; line-height:1.5; color:var(--ink-2); margin-top:12px; padding-top:12px; border-top:1px solid var(--line-2); }
+  .t-be b { color:var(--ink); font-variant-numeric:tabular-nums; }
+  .t-cta { margin-top:18px; width:100%; }
+  /* The chooser. A seller types what they sell in a month and the page answers
+     with a package and a number, instead of leaving them to work it out. */
+  .chooser { border:1px solid var(--ink); padding:26px; margin:32px 0; }
+  .ch-row { display:flex; flex-wrap:wrap; align-items:flex-end; gap:16px; }
+  .ch-field { flex:1 1 190px; }
+  .ch-field label { display:block; font-family:var(--label); font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin-bottom:7px; }
+  .ch-field input { width:100%; font-family:var(--body); font-size:16px; padding:11px 12px; border:1px solid var(--line); background:var(--paper); color:var(--ink); border-radius:3px; }
+  .ch-out { margin-top:22px; padding-top:20px; border-top:1px solid var(--line); }
+  .ch-verdict { font-family:var(--body); font-weight:700; font-size:21px; letter-spacing:-.01em; margin-bottom:14px; }
+  .ch-table { width:100%; border-collapse:collapse; font-size:14px; font-variant-numeric:tabular-nums; }
+  .ch-table th { font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); text-align:start; padding:0 12px 7px 0; border-bottom:1px solid var(--ink); }
+  .ch-table td { padding:9px 12px 9px 0; border-bottom:1px solid var(--line-2); }
+  .ch-table td.n, .ch-table th.n { text-align:end; padding-inline-end:0; }
+  .ch-table tr.best td { font-weight:700; }
+  .ch-note { font-family:var(--label); font-size:11px; color:var(--ink-3); margin-top:14px; line-height:1.6; }
+  .cmp { width:100%; border-collapse:collapse; font-size:14.5px; font-variant-numeric:tabular-nums; }
+  .cmp th { font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); text-align:start; padding:0 14px 8px 0; border-bottom:1px solid var(--ink); }
+  .cmp td { padding:11px 14px 11px 0; border-bottom:1px solid var(--line-2); }
+  .cmp td.n, .cmp th.n { text-align:end; padding-inline-end:0; }
+  /* Money in a column has to line up, so the digits are tabular. .win marks the
+     cheapest package in a row: weight and not colour, because this site has no
+     colour to spend and the meaning has to survive a black-and-white print. */
+  .cmp td.n { font-variant-numeric:tabular-nums; }
+  .cmp td.win { font-weight:700; color:var(--ink); }
+  .cmp-scroll { overflow-x:auto; }
+  .terms-draft { background:var(--ink); color:var(--paper); border-radius:3px; padding:16px 20px; font-size:13.5px; line-height:1.6; margin:0 0 28px; }
+  /* The model withdrawal form. Set apart from the prose because it is a thing to
+     copy rather than a thing to read, and monospaced so the blanks line up when
+     somebody prints it or pastes it into an email. */
+  .terms-form { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; line-height:1.9;
+    border:1px solid var(--line); border-radius:3px; padding:20px 22px; margin:22px 0; color:var(--ink-2); background:var(--paper-2); }
+  .terms-form b { font-family:var(--label); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); }
+  .terms-h { font-family:var(--label); font-weight:700; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); margin:34px 0 0; }
+  .terms-h + p { margin-top:8px; }
+  .acceptbox { display:flex; align-items:flex-start; gap:10px; font-family:var(--body); font-size:13px; color:var(--ink-2); margin:16px 0 4px; cursor:pointer; line-height:1.5; }
+  .acceptbox input { margin:2px 0 0; width:16px; height:16px; flex-shrink:0; accent-color:var(--ink); cursor:pointer; }
+  .acceptbox a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  .acceptnote { font-family:var(--body); font-size:12.5px; color:var(--ink-3); margin:14px 0 4px; line-height:1.5; }
+  .acceptnote a { color:var(--ink); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  .qstars { position:relative; display:inline-block; font-size:13px; letter-spacing:2px; line-height:1; vertical-align:middle; }
+  .qstars .base { color:var(--line-2); }
+  .qstars .fill { position:absolute; top:0; inset-inline-start:0; overflow:hidden; white-space:nowrap; color:var(--ink); }
+  .cond-word { color:var(--ink); }
+  /* ---------- Seller profile ---------- */
+  .seller-hero { display:flex; gap:28px; align-items:flex-start; padding-top:8px; }
+  .seller-mono { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; font-family:var(--body); font-weight:700; font-size:30px; }
+  .seller-name { font-family:var(--body); font-weight:800; text-transform:uppercase; letter-spacing:.06em; font-size:clamp(28px,5vw,50px); line-height:1; margin:10px 0 0; }
+  .seller-meta { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:12px; }
+  .seller-meta .verified { color:var(--ink); }
+  .seller-rating { display:flex; align-items:center; gap:8px; font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:12px; }
+  .seller-rating b { color:var(--ink); }
+  .seller-stats { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:40px; }
+  .seller-stats .stat { padding:22px 24px; border-inline-end:1px solid var(--line-2); }
+  .seller-stats .stat:first-child { padding-inline-start:0; }
+  .seller-stats .stat:last-child { border-inline-end:0; }
+  .s-num { font-family:var(--body); font-weight:700; font-size:26px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .s-lab { font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  .seller-bio { font-family:var(--body); font-size:16px; line-height:1.8; color:var(--ink); max-width:66ch; margin:28px 0 0; }
+  /* Room between the seller's own block and the rule that starts Active lots.
+     On the container rather than on .seller-bio, because the bio is not always the
+     last thing here: a seller with reviews ends on those instead, and the gap has
+     to sit under whichever one it is. */
+  #sellerHead { padding-bottom:56px; }
+  .seller-link { display:inline-block; font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); cursor:pointer; margin-top:8px; }
+  .seller-link:hover { color:var(--ink); }
+  /* A seller's own mark, in the square the monogram otherwise fills. Same 88px box
+     and same one-pixel rule, so a branded seller and an unbranded one sit on the
+     same line and the page does not reflow when a logo loads. contain, not cover:
+     a logo cropped to fill is a logo ruined, and wordmarks are wide. */
+  .seller-logo { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; padding:8px; box-sizing:border-box; }
+  .seller-logo img { max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
+  .seller-soc { display:flex; align-items:center; gap:12px; margin-top:14px; }
+  /* One row of identical squares: Follow, Message, then the seller's own links.
+     ink-2, not ink-3. At this size the lighter grey read as a hairline sketch next
+     to the name above it, which is the same reason the glyphs are solid rather than
+     outlined. */
+  .seller-soc a,
+  .seller-soc .soc-act { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; box-sizing:border-box; border:1px solid var(--line); color:var(--ink-2); background:transparent; padding:0; border-radius:2px; cursor:pointer; transition:color .15s, border-color .15s, background .15s; }
+  .seller-soc a:hover,
+  .seller-soc .soc-act:hover { color:var(--ink); border-color:var(--ink); }
+  /* Follow is the primary action and stays filled. With the labels gone the fill is
+     the only thing left that says which of the two matters, so removing it would
+     leave two identical squares competing. */
+  .seller-soc .soc-act.on { background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .seller-soc .soc-act.on:hover { background:var(--ink-2); border-color:var(--ink-2); }
+  .seller-soc .soc-act:focus-visible,
+  .seller-soc a:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .seller-soc svg { width:17px; height:17px; fill:currentColor; display:block; }
+  /* Actions on the left, places to find them on the right. Only drawn when there is
+     something on the far side of it. */
+  .soc-sep { width:1px; height:18px; background:var(--line); margin:0 5px; flex:none; }
+  @media (max-width:600px){ .seller-hero { flex-direction:column; gap:18px; } .seller-stats { grid-template-columns:1fr 1fr; } .seller-stats .stat:nth-child(2){ border-inline-end:0; } }
+
+  /* ---------- Shopfront editor (account) ---------- */
+  .brand-row { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; padding-bottom:20px; }
+  /* The preview is the same 88px square as the public page, so what a seller sees
+     here is the thing itself and not an approximation of it. */
+  .brand-logo { flex-shrink:0; width:88px; height:88px; border:1px solid var(--ink); display:flex; align-items:center; justify-content:center; padding:8px; box-sizing:border-box; background:var(--paper); }
+  .brand-logo img { max-width:100%; max-height:100%; object-fit:contain; display:block; }
+  .brand-logo .ph { font-family:var(--label); font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); text-align:center; line-height:1.5; }
+  .brand-logo-acts { display:flex; flex-direction:column; gap:8px; justify-content:center; min-height:88px; }
+  .brand-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 20px; }
+  .brand-grid .wide { grid-column:1 / -1; }
+  @media (max-width:640px){ .brand-grid { grid-template-columns:1fr; } }
+  /* An input that carries a fixed prefix: the @ is drawn, not typed, so a handle
+     cannot be stored with one and the constraint cannot be tripped by habit. */
+  .brand-at { display:flex; align-items:stretch; border:1px solid var(--line); }
+  .brand-at .at { display:flex; align-items:center; padding:0 10px; border-inline-end:1px solid var(--line); font-family:var(--body); font-size:14px; color:var(--ink-3); background:var(--paper-2); }
+  .brand-at input { flex:1; border:0; background:transparent; font-family:var(--body); font-size:14px; padding:11px 12px; color:var(--ink); min-width:0; }
+  .brand-at input:focus { outline:2px solid var(--ink); outline-offset:-2px; }
+  .brand-note { font-family:var(--body); font-size:13px; line-height:1.7; color:var(--ink-3); }
+  .brand-save { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding-top:20px; }
+  .brand-msg { font-family:var(--body); font-size:13px; color:var(--ink-3); }
+  /* .bad already carries the site's error red; only the confirming state is new. */
+  .brand-msg.good { color:var(--good); }
+  /* The paid-package notice. A rule down the left rather than a tinted panel: this
+     site has no colour to spend, so emphasis comes from structure. */
+  .brand-lock { border-inline-start:2px solid var(--ink); padding:2px 0 2px 16px; margin:0 0 24px; }
+  .brand-lock-h { font-family:var(--body); font-weight:700; font-size:14px; color:var(--ink); }
+  .brand-lock .seller-link { display:block; }
+  .ef.is-locked > span { color:var(--ink-3); }
+  .ef.is-locked .brand-at { border-style:dashed; }
+  .brand-at input:disabled { color:var(--ink-3); cursor:not-allowed; }
+
+  /* ---------- Mobile menu ---------- */
+  .navtoggle { display:none; width:40px; height:38px; border:1px solid var(--line); border-radius:6px; background:transparent; cursor:pointer; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
+  .navtoggle span { display:block; width:17px; height:1.5px; background:var(--ink); transition:transform .2s ease, opacity .2s ease; }
+  header.mast.open .navtoggle span:nth-child(1){ transform:translateY(5.5px) rotate(45deg); }
+  header.mast.open .navtoggle span:nth-child(2){ opacity:0; }
+  header.mast.open .navtoggle span:nth-child(3){ transform:translateY(-5.5px) rotate(-45deg); }
+  .mobile-panel { display:none; flex-direction:column; border-top:1px solid var(--line); background:color-mix(in srgb, var(--paper) 97%, transparent); backdrop-filter:blur(10px); }
+  .mobile-panel a { padding:17px 28px; font-family:var(--label); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); border-bottom:1px solid var(--line-2); cursor:pointer; }
+  .mobile-panel a:last-child { border-bottom:0; }
+  header.mast.open .mobile-panel { display:flex; }
+  @media (max-width:860px){ .navtoggle { display:inline-flex; } }
+  @media (min-width:861px){ .mobile-panel { display:none !important; } }
+
+  /* ---------- Phone tuning ---------- */
+  @media (max-width:600px){
+    /* Two columns on a phone. One column meant two lots per screen on a shop
+       with twenty-three of them, which is a scroll nobody finishes. The rest of
+       this block is what has to give for a card to still work at about 160px:
+       the column gap comes in so the cards get the width instead of the gutter,
+       and the type steps down with it. */
+    .collection, .featured-grid { grid-template-columns:1fr 1fr; gap:24px 10px; }
+    .label { margin-top:10px; }
+    .label .nm { font-size:13px; line-height:1.26; }
+    .label .meta { font-size:9px; letter-spacing:.06em; margin-top:4px; }
+    /* Price and countdown cannot share a line at this width. Stacked, not
+       shrunk to fit: a price is the thing being read, not the thing to sacrifice. */
+    .auc-card { flex-direction:column; align-items:flex-start; gap:3px;
+      margin-top:7px; padding-top:8px; }
+    .auc-card .amt { font-size:15px; }
+    .auc-card .sub { margin-inline-start:5px; font-size:9px; }
+    .auc-card .cd { font-size:9.5px; }
+    .card-ended { font-size:9.5px; letter-spacing:.06em; padding:9px 6px; margin-top:9px; }
+    .card-badge { font-size:9px; letter-spacing:.1em; padding:4px 7px; top:8px; inset-inline-start:8px; }
+    /* .watch-btn is deliberately left at 34px. It is already under the 44px
+       touch target guidance and a narrower card is not a reason to make a
+       control harder to hit. */
+    .wrap { padding:0 20px 56px; }
+    .hero h1, .art-title, .empire-title { letter-spacing:.06em; }
+    .hero h1 { font-size:30px; line-height:1.06; letter-spacing:.06em; }
+    .empire-title { font-size:clamp(36px,10vw,52px); }
+    .auction-row { gap:22px; }
+    .auc-amount, .auc-countdown { font-size:26px; }
+    .mast-in { padding:12px 20px; }
+    .theme-btn { font-size:9px; padding:6px 7px; }
+  }
+
+  /* ---------- Mobile UX baseline (all touch widths) ---------- */
+  html { -webkit-text-size-adjust:100%; }
+  @media (max-width:600px){
+    html, body { overflow-x:hidden; max-width:100%; }
+    /* iOS zooms the page in whenever a focused field is <16px — pin inputs at 16px */
+    input, select, textarea { font-size:16px; }
+    /* comfortable, thumb-sized tap targets */
+    .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
+    .btn, button { -webkit-tap-highlight-color:rgba(0,0,0,0); touch-action:manipulation; }
+    /* stop double-tap zoom fighting our own buttons */
+    a, button, [role="button"] { touch-action:manipulation; }
+    /* sticky pay/bid bars sit above the iOS home indicator */
+    .sticky-bar, .paybar, .bidbar { padding-bottom:calc(12px + env(safe-area-inset-bottom)); }
+    /* keep images from ever forcing a sideways scroll */
+    img { max-width:100%; height:auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce){ *{ animation:none !important; transition:none !important; scroll-behavior:auto; } }
+  /* The peroxide scale, as a strip. The table under it carries the detail; this
+     is the version you can read at arm's length while standing at a bench, which
+     is where the choice is actually made. Strength reads as weight of ink, so it
+     survives the theme toggle and a black-and-white print, and the two markers
+     are the only things that really matter: where to start, and where the law
+     stops. color-mix rather than a fixed rgba, because --ink and --paper swap
+     places in dark mode and a hardcoded grey would invert into nonsense. */
+  .pxscale { margin:26px 0 4px; }
+  .pxbar { display:grid; grid-template-columns:repeat(4,1fr); border:1px solid var(--ink); border-radius:3px; overflow:hidden; }
+  .pxstep { padding:20px 14px 16px; border-inline-end:1px solid var(--ink); }
+  .pxstep:last-child { border-inline-end:0; }
+  .pxstep:nth-child(1){ background:color-mix(in srgb, var(--ink) 5%, var(--paper)); }
+  .pxstep:nth-child(2){ background:color-mix(in srgb, var(--ink) 18%, var(--paper)); }
+  .pxstep:nth-child(3){ background:color-mix(in srgb, var(--ink) 38%, var(--paper)); }
+  .pxstep:nth-child(4){ background:var(--ink); }
+  .pxstep .pc { font-family:var(--display); font-weight:600; font-size:clamp(24px,3.4vw,36px); letter-spacing:-.025em; line-height:1; color:var(--ink); }
+  .pxstep .vol { font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-2); margin-top:9px; }
+  .pxstep:nth-child(3) .vol { color:var(--ink); }
+  .pxstep:nth-child(4) .pc, .pxstep:nth-child(4) .vol { color:var(--paper); }
+  .pxmarks { display:grid; grid-template-columns:repeat(4,1fr); margin-top:12px; gap:0; }
+  .pxmark { font-family:var(--label); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); padding-inline-end:14px; line-height:1.6; }
+  .pxmark b { color:var(--ink); display:block; letter-spacing:.11em; }
+  .pxaxis { display:flex; justify-content:space-between; gap:16px; font-family:var(--label); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3); margin-top:16px; border-top:1px solid var(--line); padding-top:9px; }
+  @media (max-width:640px){
+    .pxbar, .pxmarks { grid-template-columns:1fr 1fr; }
+    .pxstep:nth-child(2){ border-inline-end:0; }
+    .pxstep:nth-child(1), .pxstep:nth-child(2){ border-bottom:1px solid var(--ink); }
+    .pxmark { padding:0 12px 10px 0; }
+  }
+  /* ---- Before and after, two columns that move together --------------------
+     Seven photographs of one Ecto-1: three before, four after. They run off one
+     shared index, so "next" means the next comparison rather than the next
+     picture, and each column wraps on its own length. The first two positions
+     are matched by angle on purpose, because that is the only thing that makes
+     a before-and-after evidence rather than decoration: same car, same ground,
+     same light, same side.
+
+     No timer runs while the tab is hidden, and none runs at all for a reader
+     who has asked their machine to stop animating things. */
+  .rb-car{ display:grid; gap:1px; background:var(--line); border:1px solid var(--line); margin:8px 0 0; }
+  @media (min-width:760px){ .rb-car{ grid-template-columns:1fr 1fr; } }
+  .rb-col{ background:var(--paper); padding:20px; }
+  .rb-h{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:13px; }
+  .rb-h .t{ font-family:var(--label); font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink); }
+  .rb-h .c{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+  .rb-frame{ position:relative; aspect-ratio:4/3; background:var(--paper-2); border:1px solid var(--line); overflow:hidden; }
+  .rb-frame img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .5s ease; }
+  .rb-frame img.on{ opacity:1; }
+  /* The controls sit on the photograph, which is where a hand looks for them.
+     A white car on a white ground gives them nothing to sit against, so they
+     bring their own ground with them. */
+  .rb-nav{ position:absolute; top:50%; transform:translateY(-50%); width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer;
+    border:1px solid rgba(255,255,255,.55); background:rgba(19,19,19,.45); color:#fff;
+    -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px); transition:background .15s ease; }
+  .rb-nav:hover{ background:rgba(19,19,19,.82); }
+  .rb-nav:focus-visible{ outline:2px solid #fff; outline-offset:-5px; }
+  .rb-nav.prev{ inset-inline-start:10px; } .rb-nav.next{ inset-inline-end:10px; }
+  .rb-nav svg{ width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:1.9; }
+  .rb-dots{ display:flex; gap:6px; margin-top:12px; }
+  .rb-dot{ width:24px; height:3px; background:var(--line); border:0; padding:0; cursor:pointer; transition:background .15s ease; }
+  .rb-dot.on{ background:var(--ink); }
+  .rb-dot:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+  .rb-cap{ font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-2); margin:13px 0 0; max-width:54ch; }
+  .rb-cap b{ color:var(--ink); }
+  /* ---- One column for the whole article ----------------------------------
+     The page was dancing. Tables ran the full 1124px of the wrap, the prose
+     under them sat at 74ch, .story centred itself with margin auto, and the
+     inline max-widths came in three sizes. So the left edge moved, the right
+     edge moved, and the eye had to find the start of the line again at every
+     block. Everything below a band-head now shares one measure and one left
+     edge, top to bottom, and the gaps between blocks are one number. Scoped to
+     this view so the molder pages keep the layout they were built for. */
+  #view-retrobright{ --rb-col:780px; --rb-gap:38px; }
+  #view-retrobright .story,
+  #view-retrobright .cmp-scroll,
+  #view-retrobright .pts,
+  #view-retrobright .ch-note,
+  #view-retrobright .pxscale,
+  #view-retrobright .rb-car,
+  #view-retrobright .src{
+    max-width:var(--rb-col);
+    margin-inline-start:0; margin-inline-end:0;
+  }
+  #view-retrobright .story,
+  #view-retrobright .cmp-scroll,
+  #view-retrobright .pts,
+  #view-retrobright .pxscale,
+  #view-retrobright .rb-car{ margin-bottom:var(--rb-gap); }
+  /* A note is a footnote to the block above it, so it sits closer to that than
+     to whatever comes next. */
+  #view-retrobright .ch-note{ margin-top:0; margin-bottom:var(--rb-gap); }
+  #view-retrobright .story > p:last-child,
+  #view-retrobright .pts > li:last-child{ margin-bottom:0; }
+  /* The opening section carries the drop cap and no section number, so it is
+     the one place the grid is allowed to be a single wide column. */
+  #view-retrobright .origins-grid{ grid-template-columns:1fr; gap:0; }
+  @media (max-width:860px){ #view-retrobright{ --rb-col:100%; --rb-gap:30px; } }
+  /* The Ecto-1 section is the one that is allowed to be wide, because it is a
+     photograph comparison and a photograph wants the width. The prose under it
+     then picks up the same two columns, so the block below the carousel lines
+     up with the block above it instead of shrinking back to a lonely centred
+     measure in the middle of the page. */
+  #view-retrobright .rb-car{ max-width:none; }
+  #view-retrobright .rb-two{
+    max-width:none;
+    columns:2; column-gap:var(--rb-gap);
+  }
+  /* A paragraph that starts with a bold lead-in must not be cut in half by the
+     column break, or the sentence arrives before the thing it introduces. */
+  #view-retrobright .rb-two p{ break-inside:avoid; margin-top:0; }
+  @media (max-width:860px){ #view-retrobright .rb-two{ columns:1; } }
+  /* Each example is a named piece, so a second and a third read as more of the
+     same thing rather than as a page that lost its structure. */
+  #view-retrobright .rb-piece{ margin-bottom:var(--rb-gap); }
+  #view-retrobright .rb-piece:last-of-type{ margin-bottom:0; }
+  #view-retrobright .rb-name{
+    font-family:var(--label); font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink); margin:0 0 12px;
+    display:flex; flex-wrap:wrap; align-items:baseline; gap:0 12px;
+  }
+  #view-retrobright .rb-name span{ color:var(--ink-3); letter-spacing:.1em; }
+
+
+  /* 4/5, the same frame the shop cards use. Square plus object-fit:cover cut
+     the top and bottom off a photograph of a standing figure, which on this
+     page is the whole point of the photograph. Matching the card also means
+     the image a buyer clicked is the image they land on. */
+  .lot-main{ position:relative; aspect-ratio:4/5; background:var(--panel); border:1px solid var(--line); border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:none; }
+  .lot-main .lot-img{ width:100%; height:100%; object-fit:cover; display:block; user-select:none; -webkit-user-drag:none; }
+  .lot-nav{ position:absolute; top:50%; transform:translateY(-50%); z-index:4; width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.9); color:#131313; font-size:22px; line-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:background .15s; }
+  .lot-nav.prev{ inset-inline-start:12px; } .lot-nav.next{ inset-inline-end:12px; }
+  .lot-nav:hover{ background:#fff; }
+  .zoom-lens{ position:absolute; z-index:3; border:1px solid rgba(0,0,0,.5); background:rgba(255,255,255,.14); pointer-events:none; }
+  .zoom-pane{ position:fixed; z-index:60; background-repeat:no-repeat; background-color:var(--paper); border:1px solid var(--line); border-radius:4px; box-shadow:0 12px 44px rgba(0,0,0,.14); pointer-events:none; }
+  .lot-thumbs{ display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  /* Upright too, so a thumbnail shows the crop you actually get when you
+     click it rather than a tighter one. */
+  .lot-th{ width:64px; height:80px; border:1px solid var(--line); border-radius:3px; background-size:cover; background-position:center; background-color:var(--panel); cursor:pointer; padding:0; opacity:.55; transition:opacity .15s, border-color .15s; }
+  .lot-th:hover{ opacity:1; }
+  .lot-th.active{ opacity:1; border-color:var(--ink); }
+  .lot-variants{ display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 0; }
+  .lot-chip{ font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); border:1px solid var(--line); border-radius:3px; padding:6px 10px; }
+  .lot-chip b{ color:var(--ink); font-weight:700; }
+  .bidhist{ margin-top:8px; max-width:520px; }
+  .bidrow{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0; border-bottom:1px solid var(--line); font-family:var(--body); font-size:15px; color:var(--ink-2); }
+  .bidrow .amt{ font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink); }
+  .bidrow .who{ display:flex; flex-direction:column; gap:3px; }
+  .bidrow .when{ font-family:var(--label); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+  .bidrow.top .amt{ font-size:19px; }
+  .bidnote{ font-family:var(--body); font-size:13.5px; line-height:1.65; color:var(--ink-3); padding:14px 0 0; max-width:520px; }
+  .lot-owner{ margin-top:16px; padding-top:16px; border-top:1px solid var(--line); font-family:var(--body); font-size:13px; color:var(--ink-3); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .lot-remove{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; background:none; border:1px solid var(--line); border-radius:3px; padding:8px 12px; color:var(--ink); cursor:pointer; transition:border-color .15s, color .15s; }
+  .lot-remove:hover{ border-color:#c0392b; color:#c0392b; }
+  .won-box{ border:1px solid var(--line); border-radius:4px; padding:16px; margin-bottom:20px; }
+  .won-box.win{ border-color:var(--ink); background:var(--panel); }
+  .won-h{ font-family:var(--label); font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink); }
+  .won-sub{ font-family:var(--body); font-size:14px; color:var(--ink-2); margin:6px 0 0; }
+  .won-box .btn{ width:100%; margin-top:14px; }
+  .card-ended{ display:block; margin-top:12px; text-align:center; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:12px; border:1px solid var(--line); border-radius:2px; cursor:pointer; }
+  .card-ended:hover{ color:var(--ink); border-color:var(--ink-3); }
+  .reserve-note{ font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin:-8px 0 18px; }
+  .reserve-note.met{ color:var(--ink); }
+  .reserve-note.met::before{ content:"\2713  "; }
+  .artifact-card.draft-lot .vitrine.closed{ opacity:.66; }
+  /* Capped as a guard, not a fix. Measured on a 143px card the badge ends at
+     88px and the button starts at 98, so today there is 10px of clearance; a
+     longer word would spend it, and the button sits above the badge in the
+     stacking order so it would win silently. */
+  .card-badge{ position:absolute; top:12px; inset-inline-start:12px; z-index:2;
+    max-width:calc(100% - 60px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--label); font-size:10px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:5px 10px; border-radius:2px; }
+  /* The preview badge used to be gold text on 16% gold, which works over the
+     pale studio shots and disappears over a dark one: on the Imperial Godzilla
+     card it sat unreadable over the figure. Opaque enough to carry its own
+     contrast whatever is behind it, and the gold stays in the text and the
+     hairline where it reads as a label rather than a warning. */
+  .card-badge.sand{ background:rgba(255,251,242,.94); color:#7a5c22; border:1px solid rgba(181,138,63,.55); backdrop-filter:blur(3px); }
+  :root[data-theme="dark"] .card-badge.sand{ background:rgba(32,26,14,.88); color:#d8b878; border-color:rgba(181,138,63,.5); }
+  .watch-btn{ position:absolute; top:10px; inset-inline-end:10px; z-index:3; width:34px; height:34px; border-radius:8px; border:0; background:#131313; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; transition:transform .1s ease, box-shadow .15s ease; }
+  .watch-btn:hover{ transform:scale(1.08); box-shadow:0 3px 10px rgba(0,0,0,.28); }
+  .watch-btn .wstar{ display:block; }
+  /* Search, sort and the count are one control: a single border with hairline
+     dividers, so they read as connected rather than three loose boxes. */
+  .shop-tools{ display:flex; align-items:stretch; gap:0; margin:24px 0 8px;
+    border:1px solid var(--line); border-radius:3px; background:var(--paper); }
+  .shop-tools:focus-within{ border-color:var(--ink); }
+  .shop-search{ flex:1; min-width:0; font-family:var(--body); font-size:15px; padding:13px 16px;
+    border:0; border-radius:3px 0 0 3px; background:transparent; color:var(--ink); }
+  .shop-search:focus{ outline:none; }
+  /* appearance:none so the chevron is ours and can be given real breathing room;
+     the native one sits hard against the edge with no way to inset it. */
+  .shop-sort{ font-family:var(--label); font-size:12px; letter-spacing:.04em;
+    padding:13px 42px 13px 16px; border:0; border-inline-start:1px solid var(--line); border-radius:0;
+    background-color:transparent; color:var(--ink); cursor:pointer;
+    -webkit-appearance:none; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23131313' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 16px center; background-size:11px 8px; }
+  :root[data-theme="dark"] .shop-sort{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23f2f2f2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .shop-sort:focus{ outline:none; }
+  .shop-sort:hover{ color:var(--ink); }
+  .shop-count{ display:flex; align-items:center; white-space:nowrap; padding:0 16px;
+    border-inline-start:1px solid var(--line);
+    font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  /* Empty until the lots are counted. display:none avoided a stray divider but
+     also meant the row grew when the text arrived, which on a narrow screen put
+     it on a second line and moved everything below it. Invisible instead of
+     absent: the space is there from the start and the divider is hidden with it. */
+  .shop-count:empty{ visibility:hidden; border-inline-start-color:transparent; }
+  /* Reserved wide enough for the longest thing it says, which is "18 of 20 lots"
+     rather than the "0 lots" a placeholder would have held. Under-reserving
+     trades a big shift for a small one, which is not the point. */
+  .shop-count{ min-width:13ch; }
+  @media (max-width:600px){
+    .shop-tools{ flex-direction:column; align-items:stretch; }
+    /* The hairline is --line, #e4e4e4, which on a phone held at arm's length in
+       daylight is close to invisible: the search field reads as loose text on
+       the page rather than as a control. Thicker AND darker, because doubling a
+       near-white line only gives you twice as much of a line nobody can see.
+       --ink-3 clears 3:1 against the page, the contrast floor for the boundary
+       of a control. The internal dividers follow at half strength so the three
+       parts stay legible as one object rather than three stacked boxes. */
+    .shop-tools{ border-width:2px; border-color:var(--ink-3); }
+    .shop-tools:focus-within{ border-color:var(--ink); }
+    .shop-search{ border-radius:3px 3px 0 0; }
+    .shop-sort{ border-inline-start:0; border-top:1px solid color-mix(in srgb, var(--ink-3) 45%, transparent); }
+    .shop-count{ border-inline-start:0; border-top:1px solid color-mix(in srgb, var(--ink-3) 45%, transparent); padding:12px 16px; }
+  }
+  @media (max-width:600px){ .shop-search{ flex:1 1 100%; } .shop-sort{ flex:1 1 auto; } }
+  .shop-empty{ font-family:var(--body); color:var(--ink-3); padding:8px 0 28px; }
+  .acct-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:8px 0 28px; }
+  .acct-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-bottom:16px; }
+  .acct-stat{ background:var(--paper); padding:20px; }
+  .acct-stat .n{ font-family:var(--body); font-weight:700; font-size:28px; font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .acct-stat .k{ font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; }
+  .acct-sk{ padding:8px 0 40px; }
+  .acct-sk .sk-strip{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden; margin-top:22px; }
+  .acct-sk .sk-strip > div{ background:var(--paper); height:74px; }
+  .acct-sk .sk-row{ height:62px; border-bottom:1px solid var(--line-2); margin-top:0; }
+  @media (prefers-reduced-motion: no-preference){
+    .acct-sk{ animation:skpulse 1.4s ease-in-out infinite; }
+    @keyframes skpulse { 0%,100%{ opacity:1 } 50%{ opacity:.55 } }
+  }
+  /* The first thing a brand new account sees. Two real next steps and four
+     lots to start a watchlist from, instead of five boxes saying nothing yet. */
+  .firstrun{ border:1px solid var(--ink); padding:28px 30px; margin:8px 0 36px; }
+  .firstrun h2{ font-family:var(--display); font-weight:700; font-size:clamp(20px,2.6vw,28px);
+    text-transform:uppercase; letter-spacing:.03em; margin:10px 0 0; text-wrap:balance; }
+  .firstrun p{ font-family:var(--body); font-size:15px; line-height:1.7; color:var(--ink-2);
+    max-width:62ch; margin:14px 0 0; }
+  .firstrun .acts{ display:flex; gap:10px; flex-wrap:wrap; margin-top:22px; }
+  .firstrun .pick{ margin-top:30px; padding-top:20px; border-top:1px solid var(--line); }
+  .acct-sec{ margin:36px 0; }
+  .acct-sec .h{ font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); padding-bottom:10px; border-bottom:1px solid var(--ink); }
+  .acct-row{ display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid var(--line); font-family:var(--body); }
+  .acct-row .th{ width:52px; height:52px; border:1px solid var(--line); border-radius:3px; background-size:cover; background-position:center; background-color:var(--panel); flex-shrink:0; cursor:pointer; }
+  .acct-row .info{ flex:1; min-width:0; cursor:pointer; }
+  .acct-row .info .t{ font-weight:600; font-size:15px; }
+  .acct-row .info .s{ font-size:12.5px; color:var(--ink-3); }
+  .acct-row .price{ font-variant-numeric:tabular-nums; font-weight:600; text-align:end; }
+  .acct-row .st{ font-family:var(--label); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); }
+  .acct-empty{ font-family:var(--body); color:var(--ink-3); padding:14px 0; font-size:14px; }
+  .sortrow{ display:flex; gap:6px; flex-wrap:wrap; padding:14px 0 4px; }
+  .sortpill{ font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    padding:6px 11px; border:1px solid var(--line); background:var(--paper); color:var(--ink-3);
+    border-radius:100px; cursor:pointer; transition:border-color .12s, color .12s, background .12s; }
+  .sortpill:hover{ border-color:var(--ink-3); color:var(--ink); }
+  .sortpill.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .sortpill:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+  .acct-toggle{ display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); font-family:var(--body); }
+  .acct-toggle .lbl{ font-size:14px; }
+  .acct-toggle .sw{ width:40px; height:22px; border-radius:100px; background:var(--line); position:relative; flex-shrink:0; }
+  .acct-toggle .sw::after{ content:""; position:absolute; top:2px; inset-inline-start:2px; width:18px; height:18px; border-radius:50%; background:var(--paper); box-shadow:0 1px 2px rgba(0,0,0,.2); }
+  .acct-pay, .acct-signout{ font-family:var(--label); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; padding:10px 14px; cursor:pointer; white-space:nowrap; }
+  .mship{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px 0; }
+  .mship-plan{ font-family:var(--body); font-weight:700; font-size:22px; letter-spacing:-.01em; display:flex; align-items:center; gap:10px; }
+  .mship-badge{ font-family:var(--label); font-size:9px; letter-spacing:.14em; text-transform:uppercase; background:var(--ink); color:var(--paper); padding:4px 8px; border-radius:2px; }
+  .mship-tok{ font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:4px; }
+  .mship-r{ display:flex; gap:8px; flex-wrap:wrap; }
+  /* ---- The account page as cards -------------------------------------------
+     Every section used to be a stretch of prose under a hairline rule on an open
+     white page, and grey prose at that: --ink-3 is #8c8c8c, which is 3:1 on white
+     and fails to be readable at the size this page sets it. Two changes, both
+     scoped to this page so nothing else on the site moves.
+
+     A card per section, because these are separate jobs: what you pay, how you
+     get paid, who you are to a buyer, what you have listed. A rule between them
+     says "next paragraph"; an edge says "different thing".
+
+     And the copy goes black. On a page where every line is either a number about
+     your money or an instruction you have to follow, there is no such thing as
+     text worth setting in a grey a third of the way to the background. Grey is
+     kept for the eyebrow labels only, and even there it moves up a step. */
+  #accountBody .acct-sec{ margin:16px 0; background:var(--paper); border:1px solid var(--line); border-radius:8px;
+    padding:20px 24px 22px; box-shadow:0 1px 3px rgba(0,0,0,.045); }
+  #accountBody .acct-sec .h{ color:var(--ink-2); border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:4px; }
+  /* The last row in a card should not draw a rule against the card's own edge. */
+  #accountBody .acct-sec > .acct-row:last-child,
+  #accountBody .acct-sec > .acct-toggle:last-child{ border-bottom:0; padding-bottom:2px; }
+  #accountBody .acct-empty{ color:var(--ink); font-size:14.5px; line-height:1.7; }
+  /* Black too, and a size smaller. Hierarchy from scale, not from bleaching the
+     colour out until the sentence cannot be read. */
+  #accountBody .brand-note{ color:var(--ink); font-size:13.5px; }
+  #accountBody .pay-state{ font-size:15.5px; }
+  /* An empty status line still took up its margin and left a hole in the card. */
+  #accountBody .brand-msg:empty{ display:none; }
+  #accountBody .acct-sec > .brand-row:last-child,
+  #accountBody .brand-row.pay-row{ padding-bottom:0; }
+  #accountBody .acct-stat .k,
+  #accountBody .acct-row .info .s,
+  #accountBody .acct-row .st,
+  #accountBody .mship-tok,
+  #accountBody .brand-msg{ color:var(--ink-2); }
+  #accountBody .ef > span{ color:var(--ink-2); }
+  #accountBody .acct-stats{ border-radius:8px; margin-bottom:24px; }
+  /* The one thing on the page that is not a card: it is the summary the cards
+     below explain, so it keeps the seam-grid look that reads as one object. */
+
+  .rev-stars{ display:flex; gap:6px; margin-bottom:12px; }
+  .rev-star{ background:none; border:0; padding:0; font-size:28px; line-height:1; color:var(--line); cursor:pointer; transition:color .1s; }
+  .rev-star:hover, .rev-star.on{ color:var(--ink); }
+  .seller-reviews{ max-width:640px; }
+  .rev-item{ padding:14px 0; border-bottom:1px solid var(--line); }
+  .rev-item-h{ display:flex; align-items:center; gap:12px; }
+  .rev-date{ font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
+  .rev-body{ font-family:var(--body); font-size:14px; color:var(--ink-2); margin-top:6px; line-height:1.55; }
+  .acct-signout{ background:none; color:var(--ink); border-color:var(--line); }
+  .acct-toggle .sw{ cursor:pointer; transition:background .15s; }
+  .acct-toggle .sw::after{ transition:left .15s; }
+  .acct-toggle .sw.on{ background:var(--ink); }
+  .acct-toggle .sw.on::after{ inset-inline-start:20px; }
+  /* warm-sand accent: marks an anti-snipe extended auction */
+  .cd.extended, .auc-countdown.ext{ color:#b58a3f; }
+  .ext-tag{ display:inline-block; margin-top:8px; font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:#b58a3f; background:rgba(181,138,63,.14); border:1px solid rgba(181,138,63,.42); padding:4px 8px; border-radius:2px; }
+  .ext-note{ font-family:var(--label); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#b58a3f; margin:-8px 0 16px; }
+  .zoom-ov{ position:fixed; inset:0; z-index:1000; background:rgba(10,10,10,.95); }
+  .zoom-stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
+  .zoom-img{ max-width:92vw; max-height:88vh; user-select:none; -webkit-user-drag:none; transform-origin:center center; will-change:transform; }
+  .zoom-x,.zoom-nav{ position:absolute; z-index:2; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.4); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .zoom-x{ top:18px; inset-inline-end:20px; width:44px; height:44px; border-radius:50%; font-size:16px; }
+  .zoom-dl{ position:absolute; z-index:2; top:18px; inset-inline-end:74px; width:44px; height:44px; border-radius:50%; font-size:19px; border:1px solid rgba(255,255,255,.28); background:rgba(0,0,0,.4); color:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+  .zoom-dl:hover{ background:rgba(255,255,255,.16); }
+  .zoom-nav{ top:50%; transform:translateY(-50%); width:52px; height:52px; border-radius:50%; font-size:28px; line-height:0; }
+  .zoom-nav.prev{ inset-inline-start:20px; } .zoom-nav.next{ inset-inline-end:20px; }
+  .zoom-x:hover,.zoom-nav:hover{ background:rgba(255,255,255,.16); }
+  .zoom-count{ position:absolute; top:24px; inset-inline-start:50%; transform:translateX(-50%); color:rgba(255,255,255,.72); font-family:var(--label); font-size:12px; letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+  .zoom-hint{ position:absolute; bottom:22px; inset-inline-start:50%; transform:translateX(-50%); color:rgba(255,255,255,.55); font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+  @media (max-width:600px){ .zoom-nav{ width:44px; height:44px; font-size:24px; } .zoom-hint{ font-size:10px; } }

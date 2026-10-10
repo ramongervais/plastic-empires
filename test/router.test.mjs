@@ -19,7 +19,12 @@ const why = !JSDOM ? "jsdom not installed" : !built ? "run build-pages.mjs first
 // the one that is not, and stand in for the browser APIs it does not
 // implement. Without this the main block dies on its first line.
 function boot(file, path) {
+  // jsdom fetches no <script src>, so the hoisted application is put back the
+  // way a browser would have fetched it. The stylesheet is left out: nothing
+  // under test reads a computed style.
+  const app = fs.readdirSync(".").find((f) => /^app\..*\.js$/.test(f));
   const page = fs.readFileSync(file, "utf8")
+    .replace(/<script src="\/app\.[^"]*"><\/script>/, "<script>" + fs.readFileSync(app, "utf8") + "</script>")
     .replace('<script src="/shipping.js"></script>', "<script>" + fs.readFileSync("shipping.js", "utf8") + "</script>")
     .replace(/<script src="https:\/\/cdn\.jsdelivr[^>]*><\/script>/, "<script>window.supabase={createClient:function(){return null}}</script>");
   const dom = new JSDOM(page, {
