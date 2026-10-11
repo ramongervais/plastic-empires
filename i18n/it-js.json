@@ -569,5 +569,8 @@
   "{n} lot": "{n} lotto",
   "{n} lots": "{n} lotti",
   "{n} lot matching your search": "{n} lotto corrispondente alla tua ricerca",
-  "{n} lots matching your search": "{n} lotti corrispondenti alla tua ricerca"
+  "{n} lots matching your search": "{n} lotti corrispondenti alla tua ricerca",
+  "{amount} delivery within the Netherlands": "{amount} di spedizione nei Paesi Bassi",
+  "more options": "altre opzioni",
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Prezzi verso i Paesi Bassi, indicati dai corrieri. Un altro paese viene calcolato al pagamento, una volta che sappiamo dove va. Fuori dall'UE un pacco può essere soggetto a IVA all'importazione e dazi all'arrivo, pagati dall'acquirente."
 }

@@ -1,13 +1,14 @@
 {
-  "_note": "Every language the site is built in, besides English. code is the URL prefix. lang is the lang attribute and the hreflang value, and defaults to code: they only come apart where a script has to be named, as zh-Hant does. label is the nav button, defaulting to the code in capitals. dir flips the whole layout. name is what the language calls itself, which is what belongs in a language switcher: a German reader looks for Deutsch, not for German. ogLocale is what Facebook wants. public false keeps a language reachable but out of the sitemap and behind noindex, which is where a language lives until its dictionary is full enough to be worth reading.",
+  "_note": "Every language the site is built in, besides English. code is the URL prefix. lang is the lang attribute and the hreflang value, and defaults to code: they only come apart where a script has to be named, as zh-Hant does. label is the nav button, defaulting to the code in capitals. dir flips the whole layout. name is what the language calls itself, which is what belongs in a language switcher: a German reader looks for Deutsch, not for German. ogLocale is what Facebook wants. public false keeps a language reachable but out of the sitemap and behind noindex, which is where a language lives until its dictionary is full enough to be worth reading. drop false turns off the drop cap on the essays, for a script that does not set one: Arabic letters join, so a lone one is the wrong shape, and Chinese and Japanese do not use the device.",
   "locales": [
     { "code": "nl", "dir": "ltr", "name": "Nederlands", "english": "Dutch",   "ogLocale": "nl_NL", "public": true },
     { "code": "de", "dir": "ltr", "name": "Deutsch",    "english": "German",  "ogLocale": "de_DE", "public": true  },
     { "code": "fr", "dir": "ltr", "name": "Français",   "english": "French",  "ogLocale": "fr_FR", "public": true  },
     { "code": "es", "dir": "ltr", "name": "Español",    "english": "Spanish", "ogLocale": "es_ES", "public": true  },
     { "code": "it", "dir": "ltr", "name": "Italiano",   "english": "Italian", "ogLocale": "it_IT", "public": true  },
-    { "code": "ar", "dir": "rtl", "name": "العربية",     "english": "Arabic",  "ogLocale": "ar_AR", "public": true  },
-    { "code": "ja", "dir": "ltr", "name": "日本語",     "english": "Japanese", "ogLocale": "ja_JP", "public": true , "label": "日本語" },
-    { "code": "zh", "dir": "ltr", "name": "繁體中文",   "english": "Traditional Chinese", "ogLocale": "zh_TW", "public": true , "lang": "zh-Hant", "label": "中文" }
+    { "code": "hr", "dir": "ltr", "name": "Hrvatski",   "english": "Croatian", "ogLocale": "hr_HR", "public": true  },
+    { "code": "ar", "dir": "rtl", "name": "العربية",     "english": "Arabic",  "ogLocale": "ar_AR", "public": true , "drop": false },
+    { "code": "ja", "dir": "ltr", "name": "日本語",     "english": "Japanese", "ogLocale": "ja_JP", "public": true , "label": "日本語", "drop": false },
+    { "code": "zh", "dir": "ltr", "name": "繁體中文",   "english": "Traditional Chinese", "ogLocale": "zh_TW", "public": true , "lang": "zh-Hant", "label": "中文", "drop": false }
   ]
 }

@@ -137,7 +137,19 @@ function translateTextRun(run, lookup) {
   const tail = run.match(/\s*$/)[0];
   const core = run.slice(lead.length, run.length - tail.length);
   const hit = lookup(core);
-  return hit == null ? run : lead + hit + tail;
+  if (hit == null) return run;
+  // The space either side of a run belongs to the markup rather than to the
+  // sentence, so it is kept. But a translation can move the punctuation across
+  // the boundary, and then the kept space is wrong in both directions. German
+  // renders "as it moves into the toy business." as ", das in das
+  // Spielzeuggeschaeft einsteigt.", and the space in front of it read as
+  // " , das" on the live site. The opposite happens too: an English run that
+  // opens on a comma can translate to a word, which then welds itself to the
+  // bold in front of it. So the join follows the translation, not the English.
+  const opens = (s) => /^[,.;:!?)\u060C\u061B\u061F\u3001\u3002\uFF0C\uFF1B\uFF1A\uFF01\uFF1F\u30FB]/.test(s);
+  const word = /^[A-Za-z\u00C0-\u024F]/;
+  const l = opens(hit) ? "" : (lead || (opens(core) && word.test(hit) ? " " : ""));
+  return l + hit + tail;
 }
 
 function translateAttrs(tag, lookup) {
@@ -169,4 +181,28 @@ export function extractStrings(html) {
     missed: { add: (k) => { if (!seen.has(k)) { seen.add(k); found.push(k); } } },
   });
   return found;
+}
+
+// A drop cap lifts the first letter of an essay into its own span, which left
+// the dictionary keyed on a sentence that starts mid-word: "n January 1995"
+// under a hard-coded I. A translation only survives that when its own first
+// sentence happens to start on the English letter, and most do not. The site
+// shipped "Iel gennaio" in Italian, "Binter einem Haus" in German and "On soir"
+// in French before this was found, on pages nobody reads in English.
+//
+// So the letter travels with the sentence. Before translating, the span is
+// emptied and its letter pushed back into the text, which makes the key the
+// whole first sentence and the value the whole translated one. Afterwards the
+// first character of whatever came back goes into the span.
+export function dropOpen(html) {
+  return html.replace(/<span class="drop">([A-Za-z])<\/span>/g, '<span class="drop"></span>$1');
+}
+
+// keep false for a language that does not set drop caps: Arabic letters join,
+// so a lone one is the wrong shape, and Chinese and Japanese do not use the
+// device at all. There the marker is removed and the sentence stays whole.
+export function dropClose(html, keep) {
+  if (!keep) return html.replace(/<span class="drop"><\/span>/g, "");
+  return html.replace(/<span class="drop"><\/span>(\s*)([\s\S])/g,
+    (m, gap, ch) => '<span class="drop">' + ch + "</span>" + gap);
 }

@@ -3684,7 +3684,7 @@
         <li><span class="ty">Vacuum</span><span class="td">Into a <b>vacuum chamber</b>, to pull the air bubbles out of the liquid.</span></li>
         <li><span class="ty">200&deg;C</span><span class="td">The moulds go into a <b>heated chemical bath</b> until the vinyl against the wall has set.</span></li>
         <li><span class="ty">Drain</span><span class="td">The vinyl that has not set is <b>poured back out</b> and used again. This is what leaves the figure hollow.</span></li>
-        <li><span class="ty">Cool</span><span class="td">A <b>water bath</b>, and then the part is pulled from the mould <b>by hand</b> with heavy tongs.</span></li>
+        <li><span class="ty">Cool</span><span class="td">Next a <b>water bath</b>, and then the part is pulled from the mould <b>by hand</b> with heavy tongs.</span></li>
         <li><span class="ty">Finish</span><span class="td">Trimmed, <b>assembled on joints</b>, and sent on to be painted.</span></li>
       </ol>
       <div class="pullquote">Around eight separate companies touch a single figure: the sculptor, the mould maker, the plater, the joint maker, the vinyl producer, the factory, the colourist, the assembler.</div>
@@ -6437,7 +6437,7 @@
   // i18n/locales.json and refuses to run if the two have drifted, because a
   // router that does not know about a language sends its readers to the home
   // page and nothing else goes wrong loudly enough to notice.
-  const LOCALE_CODES = ['nl', 'de', 'fr', 'es', 'it', 'ar', 'ja', 'zh'];
+  const LOCALE_CODES = ['nl', 'de', 'fr', 'es', 'it', 'hr', 'ar', 'ja', 'zh'];
   const LANG_PREFIX = LOCALE_CODES.indexOf(document.documentElement.lang) >= 0
     ? '/' + document.documentElement.lang : '';
 
@@ -8329,7 +8329,6 @@
   // When the first non-Dutch seller signs up, that column is the DOMESTIC rate
   // and the label wants their country: seller_public does not expose country
   // yet, so that is one line of SQL and one line here, not a redesign.
-  const SELLER_HOME = 'the Netherlands';
 
   // A fillCardDelivery lived here and quoted every card in the grid from the
   // carriers in one request. It worked, and the grid read better without it, so
@@ -10860,12 +10859,23 @@
         return;
       }
       const cheapest = opts[0];
-      del.innerHTML = '+ ' + e(SHIPPING.eur(cheapest.price)) + ' delivery within ' + e(SELLER_HOME) +
-        ' &middot; <button type="button" class="auc-del-more" id="delMore" aria-expanded="false">more options</button>';
+      // Both of these were glued inside the markup string, which is the one
+      // place the literal scraper cannot see a sentence: the literal it finds
+      // is '" ...>more options</button>', which is not a sentence, so the
+      // delivery line under a lot stayed English in all nine languages. Same
+      // bug as the 'All' chip. Hoisted out, they are ordinary dictionary keys.
+      // The country is in the key rather than in a placeholder on purpose. It
+      // is one fixed country, and a language that has to decline it, German
+      // and Croatian both do, cannot do that to a value handed in at runtime.
+      const within = phrase('{amount} delivery within the Netherlands',
+        { amount: SHIPPING.eur(cheapest.price) });
+      const moreWord = phrase('more options');
+      del.innerHTML = '+ ' + e(within) +
+        ' &middot; <button type="button" class="auc-del-more" id="delMore" aria-expanded="false">' + e(moreWord) + '</button>';
       if (sh) sh.textContent = opts.map(o => o.label + ' ' + SHIPPING.eur(o.price)).join(' \u00b7 ') + ' \u00b7 ' + phrase('Tracked');
       dp.innerHTML = opts.map(o =>
         '<div class="del-row"><span>' + e(o.label) + '</span><span>' + e(SHIPPING.eur(o.price)) + '</span></div>').join('') +
-        '<div class="del-note">Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.</div>';
+        '<div class="del-note">' + e(phrase('Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.')) + '</div>';
       const dm = document.getElementById('delMore');
       if (dm) dm.addEventListener('click', () => {
         const open = dp.hidden;

@@ -577,5 +577,8 @@
   "{n} lot": "{n} Los",
   "{n} lots": "{n} Lose",
   "{n} lot matching your search": "{n} Los, das zu deiner Suche passt",
-  "{n} lots matching your search": "{n} Lose, die zu deiner Suche passen"
+  "{n} lots matching your search": "{n} Lose, die zu deiner Suche passen",
+  "{amount} delivery within the Netherlands": "{amount} Versand innerhalb der Niederlande",
+  "more options": "mehr Optionen",
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Preise in die Niederlande, von den Versanddienstleistern angegeben. Ein anderes Land wird beim Bezahlen berechnet, sobald wir wissen, wohin es geht. Außerhalb der EU kann bei der Ankunft Einfuhrumsatzsteuer und Zoll anfallen, bezahlt vom Käufer."
 }

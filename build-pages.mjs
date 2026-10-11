@@ -19,7 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import crypto from "node:crypto";
-import { translate, extractStrings, loadDict, applyHtmlRules } from "./i18n.mjs";
+import { translate, extractStrings, loadDict, applyHtmlRules, dropOpen, dropClose } from "./i18n.mjs";
 import { jsLiterals, phraseKeys, runtimeDict, injectRuntime, decodeEntities } from "./i18n-runtime.mjs";
 
 // The source moved out of the web root the day the stylesheet and the scripts
@@ -147,7 +147,8 @@ function localePage(L, out, p, opts) {
   const canon = (q) => (q === "/" ? "/" : q.replace(/\/+$/, "") + "/");
   const lPath = L.prefix + canon(p);
   const lUrl = SITE + lPath;
-  let x = applyHtmlRules(translate(out, L.dict, L.stats).html, L.html);
+  let x = applyHtmlRules(translate(dropOpen(out), L.dict, L.stats).html, L.html);
+  x = dropClose(x, L.drop !== false);
   x = localeLinks(x, Object.values(PATHS), L.prefix);
   // dir on the html element is what turns the whole layout around. The
   // stylesheet is written in logical properties, so this one attribute does

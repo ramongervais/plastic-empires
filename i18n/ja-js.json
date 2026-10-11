@@ -569,5 +569,8 @@
   "{n} lot": "{n} 件",
   "{n} lots": "{n} 件",
   "{n} lot matching your search": "検索に一致する {n} 件",
-  "{n} lots matching your search": "検索に一致する {n} 件"
+  "{n} lots matching your search": "検索に一致する {n} 件",
+  "{amount} delivery within the Netherlands": "オランダ国内への配送 {amount}",
+  "more options": "その他の方法",
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "オランダ宛の料金で、運送会社の提示によるものです。他の国は、どこへ送るかが分かった時点で、決済時に計算されます。EU外では、到着時に輸入消費税と関税がかかることがあり、買い手が支払います。"
 }
