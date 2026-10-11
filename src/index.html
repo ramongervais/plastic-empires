@@ -612,6 +612,61 @@
      auto the browser prefers whatever fits most, and Spanish arrives as
      CONOCE EL JUGUE-TE. The net above still catches a word that cannot fit. */
   .hero h1 { hyphens:manual; -webkit-hyphens:manual; }
+
+  /* ---------------------------------------------------------------------
+     Chinese. Three of the devices this page is built on do nothing in Han
+     script, and leaving them switched on is worse than useless.
+
+     uppercase has no effect, so every title that relied on it for weight
+     arrives at its ordinary size. The tracking is the real damage: .2em
+     between Latin capitals reads as Swiss, the same .2em between Han
+     characters reads as a text-layout fault, because the characters are
+     already square and already evenly set. And the display face carries no
+     CJK glyphs at all, so without a named fallback each character lands in
+     whatever the system happens to pick, which on one machine is a serif
+     and on the next is not.
+
+     :lang(zh) rather than [lang="zh-Hant"]: the selector matches a document
+     declared zh-Hant, zh-Hans or plain zh, so a second Chinese script later
+     inherits this instead of needing it written again.
+     --------------------------------------------------------------------- */
+  :lang(zh) {
+    --display: "PingFang TC", "Hiragino Sans CNS", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Helvetica, sans-serif;
+    --body:    "PingFang TC", "Hiragino Sans CNS", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Helvetica, sans-serif;
+    --label:   "PingFang TC", "Hiragino Sans CNS", "Noto Sans TC", "Microsoft JhengHei", "Helvetica Neue", Helvetica, sans-serif;
+  }
+  :lang(zh) .hero h1, :lang(zh) .art-title, :lang(zh) .empire-title,
+  :lang(zh) .band-head h2, :lang(zh) .story h2, :lang(zh) .empire h3,
+  :lang(zh) .empire-link .l h3, :lang(zh) .moat h4, :lang(zh) .label .nm,
+  :lang(zh) .vitrine .vlabel .n, :lang(zh) .modal h3,
+  :lang(zh) nav.top a, :lang(zh) .btn, :lang(zh) .ey {
+    text-transform:none;
+    letter-spacing:0;
+  }
+  /* The wordmark is not translated and never will be, so it keeps the face and
+     the tracking it has everywhere else. Setting Hammer & Mold in a Chinese
+     system font is the one change on this page that would be read as a mistake
+     rather than as a localisation. */
+  :lang(zh) .brand .mark, :lang(zh) .foot .mark {
+    font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+  }
+  /* Han script breaks between characters, so it never needs a hyphen and
+     never overruns a column. Switching both off stops the browser hyphenating
+     a Latin word that happens to sit in a Chinese sentence, which is where a
+     maker's name or a model number lives. */
+  :lang(zh) .hero h1, :lang(zh) .art-title, :lang(zh) .empire-title {
+    hyphens:manual; -webkit-hyphens:manual; overflow-wrap:normal;
+  }
+  /* The giant molder title is sized for a long Latin word. Han characters are
+     square and full-width, so the same number reads enormous: four characters
+     at 130px is wider than Retrobrighting. */
+  :lang(zh) .empire-title { font-size:clamp(44px, 8vw, 92px); line-height:1.1; }
+  :lang(zh) .hero h1 { line-height:1.25; }
+  /* Latin punctuation and digits inside Han text sit on a different rhythm;
+     a little air around the run is what a Chinese typesetter would add. */
+  :lang(zh) { text-spacing-trim:space-first; }
   /* the hero line is two full sentences, so it gets tighter tracking to hold two lines */
   .hero h1 { letter-spacing:.1em; }
   .brand .mark, .foot .mark { font-family:var(--label); font-weight:600; letter-spacing:.18em; }
@@ -6249,7 +6304,7 @@
   // i18n/locales.json and refuses to run if the two have drifted, because a
   // router that does not know about a language sends its readers to the home
   // page and nothing else goes wrong loudly enough to notice.
-  const LOCALE_CODES = ['nl', 'de', 'fr', 'es', 'it', 'ar'];
+  const LOCALE_CODES = ['nl', 'de', 'fr', 'es', 'it', 'ar', 'zh'];
   const LANG_PREFIX = LOCALE_CODES.indexOf(document.documentElement.lang) >= 0
     ? '/' + document.documentElement.lang : '';
 

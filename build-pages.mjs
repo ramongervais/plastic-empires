@@ -52,6 +52,14 @@ const LOCALES = JSON.parse(fs.readFileSync("i18n/locales.json", "utf8")).locales
   html: fs.existsSync("i18n/" + L.code + "-html.json") ? loadDict(fs, "i18n/" + L.code + "-html.json") : {},
   js: loadDict(fs, "i18n/" + L.code + "-js.json"),
   prefix: "/" + L.code,
+  // code is the URL. lang is what goes in the lang attribute and in hreflang,
+  // and the two stop being the same word at Chinese: the path wants /zh/ and
+  // the markup wants zh-Hant, because a crawler has to be told which script
+  // this is and a reader in Taipei must not be sent to a Simplified page.
+  // label is what the nav button shows, where ZH-HANT does not fit and would
+  // not be read by the people it is for anyway.
+  lang: L.lang || L.code,
+  label: L.label || L.code.toUpperCase(),
   // seen is every key this language actually looked up. An entry nothing looked
   // up is dead weight, and that is a more honest test than searching the source:
   // the per-page titles and descriptions are injected here and never appear in it.
@@ -88,7 +96,7 @@ function alternatesFor(p) {
   let out = '<link rel="alternate" hreflang="en" href="' + esc(en) + '">';
   for (const L of LOCALES) {
     if (!L.public) continue;                    // not offered yet, so not advertised
-    out += '<link rel="alternate" hreflang="' + L.code + '" href="' + esc(SITE + L.prefix + canon(p)) + '">';
+    out += '<link rel="alternate" hreflang="' + L.lang + '" href="' + esc(SITE + L.prefix + canon(p)) + '">';
   }
   return out + '<link rel="alternate" hreflang="x-default" href="' + esc(en) + '">';
 }
@@ -122,14 +130,14 @@ function localeLinks(html, paths, prefix) {
 function langMenu(p, current) {
   const canon = (q) => (q === "/" ? "/" : q.replace(/\/+$/, "") + "/");
   const here = LOCALES.find((L) => L.code === current);
-  const rows = [{ code: "en", name: "English", href: canon(p) }]
-    .concat(LOCALES.map((L) => ({ code: L.code, name: L.name, href: L.prefix + canon(p) })));
+  const rows = [{ code: "en", lang: "en", name: "English", href: canon(p) }]
+    .concat(LOCALES.map((L) => ({ code: L.code, lang: L.lang, name: L.name, href: L.prefix + canon(p) })));
   return '<div class="navdrop langdrop" id="ndLang">' +
     '<button class="navtop lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-label="Change language">' +
-      (here ? FLAGS[here.code] : FLAG_EN) + (here ? here.code.toUpperCase() : "EN") +
+      (here ? (FLAGS[here.code] || "") : FLAG_EN) + (here ? here.label : "EN") +
       '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>' +
     '</button><div class="dropmenu" role="menu">' +
-    rows.map((r) => '<a href="' + esc(r.href) + '" hreflang="' + r.code + '" lang="' + r.code + '" role="menuitem"' +
+    rows.map((r) => '<a href="' + esc(r.href) + '" hreflang="' + r.lang + '" lang="' + r.lang + '" role="menuitem"' +
       (r.code === (current || "en") ? ' aria-current="true"' : "") + '>' +
       (FLAGS[r.code] || "") + esc(r.name) + '</a>').join("") +
     "</div></div>";
@@ -145,14 +153,14 @@ function localePage(L, out, p, opts) {
   // stylesheet is written in logical properties, so this one attribute does
   // the work that a mirrored stylesheet would otherwise have to.
   x = x
-    .replace(/<html lang="en">/, '<html lang="' + L.code + '"' + (L.dir === "rtl" ? ' dir="rtl"' : "") + ">")
+    .replace(/<html lang="en">/, '<html lang="' + L.lang + '"' + (L.dir === "rtl" ? ' dir="rtl"' : "") + ">")
     .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(lUrl) + "$2")
     .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(lUrl) + "$2")
     .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1" + L.ogLocale + "$2")
-    .replace(/"inLanguage":"en"/g, '"inLanguage":"' + L.code + '"')
+    .replace(/"inLanguage":"en"/g, '"inLanguage":"' + L.lang + '"')
     .replace(/<div class="navdrop langdrop"[\s\S]*?<\/div><\/div>/, langMenu(p, L.code));
   if (opts && opts.head) x = opts.head(x);
-  if (!x.includes('<html lang="' + L.code + '"')) throw new Error(L.code + " " + p + ": lang attribute was not set");
+  if (!x.includes('<html lang="' + L.lang + '"')) throw new Error(L.code + " " + p + ": lang attribute was not set");
   if (!x.includes('href="' + esc(lUrl) + '"')) throw new Error(L.code + " " + p + ": canonical was not rewritten");
   // A language stays reachable while it is being filled, and out of the index
   // until it is worth reading. Half a page in English under a German lang

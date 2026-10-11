@@ -93,14 +93,21 @@ t("navigating inside the Dutch site stays Dutch", async () => {
 t("the language menu lists every language and leaves for real", async () => {
   const w = boot("nl/about/index.html", "/nl/about/");
   await settle();
-  // One flag was a toggle between two languages. With six it is a list, and
+  // One flag was a toggle between two languages. With seven it is a list, and
   // every language names itself so a reader finds theirs by recognising it.
+  //
+  // Read off locales.json rather than written out: a language is a row in that
+  // file, and a test that repeats the row fails the day one is added while the
+  // menu is perfectly correct. It also catches the thing worth catching, which
+  // is the pair coming apart: the href is built from code and the lang
+  // attribute from lang, and at Chinese those stop being the same word.
   const menu = w.document.getElementById("ndLang");
   assert.ok(menu, "the language menu is there");
   const rows = [...menu.querySelectorAll('[role="menuitem"]')].map((a) => [a.getAttribute("lang"), a.getAttribute("href")]);
+  const all = JSON.parse(fs.readFileSync("i18n/locales.json", "utf8")).locales;
   assert.deepEqual(rows, [
-    ["en", "/about/"], ["nl", "/nl/about/"], ["de", "/de/about/"],
-    ["fr", "/fr/about/"], ["es", "/es/about/"], ["it", "/it/about/"], ["ar", "/ar/about/"],
+    ["en", "/about/"],
+    ...all.map((l) => [l.lang || l.code, "/" + l.code + "/about/"]),
   ]);
   assert.equal(menu.querySelector('[aria-current="true"]').getAttribute("lang"), "nl", "and says which one you are in");
   const en = menu.querySelector('[lang="en"]');
@@ -128,10 +135,13 @@ t("a lot has a Dutch file of its own and routes to the lot view", async () => {
   // list would fail the day German shipped while the site was perfectly right.
   const alts = [...w.document.querySelectorAll("link[rel=alternate]")]
     .map((a) => a.hreflang + " " + a.href.replace("https://hammerandmold.com", ""));
+  // hreflang is the lang, the path is the code, and Chinese is where the two
+  // part company: /zh/ in the url, zh-Hant in the markup, because a crawler has
+  // to be told which script this is.
   const live = JSON.parse(fs.readFileSync("i18n/locales.json", "utf8")).locales.filter((l) => l.public);
   assert.deepEqual(alts, [
     "en /lot/" + id + "/",
-    ...live.map((l) => l.code + " /" + l.code + "/lot/" + id + "/"),
+    ...live.map((l) => (l.lang || l.code) + " /" + l.code + "/lot/" + id + "/"),
     "x-default /lot/" + id + "/",
   ]);
   // every one of those has to be a file, or the alternate points at a 404

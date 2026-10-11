@@ -29,6 +29,7 @@ admin/*.sql
 /es/
 /it/
 /ar/
+/zh/
 
 # The two reports build-pages writes after every run. Generated, and they change
 # on every build, so they stay out of the history; i18n/nl.json is the file a
