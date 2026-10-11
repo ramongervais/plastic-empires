@@ -3,10 +3,11 @@
   "locales": [
     { "code": "nl", "dir": "ltr", "name": "Nederlands", "english": "Dutch",   "ogLocale": "nl_NL", "public": true },
     { "code": "de", "dir": "ltr", "name": "Deutsch",    "english": "German",  "ogLocale": "de_DE", "public": true  },
-    { "code": "fr", "dir": "ltr", "name": "Français",   "english": "French",  "ogLocale": "fr_FR", "public": false },
+    { "code": "fr", "dir": "ltr", "name": "Français",   "english": "French",  "ogLocale": "fr_FR", "public": true  },
     { "code": "es", "dir": "ltr", "name": "Español",    "english": "Spanish", "ogLocale": "es_ES", "public": true  },
-    { "code": "it", "dir": "ltr", "name": "Italiano",   "english": "Italian", "ogLocale": "it_IT", "public": false },
-    { "code": "ar", "dir": "rtl", "name": "العربية",     "english": "Arabic",  "ogLocale": "ar_AR", "public": false },
+    { "code": "it", "dir": "ltr", "name": "Italiano",   "english": "Italian", "ogLocale": "it_IT", "public": true  },
+    { "code": "ar", "dir": "rtl", "name": "العربية",     "english": "Arabic",  "ogLocale": "ar_AR", "public": true  },
+    { "code": "ja", "dir": "ltr", "name": "日本語",     "english": "Japanese", "ogLocale": "ja_JP", "public": false, "label": "日本語" },
     { "code": "zh", "dir": "ltr", "name": "繁體中文",   "english": "Traditional Chinese", "ogLocale": "zh_TW", "public": true , "lang": "zh-Hant", "label": "中文" }
   ]
 }

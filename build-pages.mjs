@@ -879,7 +879,16 @@ if (fs.existsSync("sitemap.xml")) {
   // tracked and written in place, so without this a second run appends the
   // eighteen Dutch urls again: 19 became 37 became 55. Found by running it
   // twice, which is the only way this class of bug ever shows up.
-  sm = sm.replace(/\n  <url>\n    <loc>[^<]*\/nl\/[^<]*<\/loc>[\s\S]*?<\/url>/g, "");
+  //
+  // The prefixes come from locales.json rather than being named here. They
+  // were named here, as /nl/ alone, and every language added after Dutch went
+  // on stacking: by the time French was written the tracked file carried 1,848
+  // urls where it should have carried 105, because each build appended another
+  // twenty-one per public language and stripped none of them. A list of
+  // languages written twice will fall out of step, so it is written once.
+  sm = sm.replace(
+    new RegExp("\\n  <url>\\n    <loc>[^<]*/(?:" +
+      LOCALES.map((L) => L.code).join("|") + ")/[^<]*</loc>[\\s\\S]*?</url>", "g"), "");
   // Stripped before it is added, so this is idempotent. The file is tracked
   // and written in place, so a second run, or a run over a copy that already
   // carries a stamp, has to land on the same result rather than stacking a
@@ -922,6 +931,49 @@ if (fs.existsSync("sitemap.xml")) {
 // ---- Coverage, per language, and the worklists ----
 //
 // The number that matters is the miss list, not the percentage: it is the
+// Before anything is reported: does each dictionary speak the language it is
+// for? Writing six languages in one sitting leaks: a Russian word ended up in
+// the Chinese, a Spanish one in the Chinese, a Chinese character in the French,
+// each of them a single token inside an otherwise correct sentence and each
+// invisible to a coverage percentage, which only counts whether a key has a
+// value. Latin letters are fine everywhere, because the brand, the makers and
+// the model numbers are Latin in every language. A script that belongs to a
+// different locale is not.
+{
+  const SCRIPTS = [
+    ["Cyrillic", /[\u0400-\u04FF]/],
+    ["Greek",    /[\u0370-\u03FF]/],
+    ["Han",      /[\u3000-\u30FF\u4E00-\u9FFF]/],
+    ["Arabic",   /[\u0600-\u06FF]/],
+    ["Hangul",   /[\uAC00-\uD7AF]/],
+  ];
+  // What each locale is allowed to contain besides Latin.
+  const ALLOWED = { zh: ["Han"], ar: ["Arabic"] };
+  const wrong = [];
+  for (const L of LOCALES) {
+    const ok = ALLOWED[L.code] || [];
+    for (const [where, dict] of [["", L.dict], ["-js", L.js]]) {
+      for (const [k, v] of Object.entries(dict)) {
+        // An entry that is its own translation cannot be a leak from the
+        // previous language: it is the same word in both. That is how every
+        // dictionary legitimately carries العربية and 繁體中文, because the
+        // language menu names each language in its own script.
+        if (k.startsWith("_") || typeof v !== "string" || v === k) continue;
+        for (const [name, re] of SCRIPTS) {
+          if (ok.includes(name) || !re.test(v)) continue;
+          wrong.push("  i18n/" + L.code + where + ".json  " + name + " in a " + L.english +
+            " value\n    key:   " + JSON.stringify(k.slice(0, 60)) +
+            "\n    value: " + JSON.stringify(v.slice(0, 60)));
+        }
+      }
+    }
+  }
+  if (wrong.length) {
+    throw new Error("a dictionary carries the wrong script:\n" + wrong.join("\n") +
+      "\nThese are almost always a word left behind from the previous language.");
+  }
+}
+
 // exact set of sentences still to write, in document order, so translating is
 // a file to work through rather than a site to read. One file per language,
 // because a worklist shared between six of them is nobody's worklist.

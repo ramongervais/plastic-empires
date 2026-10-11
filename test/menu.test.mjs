@@ -55,7 +55,10 @@ t("the workshop pieces are in the menu, not only the footer", async () => {
   const w = boot("index.html", "/");
   await settle();
   const items = [...w.document.querySelectorAll("#ndMolders .dropmenu a")].map((a) => a.getAttribute("href"));
-  assert.deepEqual(items, ["/#empires", "/retrobrighting/", "/moulds/"]);
+  // Sofubi sits with the molders rather than the workshop: it is a molder page
+  // at /molders/sofubi/, and the only one that is a material instead of a
+  // company, so it has no logo on the grid to aim for.
+  assert.deepEqual(items, ["/#empires", "/molders/sofubi/", "/retrobrighting/", "/moulds/"]);
   w.close();
 });
 

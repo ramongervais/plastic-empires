@@ -29,6 +29,7 @@ admin/*.sql
 /es/
 /it/
 /ar/
+/ja/
 /zh/
 
 # The two reports build-pages writes after every run. Generated, and they change
@@ -48,3 +49,7 @@ i18n/unused-*.txt
 node_modules/
 i18n/js-untranslated.txt
 i18n/js-fragments.txt
+
+# jsdom for the tests, installed out of tree and symlinked in. The repo itself
+# has no dependencies and this must never become one.
+/node_modules
