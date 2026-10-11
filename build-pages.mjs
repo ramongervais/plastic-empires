@@ -947,8 +947,13 @@ if (fs.existsSync("sitemap.xml")) {
     ["Arabic",   /[\u0600-\u06FF]/],
     ["Hangul",   /[\uAC00-\uD7AF]/],
   ];
-  // What each locale is allowed to contain besides Latin.
-  const ALLOWED = { zh: ["Han"], ar: ["Arabic"] };
+  // What each locale is allowed to contain besides Latin. Japanese is on the
+  // Han line with Chinese because the one test covers U+3000-30FF as well as
+  // the unified ideographs, which is kana and kanji together: a Japanese
+  // sentence is all three scripts at once and there is no useful way to split
+  // them here. The check that matters for ja is the one it still makes, that
+  // no Cyrillic, Greek, Arabic or Hangul has leaked in from a neighbour.
+  const ALLOWED = { zh: ["Han"], ja: ["Han"], ar: ["Arabic"] };
   const wrong = [];
   for (const L of LOCALES) {
     const ok = ALLOWED[L.code] || [];
