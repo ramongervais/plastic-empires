@@ -566,5 +566,11 @@
   "Est. {low} – {high}": "Schatting {low} – {high}",
   "Choose {plan}": "Kies {plan}",
   "Choose your country…": "Kies je land…",
-  "Choose which emails you want to receive.": "Kies welke e-mails je wilt ontvangen."
+  "Choose which emails you want to receive.": "Kies welke e-mails je wilt ontvangen.",
+  "{n} of {total} lots": "{n} van {total} kavels",
+  "{n} of {total} lots matching your search": "{n} van {total} kavels die bij je zoekopdracht passen",
+  "{n} lot": "{n} kavel",
+  "{n} lots": "{n} kavels",
+  "{n} lot matching your search": "{n} kavel die bij je zoekopdracht past",
+  "{n} lots matching your search": "{n} kavels die bij je zoekopdracht passen"
 }

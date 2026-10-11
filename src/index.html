@@ -590,13 +590,28 @@
   .hero h1, .art-title, .empire-title { font-weight:800; line-height:1; letter-spacing:.2em; }
   /* A headline word can be longer than the column it sits in: Retrobrighting at
      130px, or any of the compounds German and Dutch build. Let the browser
-     hyphenate it over two lines rather than run it off the page, and keep
-     break-word as the last resort for a word no dictionary knows. */
-  .hero h1, .art-title, .empire-title { overflow-wrap:break-word; hyphens:auto; -webkit-hyphens:auto; }
+     hyphenate it over two lines rather than run it off the page.
+
+     anywhere, not break-word: the two look identical until the heading sits in
+     a box sized to its own content, where break-word is ignored for that sizing
+     and the word hangs out of the column anyway. anywhere is counted, so the
+     box can never be laid out wider than its column in the first place. */
+  .hero h1, .art-title, .empire-title { overflow-wrap:anywhere; hyphens:auto; -webkit-hyphens:auto; }
   /* The one title big enough that a single word can outrun the page. Its break
      point is set in the copy with a soft hyphen rather than left to the browser's
-     dictionary, which splits Retrobrighting as RETROB-RIGHTING in German. */
+     dictionary, which splits Retrobrighting as RETROB-RIGHTING in German.
+
+     That soft hyphen buys the nice break, never the safe one. It is a character
+     inside the text, so anything that rewrites the text node takes it with it:
+     a browser's own translate feature is the common case, and then the word
+     arrives here with no break point in it at all. The rule above is what
+     catches that, and it needs nothing to be present in the copy. */
   .empire-title { hyphens:manual; -webkit-hyphens:manual; }
+  /* And the hero, for a different reason: it is two short sentences with a
+     space between them, so a space is always the right place to break. Left on
+     auto the browser prefers whatever fits most, and Spanish arrives as
+     CONOCE EL JUGUE-TE. The net above still catches a word that cannot fit. */
+  .hero h1 { hyphens:manual; -webkit-hyphens:manual; }
   /* the hero line is two full sentences, so it gets tighter tracking to hold two lines */
   .hero h1 { letter-spacing:.1em; }
   .brand .mark, .foot .mark { font-family:var(--label); font-weight:600; letter-spacing:.18em; }
@@ -8239,10 +8254,18 @@
     const count = document.getElementById('shopCount');
     if (count){
       const onScreen = document.querySelectorAll('#collection .artifact-card').length;
-      count.textContent = !onScreen ? (searching ? 'No lots match' : '')
-        : (activeShown < activeTotal ? onScreen + ' of ' + activeTotal + ' lots'
-           : onScreen + ' lot' + (onScreen === 1 ? '' : 's'))
-          + (searching ? ' matching your search' : '');
+      // Whole sentences, not ' of ' glued between two numbers. A fragment like
+      // that cannot be translated: Spanish puts the count first and Dutch does
+      // not, and a dictionary keyed on ' of ' has no way to know which.
+      const some = activeShown < activeTotal;
+      const key = some
+        ? (searching ? '{n} of {total} lots matching your search' : '{n} of {total} lots')
+        : onScreen === 1
+          ? (searching ? '{n} lot matching your search' : '{n} lot')
+          : (searching ? '{n} lots matching your search' : '{n} lots');
+      count.textContent = !onScreen
+        ? (searching ? phrase('No lots match') : '')
+        : phrase(key, { n: onScreen, total: activeTotal });
     }
     const empty = document.getElementById('shopEmpty');
     if (empty) empty.hidden = !(searching && !document.querySelectorAll('#collection .artifact-card').length);

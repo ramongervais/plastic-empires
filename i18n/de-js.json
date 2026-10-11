@@ -571,5 +571,11 @@
   "at auction": "in der Auktion",
   "{n} lot for sale": "{n} Los zu verkaufen",
   "{n} lots for sale": "{n} Lose zu verkaufen",
-  "{n} sold": "{n} verkauft"
+  "{n} sold": "{n} verkauft",
+  "{n} of {total} lots": "{n} von {total} Losen",
+  "{n} of {total} lots matching your search": "{n} von {total} Losen, die zu deiner Suche passen",
+  "{n} lot": "{n} Los",
+  "{n} lots": "{n} Lose",
+  "{n} lot matching your search": "{n} Los, das zu deiner Suche passt",
+  "{n} lots matching your search": "{n} Lose, die zu deiner Suche passen"
 }

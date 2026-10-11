@@ -4,7 +4,7 @@
     { "code": "nl", "dir": "ltr", "name": "Nederlands", "english": "Dutch",   "ogLocale": "nl_NL", "public": true },
     { "code": "de", "dir": "ltr", "name": "Deutsch",    "english": "German",  "ogLocale": "de_DE", "public": true  },
     { "code": "fr", "dir": "ltr", "name": "Français",   "english": "French",  "ogLocale": "fr_FR", "public": false },
-    { "code": "es", "dir": "ltr", "name": "Español",    "english": "Spanish", "ogLocale": "es_ES", "public": false },
+    { "code": "es", "dir": "ltr", "name": "Español",    "english": "Spanish", "ogLocale": "es_ES", "public": true  },
     { "code": "it", "dir": "ltr", "name": "Italiano",   "english": "Italian", "ogLocale": "it_IT", "public": false },
     { "code": "ar", "dir": "rtl", "name": "العربية",     "english": "Arabic",  "ogLocale": "ar_AR", "public": false }
   ]
