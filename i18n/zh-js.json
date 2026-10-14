@@ -118,7 +118,6 @@
   "What was done": "做了什麼",
   "AI confidence": "AI 信心度",
   "How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.": "AI 對這次鑑定有多確定。只有你看得到，絕不會顯示給買家。信心度低，是提醒你在上架前自己先確認刻印。",
-  "The name buyers search for. Keep it plain: the character or model, not a sales pitch.": "買家會搜尋的名稱。保持樸素：角色或型號，不是推銷詞。",
   "Maker": "製造商",
   "The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.": "灌出它的那家公司，取自玩具上的刻印。這就是把這件拍品歸到某位製模者底下的依據。",
   "Year": "年份",
@@ -572,5 +571,6 @@
   "{n} lots matching your search": "{n} 件符合你搜尋條件的拍品",
   "{amount} delivery within the Netherlands": "荷蘭境內配送 {amount}",
   "more options": "更多選項",
-  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "寄往荷蘭的價格，由物流業者提供。其他國家在結帳時、我們知道寄往何處後才計價。歐盟以外，包裹到達時可能產生進口稅與關稅，由買家支付。"
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "寄往荷蘭的價格，由物流業者提供。其他國家在結帳時、我們知道寄往何處後才計價。歐盟以外，包裹到達時可能產生進口稅與關稅，由買家支付。",
+  "The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.": "買家用來搜尋的那一行：製造商、系列、名稱、年份。不要括號、不要稀有度說法、不要品相。品相與系列在下面各有自己的欄位。"
 }

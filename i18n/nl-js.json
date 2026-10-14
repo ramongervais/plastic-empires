@@ -119,7 +119,6 @@
   "What was done": "Wat er gedaan is",
   "AI confidence": "AI-zekerheid",
   "How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.": "Hoe zeker de AI is van de identificatie. Alleen voor jouw ogen, nooit zichtbaar voor kopers. Lage zekerheid is een aansporing om het stempel zelf te controleren voordat je publiceert.",
-  "The name buyers search for. Keep it plain: the character or model, not a sales pitch.": "De naam waar kopers op zoeken. Houd het gewoon: het personage of model, geen verkooppraatje.",
   "Maker": "Maker",
   "The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.": "Het bedrijf dat het goot, overgenomen van het stempel op het speelgoed. Hieronder valt het kavel bij een Molder.",
   "Year": "Jaar",
@@ -575,5 +574,6 @@
   "{n} lots matching your search": "{n} kavels die bij je zoekopdracht passen",
   "{amount} delivery within the Netherlands": "{amount} bezorging binnen Nederland",
   "more options": "meer opties",
-  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Prijzen naar Nederland, opgegeven door de vervoerders. Een ander land wordt bij het afrekenen geprijsd, zodra we weten waar het heen gaat. Buiten de EU kan op een pakket bij aankomst invoer-btw en douanerechten komen, betaald door de koper."
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Prijzen naar Nederland, opgegeven door de vervoerders. Een ander land wordt bij het afrekenen geprijsd, zodra we weten waar het heen gaat. Buiten de EU kan op een pakket bij aankomst invoer-btw en douanerechten komen, betaald door de koper.",
+  "The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.": "De regel waarop kopers zoeken: merk, serie, naam, jaar. Geen haakjes, geen zeldzaamheidsclaims, geen staat. De staat en de serie hebben hieronder hun eigen veld."
 }

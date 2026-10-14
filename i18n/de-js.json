@@ -118,7 +118,6 @@
   "What was done": "Was gemacht wurde",
   "AI confidence": "KI-Sicherheit",
   "How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.": "Wie sicher sich die KI bei der Bestimmung ist. Nur für dich, Käufer sehen das nie. Geringe Sicherheit ist ein Hinweis, den Stempel vor dem Veröffentlichen selbst zu prüfen.",
-  "The name buyers search for. Keep it plain: the character or model, not a sales pitch.": "Der Name, nach dem Käufer suchen. Halte ihn schlicht: die Figur oder das Modell, keine Verkaufsprosa.",
   "Maker": "Hersteller",
   "The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.": "Die Firma, die es gegossen hat, vom Stempel auf dem Spielzeug übernommen. Danach wird das Los einem Molder zugeordnet.",
   "Year": "Jahr",
@@ -580,5 +579,6 @@
   "{n} lots matching your search": "{n} Lose, die zu deiner Suche passen",
   "{amount} delivery within the Netherlands": "{amount} Versand innerhalb der Niederlande",
   "more options": "mehr Optionen",
-  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Preise in die Niederlande, von den Versanddienstleistern angegeben. Ein anderes Land wird beim Bezahlen berechnet, sobald wir wissen, wohin es geht. Außerhalb der EU kann bei der Ankunft Einfuhrumsatzsteuer und Zoll anfallen, bezahlt vom Käufer."
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Preise in die Niederlande, von den Versanddienstleistern angegeben. Ein anderes Land wird beim Bezahlen berechnet, sobald wir wissen, wohin es geht. Außerhalb der EU kann bei der Ankunft Einfuhrumsatzsteuer und Zoll anfallen, bezahlt vom Käufer.",
+  "The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.": "Die Zeile, nach der Käufer suchen: Hersteller, Reihe, Name, Jahr. Keine Klammern, keine Seltenheitsbehauptungen, kein Zustand. Für Zustand und Reihe gibt es eigene Felder weiter unten."
 }

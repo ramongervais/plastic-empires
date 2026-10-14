@@ -168,6 +168,8 @@ function localePage(L, out, p, opts) {
   // attribute is the thin-and-duplicate verdict this site can least afford.
   if (!L.public) x = x.replace(/(<meta name="robots" content=")[^"]*(")/, "$1noindex, follow$2");
   x = injectRuntime(x, L.runtime);
+  if (opts && opts.fragments) writeFragments(x, L.prefix);
+  x = stripViews(x, opts && opts.keep);
   fs.mkdirSync("." + lPath, { recursive: true });
   fs.writeFileSync(lPath.replace(/^\//, "") + "index.html", x);
   L.written++;                                  // what exists, whether or not it is advertised
@@ -283,6 +285,18 @@ function grab(name) {
     throw new Error("LOCALE_CODES in " + SRC + " is [" + inApp.join(", ") +
       "] but i18n/locales.json has [" + inFile.join(", ") + "]");
   }
+  // The router reads the language off the lang attribute and has to get the
+  // code back out of it. That held for eight locales and failed for the ninth:
+  // Chinese is zh in the path and zh-Hant in the markup, LANG_PREFIX came out
+  // empty, and every client-side navigation on the Chinese site dropped the
+  // /zh/ prefix. The check above could not see it, because both files agreed
+  // on the code. This one compares the code with the attribute it is read from.
+  for (const L of LOCALES) {
+    if (L.lang.split("-")[0] !== L.code) {
+      throw new Error(L.code + ': lang is "' + L.lang + '", whose primary subtag is "' +
+        L.lang.split("-")[0] + '". The router derives the code from that subtag, so it must be the code.');
+    }
+  }
 }
 
 const PATHS = grab("PATHS");
@@ -306,6 +320,58 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // The documentary pages, and the company each one is about. "about" is the field
 // that tells a machine these are pages concerning a real manufacturer rather than
 // pages that merely mention one.
+// ---------------------------------------------------------------------------
+// One page, one subject.
+//
+// Every generated file carried every view: twelve essays, help, terms and
+// privacy, 29,000 words under every address. Measured on the live site on
+// 14 Oct 2026: /molders/galoob/ and /molders/dor-mei/ were 377KB and 29,640
+// words each, and every lot page was the same. Search Console had 22 of 39
+// pages indexed and not one lot, and Google's own AI was citing the Palitoy
+// essay while ranking the page 36th. A crawler cannot tell what a page is
+// about when it is about everything.
+//
+// So each file keeps its own view and leaves the others as an empty element
+// marked data-defer. Their content goes to /views/<view>.html (and
+// /<code>/views/<view>.html, translated), which the router fetches the first
+// time a reader goes there. The app views (home, sell, lot, account...) stay
+// in every page: they are small, and they are the application.
+const DEFER = ["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "sofubi",
+  "imperial", "palitoy", "dormei", "retrobright", "moulds", "privacy", "help", "terms"];
+
+function viewSpan(page, v) {
+  const open = '<main class="view" id="view-' + v + '"';
+  const at = page.indexOf(open);
+  if (at < 0 || page.indexOf(open, at + 1) >= 0) throw new Error("view " + v + ": expected exactly one <main>");
+  const openEnd = page.indexOf(">", at) + 1;
+  const close = page.indexOf("</main>", openEnd);
+  // A <main> inside a view would end the slice early and leave half an essay
+  // loose in the page. There is none today; this says so loudly if one arrives.
+  if (page.slice(openEnd, close).includes("<main")) throw new Error("view " + v + ": nested <main>");
+  return { at, openEnd, close };
+}
+
+function stripViews(page, keep) {
+  for (const v of DEFER) {
+    if (v === keep) continue;
+    const { at, openEnd, close } = viewSpan(page, v);
+    const tag = page.slice(at, openEnd).replace(/>$/, " data-defer>");
+    page = page.slice(0, at) + tag + page.slice(close);
+  }
+  return page;
+}
+
+function writeFragments(page, prefix) {
+  const dir = (prefix ? prefix.replace(/^\//, "") + "/" : "") + "views";
+  fs.mkdirSync(dir, { recursive: true });
+  for (const v of DEFER) {
+    const { openEnd, close } = viewSpan(page, v);
+    const body = page.slice(openEnd, close);
+    if (body.trim().length < 500) throw new Error("view " + v + ": fragment is empty");
+    fs.writeFileSync(dir + "/" + v + ".html", body);
+  }
+}
+
 const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei", "sofubi"]);
 // Not a molder, but the same kind of page: researched, argued, signed. It gets
 // the same Article node, with a subject that is a process rather than a company.
@@ -430,8 +496,11 @@ for (const view of Object.keys(PATHS)) {
   // page and make them find their place again.
   out = out.replace(/<a class="lang-btn"[\s\S]*?<\/a>/, langMenu(p, null));
 
+  // The home page is the one whose views are all still full, so the
+  // fragments are cut from it, in every language, in the same pass.
+  if (view === "home") writeFragments(out, "");
   if (writeEn) {
-    fs.writeFileSync(target, out.replace("</head>", alts + "</head>"));
+    fs.writeFileSync(target, stripViews(out, view).replace("</head>", alts + "</head>"));
     written++;
     report.push("  " + p.padEnd(22) + title.slice(0, 52));
   }
@@ -440,7 +509,7 @@ for (const view of Object.keys(PATHS)) {
   // Translated from the finished English page, so every rewrite above has
   // already happened and there is one place that decides what a page says.
   for (const L of LOCALES) {
-    const u = localePage(L, out, p, { head: (x) => x.replace("</head>", alts + "</head>") });
+    const u = localePage(L, out, p, { keep: view, fragments: view === "home", head: (x) => x.replace("</head>", alts + "</head>") });
     if (L.public) L.locs.push({ loc: u });
   }
 }
@@ -677,7 +746,7 @@ for (const l of lots) {
 
   const dir = "." + path;
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
+  fs.writeFileSync(path.replace(/^\//, "") + "index.html", stripViews(out, null));
   lotLocs.push({ loc: url, status: l.status, lastmod: lotLastmod(l) });
 
   // One sibling per language. Without a file here GitHub Pages answers
@@ -807,7 +876,7 @@ const sellerLocs = [];
     }
     if (!out.includes('href="' + esc(url) + '"')) throw new Error(p.id + ": seller canonical was not rewritten");
     fs.mkdirSync("." + path, { recursive: true });
-    fs.writeFileSync(path.replace(/^\//, "") + "index.html", out);
+    fs.writeFileSync(path.replace(/^\//, "") + "index.html", stripViews(out, null));
 
     // The page moves when the seller's own lots move, which is the only signal
     // we have for it, plus the day they joined.
@@ -855,7 +924,7 @@ const sellerLocs = [];
 
 // The app itself is the fallback for anything per-record that has no file:
 // /seller/<id>, and a /lot/<id> that was published after the last deploy.
-fs.writeFileSync("404.html", html);
+fs.writeFileSync("404.html", stripViews(html, null));
 
 // ---- lastmod on the hand-kept sitemap ----
 //

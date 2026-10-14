@@ -118,7 +118,6 @@
   "What was done": "何をしたか",
   "AI confidence": "AIの確信度",
   "How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.": "AIが特定にどれだけ自信を持っているか。あなただけに表示され、購入者には決して見えません。確信度が低いときは、公開する前にご自身で刻印を確かめる合図です。",
-  "The name buyers search for. Keep it plain: the character or model, not a sales pitch.": "購入者が検索する名前。素っ気なく。キャラクター名か型番で、売り文句ではなく。",
   "Maker": "メーカー",
   "The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.": "それを成形した会社。おもちゃの刻印から取ります。これがロットを造形者のもとにまとめる手がかりになります。",
   "Year": "年",
@@ -572,5 +571,6 @@
   "{n} lots matching your search": "検索に一致する {n} 件",
   "{amount} delivery within the Netherlands": "オランダ国内への配送 {amount}",
   "more options": "その他の方法",
-  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "オランダ宛の料金で、運送会社の提示によるものです。他の国は、どこへ送るかが分かった時点で、決済時に計算されます。EU外では、到着時に輸入消費税と関税がかかることがあり、買い手が支払います。"
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "オランダ宛の料金で、運送会社の提示によるものです。他の国は、どこへ送るかが分かった時点で、決済時に計算されます。EU外では、到着時に輸入消費税と関税がかかることがあり、買い手が支払います。",
+  "The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.": "買い手が検索する一行です。メーカー、シリーズ、名称、年。括弧も、希少性の主張も、状態も入れません。状態とシリーズには下に専用の欄があります。"
 }

@@ -4723,9 +4723,12 @@
   <script>
     // One index, two columns, different lengths. "Next" moves the comparison
     // rather than one picture, so the pairing the order was built around holds.
-    (function(){
+    // Named, because this page is fetched on first visit (see hydrate in the
+    // router) and has to be wired when it arrives, not only at load.
+    function wireEvidence(){
       var sec = document.getElementById('rb-evidence');
-      if (!sec) return;
+      if (!sec || sec.dataset.wired) return;
+      sec.dataset.wired = '1';
       // One piece per .rb-piece, and each keeps its own index. With a single
       // shared one, adding a second toy would make its before column step in
       // time with the first car's after column, which is nonsense.
@@ -4790,7 +4793,8 @@
       document.addEventListener('visibilitychange', go);
       go();
       }
-    })();
+    }
+    wireEvidence();
   </script>
 
   <section class="band">
@@ -6438,8 +6442,13 @@
   // router that does not know about a language sends its readers to the home
   // page and nothing else goes wrong loudly enough to notice.
   const LOCALE_CODES = ['nl', 'de', 'fr', 'es', 'it', 'hr', 'ar', 'ja', 'zh'];
-  const LANG_PREFIX = LOCALE_CODES.indexOf(document.documentElement.lang) >= 0
-    ? '/' + document.documentElement.lang : '';
+  // The lang attribute is not always the URL. Chinese is /zh/ in the path and
+  // zh-Hant in the markup, and comparing the whole attribute against the codes
+  // made LANG_PREFIX empty on every Chinese page: the router then pushed
+  // /lot/<id>/ instead of /zh/lot/<id>/, so a reload or a shared link landed a
+  // Chinese reader on the English site. Only the primary subtag is the code.
+  const LOCALE_CODE = (document.documentElement.lang || '').split('-')[0];
+  const LANG_PREFIX = LOCALE_CODES.indexOf(LOCALE_CODE) >= 0 ? '/' + LOCALE_CODE : '';
 
   // ---- What each path tells a crawler and a share preview ----
   // The head was one title, one description and one canonical for the entire
@@ -6661,8 +6670,40 @@
     })();
   }
 
+  // Every page used to carry the whole site: all twelve essays, the help page,
+  // the terms and the privacy policy, 340KB of it under every address. Google
+  // saw /molders/galoob/, /retrobrighting/ and every lot as the same 29,000
+  // words with a different title, and indexed accordingly. The build now
+  // leaves those views empty except on their own page and writes each one to
+  // /views/<view>.html (per language under /<code>/views/), and they are
+  // fetched the first time a reader goes there.
+  //
+  // Lazily, on purpose. Filling them in at load would hand the crawler, which
+  // runs this script, the same 29,000 words it had before.
+  const hydrating = {};
+  function hydrate(v){
+    const root = views[v];
+    if (hydrating[v]) return hydrating[v];
+    return hydrating[v] = fetch(LANG_PREFIX + '/views/' + v + '.html')
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(markup => {
+        root.innerHTML = markup;
+        delete root.dataset.defer;
+        wireContent(root);
+      });
+  }
+
   function show(view, opts){
     const v = views[view] ? view : 'home';
+    if (views[v].dataset.defer !== undefined){
+      // Offline, or a deploy that removed the file: the page itself still
+      // exists at its own address, with the content in it.
+      hydrate(v).then(() => show(v, opts), () => {
+        delete hydrating[v];
+        location.href = LANG_PREFIX + (PATHS[v] === '/' ? '/' : PATHS[v] + '/');
+      });
+      return;
+    }
     Object.keys(views).forEach(k => views[k].hidden = k !== v);
     const root = views[v];
     root.querySelectorAll('.vitrine canvas.stars').forEach(c => c.remove());
@@ -6798,9 +6839,12 @@
   ];
 
   // ----- Shipping & import help page -----
-  (function(){
+  // Named and guarded rather than run once, because the help page is fetched
+  // on first visit (see hydrate) and has to be wired when it arrives.
+  function wireShip(){
     const body = document.getElementById('shipTableBody');
-    if (!body) return;
+    if (!body || body.dataset.wired) return;
+    body.dataset.wired = '1';
     const eur = n => '\u20ac ' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     body.innerHTML = SHIP_BANDS.map(b =>
       '<tr><td><b>' + b.label + '</b></td><td>' + eur(b.nl) + '</td><td>' + eur(b.eu) + '</td><td>' + eur(b.uk) +
@@ -6851,15 +6895,16 @@
     }
     [dir, zone, wt, val, hand].forEach(el => { el.addEventListener('input', calc); el.addEventListener('change', calc); });
     calc();
-  })();
+  }
 
   // ----- Film -> commercial -----
   document.querySelectorAll('.film').forEach(f => f.addEventListener('click', () => window.open(COMMERCIAL, '_blank', 'noopener')));
 
   // ----- Video grid: click a thumbnail to play the YouTube clip inline -----
-  document.querySelectorAll('.vid').forEach(v => {
+  function wireVids(root){ root.querySelectorAll('.vid').forEach(v => {
     const btn = v.querySelector('.vid-thumb');
-    if (!btn) return;
+    if (!btn || v.dataset.wired) return;
+    v.dataset.wired = '1';
     btn.addEventListener('click', () => {
       const id = v.dataset.yt;
       const frame = document.createElement('div');
@@ -6872,7 +6917,7 @@
       frame.appendChild(ifr);
       btn.replaceWith(frame);
     });
-  });
+  }); }
 
   // ----- Empire lines: filter by publisher + sort (era / A–Z) -----
   (function(){
@@ -6912,11 +6957,12 @@
   // Was wired to #kennerCarousel and #carouselDots by id, so a second Molder
   // page with photos would have silently stolen Kenner's dots. Every .carousel
   // now runs its own, and each one finds its dots inside itself.
-  document.querySelectorAll('.carousel').forEach(root => {
+  function wireCarousels(scope){ scope.querySelectorAll('.carousel').forEach(root => {
     const track = root.querySelector('.carousel-track');
     const slides = root.querySelectorAll('.slide');
     const dotsWrap = root.querySelector('.carousel-dots');
-    if (!track || !slides.length || !dotsWrap) return;
+    if (!track || !slides.length || !dotsWrap || root.dataset.wired) return;
+    root.dataset.wired = '1';
     let i = 0;
     slides.forEach((_, n) => {
       const d = document.createElement('button');
@@ -6933,7 +6979,20 @@
     }
     root.querySelectorAll('.carousel-arrow').forEach(a =>
       a.addEventListener('click', () => go(i + (+a.dataset.dir))));
-  });
+  }); }
+
+  // Everything that wires itself to the content of a view rather than to the
+  // document. Run once over the page at load, and again over each view that
+  // hydrate() fetches later. Each part is guarded, so running twice is a no-op.
+  // A new piece of per-page behaviour that queries inside an essay belongs in
+  // here, or it will work on the essay's own address and nowhere else.
+  function wireContent(root){
+    wireEvidence();
+    wireShip();
+    wireVids(root);
+    wireCarousels(root);
+  }
+  wireContent(document);
 
   // ----- Modal: bids / buy now / sell / info -----
   const modal = document.getElementById('modal');
@@ -7915,7 +7974,7 @@
       const html =
         '<div class="ef-top"><div class="rc-sub">Edit curation</div>' +
           efRO('AI confidence', c.confidence, 'How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.') + '</div>' +
-        ef('Toy', 'e_toy', c.toy, 'text', 'The name buyers search for. Keep it plain: the character or model, not a sales pitch.') +
+        ef('Toy', 'e_toy', c.toy, 'text', 'The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.') +
         '<div class="ef-row">' + ef('Maker', 'e_maker', c.maker, 'text', 'The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.') + ef('Year', 'e_year', c.year, 'text', 'Year or range moulded, from the copyright stamp. Not the year the film came out.') + '</div>' +
         ef('Line', 'e_line', c.line, 'text', 'The toy line it belongs to, such as Star Wars or Teenage Mutant Ninja Turtles.') +
         efSel('Condition', 'e_condition', c.condition, CONDITIONS, 'How it presents, from Mint down to Poor. This sets the star rating buyers see, so grade honestly: over-grading is the fastest way to a dispute.') +
@@ -11143,7 +11202,7 @@
     const authB = document.getElementById('authLinkB'); if (authB) authB.addEventListener('click', e => { e.preventDefault(); if (currentUser()) renderAccount(); else openAuth(); });
     refreshAuthUI();
     if (SB) {
-      SB.auth.getSession().then(async ({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); await loadWatchlist(); injectDraftLots(); });
+      SB.auth.getSession().then(async ({ data }) => { authUser = data.session ? data.session.user : null; refreshAuthUI(); rememberLanguage(authUser); await loadWatchlist(); injectDraftLots(); });
       // Fires on a restored session too, so the URL flag is what separates
       // "you just signed in" from "you were already signed in", and it is only
       // ever announced once.
@@ -11161,7 +11220,7 @@
       let welcomed = false;
       SB.auth.onAuthStateChange(async (ev, session) => {
         authUser = session ? session.user : null;
-        refreshAuthUI(); await loadWatchlist(); injectDraftLots();
+        refreshAuthUI(); rememberLanguage(authUser); await loadWatchlist(); injectDraftLots();
         if (!ARRIVED_BY_LINK || welcomed || ev !== 'SIGNED_IN' || !session || !session.user) return;
         welcomed = true;
         // A brand new account is worth a different sentence from a returning
@@ -11182,6 +11241,27 @@
     }
   }
   injectDraftLots();
+
+  // ---- Which language to write to this reader in ----
+  // The site has been readable in nine languages for a while; the emails were
+  // not, and the worker had no way to know which one to use. This is that way.
+  // It records the locale the reader is actually on, on their own profile row,
+  // and the worker reads it when it writes to them. A row with no lang gets
+  // English, which is what every row got before the column existed.
+  //
+  // Written only when it changes, with the last value kept in this browser, so
+  // a reader who stays in one language costs one request ever rather than one
+  // per page. Failure is silent on purpose: this is a nicety, and a reader must
+  // never see an error because we could not record a preference.
+  async function rememberLanguage(user) {
+    if (!SB || !user) return;
+    const code = LANG_PREFIX ? LANG_PREFIX.slice(1) : 'en';
+    try { if (localStorage.getItem('pe_lang') === code) return; } catch (e) {}
+    try {
+      const { error } = await SB.from('profiles').update({ lang: code }).eq('id', user.id);
+      if (!error) { try { localStorage.setItem('pe_lang', code); } catch (e) {} }
+    } catch (e) {}
+  }
 
   // ---- The path the visitor arrived on ----
   // A shared link, a bookmark or a refresh has to land where it points. Before

@@ -118,7 +118,6 @@
   "What was done": "Che cosa è stato fatto",
   "AI confidence": "Confidenza dell'IA",
   "How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.": "Quanto l'IA è sicura dell'identificazione. Solo per te, mai mostrata agli acquirenti. Una confidenza bassa è un invito a controllare il marchio di persona prima di pubblicare.",
-  "The name buyers search for. Keep it plain: the character or model, not a sales pitch.": "Il nome che gli acquirenti cercano. Tienilo semplice: il personaggio o il modello, non uno slogan di vendita.",
   "Maker": "Produttore",
   "The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.": "L'azienda che l'ha stampato, presa dal marchio sul giocattolo. È questo che raggruppa il lotto sotto un Molder.",
   "Year": "Anno",
@@ -572,5 +571,6 @@
   "{n} lots matching your search": "{n} lotti corrispondenti alla tua ricerca",
   "{amount} delivery within the Netherlands": "{amount} di spedizione nei Paesi Bassi",
   "more options": "altre opzioni",
-  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Prezzi verso i Paesi Bassi, indicati dai corrieri. Un altro paese viene calcolato al pagamento, una volta che sappiamo dove va. Fuori dall'UE un pacco può essere soggetto a IVA all'importazione e dazi all'arrivo, pagati dall'acquirente."
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "Prezzi verso i Paesi Bassi, indicati dai corrieri. Un altro paese viene calcolato al pagamento, una volta che sappiamo dove va. Fuori dall'UE un pacco può essere soggetto a IVA all'importazione e dazi all'arrivo, pagati dall'acquirente.",
+  "The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.": "La riga su cui cercano gli acquirenti: produttore, serie, nome, anno. Niente parentesi, niente dichiarazioni di rarità, niente condizione. Condizione e serie hanno i loro campi più sotto."
 }

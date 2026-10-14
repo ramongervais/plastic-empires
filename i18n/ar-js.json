@@ -118,7 +118,6 @@
   "What was done": "ماذا فُعل",
   "AI confidence": "ثقة الذكاء الاصطناعي",
   "How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.": "مدى ثقة الذكاء الاصطناعي في التعرّف. لعينيك وحدك، ولا يُعرض للمشترين أبدًا. والثقة المنخفضة دعوة لتفحص الختم بنفسك قبل النشر.",
-  "The name buyers search for. Keep it plain: the character or model, not a sales pitch.": "الاسم الذي يبحث عنه المشترون. أبقِه بسيطًا: الشخصية أو الطراز، لا عبارة بيع.",
   "Maker": "الصانع",
   "The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.": "الشركة التي صبّتها، مأخوذة من الختم على اللعبة. وهذا ما يصنّف القطعة تحت صانع قوالب.",
   "Year": "السنة",
@@ -572,5 +571,6 @@
   "{n} lots matching your search": "{n} قطع مطابقة لبحثك",
   "{amount} delivery within the Netherlands": "{amount} للتوصيل داخل هولندا",
   "more options": "خيارات أخرى",
-  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "الأسعار إلى هولندا، كما تذكرها شركات الشحن. تُحتسب أي دولة أخرى عند الدفع، بعد أن نعرف إلى أين يذهب الطرد. خارج الاتحاد الأوروبي قد تُفرض على الطرد ضريبة استيراد ورسوم جمركية عند الوصول، يدفعها المشتري."
+  "Prices to the Netherlands, quoted from the carriers. Another country is priced at checkout, once we know where it is going. Outside the EU a parcel may attract import VAT and duty on arrival, paid by the buyer.": "الأسعار إلى هولندا، كما تذكرها شركات الشحن. تُحتسب أي دولة أخرى عند الدفع، بعد أن نعرف إلى أين يذهب الطرد. خارج الاتحاد الأوروبي قد تُفرض على الطرد ضريبة استيراد ورسوم جمركية عند الوصول، يدفعها المشتري.",
+  "The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.": "السطر الذي يبحث به المشترون: الصانع، السلسلة، الاسم، السنة. بلا أقواس، بلا ادّعاءات ندرة، بلا حالة. للحالة وللسلسلة حقولهما الخاصة أدناه."
 }
