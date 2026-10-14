@@ -645,15 +645,15 @@ function staticCard(l) {
       (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
         '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : "") +
       (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
-      '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
-    "</div>" +
-    '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +
       // Same markup and order as lotCardHtml(), so the swap to the live card
       // does not move anything.
       (Array.isArray(l.badges) && l.badges.length
         ? '<div class="lot-badges">' + [["box", "Original box"], ["complete", "Complete"], ["rare", "Very Rare"]]
             .filter(([k]) => l.badges.includes(k)).map(([, t]) => '<span class="lot-badge">' + t + "</span>").join("") + "</div>"
         : "") +
+      '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+    "</div>" +
+    '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +
       '<div class="meta">' + esc([clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 ")) + "</div>" +
       '<div class="auc-card"><div><span class="amt">' + money + '</span><span class="sub">' + sub + "</span></div></div>" +
     "</div></article>";

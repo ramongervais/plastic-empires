@@ -213,8 +213,14 @@
   .box-toggle input { width:18px; height:18px; margin:2px 0 0; accent-color:var(--ink); flex-shrink:0; cursor:pointer; }
   .box-toggle > span { display:flex; flex-direction:column; gap:2px; font-family:var(--body); font-size:13px; color:var(--ink-3); }
   .box-toggle b { color:var(--ink); font-size:14px; }
-  .lot-badges { display:flex; flex-wrap:wrap; gap:4px; margin:2px 0 4px; }
-  .lot-badge { font-family:var(--label); font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); border:1px solid var(--ink); padding:2px 6px; border-radius:2px; line-height:1.3; }
+  .lot-badges { display:flex; flex-wrap:wrap; gap:6px; }
+  .lot-badge { font-family:var(--body); font-size:12px; font-weight:600; letter-spacing:0; text-transform:none; line-height:1.3; padding:4px 9px; border-radius:6px; color:var(--ink); background:color-mix(in srgb, var(--ink) 8%, transparent); }
+  /* On a card the badges sit in the photograph, bottom left, as frosted glass
+     (Ramon, 14 Oct 2026): the photo stays visible through them, and the name
+     under the picture keeps its two lines. Fixed dark ink, because whatever is
+     behind the glass is a photograph, not the page's own colours. */
+  .vitrine .lot-badges { position:absolute; inset-inline-start:12px; inset-inline-end:12px; bottom:12px; z-index:2; pointer-events:none; }
+  .vitrine .lot-badge { color:#111; background:rgba(255,255,255,.58); -webkit-backdrop-filter:blur(10px) saturate(1.4); backdrop-filter:blur(10px) saturate(1.4); box-shadow:0 1px 2px rgba(0,0,0,.12); }
   .dz-size { grid-column:1 / -1; font-family:var(--label); font-size:11px; letter-spacing:.06em; color:var(--ink-3); margin-top:4px; }
   .dropzone.busy { opacity:.6; pointer-events:none; }
   .vitrine canvas.stars { position:absolute; inset:0; width:100%; height:100%; display:block; }
@@ -8384,6 +8390,8 @@
         (l.img ? '<img class="cardimg" src="' + e(cardSrc(l.img)) + '" data-full="' + e(l.img) + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : '') +
         (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (isPreview ? '<span class="card-badge sand">Preview</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : ''))) +
         (!isClosed && l.id ? '<button class="watch-btn' + (watchedIds.has(l.id) ? ' on' : '') + '" type="button" data-watch="' + e(l.id) + '" aria-label="Watch this lot" aria-pressed="' + (watchedIds.has(l.id) ? 'true' : 'false') + '">' + watchStarSvg(watchedIds.has(l.id)) + '</button>' : '') +
+        // Original box, Complete, Very Rare: in the photograph, bottom left.
+        badgesHtml(l.badges, e) +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       // The title is a real link now. It was an anchor with the destination in a
@@ -8392,9 +8400,6 @@
       // sitemap. The router still calls preventDefault, so clicking is unchanged
       // and middle-click now works.
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" href="/lot/' + encodeURIComponent(l.id) + '/" data-nav="lot" data-lot="' + e(l.id) + '">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
-        // Original box, Complete, Very Rare: the three facts a collector scans a
-        // grid for, so they sit right under the name.
-        badgesHtml(l.badges, e) +
         // makerLabel, not the raw maker. The curation writes free text and the
         // bracketed half is provenance for the lot page, not for a card: today
         // that already puts "HASBRO (TITAN SPORTS INC.)" on a card next to a line
