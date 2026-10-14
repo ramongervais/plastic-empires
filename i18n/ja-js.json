@@ -594,5 +594,6 @@
   "The box graded on its own, separate from the toy. Only with Original box.": "箱は玩具とは別に単独で評価します。「オリジナル箱」がある場合のみ。",
   "What a buyer should know about the box: crushed corners, tears, price stickers, tape, a missing flap or inner tray, opened or sealed.": "購入者が知っておくべき箱の状態：角のつぶれ、破れ、値札、テープ、フタや内トレイの欠品、開封済みか未開封か。",
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "購入者が検索する一行：メーカー、シリーズ、名前、年。括弧や状態は入れません（状態は専用の欄があります）。事実であれば「超希少」を入れても構いません。下のバッジでも示されます。",
-  "{n} of {max} photos": "写真 {n} / {max} 枚"
+  "{n} of {max} photos": "写真 {n} / {max} 枚",
+  "Complete, with all original accessories": "完品：オリジナルの付属品がすべて揃っています"
 }

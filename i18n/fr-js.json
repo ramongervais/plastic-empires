@@ -594,5 +594,6 @@
   "The box graded on its own, separate from the toy. Only with Original box.": "La boîte évaluée à part, indépendamment du jouet. Uniquement avec Boîte d'origine.",
   "What a buyer should know about the box: crushed corners, tears, price stickers, tape, a missing flap or inner tray, opened or sealed.": "Ce que l'acheteur doit savoir sur la boîte : coins écrasés, déchirures, étiquettes de prix, ruban adhésif, un rabat ou un calage manquant, ouverte ou scellée.",
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "La ligne que les acheteurs recherchent : fabricant, gamme, nom, année. Pas de parenthèses ni d'état : la note a son propre champ. Très rare peut y figurer si c'est vrai, et le badge ci-dessous le dit aussi.",
-  "{n} of {max} photos": "{n} photos sur {max}"
+  "{n} of {max} photos": "{n} photos sur {max}",
+  "Complete, with all original accessories": "Complet, avec tous les accessoires d'origine"
 }

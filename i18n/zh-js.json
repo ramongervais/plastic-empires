@@ -594,5 +594,6 @@
   "The box graded on its own, separate from the toy. Only with Original box.": "盒子單獨評級，與玩具本身分開。僅限有原裝盒時。",
   "What a buyer should know about the box: crushed corners, tears, price stickers, tape, a missing flap or inner tray, opened or sealed.": "買家需要知道的盒況：壓角、破損、價格貼紙、膠帶、缺少盒蓋或內托、已拆或未拆。",
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "買家搜尋時用的那一行：廠牌、系列、名稱、年份。不加括號、不寫品相：品相有專屬欄位。若屬實可加上極稀有，下方標章也會標示。",
-  "{n} of {max} photos": "{n} / {max} 張照片"
+  "{n} of {max} photos": "{n} / {max} 張照片",
+  "Complete, with all original accessories": "完整：所有原廠配件齊全"
 }
