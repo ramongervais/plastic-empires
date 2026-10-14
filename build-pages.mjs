@@ -150,6 +150,10 @@ function localePage(L, out, p, opts) {
   let x = applyHtmlRules(translate(dropOpen(out), L.dict, L.stats).html, L.html);
   x = dropClose(x, L.drop !== false);
   x = localeLinks(x, Object.values(PATHS), L.prefix);
+  // The pre-rendered lot cards (withShop) link to /lot/<id>/, which is not one
+  // of PATHS, so localeLinks leaves them alone. Every lot has a file in every
+  // language, and a Dutch reader clicking a card should stay in Dutch.
+  x = x.replace(/href="\/lot\//g, 'href="' + L.prefix + '/lot/');
   // dir on the html element is what turns the whole layout around. The
   // stylesheet is written in logical properties, so this one attribute does
   // the work that a mirrored stylesheet would otherwise have to.
@@ -401,119 +405,6 @@ const SKIP = new Set(["lot", "seller", "account", "checkout"]);
 // the page at / is built like every other one.
 const NO_EN_FILE = new Set();
 
-let written = 0;
-const report = [];
-
-for (const view of Object.keys(PATHS)) {
-  if (SKIP.has(view)) continue;
-  const p = PATHS[view];
-  const m = META[view];
-  if (!m || !m[0]) { report.push("  skipped " + view + " (no meta)"); continue; }
-  const [title, desc] = m;
-  // Trailing slash, because that is the form GitHub Pages answers with a 200.
-  // Naming the other one in the canonical points every crawler at a redirect.
-  const url = SITE + (p === "/" ? p : p.replace(/\/+$/, "") + "/");
-
-  // Replace, never append: a second <title> or canonical is worse than a wrong
-  // one, because which of them a crawler believes is not defined anywhere.
-  // index.html is the home page AND the template for every other page, so any
-  // alternates written into its head for / would ride along into all eighteen.
-  // Stripped here, added per page below.
-  let out = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
-    .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
-    .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(url) + "$2")
-    .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
-    .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(url) + "$2")
-    .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
-    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2");
-
-  // Structured data for the documentary pages, per path.
-  //
-  // These nine are articles: researched, argued, and written from toys somebody
-  // actually held. Until now they carried only the site-wide Organization node,
-  // so a crawler saw nine anonymous pages with no author and no subject. That is
-  // the exact shape Google's guidance tells you not to be, and the one this site
-  // had least excuse for, because the first-hand part is true.
-  //
-  // Injected here rather than written into index.html because the author, the
-  // headline and the subject differ per page, and the source file has one head.
-  if (view.startsWith("molders") || MOLDER.has(view) || ARTICLE_SUBJECT[view]) {
-    const node = {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      "@id": url + "#article",
-      headline: title.split(" \u00b7 ")[0],
-      description: desc,
-      url,
-      isPartOf: { "@id": SITE + "/#website" },
-      publisher: { "@id": SITE + "/#org" },
-      author: {
-        "@type": "Person",
-        name: "Ramon Gervais",
-        url: SITE + "/about",
-        affiliation: { "@id": SITE + "/#org" },
-      },
-      about: ARTICLE_SUBJECT[view]
-        ? { "@type": "Thing", name: ARTICLE_SUBJECT[view] }
-        : { "@type": "Organization", name: MOLDER_NAME[view] || title.split(" \u00b7 ")[0] },
-      inLanguage: "en",
-    };
-    out = out.replace(
-      "</head>",
-      '<script type="application/ld+json">' + JSON.stringify(node) + "</script></head>"
-    );
-    if (!out.includes('"@type":"Article"')) throw new Error(view + ": Article schema was not injected");
-  }
-
-  // Every replacement has to have bitten. A silent no-op would ship a file that
-  // claims to be the packages page while its head still says the home page.
-  const must = [
-    ["title", "<title>" + esc(title) + "</title>"],
-    ["canonical", 'href="' + esc(url) + '"'],
-    ["og:url", 'content="' + esc(url) + '"'],
-  ];
-  for (const [what, needle] of must) {
-    if (!out.includes(needle)) throw new Error(view + ": " + what + " was not rewritten");
-  }
-
-  const dir = "." + p;
-  const target = path.join(dir, "index.html");
-  const writeEn = !NO_EN_FILE.has(view);
-  if (writeEn && path.resolve(target) === path.resolve(SRC)) throw new Error("refusing to write over the source: " + view);
-  if (writeEn) fs.mkdirSync(dir, { recursive: true });
-
-  // Both languages carry both alternates and an x-default. Without them Google
-  // reads /sell/ and /nl/sell/ as the same page twice and picks one, which is
-  // the normal way a translated site loses to its own copy.
-  // Same normalisation as the English url twenty lines up, or the two differ by
-  // a trailing slash and the canonical points at an address that redirects.
-  const alts = alternatesFor(p);
-
-  // The switch points at this page's own twin. Hard-coded in index.html it
-  // said /nl/, which would drop a reader of the Kenner essay on the Dutch home
-  // page and make them find their place again.
-  out = out.replace(/<a class="lang-btn"[\s\S]*?<\/a>/, langMenu(p, null));
-
-  // The home page is the one whose views are all still full, so the
-  // fragments are cut from it, in every language, in the same pass.
-  if (view === "home") writeFragments(out, "");
-  if (writeEn) {
-    fs.writeFileSync(target, stripViews(out, view).replace("</head>", alts + "</head>"));
-    written++;
-    report.push("  " + p.padEnd(22) + title.slice(0, 52));
-  }
-
-  // ---- and one sibling per language ----
-  // Translated from the finished English page, so every rewrite above has
-  // already happened and there is one place that decides what a page says.
-  for (const L of LOCALES) {
-    const u = localePage(L, out, p, { keep: view, fragments: view === "home", head: (x) => x.replace("</head>", alts + "</head>") });
-    if (L.public) L.locs.push({ loc: u });
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Lots.
 //
@@ -681,6 +572,204 @@ function lotSchema(l, url) {
 
 await probeUpdatedAt();
 const lots = await fetchLots();
+
+// ---------------------------------------------------------------------------
+// The shop, in the HTML.
+//
+// Search Console on 14 Oct 2026, for a lot listed in sitemap-lots.xml:
+// "Discovered, currently not indexed", referring page "none detected". Google
+// had never fetched a single lot, because no page linked to one: the home page
+// and /results/ arrive with eight grey placeholders and get their cards from
+// Supabase after the script runs, and Google's first pass reads the page
+// before any script. A lot known only from a sitemap is an orphan, and orphans
+// wait.
+//
+// eBay's search and category pages arrive as finished HTML with a link to every
+// item in them, and that is the model here. The build writes real cards where
+// the placeholders were: every open lot on the home page, every closed one on
+// /results/. They carry the classes the app's own cards carry (draft-lot), so
+// injectDraftLots() and renderSold() replace them with live ones the moment
+// Supabase answers, exactly as they replaced the placeholders. A reader sees
+// the shop a beat sooner; a crawler sees it at all.
+//
+// Only on those two pages. The home view is in every file, and fifty-one lot
+// links under every essay would be the duplication undone a step back.
+async function fetchBidAgg(ids) {
+  const agg = {};
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const res = await fetch(SUPA_URL + "/rest/v1/bids?select=lot_id,amount&lot_id=in.(" + chunk.join(",") + ")",
+      { headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY } });
+    if (!res.ok) throw new Error("bids fetch failed: HTTP " + res.status);
+    for (const b of await res.json()) {
+      const m = agg[b.lot_id] || { max: 0, count: 0 };
+      m.max = Math.max(m.max, Number(b.amount)); m.count++;
+      agg[b.lot_id] = m;
+    }
+  }
+  return agg;
+}
+const bidAgg = await fetchBidAgg(lots.map((l) => l.id));
+
+// The same figures lotCardHtml() shows, from the same rules, so the swap to the
+// live card changes nothing a reader can see unless a bid came in since.
+function staticCard(l) {
+  const a = bidAgg[l.id] || { max: 0, count: 0 };
+  const closed = l.status === "sold" || l.status === "unsold";
+  const fixed = l.sale_type === "fixed";
+  const amount = fixed ? Number(l.buy_now || l.starting_bid || 0)
+    : a.count ? a.max : (closed && l.buy_now ? Number(l.buy_now) : Number(l.starting_bid || 0));
+  const money = "\u20ac " + amount.toLocaleString("nl-NL");
+  const sub = closed ? (a.count ? a.count + " bids" : "Final price")
+    : l.status === "preview" ? "Starting bid" : fixed ? "Fixed price" : a.count + " bids";
+  const img = (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean)[0] || "";
+  const card = img.replace(/\.(jpe?g|png|webp)(\?.*)?$/i, "_card.jpg$2");
+  const maker = String(l.maker || "").split(/[(,]/)[0].trim();
+  const badge = l.status === "sold" ? "Sold" : closed ? "Ended" : "";
+  const id = esc(l.id), href = "/lot/" + encodeURIComponent(l.id) + "/";
+  return '<article class="artifact-card draft-lot">' +
+    '<div class="vitrine' + (closed ? " closed" : "") + '" data-nav="lot" data-lot="' + id + '" style="cursor:pointer">' +
+      (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
+        '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : "") +
+      (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
+      '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
+    "</div>" +
+    '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +
+      '<div class="meta">' + esc([clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 ")) + "</div>" +
+      '<div class="auc-card"><div><span class="amt">' + money + '</span><span class="sub">' + sub + "</span></div></div>" +
+    "</div></article>";
+}
+const openLots = lots.filter((l) => l.status === "live" || l.status === "preview");
+const closedLots = lots.filter((l) => l.status === "sold" || l.status === "unsold");
+const SHOP_SK = /(<div class="collection">\s*<!--[\s\S]*?-->)\s*(?:<div class="sk"[^>]*>[\s\S]*?<\/div><\/div>\s*)+/;
+const SOLD_GRID = '<div class="collection" id="soldGrid"></div>';
+function withShop(page, view) {
+  if (view === "home" && openLots.length) {
+    if (!SHOP_SK.test(page)) throw new Error("home: shop placeholders not found, cards not injected");
+    page = page.replace(SHOP_SK, (m, head) => head + "\n" + openLots.map(staticCard).join("") + "\n");
+  }
+  if (view === "sold" && closedLots.length) {
+    if (!page.includes(SOLD_GRID)) throw new Error("results: soldGrid not found, cards not injected");
+    page = page.replace(SOLD_GRID, SOLD_GRID.replace("></div>", ">" + closedLots.map(staticCard).join("") + "</div>"));
+  }
+  return page;
+}
+
+let written = 0;
+const report = [];
+
+for (const view of Object.keys(PATHS)) {
+  if (SKIP.has(view)) continue;
+  const p = PATHS[view];
+  const m = META[view];
+  if (!m || !m[0]) { report.push("  skipped " + view + " (no meta)"); continue; }
+  const [title, desc] = m;
+  // Trailing slash, because that is the form GitHub Pages answers with a 200.
+  // Naming the other one in the canonical points every crawler at a redirect.
+  const url = SITE + (p === "/" ? p : p.replace(/\/+$/, "") + "/");
+
+  // Replace, never append: a second <title> or canonical is worse than a wrong
+  // one, because which of them a crawler believes is not defined anywhere.
+  // index.html is the home page AND the template for every other page, so any
+  // alternates written into its head for / would ride along into all eighteen.
+  // Stripped here, added per page below.
+  let out = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
+    .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
+    .replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(url) + "$2")
+    .replace(/(<meta property="og:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
+    .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2")
+    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(url) + "$2")
+    .replace(/(<meta name="twitter:title" content=")[^"]*(")/, "$1" + esc(title) + "$2")
+    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(desc) + "$2");
+
+  // Structured data for the documentary pages, per path.
+  //
+  // These nine are articles: researched, argued, and written from toys somebody
+  // actually held. Until now they carried only the site-wide Organization node,
+  // so a crawler saw nine anonymous pages with no author and no subject. That is
+  // the exact shape Google's guidance tells you not to be, and the one this site
+  // had least excuse for, because the first-hand part is true.
+  //
+  // Injected here rather than written into index.html because the author, the
+  // headline and the subject differ per page, and the source file has one head.
+  if (view.startsWith("molders") || MOLDER.has(view) || ARTICLE_SUBJECT[view]) {
+    const node = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "@id": url + "#article",
+      headline: title.split(" \u00b7 ")[0],
+      description: desc,
+      url,
+      isPartOf: { "@id": SITE + "/#website" },
+      publisher: { "@id": SITE + "/#org" },
+      author: {
+        "@type": "Person",
+        name: "Ramon Gervais",
+        url: SITE + "/about",
+        affiliation: { "@id": SITE + "/#org" },
+      },
+      about: ARTICLE_SUBJECT[view]
+        ? { "@type": "Thing", name: ARTICLE_SUBJECT[view] }
+        : { "@type": "Organization", name: MOLDER_NAME[view] || title.split(" \u00b7 ")[0] },
+      inLanguage: "en",
+    };
+    out = out.replace(
+      "</head>",
+      '<script type="application/ld+json">' + JSON.stringify(node) + "</script></head>"
+    );
+    if (!out.includes('"@type":"Article"')) throw new Error(view + ": Article schema was not injected");
+  }
+
+  out = withShop(out, view);
+
+  // Every replacement has to have bitten. A silent no-op would ship a file that
+  // claims to be the packages page while its head still says the home page.
+  const must = [
+    ["title", "<title>" + esc(title) + "</title>"],
+    ["canonical", 'href="' + esc(url) + '"'],
+    ["og:url", 'content="' + esc(url) + '"'],
+  ];
+  for (const [what, needle] of must) {
+    if (!out.includes(needle)) throw new Error(view + ": " + what + " was not rewritten");
+  }
+
+  const dir = "." + p;
+  const target = path.join(dir, "index.html");
+  const writeEn = !NO_EN_FILE.has(view);
+  if (writeEn && path.resolve(target) === path.resolve(SRC)) throw new Error("refusing to write over the source: " + view);
+  if (writeEn) fs.mkdirSync(dir, { recursive: true });
+
+  // Both languages carry both alternates and an x-default. Without them Google
+  // reads /sell/ and /nl/sell/ as the same page twice and picks one, which is
+  // the normal way a translated site loses to its own copy.
+  // Same normalisation as the English url twenty lines up, or the two differ by
+  // a trailing slash and the canonical points at an address that redirects.
+  const alts = alternatesFor(p);
+
+  // The switch points at this page's own twin. Hard-coded in index.html it
+  // said /nl/, which would drop a reader of the Kenner essay on the Dutch home
+  // page and make them find their place again.
+  out = out.replace(/<a class="lang-btn"[\s\S]*?<\/a>/, langMenu(p, null));
+
+  // The home page is the one whose views are all still full, so the
+  // fragments are cut from it, in every language, in the same pass.
+  if (view === "home") writeFragments(out, "");
+  if (writeEn) {
+    fs.writeFileSync(target, stripViews(out, view).replace("</head>", alts + "</head>"));
+    written++;
+    report.push("  " + p.padEnd(22) + title.slice(0, 52));
+  }
+
+  // ---- and one sibling per language ----
+  // Translated from the finished English page, so every rewrite above has
+  // already happened and there is one place that decides what a page says.
+  for (const L of LOCALES) {
+    const u = localePage(L, out, p, { keep: view, fragments: view === "home", head: (x) => x.replace("</head>", alts + "</head>") });
+    if (L.public) L.locs.push({ loc: u });
+  }
+}
+
 
 // Two of the same toy is normal in this shop: two Boba Fetts came through in
 // the same week. Identical titles across two URLs is not normal, it is the
