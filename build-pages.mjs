@@ -501,11 +501,19 @@ function trim(s, n) {
 }
 
 function lotTitle(l) {
-  const bits = [clean(l.toy) || "Vintage toy"];
+  const toy = clean(l.toy) || "Vintage toy";
+  // Titles now carry their own maker and year (the curation's title grammar,
+  // 14 Oct 2026), so appending them again gave "Granny Gross ... 1988 Vintage
+  // \u00b7 1988". Each is added only when the title does not already say it.
+  const has = (w) => w && toy.toLowerCase().includes(w.toLowerCase());
   const maker = clean(l.maker).split(/[(,]/)[0].trim();
-  if (maker) bits.push(maker + (clean(l.year) ? " " + clean(l.year) : ""));
-  else if (clean(l.year)) bits.push(clean(l.year));
-  return bits.join(" \u00b7 ") + " \u00b7 Hammer & Mold";
+  const year = clean(l.year);
+  // A range counts as said when any year in it is already in the title:
+  // "Boba Fett 1979 Vintage" with year "1979-1980".
+  const yearSaid = has(year) || (year.match(/\b(19|20)\d\d\b/g) || []).some(has);
+  const makerSaid = has(maker) || has(maker.split(" ")[0]);   // "Thinkway" for "Thinkway Toys"
+  const tail = [makerSaid ? "" : maker, yearSaid ? "" : year].filter(Boolean).join(" ");
+  return [toy, tail].filter(Boolean).join(" \u00b7 ") + " \u00b7 Hammer & Mold";
 }
 
 function lotDescription(l) {
