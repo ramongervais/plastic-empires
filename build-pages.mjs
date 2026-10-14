@@ -426,7 +426,7 @@ const NO_EN_FILE = new Set();
 const SUPA_URL = (rawHtml.match(/SUPA_URL = '([^']+)'/) || [])[1];
 const SUPA_KEY = (rawHtml.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
-const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at";
+const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges";
 
 // Honest lastmod needs a date the page's own content actually moved on.
 //
@@ -560,7 +560,7 @@ function lotSchema(l, url) {
     "@type": "Product",
     name: clean(l.toy) || "Vintage toy",
     description: lotDescription(l),
-    image: (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean).slice(0, 6),
+    image: (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean).slice(0, 12),
     itemCondition: "https://schema.org/" + cond,
     offers: {
       "@type": "Offer",
@@ -621,6 +621,10 @@ const bidAgg = await fetchBidAgg(lots.map((l) => l.id));
 
 // The same figures lotCardHtml() shows, from the same rules, so the swap to the
 // live card changes nothing a reader can see unless a bid came in since.
+// What the static cards print is the seller's text (title, line, maker, year)
+// and a live figure (the bid count). Neither belongs on a translator's worklist,
+// the same rule as lotContent below, which is declared too late to use here.
+const cardContent = new Set();
 function staticCard(l) {
   const a = bidAgg[l.id] || { max: 0, count: 0 };
   const closed = l.status === "sold" || l.status === "unsold";
@@ -635,6 +639,7 @@ function staticCard(l) {
   const maker = String(l.maker || "").split(/[(,]/)[0].trim();
   const badge = l.status === "sold" ? "Sold" : closed ? "Ended" : "";
   const id = esc(l.id), href = "/lot/" + encodeURIComponent(l.id) + "/";
+  for (const t of [clean(l.toy), [clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 "), a.count + " bids"]) { cardContent.add(t); cardContent.add(esc(t)); }
   return '<article class="artifact-card draft-lot">' +
     '<div class="vitrine' + (closed ? " closed" : "") + '" data-nav="lot" data-lot="' + id + '" style="cursor:pointer">' +
       (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
@@ -643,6 +648,12 @@ function staticCard(l) {
       '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
     "</div>" +
     '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +
+      // Same markup and order as lotCardHtml(), so the swap to the live card
+      // does not move anything.
+      (Array.isArray(l.badges) && l.badges.length
+        ? '<div class="lot-badges">' + [["box", "Original box"], ["complete", "Complete"], ["rare", "Very Rare"]]
+            .filter(([k]) => l.badges.includes(k)).map(([, t]) => '<span class="lot-badge">' + t + "</span>").join("") + "</div>"
+        : "") +
       '<div class="meta">' + esc([clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 ")) + "</div>" +
       '<div class="auc-card"><div><span class="amt">' + money + '</span><span class="sub">' + sub + "</span></div></div>" +
     "</div></article>";
@@ -1156,7 +1167,7 @@ if (fs.existsSync("sitemap.xml")) {
   for (const L of LOCALES) {
     const total = L.stats.hit + L.stats.miss;
     const pct = total ? Math.round((L.stats.hit / total) * 100) : 0;
-    const missed = [...L.stats.missed].filter((k) => !lotContent.has(k));
+    const missed = [...L.stats.missed].filter((k) => !lotContent.has(k) && !cardContent.has(k));
     const file = "i18n/untranslated-" + L.code + ".txt";
     if (missed.length) {
       fs.writeFileSync(file,

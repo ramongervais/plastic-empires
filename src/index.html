@@ -209,6 +209,12 @@
   .vitrine { position:relative; background:var(--panel); border:1px solid var(--line); border-radius:3px; aspect-ratio: 4/5; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .vitrine.wide { aspect-ratio: 4/3; }
   .vitrine .cardimg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  .box-toggle { display:flex; gap:10px; align-items:flex-start; margin:12px 0 4px; padding:12px; border:1px solid var(--line); border-radius:3px; cursor:pointer; }
+  .box-toggle input { width:18px; height:18px; margin:2px 0 0; accent-color:var(--ink); flex-shrink:0; cursor:pointer; }
+  .box-toggle > span { display:flex; flex-direction:column; gap:2px; font-family:var(--body); font-size:13px; color:var(--ink-3); }
+  .box-toggle b { color:var(--ink); font-size:14px; }
+  .lot-badges { display:flex; flex-wrap:wrap; gap:4px; margin:2px 0 4px; }
+  .lot-badge { font-family:var(--label); font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); border:1px solid var(--ink); padding:2px 6px; border-radius:2px; line-height:1.3; }
   .dz-size { grid-column:1 / -1; font-family:var(--label); font-size:11px; letter-spacing:.06em; color:var(--ink-3); margin-top:4px; }
   .dropzone.busy { opacity:.6; pointer-events:none; }
   .vitrine canvas.stars { position:absolute; inset:0; width:100%; height:100%; display:block; }
@@ -5338,6 +5344,12 @@
             </div>
           </label>
           <div class="thumbs" id="thumbs"></div>
+          <!-- A boxed toy is two objects, the toy and the box, and the box has six
+               faces. Ticking this doubles the photos (Ramon, 14 Oct 2026). -->
+          <label class="box-toggle" for="boxIncluded">
+            <input type="checkbox" id="boxIncluded">
+            <span><b>Original box included</b><span>Up to 12 photos instead of 6: every side of the box, the flaps and the inner tray.</span></span>
+          </label>
           <!-- The one thing a camera cannot record. A seller knows whether the
                electronics still work and we were never asking, which on a toy
                that has them is the difference between EUR 15 and EUR 90. -->
@@ -6352,7 +6364,7 @@
   // number, bid exactly that, win on the floor. Same shape as the ship_to leak
   // in September. The page only ever needed "is there one" and "is it met",
   // and reserveState() asks the database for exactly those two booleans.
-  const LOT_COLS_PUBLIC = 'auction_days,blurb,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
+  const LOT_COLS_PUBLIC = 'auction_days,badges,blurb,box_condition,box_notes,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,rare_reason,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
 
   // Booleans only, any number of lots at once. Returns an empty map rather than
   // throwing when the function is not there yet, so this ships before the
@@ -7210,6 +7222,22 @@
   ];
   const careLabel = id => (CARE_LEVELS.find(c => c.id === id) || {}).label || '';
 
+  // Badges a seller can put on a lot (Ramon, 14 Oct 2026). Value-bearing facts,
+  // so the AI only proposes them and the seller decides. Very Rare needs a reason,
+  // which the database also enforces: without one it is a sales claim.
+  const BADGES = [
+    { id: 'box',      label: 'Original box', hint: 'The original box or card is included. Allows 12 photos.' },
+    { id: 'complete', label: 'Complete',     hint: 'Everything it originally came with is here: weapons, cape, belt.' },
+    { id: 'rare',     label: 'Very Rare',    hint: 'Genuinely hard to find. Say why below.' },
+  ];
+  // Its own constant: glued inside a markup literal it would never reach the
+  // runtime dictionary (the jsLiterals blind spot, see the 'All' chip).
+  const BADGE_HINT = 'Shown on the card in the shop and on the lot page. The AI ticks what it can see; untick anything that is not true.';
+  const badgeLabel = id => (BADGES.find(b => b.id === id) || {}).label || '';
+  const badgesHtml = (list, esc) => (Array.isArray(list) && list.length)
+    ? '<div class="lot-badges">' + BADGES.filter(b => list.includes(b.id)).map(b => '<span class="lot-badge">' + esc(phrase(b.label)) + '</span>').join('') + '</div>'
+    : '';
+
   // ----- Sell: AI curation uploader -----
   (function(){
     const WORKER_URL = "https://plasticempires-curate.ramongervais.workers.dev";
@@ -7221,6 +7249,9 @@
     if (!input || !dz || !curateBtn || !card) return;
 
     let files = []; // { name, dataUrl (display), cardUrl (thumb), was, now }
+    const boxInput = document.getElementById('boxIncluded');
+    const maxPhotos = () => (boxInput && boxInput.checked) ? 12 : 6;
+    if (boxInput) boxInput.addEventListener('change', () => render());
     const esc = s => String(s).replace(/[<>&]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
     const eur = n => '€ ' + Number(n || 0).toLocaleString('nl-NL');
 
@@ -7272,6 +7303,7 @@
       draftId = null;
       // The next toy is a different toy: its electronics are a different question.
       const sn = document.getElementById("sellerNotes"); if (sn) sn.value = "";
+      if (boxInput) boxInput.checked = false;
       draftUrls = null;
       editing = false;
       input.value = '';
@@ -7304,7 +7336,7 @@
         const note = document.createElement('div');
         note.className = 'dz-size';
         note.textContent =
-          phrase(files.length === 1 ? '{n} photo' : '{n} photos', { n: files.length })
+          phrase('{n} of {max} photos', { n: files.length, max: maxPhotos() })
           + ' · ' + phrase('first one is the cover buyers see')
           + (fresh.length
             ? ' · ' + phrase('{size} to upload', { size: kb(now) })
@@ -7328,7 +7360,7 @@
       files.splice(+b.dataset.i, 1); render();
     });
     async function addFiles(list){
-      const picked = [...list].filter(f => f.type.startsWith('image/')).slice(0, 6 - files.length);
+      const picked = [...list].filter(f => f.type.startsWith('image/')).slice(0, maxPhotos() - files.length);
       if (!picked.length) return;
       dz.classList.add('busy');
       for (const f of picked){
@@ -7484,6 +7516,10 @@
         // working and the console says what was dropped.
         care_level: current.careLevel || null,
         care_note: current.careNote || null,
+        badges: Array.isArray(current.badges) ? current.badges : [],
+        rare_reason: (current.badges || []).includes('rare') ? (current.rareReason || null) : null,
+        box_condition: (current.badges || []).includes('box') ? (current.boxCondition || null) : null,
+        box_notes: (current.badges || []).includes('box') ? (current.boxNotes || null) : null,
       };
     }
 
@@ -7495,6 +7531,8 @@
       files = (draft.image_urls || []).map(u => ({ existing: true, url: u }));
       render();
       current = Object.assign({}, draft.payload || {});
+      // A draft that had its box ticked gets its 12 photos back.
+      if (boxInput) boxInput.checked = (current.badges || []).includes('box');
       if (current.auctionDays == null) current.auctionDays = 7;
       show('sell');
       viewMode();
@@ -7528,6 +7566,19 @@
         confidence: c.confidence, pricedFrom: c.pricedFrom, comps: c.comps || [],
         queries: c.compsQueries || [], searches: c.searches, versions: c.versions,
       };
+      // The AI's view becomes a proposal the seller can untick. Only on a fresh
+      // curation: a reopened draft keeps the badges the seller already chose.
+      if (!Array.isArray(c.badges)) {
+        const ticked = !!(boxInput && boxInput.checked);
+        c.badges = [
+          ...((c.boxPresent || ticked) ? ['box'] : []),
+          ...(c.complete ? ['complete'] : []),
+          ...((c.rarityReason || '').trim() ? ['rare'] : []),
+        ];
+        c.rareReason = (c.rarityReason || '').trim();
+        if (!c.boxPresent || c.boxCondition === 'None') c.boxCondition = null;
+        if (!c.badges.includes('box')) { c.boxCondition = null; c.boxNotes = ''; }
+      }
       current = c; if (current.auctionDays == null) current.auctionDays = 7;
       const seq = ++curationSeq;
       if (thenPrice && c.eligible !== false && c.identified !== false){
@@ -7563,6 +7614,8 @@
         condition: current.condition, completeness: current.completeness, notes: current.notes,
         variants: current.variants, startingBid: current.startingBid,
         estimateLow: current.estimateLow, estimateHigh: current.estimateHigh,
+        boxPresent: (current.badges || []).includes('box'), boxCondition: current.boxCondition || '',
+        complete: (current.badges || []).includes('complete'),
       };
       let data = null, failed = null;
       try {
@@ -7752,6 +7805,12 @@
           : '') +
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
+          // The badges, said in words, with the reason beside Very Rare and the
+          // box graded on its own line.
+          row('Badges', (c.badges || []).length
+                ? (c.badges || []).map(badgeLabel).filter(Boolean).map(l => phrase(l)).join(' · ') + ((c.badges || []).includes('rare') && c.rareReason ? '. ' + c.rareReason : '')
+                : phrase('None. Edit to add Original box, Complete or Very Rare.')) +
+          ((c.badges || []).includes('box') ? row('Box', [c.boxCondition, c.boxNotes].filter(Boolean).join('. ') || phrase('Not graded yet')) : '') +
           // Shown even when unset, and then it says so. A blank line here would let
           // a seller publish without ever having been asked the question.
           row('Restoration', c.careLevel
@@ -7974,11 +8033,22 @@
       const html =
         '<div class="ef-top"><div class="rc-sub">Edit curation</div>' +
           efRO('AI confidence', c.confidence, 'How sure the AI is about the identification. For your eyes only, never shown to buyers. Low confidence is a prompt to check the stamp yourself before publishing.') + '</div>' +
-        ef('Toy', 'e_toy', c.toy, 'text', 'The line buyers search on: maker, line, name, year. No brackets, no rarity claims, no condition. The grade and the line have their own fields below.') +
+        ef('Toy', 'e_toy', c.toy, 'text', 'The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.') +
         '<div class="ef-row">' + ef('Maker', 'e_maker', c.maker, 'text', 'The company that moulded it, taken from the stamp on the toy. This is what groups the lot under a Molder.') + ef('Year', 'e_year', c.year, 'text', 'Year or range moulded, from the copyright stamp. Not the year the film came out.') + '</div>' +
         ef('Line', 'e_line', c.line, 'text', 'The toy line it belongs to, such as Star Wars or Teenage Mutant Ninja Turtles.') +
         efSel('Condition', 'e_condition', c.condition, CONDITIONS, 'How it presents, from Mint down to Poor. This sets the star rating buyers see, so grade honestly: over-grading is the fastest way to a dispute.') +
         efArea('Completeness', 'e_completeness', c.completeness, 'What is and is not in the box. Name every missing accessory. Buyers forgive a missing blaster they were told about, not one they discover.') +
+        // Badges: any combination, so buttons that toggle rather than one-of-four.
+        '<div class="ef"><label class="ef-l" for="e_badges">Badges</label>' +
+          '<div class="sizepick" id="e_badges">' +
+          BADGES.map(b => '<button type="button" class="sizebtn' + ((c.badges || []).includes(b.id) ? ' on' : '') + '" data-badge="' + b.id + '" aria-pressed="' + ((c.badges || []).includes(b.id) ? 'true' : 'false') + '">' +
+            '<b>' + esc(phrase(b.label)) + '</b><span>' + esc(phrase(b.hint)) + '</span></button>').join('') +
+          '</div>' +
+          '<div class="ef-h">' + esc(phrase(BADGE_HINT)) + '</div>' +
+        '</div>' +
+        ef('Why it is very rare', 'e_rare', c.rareReason, 'text', 'Required with Very Rare, and shown next to the badge. A concrete reason: only released in Italy, a mail-away, a short production run, rarely survives complete.') +
+        efSel('Box condition', 'e_boxcond', c.boxCondition || '', ['', ...CONDITIONS], 'The box graded on its own, separate from the toy. Only with Original box.') +
+        efArea('Box details', 'e_boxnotes', c.boxNotes, 'What a buyer should know about the box: crushed corners, tears, price stickers, tape, a missing flap or inner tray, opened or sealed.') +
         // Its own field, in the same picker shape as parcel size so each option can
         // carry the line that explains it. Condition says how it looks; this says
         // why, and a collector needs both before bidding.
@@ -8048,6 +8118,12 @@
         });
         // Same one-of-four behaviour, but it changes no price so it does not redraw
         // the shipping hint.
+        const badgeBox = document.getElementById('e_badges');
+        if (badgeBox) badgeBox.addEventListener('click', e => {
+          const b = e.target.closest('.sizebtn'); if (!b) return;
+          const on = !b.classList.contains('on');
+          b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
         const careBox = document.getElementById('e_care');
         if (careBox) careBox.addEventListener('click', e => {
           const b = e.target.closest('.sizebtn'); if (!b) return;
@@ -8069,10 +8145,20 @@
           blurb: g('e_blurb'), notes: g('e_notes'),
           careLevel: (function(){ const b = document.querySelector('#e_care .sizebtn.on'); return b ? b.dataset.care : (current.careLevel || null); })(),
           careNote: g('e_carenote') || null,
+          badges: [...document.querySelectorAll('#e_badges .sizebtn.on')].map(b => b.dataset.badge),
+          rareReason: g('e_rare'),
+          boxCondition: g('e_boxcond') || null,
+          boxNotes: g('e_boxnotes'),
           // estimateLow, estimateHigh and confidence are the AI's assessment and
           // are not editable, so they carry over from current untouched
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
         };
+        if (next.badges.includes('rare') && !next.rareReason){
+          openModal('Very Rare needs a reason', 'Say why it is very rare.', 'A buyer sees the reason next to the badge. Without one it is a sales claim, so the lot cannot be saved with Very Rare until the reason is filled in.');
+          return;
+        }
+        if (!next.badges.includes('box')) { next.boxCondition = null; next.boxNotes = ''; }
+        if (boxInput) { boxInput.checked = next.badges.includes('box'); render(); }
         const bad = priceProblem(next);
         if (bad){ showPriceError(bad); return; }
         current = next;
@@ -8229,7 +8315,7 @@
     document.getElementById('sellerLotsIntro').textContent = liveLots.length
       ? phrase(liveLots.length === 1 ? '{seller} has {n} lot live right now.' : '{seller} has {n} lots live right now.', { seller: name, n: liveLots.length })
       : phrase('{seller} has no live lots right now.', { seller: name });
-    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type }; });
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [] }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
@@ -8306,6 +8392,9 @@
       // sitemap. The router still calls preventDefault, so clicking is unchanged
       // and middle-click now works.
       '<div class="label"><div class="ln">' + (l.id ? '<a class="nm" href="/lot/' + encodeURIComponent(l.id) + '/" data-nav="lot" data-lot="' + e(l.id) + '">' + e(l.name) + '</a>' : '<span class="nm">' + e(l.name) + '</span>') + '</div>' +
+        // Original box, Complete, Very Rare: the three facts a collector scans a
+        // grid for, so they sit right under the name.
+        badgesHtml(l.badges, e) +
         // makerLabel, not the raw maker. The curation writes free text and the
         // bracketed half is provenance for the lot page, not for a card: today
         // that already puts "HASBRO (TITAN SPORTS INC.)" on a card next to a line
@@ -8408,7 +8497,7 @@
       // No shipping column here on purpose. A card names no delivery figure at
       // all now, and if it ever does again it will come from the carriers rather
       // than from a stored estimate that was wrong on every lot.
-      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type';
+      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges';
       const since = new Date(Date.now() - 86400000).toISOString();
       // ilike patterns go inside an or() string, so strip what would break it
       const q = shopQuery.replace(/[,()*%\\]/g, ' ').trim();
@@ -8461,7 +8550,7 @@
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0 };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [] };
       });
     } else {
       lots = loadDraftLots();
@@ -8671,7 +8760,7 @@
     // lot and filtered to sold/ended in the browser, so live and preview lots
     // ate the row budget and the archive shrank as the shop grew.
     const res = await SB.from('lots')
-      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at', { count: 'exact' })
+      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,badges', { count: 'exact' })
       .in('status', ['sold', 'ended'])
       .order('closed_at', { ascending: false, nullsFirst: false })
       .range(0, soldPage * SHOP_PAGE - 1);
@@ -8684,7 +8773,7 @@
     const mapped = rows.map(r => {
       const a = agg[r.id] || { max: 0, count: 0 };
       const state = r.status === 'sold' ? 'sold' : 'ended';
-      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) };
+      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) , badges: r.badges || [] };
     });
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">No past results yet.</p>';
     if (countEl) countEl.textContent = total ? (mapped.length < total ? mapped.length + ' of ' + total + ' results' : total + ' result' + (total === 1 ? '' : 's')) : '';
@@ -10540,7 +10629,7 @@
         '@type': 'Product',
         name: lot.toy || 'Vintage toy',
         description: desc,
-        image: (lot.image_urls || []).filter(Boolean).slice(0, 6),
+        image: (lot.image_urls || []).filter(Boolean).slice(0, 12),
         itemCondition: 'https://schema.org/' + condMap(lot.condition),
         offers: {
           '@type': 'Offer',
@@ -10628,6 +10717,16 @@
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
           (lot.stamp_shown === false ? row("Maker's mark", 'Not shown, dated from the sculpt') : (lot.stamp_shown === true ? row("Maker's mark", 'Photographed') : '')) +
           (lot.completeness ? row('Completeness', lot.completeness) : '') +
+          // The badges, then what stands behind them: why it is very rare, and the
+          // box graded on its own, because collectors price the toy and the box apart.
+          ((lot.badges || []).length ? '<div class="row"><span class="k">Badges</span><span class="v">' + badgesHtml(lot.badges, e) + '</span></div>' : '') +
+          ((lot.badges || []).includes('rare') && lot.rare_reason ? row('Why it is very rare', lot.rare_reason) : '') +
+          ((lot.badges || []).includes('box') && (lot.box_condition || lot.box_notes)
+            ? '<div class="row' + (lot.box_notes ? ' col' : '') + '"><span class="k">Box</span><span class="v">' +
+                (lot.box_condition ? '<b>' + e(lot.box_condition) + '</b>' : '') +
+                (lot.box_notes ? (lot.box_condition ? '<br>' : '') + e(lot.box_notes) : '') +
+              '</span></div>'
+            : '') +
           // Right under Completeness, above the notes. Condition says how it looks,
           // this says why: a repainted figure and an original one are different
           // objects at different prices, and a buyer who finds that out after paying

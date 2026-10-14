@@ -447,6 +447,26 @@
           </div>
           <div class="wide"><label class="f" for="le_carenote">What was done</label><textarea class="f" id="le_carenote" rows="2"></textarea>
             <div class="s" style="margin-top:6px">Only if you did something. What you fixed or replaced and with what, and which parts are not original. Max 400 characters.</div></div>
+          <!-- Badges (section 27): Original box, Complete, Very Rare. Very Rare needs a
+               reason, checked by lots_rare_reason_check. -->
+          <div class="wide">
+            <span class="f">Badges</span>
+            <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:6px">
+              <label><input type="checkbox" id="le_b_box"> Original box</label>
+              <label><input type="checkbox" id="le_b_complete"> Complete</label>
+              <label><input type="checkbox" id="le_b_rare"> Very Rare</label>
+            </div>
+          </div>
+          <div class="wide"><label class="f" for="le_rare">Why it is very rare</label><input class="f" id="le_rare" maxlength="200">
+            <div class="s" style="margin-top:6px">Required with Very Rare, shown next to the badge on the lot. A concrete reason, max 200 characters.</div></div>
+          <div>
+            <label class="f" for="le_boxcond">Box condition</label>
+            <select class="f" id="le_boxcond">
+              <option value="">Not graded</option>
+              <option>Mint</option><option>Near mint</option><option>Excellent</option><option>Good</option><option>Fair</option><option>Poor</option>
+            </select>
+          </div>
+          <div class="wide"><label class="f" for="le_boxnotes">Box details</label><textarea class="f" id="le_boxnotes" rows="2" maxlength="600"></textarea></div>
           <div class="wide"><label class="f" for="le_notes">Curator's notes</label><textarea class="f" id="le_notes" rows="4"></textarea></div>
         </div>
         <div class="s" id="lotLockNote" style="margin-top:14px"></div>
@@ -989,7 +1009,7 @@
     // off lots for everyone on 26 September and moved behind lot_private(), so
     // a star select now fails with 42501 and takes the whole console down. This
     // console never reads either column, so it asks for what it uses.
-    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,' +
+    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,badges,rare_reason,box_condition,box_notes,' +
       'starting_bid,buy_now,estimate_low,estimate_high,confidence,' +
       'condition,completeness,blurb,notes,variants,image_urls,stamp_shown,' +
       'care_level,care_note,letterbox,size_class,service_point,weight_kg,' +
@@ -1208,6 +1228,9 @@
     // '' when null, which selects the "Not stated" option rather than leaving the
     // previous lot's value showing in the box.
     v('le_care', l.care_level || ''); v('le_carenote', l.care_note || '');
+    const bs = Array.isArray(l.badges) ? l.badges : [];
+    ['box', 'complete', 'rare'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
+    v('le_rare', l.rare_reason || ''); v('le_boxcond', l.box_condition || ''); v('le_boxnotes', l.box_notes || '');
 
     // Lock the money fields rather than hide them, so it is obvious why.
     LOT_MONEY.forEach(f => {
@@ -1314,6 +1337,13 @@
     // page writes, so the rebuild tool and the card lookup both still work.
     const owner = editingLot.seller_id;
     if (!owner){ msg.textContent = 'This lot has no seller, so there is nowhere to put a photograph.'; return; }
+    // Same rule as the sell page: 6 photos, 12 with the original box, because
+    // the box has six faces of its own (Ramon, 14 Oct 2026).
+    const cap = ($('le_b_box') && $('le_b_box').checked) ? 12 : 6;
+    const room = cap - editingPhotos.length;
+    if (room <= 0){ msg.textContent = 'This lot already has ' + editingPhotos.length + ' photos, the most it can hold' + (cap === 6 ? '. Tick Original box to allow 12.' : '.'); return; }
+    if (files.length > room) msg.textContent = 'Only the first ' + room + ' will be added: the limit is ' + cap + (cap === 6 ? ', or 12 with Original box.' : '.');
+    files.splice(room);
     let added = 0;
     for (let i = 0; i < files.length; i++){
       msg.textContent = 'Uploading ' + (i + 1) + ' of ' + files.length + '…';
@@ -1361,6 +1391,10 @@
       // rejected, which is the constraint doing its job.
       care_level: g('le_care') || null,
       care_note: g('le_carenote') || null,
+      badges: ['box', 'complete', 'rare'].filter(k => $('le_b_' + k) && $('le_b_' + k).checked),
+      rare_reason: g('le_rare') || null,
+      box_condition: g('le_boxcond') || null,
+      box_notes: g('le_boxnotes') || null,
       notes: g('le_notes') || null,
       blurb: g('le_blurb') || null,
       shipping_eur: num('le_ship') || 0,
@@ -1405,6 +1439,11 @@
       if (fixed) patch.ends_at = null;
     }
 
+    if (patch.badges.includes('rare') && !patch.rare_reason){
+      say('lMsg', 'Very Rare needs a reason. It is shown next to the badge, and without one it is a sales claim.', 'err');
+      return;
+    }
+    if (!patch.badges.includes('box')) { patch.box_condition = null; patch.box_notes = null; }
     const btn = $('lotSave'); btn.disabled = true; btn.textContent = 'Saving…';
     const res = await SB.from('lots').update(patch).eq('id', l.id).select('id');
     btn.disabled = false; btn.textContent = 'Save changes';
