@@ -659,7 +659,7 @@ function staticCard(l) {
             : "") +
           (l.badges.includes("rare")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '" data-tip="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '">' +
-              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.5H18.5L22 8.5L12 21L2 8.5L5.5 3.5Z"/><path d="M2 8.5H22"/><path d="M9.5 3.5L8 8.5L12 21L16 8.5L14.5 3.5"/></svg></span>'
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 9.5L12 3L7 9.5L12 21L17 9.5Z"/><path d="M7 9.5H2L6.5 4L12 3L17.5 4L22 9.5H17M17.5 4L17 9.5M17 9.5H7M6.5 4L7 9.5"/><path d="M22 9.5L12 21L2 9.5"/></svg></span>'
             : "") +
           "</div>"
         : "") +
