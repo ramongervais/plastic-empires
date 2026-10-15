@@ -223,9 +223,11 @@
   .lot-badge { display:inline-flex; align-items:center; gap:4px; }
   .lot-badge svg { width:16px; height:16px; flex-shrink:0; }
   .lot-badge.icon-only { padding:3px 6px; }
-  .complete-icon { position:absolute; top:10px; inset-inline-end:10px; z-index:3; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#131313;
+  .watch-link { margin-top:12px; padding:6px 0; background:none; border:0; cursor:pointer; font-family:var(--label); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink); text-decoration:underline; text-underline-offset:4px; }
+  .watch-link:hover { color:var(--ink-3); }
+  .card-icons { position:absolute; top:10px; inset-inline-end:10px; z-index:3; display:flex; gap:6px; }
+  .complete-icon { position:relative; width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#131313;
     background:rgba(255,255,255,.58); -webkit-backdrop-filter:blur(10px) saturate(1.4); backdrop-filter:blur(10px) saturate(1.4); box-shadow:0 1px 2px rgba(0,0,0,.12); pointer-events:auto; }
-  .complete-icon.shifted { inset-inline-end:50px; }
   /* The tooltip, in the same glass, at once on hover or keyboard focus. Below
      the icon on a card (it is at the top of the photo), above it on the lot page. */
   [data-tip] { position:relative; }
@@ -234,11 +236,7 @@
     background:rgba(255,255,255,.82); -webkit-backdrop-filter:blur(12px) saturate(1.4); backdrop-filter:blur(12px) saturate(1.4); box-shadow:0 2px 8px rgba(0,0,0,.18);
     opacity:0; transform:translateY(-2px); transition:opacity .12s ease, transform .12s ease; pointer-events:none; z-index:5; }
   [data-tip]:hover::after, [data-tip]:focus-visible::after { opacity:1; transform:none; }
-  .complete-icon[data-tip] { position:absolute; }
   .lot-badge[data-tip]::after { top:auto; bottom:calc(100% + 6px); inset-inline-start:auto; inset-inline-end:0; }
-  /* On a card the icon sits 50px in from the edge, beside the star, so the tip
-     lines up with the photo's own inner edge and stays inside the card. */
-  .complete-icon.shifted[data-tip]::after { inset-inline-end:-40px; }
   .complete-icon[data-tip]::after { max-width:180px; }
   @media (prefers-reduced-motion: reduce) { [data-tip]::after { transition:none; transform:none; } }
   .vitrine .lot-badge { color:#111; background:rgba(255,255,255,.58); -webkit-backdrop-filter:blur(10px) saturate(1.4); backdrop-filter:blur(10px) saturate(1.4); box-shadow:0 1px 2px rgba(0,0,0,.12); }
@@ -1635,10 +1633,8 @@
     input, select, textarea { font-size:16px; }
     /* comfortable, thumb-sized tap targets */
     .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
-    /* The star above is a button, so it is 44px tall here; the Complete icon
-       beside it matches, or the two read as different objects. The glass badges
-       go a size down so two of them do not cover a third of a 150px photo. */
-    .complete-icon { height:44px; }
+    /* The glass badges go a size down so two of them do not cover a third of a
+       150px photo. */
     .vitrine .lot-badges { inset-inline-start:8px; inset-inline-end:8px; bottom:8px; gap:4px; }
     .vitrine .lot-badge { font-size:11px; padding:3px 7px; }
     .btn, button { -webkit-tap-highlight-color:rgba(0,0,0,0); touch-action:manipulation; }
@@ -7272,24 +7268,34 @@
   const COMPLETE_TIP = 'Complete, with all original accessories';
   const COMPLETE_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M9 12L11 14L15 10"/><path d="M14.3942 3.00083L14.1481 2.79115C12.9103 1.73628 11.0897 1.73628 9.85189 2.79115L9.60584 3.00083C8.96518 3.54679 8.16862 3.87674 7.32956 3.9437L7.00731 3.96941C5.38613 4.09878 4.09878 5.38613 3.96941 7.00731L3.9437 7.32956C3.87674 8.16862 3.54679 8.96518 3.00083 9.60584L2.79115 9.85189C1.73628 11.0897 1.73628 12.9103 2.79115 14.1481L3.00083 14.3942C3.54679 15.0348 3.87674 15.8314 3.9437 16.6704L3.96941 16.9927C4.09878 18.6139 5.38613 19.9012 7.00731 20.0306L7.32956 20.0563C8.16862 20.1233 8.96518 20.4532 9.60584 20.9992L9.85188 21.2089C11.0897 22.2637 12.9103 22.2637 14.1481 21.2089L14.3942 20.9992C15.0348 20.4532 15.8314 20.1233 16.6704 20.0563L16.9927 20.0306C18.6139 19.9012 19.9012 18.6139 20.0306 16.9927L20.0563 16.6704C20.1233 15.8314 20.4532 15.0348 20.9992 14.3942L21.2089 14.1481C22.2637 12.9103 22.2637 11.0897 21.2089 9.85188L20.9992 9.60584C20.4532 8.96518 20.1233 8.16862 20.0563 7.32956L20.0306 7.00731C19.9012 5.38613 18.6139 4.09878 16.9927 3.96941L16.6704 3.9437C15.8314 3.87674 15.0348 3.54679 14.3942 3.00083Z"/></svg>';
+  // Very Rare as a diamond on a card (Ramon, 15 Oct 2026). Drawn to match the
+  // badge-check: 24px, 1.5 stroke, round joins. File: Empires/icons/gem.svg.
+  const GEM_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M5.5 3.5H18.5L22 8.5L12 21L2 8.5L5.5 3.5Z"/><path d="M2 8.5H22"/><path d="M9.5 3.5L8 8.5L12 21L16 8.5L14.5 3.5"/></svg>';
+  const BADGE_ICONS = { complete: COMPLETE_SVG, rare: GEM_SVG };
   const badgeLabel = id => (BADGES.find(b => b.id === id) || {}).label || '';
   // On a card (onCard) Complete is left out of the chips: it is the icon
   // beside the star instead, from completeIconHtml(). On the lot page it is
   // the same icon in a pill, without the word.
+  // A card shows icons for the badges that have one (completeIconHtml) and words
+  // only for the rest, so a narrow phone card is not covered in labels. The lot
+  // page, where there is room, shows every badge as icon and word.
   const badgesHtml = (list, esc, onCard) => {
-    const show = BADGES.filter(b => Array.isArray(list) && list.includes(b.id) && !(onCard && b.id === 'complete'));
+    const show = BADGES.filter(b => Array.isArray(list) && list.includes(b.id) && !(onCard && BADGE_ICONS[b.id]));
     return show.length
-      ? '<div class="lot-badges">' + show.map(b => b.id === 'complete'
-          // Only the icon, never the word (Ramon, 14 Oct 2026). The word is
-          // still there for a screen reader and as the tooltip.
-          ? '<span class="lot-badge icon-only" role="img" tabindex="0" aria-label="' + esc(phrase(COMPLETE_TIP)) + '" data-tip="' + esc(phrase(COMPLETE_TIP)) + '">' + COMPLETE_SVG + '</span>'
-          : '<span class="lot-badge">' + esc(phrase(b.label)) + '</span>').join('') + '</div>'
+      ? '<div class="lot-badges">' + show.map(b => '<span class="lot-badge">' + (onCard ? '' : (BADGE_ICONS[b.id] || '')) + esc(phrase(b.label)) + '</span>').join('') + '</div>'
       : '';
   };
-  // shifted: the favourite star is showing, so the icon sits to its left.
-  const completeIconHtml = (list, esc, shifted) => (Array.isArray(list) && list.includes('complete'))
-    ? '<span class="complete-icon' + (shifted ? ' shifted' : '') + '" role="img" tabindex="0" aria-label="' + esc(phrase(COMPLETE_TIP)) + '" data-tip="' + esc(phrase(COMPLETE_TIP)) + '">' + COMPLETE_SVG + '</span>'
-    : '';
+  // The icon badges on a card, top right where the favourite star was. The tip
+  // says what the icon means; Very Rare carries its reason when there is one.
+  const completeIconHtml = (list, esc, rareReason) => {
+    if (!Array.isArray(list)) return '';
+    const tips = { complete: phrase(COMPLETE_TIP), rare: phrase('Very Rare') + (rareReason ? ': ' + rareReason : '') };
+    const on = ['complete', 'rare'].filter(k => list.includes(k));
+    return on.length
+      ? '<div class="card-icons">' + on.map(k => '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc(tips[k]) + '" data-tip="' + esc(tips[k]) + '">' + BADGE_ICONS[k] + '</span>').join('') + '</div>'
+      : '';
+  };
 
   // ----- Sell: AI curation uploader -----
   (function(){
@@ -8368,7 +8374,7 @@
     document.getElementById('sellerLotsIntro').textContent = liveLots.length
       ? phrase(liveLots.length === 1 ? '{seller} has {n} lot live right now.' : '{seller} has {n} lots live right now.', { seller: name, n: liveLots.length })
       : phrase('{seller} has no live lots right now.', { seller: name });
-    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [] }; });
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '' }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
@@ -8436,11 +8442,13 @@
       '<div class="vitrine' + (isClosed ? ' closed' : '') + '"' + (l.id ? ' data-nav="lot" data-lot="' + e(l.id) + '" style="cursor:pointer"' : '') + '>' +
         (l.img ? '<img class="cardimg" src="' + e(cardSrc(l.img)) + '" data-full="' + e(l.img) + '" alt="" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : '') +
         (isClosed ? '<span class="card-badge">' + badgeWord + '</span>' : (isPreview ? '<span class="card-badge sand">Preview</span>' : (l.extended ? '<span class="card-badge sand">Extended +2 min</span>' : ''))) +
-        (!isClosed && l.id ? '<button class="watch-btn' + (watchedIds.has(l.id) ? ' on' : '') + '" type="button" data-watch="' + e(l.id) + '" aria-label="Watch this lot" aria-pressed="' + (watchedIds.has(l.id) ? 'true' : 'false') + '">' + watchStarSvg(watchedIds.has(l.id)) + '</button>' : '') +
+        // No favourite star on a card any more (Ramon, 15 Oct 2026): it competed
+        // with the badges, and watching is a decision made on the lot page,
+        // which has its own Watch this lot button.
         // Original box and Very Rare in the photograph, bottom left; Complete as
-        // an icon beside the star, where the star is shown.
+        // an icon top right, where the favourite star used to be.
         badgesHtml(l.badges, e, true) +
-        completeIconHtml(l.badges, e, !isClosed && !!l.id) +
+        completeIconHtml(l.badges, e, l.rareReason) +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       // The title is a real link now. It was an anchor with the destination in a
@@ -8551,7 +8559,7 @@
       // No shipping column here on purpose. A card names no delivery figure at
       // all now, and if it ever does again it will come from the carriers rather
       // than from a stored estimate that was wrong on every lot.
-      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges';
+      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges,rare_reason';
       const since = new Date(Date.now() - 86400000).toISOString();
       // ilike patterns go inside an or() string, so strip what would break it
       const q = shopQuery.replace(/[,()*%\\]/g, ' ').trim();
@@ -8604,7 +8612,7 @@
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [] };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '' };
       });
     } else {
       lots = loadDraftLots();
@@ -8814,7 +8822,7 @@
     // lot and filtered to sold/ended in the browser, so live and preview lots
     // ate the row budget and the archive shrank as the shop grew.
     const res = await SB.from('lots')
-      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,badges', { count: 'exact' })
+      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,badges,rare_reason', { count: 'exact' })
       .in('status', ['sold', 'ended'])
       .order('closed_at', { ascending: false, nullsFirst: false })
       .range(0, soldPage * SHOP_PAGE - 1);
@@ -8827,7 +8835,7 @@
     const mapped = rows.map(r => {
       const a = agg[r.id] || { max: 0, count: 0 };
       const state = r.status === 'sold' ? 'sold' : 'ended';
-      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) , badges: r.badges || [] };
+      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) , badges: r.badges || [], rareReason: r.rare_reason || '' };
     });
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">No past results yet.</p>';
     if (countEl) countEl.textContent = total ? (mapped.length < total ? mapped.length + ' of ' + total + ' results' : total + ' result' + (total === 1 ? '' : 's')) : '';
@@ -10756,6 +10764,12 @@
         : (isOwner
             ? '<div class="won-box"><div class="won-h">Mark as shipped</div><div class="won-sub">Add a tracking number (optional) and let the buyer know it is on the way.</div><input id="shipTrack" class="ei" placeholder="Tracking number (optional)" style="margin-top:10px"><button class="btn accent" id="shipBtn" type="button" style="margin-top:10px;width:100%">Mark as shipped</button></div>'
             : (isBuyer ? '<div class="won-box"><div class="won-h">Awaiting shipment</div><div class="won-sub">The seller has been notified and will ship your item.</div></div>' : '')));
+    // Watching a live lot. It lived only on the card's star until the star came
+    // off the cards (Ramon, 15 Oct 2026); without this a live lot could not be
+    // watched at all, and the ending-soon email goes to watchers. Light, under
+    // the bid buttons, so it never competes with bidding. Same id and handler as
+    // the preview lot's button.
+    const watchLink = '<button class="watch-link" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button>';
     const detail =
       '<div class="art-detail">' +
         '<div class="art-sub">' + e([lot.maker, lot.year, lot.line].filter(Boolean).join(' · ')) + '</div>' +
@@ -10819,11 +10833,11 @@
             (isPreview ?
               '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item is not on sale yet.' : 'Bidding has not opened yet.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
               (isFixed ?
-                '<div class="buy-row"><button class="btn accent" type="button" id="lotBuy">Buy now &middot; ' + money(fixedPrice) + '</button></div>' :
+                '<div class="buy-row"><button class="btn accent" type="button" id="lotBuy">Buy now &middot; ' + money(fixedPrice) + '</button></div>' + watchLink :
                 '<div class="buy-row">' +
                   '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
                   (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
-                '</div>'))) +
+                '</div>' + watchLink))) +
           // No third shipping statement here. This one read shipping_eur, a column
           // filled from an estimated table before the carriers were wired up, and
           // it printed EUR 15.00 under the buy button while the live quote three

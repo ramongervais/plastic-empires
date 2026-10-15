@@ -426,7 +426,7 @@ const NO_EN_FILE = new Set();
 const SUPA_URL = (rawHtml.match(/SUPA_URL = '([^']+)'/) || [])[1];
 const SUPA_KEY = (rawHtml.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
-const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges";
+const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges,rare_reason";
 
 // Honest lastmod needs a date the page's own content actually moved on.
 //
@@ -639,22 +639,29 @@ function staticCard(l) {
   const maker = String(l.maker || "").split(/[(,]/)[0].trim();
   const badge = l.status === "sold" ? "Sold" : closed ? "Ended" : "";
   const id = esc(l.id), href = "/lot/" + encodeURIComponent(l.id) + "/";
-  for (const t of [clean(l.toy), [clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 "), a.count + " bids"]) { cardContent.add(t); cardContent.add(esc(t)); }
+  for (const t of [clean(l.toy), [clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 "), a.count + " bids", "Very Rare: " + clean(l.rare_reason)]) { cardContent.add(t); cardContent.add(esc(t)); }
   return '<article class="artifact-card draft-lot">' +
     '<div class="vitrine' + (closed ? " closed" : "") + '" data-nav="lot" data-lot="' + id + '" style="cursor:pointer">' +
       (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
         '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : "") +
       (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
       // Same markup and order as lotCardHtml(), so the swap to the live card
-      // does not move anything.
-      (Array.isArray(l.badges) && l.badges.some((k) => k !== "complete")
-        ? '<div class="lot-badges">' + [["box", "Original box"], ["complete", "Complete"], ["rare", "Very Rare"]]
-            .filter(([k]) => l.badges.includes(k) && k !== "complete").map(([, t]) => '<span class="lot-badge">' + t + "</span>").join("") + "</div>"
+      // does not move anything: Original box as glass words bottom left,
+      // Complete and Very Rare as icons top right.
+      (Array.isArray(l.badges) && l.badges.includes("box")
+        ? '<div class="lot-badges"><span class="lot-badge">Original box</span></div>'
         : "") +
-      // Complete as the icon beside where the favourite star will be.
-      (Array.isArray(l.badges) && l.badges.includes("complete")
-        ? '<span class="complete-icon' + (closed ? "" : " shifted") + '" role="img" tabindex="0" aria-label="Complete, with all original accessories" data-tip="Complete, with all original accessories">' +
-          '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12L11 14L15 10"/><path d="M14.3942 3.00083L14.1481 2.79115C12.9103 1.73628 11.0897 1.73628 9.85189 2.79115L9.60584 3.00083C8.96518 3.54679 8.16862 3.87674 7.32956 3.9437L7.00731 3.96941C5.38613 4.09878 4.09878 5.38613 3.96941 7.00731L3.9437 7.32956C3.87674 8.16862 3.54679 8.96518 3.00083 9.60584L2.79115 9.85189C1.73628 11.0897 1.73628 12.9103 2.79115 14.1481L3.00083 14.3942C3.54679 15.0348 3.87674 15.8314 3.9437 16.6704L3.96941 16.9927C4.09878 18.6139 5.38613 19.9012 7.00731 20.0306L7.32956 20.0563C8.16862 20.1233 8.96518 20.4532 9.60584 20.9992L9.85188 21.2089C11.0897 22.2637 12.9103 22.2637 14.1481 21.2089L14.3942 20.9992C15.0348 20.4532 15.8314 20.1233 16.6704 20.0563L16.9927 20.0306C18.6139 19.9012 19.9012 18.6139 20.0306 16.9927L20.0563 16.6704C20.1233 15.8314 20.4532 15.0348 20.9992 14.3942L21.2089 14.1481C22.2637 12.9103 22.2637 11.0897 21.2089 9.85188L20.9992 9.60584C20.4532 8.96518 20.1233 8.16862 20.0563 7.32956L20.0306 7.00731C19.9012 5.38613 18.6139 4.09878 16.9927 3.96941L16.6704 3.9437C15.8314 3.87674 15.0348 3.54679 14.3942 3.00083Z"/></svg></span>'
+      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare"))
+        ? '<div class="card-icons">' +
+          (l.badges.includes("complete")
+            ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Complete, with all original accessories" data-tip="Complete, with all original accessories">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12L11 14L15 10"/><path d="M14.3942 3.00083L14.1481 2.79115C12.9103 1.73628 11.0897 1.73628 9.85189 2.79115L9.60584 3.00083C8.96518 3.54679 8.16862 3.87674 7.32956 3.9437L7.00731 3.96941C5.38613 4.09878 4.09878 5.38613 3.96941 7.00731L3.9437 7.32956C3.87674 8.16862 3.54679 8.96518 3.00083 9.60584L2.79115 9.85189C1.73628 11.0897 1.73628 12.9103 2.79115 14.1481L3.00083 14.3942C3.54679 15.0348 3.87674 15.8314 3.9437 16.6704L3.96941 16.9927C4.09878 18.6139 5.38613 19.9012 7.00731 20.0306L7.32956 20.0563C8.16862 20.1233 8.96518 20.4532 9.60584 20.9992L9.85188 21.2089C11.0897 22.2637 12.9103 22.2637 14.1481 21.2089L14.3942 20.9992C15.0348 20.4532 15.8314 20.1233 16.6704 20.0563L16.9927 20.0306C18.6139 19.9012 19.9012 18.6139 20.0306 16.9927L20.0563 16.6704C20.1233 15.8314 20.4532 15.0348 20.9992 14.3942L21.2089 14.1481C22.2637 12.9103 22.2637 11.0897 21.2089 9.85188L20.9992 9.60584C20.4532 8.96518 20.1233 8.16862 20.0563 7.32956L20.0306 7.00731C19.9012 5.38613 18.6139 4.09878 16.9927 3.96941L16.6704 3.9437C15.8314 3.87674 15.0348 3.54679 14.3942 3.00083Z"/></svg></span>'
+            : "") +
+          (l.badges.includes("rare")
+            ? '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '" data-tip="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.5H18.5L22 8.5L12 21L2 8.5L5.5 3.5Z"/><path d="M2 8.5H22"/><path d="M9.5 3.5L8 8.5L12 21L16 8.5L14.5 3.5"/></svg></span>'
+            : "") +
+          "</div>"
         : "") +
       '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
     "</div>" +
