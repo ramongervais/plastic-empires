@@ -1635,6 +1635,12 @@
     input, select, textarea { font-size:16px; }
     /* comfortable, thumb-sized tap targets */
     .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
+    /* The star above is a button, so it is 44px tall here; the Complete icon
+       beside it matches, or the two read as different objects. The glass badges
+       go a size down so two of them do not cover a third of a 150px photo. */
+    .complete-icon { height:44px; }
+    .vitrine .lot-badges { inset-inline-start:8px; inset-inline-end:8px; bottom:8px; gap:4px; }
+    .vitrine .lot-badge { font-size:11px; padding:3px 7px; }
     .btn, button { -webkit-tap-highlight-color:rgba(0,0,0,0); touch-action:manipulation; }
     /* stop double-tap zoom fighting our own buttons */
     a, button, [role="button"] { touch-action:manipulation; }
