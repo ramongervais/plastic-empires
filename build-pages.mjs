@@ -650,7 +650,7 @@ function staticCard(l) {
       (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
       // Same markup and order as lotCardHtml(), so the swap to the live card
       // does not move anything: all three badges as icons, bottom left.
-      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare") || l.badges.includes("box"))
+      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare") || l.badges.includes("box") || l.badges.includes("instructions"))
         ? '<div class="card-icons">' +
           (l.badges.includes("rare")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '" data-tip="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '">' +
@@ -663,6 +663,10 @@ function staticCard(l) {
           (l.badges.includes("box")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Original box included" data-tip="Original box included">' +
               '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.68924 2.43826L5.3538 4.21913C4.38173 4.96038 3.89569 5.33101 4.01879 5.6655C4.14189 6 4.76432 6 6.00918 6H16C16.3645 6 16.5467 6 16.7153 5.94363C16.8839 5.88726 17.0262 5.77875 17.3108 5.56174L19.6462 3.78087C20.6183 3.03962 21.1043 2.66899 20.9812 2.3345C20.8581 2 20.2357 2 18.9908 2H9C8.63555 2 8.45332 2 8.28472 2.05637C8.11612 2.11274 7.97383 2.22125 7.68924 2.43826Z"/><path d="M4.01879 21.666C4.14189 22.0005 4.76432 22.0005 6.00918 22.0005H16C16.3645 22.0005 16.5467 22.0005 16.7153 21.9441M4.01879 21.666C3.89569 21.3315 4.38173 20.9608 5.3538 20.2196L7.68924 18.4387C7.97383 18.2217 8.11612 18.1132 8.28472 18.0568M4.01879 21.666V5.66597M16.7153 21.9441C16.8839 21.8877 17.0262 21.7792 17.3108 21.5622L19.6462 19.7813C20.6183 19.0401 21.1043 18.6695 20.9812 18.335V2.33496M16.7153 21.9441V5.94409M8.28472 18.0568C8.45332 18.0005 8.63555 18.0005 9 18.0005H14M8.28472 18.0568V9.00046"/></svg></span>'
+            : "") +
+          (l.badges.includes("instructions")
+            ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Instructions included" data-tip="Instructions included">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.99988 4.98145H6C4.11438 4.98145 3.17157 4.98145 2.58579 5.56723C2 6.15302 2 7.09606 2 8.98213V15.8814C2 17.3811 2 18.1309 2.38151 18.6564C2.50511 18.8267 2.6548 18.9763 2.82505 19.0999C3.35059 19.4815 4.10006 19.4815 5.59901 19.4815H8.95053C10.433 19.4815 11.7093 20.5278 12 21.9815V6.98145C11.7072 6.591 11.5608 6.39578 11.401 6.22746C10.756 5.54809 9.89308 5.11663 8.96261 5.00829C8.73208 4.98145 8.48802 4.98145 7.99988 4.98145Z"/><path stroke-linecap="square" d="M12 6.98145V21.9815C12.2907 20.5278 13.5671 19.4815 15.0495 19.4815H18.401C19.8999 19.4815 20.6494 19.4815 21.1749 19.0999C21.3452 18.9763 21.4949 18.8267 21.6185 18.6564C22 18.1309 22 17.3811 22 15.8814V7.48198C22 7.01697 22 6.78446 21.9616 6.59127C21.8038 5.79789 21.1836 5.17769 20.3902 5.01988C20.197 4.98145 19.9647 4.98145 19.5 4.98145"/><path d="M12 7.48027C12 7.48027 12.7705 3.24271 17.0165 2.20672C17.829 2.00848 18.2353 1.90936 18.6176 2.20964C19 2.50993 19 3.00004 19 3.98027V14.4803C19 15.3489 19 15.7832 18.7865 16.0551C18.5729 16.327 18.0541 16.4536 17.0165 16.7067C12.7705 17.7427 12 21.9803 12 21.9803"/></svg></span>'
             : "") +
           "</div>"
         : "") +

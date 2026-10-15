@@ -596,5 +596,8 @@
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "買家搜尋時用的那一行：廠牌、系列、名稱、年份。不加括號、不寫品相：品相有專屬欄位。若屬實可加上極稀有，下方標章也會標示。",
   "{n} of {max} photos": "{n} / {max} 張照片",
   "Complete, with all original accessories": "完整：所有原廠配件齊全",
-  "Original box included": "附原裝盒"
+  "Original box included": "附原裝盒",
+  "Instructions": "說明書",
+  "Instructions included": "附說明書",
+  "The original instruction sheet, inserts or paperwork are included.": "附原廠說明書、內附單張或文件。"
 }

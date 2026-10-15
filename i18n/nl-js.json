@@ -599,5 +599,8 @@
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "De regel waarop kopers zoeken: merk, serie, naam, jaar. Geen haakjes en geen staat: het cijfer heeft een eigen veld. Zeer zeldzaam mag erin als het klopt, en de badge hieronder zegt het ook.",
   "{n} of {max} photos": "{n} van {max} foto's",
   "Complete, with all original accessories": "Compleet, met alle originele accessoires",
-  "Original box included": "Originele doos inbegrepen"
+  "Original box included": "Originele doos inbegrepen",
+  "Instructions": "Handleiding",
+  "Instructions included": "Handleiding inbegrepen",
+  "The original instruction sheet, inserts or paperwork are included.": "Het originele instructieblad, de inserts of het papierwerk zitten erbij."
 }

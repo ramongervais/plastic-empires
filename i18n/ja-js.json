@@ -596,5 +596,8 @@
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "購入者が検索する一行：メーカー、シリーズ、名前、年。括弧や状態は入れません（状態は専用の欄があります）。事実であれば「超希少」を入れても構いません。下のバッジでも示されます。",
   "{n} of {max} photos": "写真 {n} / {max} 枚",
   "Complete, with all original accessories": "完品：オリジナルの付属品がすべて揃っています",
-  "Original box included": "オリジナル箱付き"
+  "Original box included": "オリジナル箱付き",
+  "Instructions": "説明書",
+  "Instructions included": "説明書付き",
+  "The original instruction sheet, inserts or paperwork are included.": "オリジナルの説明書、封入物、書類が付属しています。"
 }

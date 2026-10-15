@@ -455,6 +455,7 @@
               <label><input type="checkbox" id="le_b_box"> Original box</label>
               <label><input type="checkbox" id="le_b_complete"> Complete</label>
               <label><input type="checkbox" id="le_b_rare"> Very Rare</label>
+              <label><input type="checkbox" id="le_b_instructions"> Instructions</label>
             </div>
           </div>
           <div class="wide"><label class="f" for="le_rare">Why it is very rare</label><input class="f" id="le_rare" maxlength="200">
@@ -1229,7 +1230,7 @@
     // previous lot's value showing in the box.
     v('le_care', l.care_level || ''); v('le_carenote', l.care_note || '');
     const bs = Array.isArray(l.badges) ? l.badges : [];
-    ['box', 'complete', 'rare'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
+    ['box', 'complete', 'rare', 'instructions'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
     v('le_rare', l.rare_reason || ''); v('le_boxcond', l.box_condition || ''); v('le_boxnotes', l.box_notes || '');
 
     // Lock the money fields rather than hide them, so it is obvious why.
@@ -1391,7 +1392,7 @@
       // rejected, which is the constraint doing its job.
       care_level: g('le_care') || null,
       care_note: g('le_carenote') || null,
-      badges: ['box', 'complete', 'rare'].filter(k => $('le_b_' + k) && $('le_b_' + k).checked),
+      badges: ['box', 'complete', 'rare', 'instructions'].filter(k => $('le_b_' + k) && $('le_b_' + k).checked),
       rare_reason: g('le_rare') || null,
       box_condition: g('le_boxcond') || null,
       box_notes: g('le_boxnotes') || null,
