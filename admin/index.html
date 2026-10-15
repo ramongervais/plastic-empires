@@ -149,6 +149,12 @@
   .fgrid .wide { grid-column:1 / -1; }
 
   /* ---- Lot editor (the CMS) ---------------------------------------------- */
+  .cms-toast { position:fixed; left:50%; bottom:24px; z-index:50; transform:translate(-50%, 16px); opacity:0; pointer-events:none; max-width:min(560px, calc(100vw - 32px));
+    font-family:var(--body); font-size:14px; line-height:1.4; padding:14px 18px; border-radius:4px; background:var(--ink); color:var(--accent-ink); box-shadow:0 8px 24px rgba(0,0,0,.18); transition:opacity .18s ease, transform .18s ease; }
+  .cms-toast.on { opacity:1; transform:translate(-50%, 0); }
+  .cms-toast.err { background:var(--bad); }
+  tr.just-saved td { background:var(--paper-2); transition:background .6s ease; }
+  @media (prefers-reduced-motion: reduce) { .cms-toast { transition:none; } }
   .form.cms { padding:0; }
   .cms-head { padding:28px 28px 20px; border-bottom:1px solid var(--line); }
   .cms-head .eyebrow { font-family:var(--label); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px; }
@@ -1333,7 +1339,22 @@
     $('lotEditBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
-  function closeLotEdit(){ $('lotEditBox').hidden = true; editingLot = null; }
+  // Closing also clears #lot=<id> from the address. drawLots() ends by opening
+  // whatever lot the hash names, so after a save the list redrew and opened the
+  // editor straight back up, which read as if nothing had been saved (Ramon,
+  // 15 Oct 2026).
+  function closeLotEdit(){
+    $('lotEditBox').hidden = true; editingLot = null;
+    if (/[#&]lot=/.test(location.hash || '')) history.replaceState(null, '', location.pathname + location.search);
+  }
+  // A confirmation where the eye is. The message box sits above the tiles, out
+  // of view from the bottom of a long form.
+  function toast(text, kind){
+    let t = $('cmsToast');
+    if (!t){ t = document.createElement('div'); t.id = 'cmsToast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); document.body.appendChild(t); }
+    t.textContent = text; t.className = 'cms-toast ' + (kind || 'ok') + ' on';
+    clearTimeout(toast.timer); toast.timer = setTimeout(() => { t.className = 'cms-toast ' + (kind || 'ok'); }, 4200);
+  }
 
   // Click a header to sort by it, click it again to turn it round. First click
   // on a number column goes high to low, because "which lot has the most bids"
@@ -1534,21 +1555,26 @@
     }
 
     if (patch.badges.includes('rare') && !patch.rare_reason){
-      say('lMsg', 'Very Rare needs a reason. It is shown next to the badge, and without one it is a sales claim.', 'err');
+      say('lMsg', 'Very Rare needs a reason. It is shown next to the badge, and without one it is a sales claim.', 'err'); toast('Very Rare needs a reason: fill in why it is very rare.', 'err');
       return;
     }
     if (!patch.badges.includes('box')) { patch.box_condition = null; patch.box_notes = null; }
     const btn = $('lotSave'); btn.disabled = true; btn.textContent = 'Saving…';
     const res = await SB.from('lots').update(patch).eq('id', l.id).select('id');
     btn.disabled = false; btn.textContent = 'Save changes';
-    if (res.error){ say('lMsg', explain(res.error), 'err'); return; }
+    if (res.error){ say('lMsg', explain(res.error), 'err'); toast(explain(res.error), 'err'); return; }
     if (!res.data || !res.data.length){
       say('lMsg', 'The database accepted the request but changed no rows, which means RLS filtered it out. Run section 12 of admin/schema.sql to give admins update on lots.', 'err');
       return;
     }
-    say('lMsg', 'Saved. The listing is updated and stayed live throughout.', 'ok');
+    const savedId = l.id, savedName = patch.toy || l.toy || 'Lot';
     closeLotEdit();
-    loadLots();
+    toast('Saved: ' + savedName + '. The listing is updated and stayed live throughout.', 'ok');
+    await loadLots();
+    // Back to the lot in the list, lit for a moment, so it is clear which row changed.
+    const btn2 = document.querySelector('[data-editlot="' + savedId + '"]');
+    const row = btn2 && btn2.closest('tr');
+    if (row){ row.scrollIntoView({ block: 'center', behavior: 'smooth' }); row.classList.add('just-saved'); setTimeout(() => row.classList.remove('just-saved'), 2600); }
   });
 
   // ---------- Calibration ----------
