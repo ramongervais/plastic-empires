@@ -127,28 +127,18 @@ t("a lot has a Dutch file of its own and routes to the lot view", async () => {
   await settle();
   assert.equal(shown(w.document), "view-lot");
   assert.equal(w.document.documentElement.lang, "nl");
+  // One language for lots (15 Oct 2026). The Dutch file exists so a Dutch
+  // reader can open and reload the lot with Dutch menus, but its text is the
+  // English lot's, so it names the English lot as the original and carries no
+  // hreflang pairs that would call ten copies of one page translations.
   assert.equal(w.document.querySelector("link[rel=canonical]").href,
-    "https://hammerandmold.com/nl/lot/" + id + "/");
-  // and its alternates name the lot, not the front page it inherited them from.
-  // The list is read off locales.json rather than written out here: a language
-  // going public adds a lot sibling and an alternate with it, and a hard-coded
-  // list would fail the day German shipped while the site was perfectly right.
-  const alts = [...w.document.querySelectorAll("link[rel=alternate]")]
-    .map((a) => a.hreflang + " " + a.href.replace("https://hammerandmold.com", ""));
-  // hreflang is the lang, the path is the code, and Chinese is where the two
-  // part company: /zh/ in the url, zh-Hant in the markup, because a crawler has
-  // to be told which script this is.
-  const live = JSON.parse(fs.readFileSync("i18n/locales.json", "utf8")).locales.filter((l) => l.public);
-  assert.deepEqual(alts, [
-    "en /lot/" + id + "/",
-    ...live.map((l) => (l.lang || l.code) + " /" + l.code + "/lot/" + id + "/"),
-    "x-default /lot/" + id + "/",
-  ]);
-  // every one of those has to be a file, or the alternate points at a 404
-  for (const l of live) {
-    assert.ok(fs.existsSync(l.code + "/lot/" + id + "/index.html"),
-      "no " + l.code + " file behind the " + l.code + " alternate");
-  }
+    "https://hammerandmold.com/lot/" + id + "/");
+  assert.equal(w.document.querySelectorAll("link[rel=alternate][hreflang]").length, 0,
+    "a lot page should carry no hreflang alternates");
+  // and only English lots are offered to Google
+  const sm = fs.readFileSync("sitemap-lots.xml", "utf8");
+  assert.ok(sm.includes("<loc>https://hammerandmold.com/lot/" + id + "/</loc>"), "the English lot is missing from sitemap-lots.xml");
+  assert.ok(!/<loc>https:\/\/hammerandmold\.com\/[a-z]{2}\/lot\//.test(sm), "sitemap-lots.xml still lists language copies of lots");
   w.close();
 });
 

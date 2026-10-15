@@ -147,6 +147,9 @@ function localePage(L, out, p, opts) {
   const canon = (q) => (q === "/" ? "/" : q.replace(/\/+$/, "") + "/");
   const lPath = L.prefix + canon(p);
   const lUrl = SITE + lPath;
+  // A page can name another as its original. Lots do: their text is English in
+  // every language, so each language copy points at the English lot.
+  const canonUrl = (opts && opts.canonicalUrl) || lUrl;
   let x = applyHtmlRules(translate(dropOpen(out), L.dict, L.stats).html, L.html);
   x = dropClose(x, L.drop !== false);
   x = localeLinks(x, Object.values(PATHS), L.prefix);
@@ -159,14 +162,14 @@ function localePage(L, out, p, opts) {
   // the work that a mirrored stylesheet would otherwise have to.
   x = x
     .replace(/<html lang="en">/, '<html lang="' + L.lang + '"' + (L.dir === "rtl" ? ' dir="rtl"' : "") + ">")
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(lUrl) + "$2")
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(lUrl) + "$2")
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, "$1" + esc(canonUrl) + "$2")
+    .replace(/(<meta property="og:url" content=")[^"]*(")/, "$1" + esc(canonUrl) + "$2")
     .replace(/(<meta property="og:locale" content=")[^"]*(")/, "$1" + L.ogLocale + "$2")
     .replace(/"inLanguage":"en"/g, '"inLanguage":"' + L.lang + '"')
     .replace(/<div class="navdrop langdrop"[\s\S]*?<\/div><\/div>/, langMenu(p, L.code));
   if (opts && opts.head) x = opts.head(x);
   if (!x.includes('<html lang="' + L.lang + '"')) throw new Error(L.code + " " + p + ": lang attribute was not set");
-  if (!x.includes('href="' + esc(lUrl) + '"')) throw new Error(L.code + " " + p + ": canonical was not rewritten");
+  if (!x.includes('href="' + esc(canonUrl) + '"')) throw new Error(L.code + " " + p + ": canonical was not rewritten");
   // A language stays reachable while it is being filled, and out of the index
   // until it is worth reading. Half a page in English under a German lang
   // attribute is the thin-and-duplicate verdict this site can least afford.
@@ -646,12 +649,8 @@ function staticCard(l) {
         '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : "") +
       (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
       // Same markup and order as lotCardHtml(), so the swap to the live card
-      // does not move anything: Original box as glass words bottom left,
-      // Complete and Very Rare as icons top right.
-      (Array.isArray(l.badges) && l.badges.includes("box")
-        ? '<div class="lot-badges"><span class="lot-badge">Original box</span></div>'
-        : "") +
-      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare"))
+      // does not move anything: all three badges as icons, bottom left.
+      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare") || l.badges.includes("box"))
         ? '<div class="card-icons">' +
           (l.badges.includes("rare")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '" data-tip="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '">' +
@@ -660,6 +659,10 @@ function staticCard(l) {
           (l.badges.includes("complete")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Complete, with all original accessories" data-tip="Complete, with all original accessories">' +
               '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12L11 14L15 10"/><path d="M14.3942 3.00083L14.1481 2.79115C12.9103 1.73628 11.0897 1.73628 9.85189 2.79115L9.60584 3.00083C8.96518 3.54679 8.16862 3.87674 7.32956 3.9437L7.00731 3.96941C5.38613 4.09878 4.09878 5.38613 3.96941 7.00731L3.9437 7.32956C3.87674 8.16862 3.54679 8.96518 3.00083 9.60584L2.79115 9.85189C1.73628 11.0897 1.73628 12.9103 2.79115 14.1481L3.00083 14.3942C3.54679 15.0348 3.87674 15.8314 3.9437 16.6704L3.96941 16.9927C4.09878 18.6139 5.38613 19.9012 7.00731 20.0306L7.32956 20.0563C8.16862 20.1233 8.96518 20.4532 9.60584 20.9992L9.85188 21.2089C11.0897 22.2637 12.9103 22.2637 14.1481 21.2089L14.3942 20.9992C15.0348 20.4532 15.8314 20.1233 16.6704 20.0563L16.9927 20.0306C18.6139 19.9012 19.9012 18.6139 20.0306 16.9927L20.0563 16.6704C20.1233 15.8314 20.4532 15.0348 20.9992 14.3942L21.2089 14.1481C22.2637 12.9103 22.2637 11.0897 21.2089 9.85188L20.9992 9.60584C20.4532 8.96518 20.1233 8.16862 20.0563 7.32956L20.0306 7.00731C19.9012 5.38613 18.6139 4.09878 16.9927 3.96941L16.6704 3.9437C15.8314 3.87674 15.0348 3.54679 14.3942 3.00083Z"/></svg></span>'
+            : "") +
+          (l.badges.includes("box")
+            ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Original box included" data-tip="Original box included">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.68924 2.43826L5.3538 4.21913C4.38173 4.96038 3.89569 5.33101 4.01879 5.6655C4.14189 6 4.76432 6 6.00918 6H16C16.3645 6 16.5467 6 16.7153 5.94363C16.8839 5.88726 17.0262 5.77875 17.3108 5.56174L19.6462 3.78087C20.6183 3.03962 21.1043 2.66899 20.9812 2.3345C20.8581 2 20.2357 2 18.9908 2H9C8.63555 2 8.45332 2 8.28472 2.05637C8.11612 2.11274 7.97383 2.22125 7.68924 2.43826Z"/><path d="M4.01879 21.666C4.14189 22.0005 4.76432 22.0005 6.00918 22.0005H16C16.3645 22.0005 16.5467 22.0005 16.7153 21.9441M4.01879 21.666C3.89569 21.3315 4.38173 20.9608 5.3538 20.2196L7.68924 18.4387C7.97383 18.2217 8.11612 18.1132 8.28472 18.0568M4.01879 21.666V5.66597M16.7153 21.9441C16.8839 21.8877 17.0262 21.7792 17.3108 21.5622L19.6462 19.7813C20.6183 19.0401 21.1043 18.6695 20.9812 18.335V2.33496M16.7153 21.9441V5.94409M8.28472 18.0568C8.45332 18.0005 8.63555 18.0005 9 18.0005H14M8.28472 18.0568V9.00046"/></svg></span>'
             : "") +
           "</div>"
         : "") +
@@ -843,7 +846,11 @@ for (const l of lots) {
   // A lot inherited the home page's alternates from index.html, which told a
   // crawler that the English version of this lot is the front page. Each lot
   // names its own pair.
-  const alts = alternatesFor(path);
+  // One language for lots (Ramon, 15 Oct 2026: "we only have one language").
+  // The lot's own text is English everywhere, so the nine language copies are
+  // the same page under a translated menu. No hreflang pairs: they would tell
+  // Google ten pages are translations of each other when they are one page.
+  const alts = "";
 
   let out = html.replace(/<link rel="alternate" hreflang="[^"]*" href="[^"]*">/g, "")
     .replace(/<title>[\s\S]*?<\/title>/, "<title>" + esc(title) + "</title>")
@@ -880,13 +887,18 @@ for (const l of lots) {
     const d = lotDescriptionIn(L, l);
     const u = localePage(L, out, path, {
       lastmod: lotLastmod(l),
+      // The copy exists so a reader in that language can open and reload the
+      // lot with their own menus; Google is pointed at the English original.
+      canonicalUrl: url,
       head: (x) => (d
         ? x.replace(/(<meta name="description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
            .replace(/(<meta property="og:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
            .replace(/(<meta name="twitter:description" content=")[^"]*(")/, "$1" + esc(d) + "$2")
         : x),
     });
-    if (L.public) lotLocs.push({ loc: u, status: l.status, lastmod: lotLastmod(l) });
+    // Not in the sitemap: only the 56 English lots are, so Google spends its
+    // visits on the pages with their own content.
+    void u;
   }
 }
 

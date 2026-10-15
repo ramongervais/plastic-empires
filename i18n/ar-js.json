@@ -595,5 +595,6 @@
   "What a buyer should know about the box: crushed corners, tears, price stickers, tape, a missing flap or inner tray, opened or sealed.": "ما يجب أن يعرفه المشتري عن العلبة: زوايا مهروسة، تمزقات، ملصقات أسعار، شريط لاصق، لسان أو حامل داخلي مفقود، مفتوحة أو مختومة.",
   "The line buyers search on: maker, line, name, year. No brackets and no condition: the grade has its own field. Very Rare may go in when it is true, and the badge below says it too.": "السطر الذي يبحث به المشترون: الصانع، السلسلة، الاسم، السنة. بلا أقواس وبلا حالة: للتقييم حقل خاص. يمكن إضافة نادر جدًا إذا كان صحيحًا، والشارة أدناه تقول ذلك أيضًا.",
   "{n} of {max} photos": "{n} من {max} صور",
-  "Complete, with all original accessories": "مكتمل، مع جميع الملحقات الأصلية"
+  "Complete, with all original accessories": "مكتمل، مع جميع الملحقات الأصلية",
+  "Original box included": "العلبة الأصلية مرفقة"
 }
