@@ -9450,7 +9450,7 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no,decide_by';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       // Was a filter on bidder_id, which is private now: anyone with the public
@@ -9501,6 +9501,9 @@
     // database answers the question instead of handing over the figure.
     const rState = await reserveState(bidLots.map(l => l.id));
     const wins = bidLots.filter(l => {
+      // 'offer' is still with the seller and 'unsold' was declined or lapsed:
+      // leading either is not winning, and neither may show Pay now.
+      if (l.status === 'offer' || l.status === 'unsold') return false;
       if (!isEnded(l) || !bidTop[l.id] || !iLead[l.id]) return false;
       const r = rState[l.id];
       return !r || !r.has || r.met;
@@ -9510,7 +9513,7 @@
     const myBidByLot = {}; myBids.forEach(b => { myBidByLot[b.lot_id] = Number(b.my_top); });
     const stat = (n, k) => '<div class="acct-stat"><div class="n">' + n + '</div><div class="k">' + k + '</div></div>';
     const tog = (key, label, on) => '<div class="acct-toggle" data-pref="' + key + '"><span class="lbl">' + label + '</span><span class="sw' + (on !== false ? ' on' : '') + '"></span></div>';
-    const stateOf = l => l.status === 'sold' ? 'Sold' : (l.status === 'unsold' ? 'Not sold' : (isEnded(l) ? 'Awaiting payment' : 'Live'));
+    const stateOf = l => l.status === 'sold' ? 'Sold' : (l.status === 'unsold' ? 'Not sold' : (l.status === 'offer' ? phrase('With the seller') : (isEnded(l) ? 'Awaiting payment' : 'Live')));
     // Withdrawal is offered while the clock could still be running. The period
     // starts on delivery, so before delivery it has not begun and the right is
     // already there; after delivery it runs fourteen days. Erring long on
@@ -9532,7 +9535,7 @@
     // is a sort nobody uses twice.
     let lsKey = 'newest';
     try { lsKey = localStorage.getItem('hm_listsort') || 'newest'; } catch (err) {}
-    const stateRank = { live: 0, preview: 1, unsold: 2, ended: 3, sold: 4 };
+    const stateRank = { offer: -1, live: 0, preview: 1, unsold: 2, ended: 3, sold: 4 };
     const sortedLots = lots.slice();
     if (lsKey !== 'newest') {
       sortedLots.sort(function(x, y){
@@ -9555,13 +9558,26 @@
     const listingsHtml = listSortHtml + (sortedLots.length ? sortedLots.map(l => {
       // An unsold lot is out of the public shop and sits here instead, with the
       // one action that matters. A price would be meaningless: nobody paid it.
+      // Bid down, auction over: the highest bid waits for the seller. The two
+      // buttons are the whole point of the row, so they replace the price.
+      if (l.status === 'offer') {
+        const due = l.decide_by ? new Date(l.decide_by).toLocaleString(LOC(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+        const amt = money(finalPrice(l, myTop));
+        return row(l, '<div style="text-align:end;display:grid;gap:6px;justify-items:end">' +
+          '<div style="display:flex;gap:6px">' +
+            '<button class="acct-pay" data-offer="accept" data-lotid="' + e(l.id) + '" data-label="' + e(l.toy) + '" data-amt="' + e(amt) + '">' + phrase('Accept {amount}', { amount: amt }) + '</button>' +
+            '<button class="acct-signout" data-offer="decline" data-lotid="' + e(l.id) + '" data-label="' + e(l.toy) + '" data-amt="' + e(amt) + '">' + phrase('Decline') + '</button>' +
+          '</div>' +
+          (due ? '<div class="st">' + phrase('Decide by {date}', { date: e(due) }) + '</div>' : '') +
+        '</div>', phrase('Highest bid, under your Buy now price'));
+      }
       const right = l.status === 'unsold'
         ? '<div style="text-align:end"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 listing</div></div>'
         : '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:end">' + stateOf(l) + '</div></div>';
       return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
     }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>');
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), phrase('Won at {amount}', { amount: money(bidTop[l.id].amount) }))).join('') : '<div class="acct-empty">No lots won yet.</div>';
-    const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:end">' + (isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
+    const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:end">' + (l.status === 'offer' ? (leading ? phrase('With the seller') : 'Lost') : l.status === 'unsold' ? (leading ? 'Not sold' : 'Lost') : isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';
     const watchHtml = watchLots.length ? watchLots.map(l => row(l, '<div><div class="price">' + money(finalPrice(l, topByLot)) + '</div><div class="st" style="text-align:end">' + stateOf(l) + '</div></div>', [l.maker, l.year].filter(Boolean).join(' · '))).join('') : '<div class="acct-empty">Lots you watch will appear here. <a data-nav="home" href="#collection" style="cursor:pointer;text-decoration:underline;text-underline-offset:2px">Browse auctions</a></div>';
     // lot_drafts may not exist yet if section 6 of the schema has not been run;
     // supabase-js reports that as an error rather than throwing, so show none.
@@ -9692,6 +9708,38 @@
         b.disabled = false; b.textContent = 'Withdraw purchase';
         openModal('Could not withdraw', 'Something went wrong.', (err && err.message) || 'Please try again, or email support@hammerandmold.com. Your right to withdraw is not affected by this failing.');
       }
+    }));
+
+    // Bid down: the seller decides. The database checks it is their lot and that
+    // a bid is waiting (decide_offer); the worker then writes to both sides.
+    body.querySelectorAll('[data-offer]').forEach(b => b.addEventListener('click', async () => {
+      const accept = b.dataset.offer === 'accept';
+      const name = b.dataset.label || phrase('this lot');
+      const ask = accept
+        ? phrase('Accept {amount} for {lot}?', { amount: b.dataset.amt, lot: name }) + '\n\n' + phrase('The bidder is asked to pay straight away. This cannot be undone.')
+        : phrase('Decline {amount} for {lot}?', { amount: b.dataset.amt, lot: name }) + '\n\n' + phrase('The lot comes back to you unsold, and you can relist it.');
+      if (!confirm(ask)) return;
+      body.querySelectorAll('[data-offer]').forEach(x => { if (x.dataset.lotid === b.dataset.lotid) x.disabled = true; });
+      const { error } = await SB.rpc('decide_offer', { target: b.dataset.lotid, accept: accept });
+      if (error) {
+        body.querySelectorAll('[data-offer]').forEach(x => { if (x.dataset.lotid === b.dataset.lotid) x.disabled = false; });
+        openModal('Could not save', 'Something went wrong.', error.message || String(error));
+        return;
+      }
+      // The decision stands even if the mail fails, so this is not awaited into an error.
+      try {
+        const { data: sess } = await SB.auth.getSession();
+        const token = sess && sess.session ? sess.session.access_token : '';
+        await fetch(PAY_URL.replace(/\/checkout$/, '') + '/offer-decided', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ lotId: b.dataset.lotid }),
+        });
+      } catch (err) {}
+      openModal(accept ? phrase('Accepted') : phrase('Declined'), name,
+        accept ? phrase('The bidder has been asked to pay. You hear from us as soon as the payment is in.')
+               : phrase('The bidder has been told. The lot is in your listings as not sold.'));
+      renderAccount();
     }));
 
     body.querySelectorAll('[data-relist]').forEach(b => b.addEventListener('click', async () => {
@@ -10859,7 +10907,12 @@
     const rs = (await reserveState([lot.id]))[lot.id] || { has: false, met: false };
     const reserve = rs.has;
     const reserveMet = !rs.has || rs.met;
-    const iWon = ended && topBid && reserveMet && authUser && iAmLeading;
+    // Bid down: 'offer' is the seller's 48 hours, 'unsold' a declined or lapsed
+    // bid. Leading either is not winning, so neither shows Pay now.
+    const isOffer = lot.status === 'offer';
+    const iWon = ended && !isOffer && lot.status !== 'unsold' && topBid && reserveMet && authUser && iAmLeading;
+    const iSell = !!(authUser && authUser.id === lot.seller_id);
+    const decideDate = lot.decide_by ? new Date(lot.decide_by).toLocaleString(LOC(), { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '';
     const isSold = lot.status === 'sold';
     const isPreview = lot.status === 'preview';
     const isFixed = lot.sale_type === 'fixed';
@@ -11040,7 +11093,13 @@
             : '') +
           (ended ?
             '<div class="won-box' + (iWon ? ' win' : '') + '">' +
-              (iWon ? '<div class="won-h">You won this lot.</div><div class="won-sub">' + (isSold ? 'Payment received. Thank you.' : 'Complete your payment to confirm the purchase.') + '</div>' + (isSold ? '' : '<button class="btn accent" type="button" id="lotPay">Pay now &middot; ' + money(cur) + '</button>') :
+              (isOffer ? '<div class="won-h">' + e(phrase('With the seller.')) + '</div><div class="won-sub">' +
+                  e(iSell ? phrase('The highest bid is {amount}. Accept or decline it in your account before {date}.', { amount: money(cur), date: decideDate })
+                    : iAmLeading ? phrase('Your bid of {amount} is the highest. The seller decides before {date}, and nothing is charged unless they accept.', { amount: money(cur), date: decideDate })
+                    : phrase('Bidding has closed at {amount}. The seller decides before {date}.', { amount: money(cur), date: decideDate })) + '</div>' +
+                  (iSell ? '<button class="btn accent" type="button" data-nav="account">' + e(phrase('Decide now')) + '</button>' : '') :
+              lot.status === 'unsold' ? '<div class="won-h">' + e(phrase('Not sold.')) + '</div><div class="won-sub">' + e(phrase('This lot is back with you. Relist it from your account.')) + '</div>' :
+              iWon ? '<div class="won-h">You won this lot.</div><div class="won-sub">' + (isSold ? 'Payment received. Thank you.' : 'Complete your payment to confirm the purchase.') + '</div>' + (isSold ? '' : '<button class="btn accent" type="button" id="lotPay">Pay now &middot; ' + money(cur) + '</button>') :
                 (topBid ? (reserveMet ? '<div class="won-h">' + (isSold ? 'Sold.' : 'Auction ended.') + '</div><div class="won-sub">Winning bid ' + money(cur) + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">Reserve not met. The lot was not sold.</div>') : (isSold ? '<div class="won-h">Sold.</div><div class="won-sub">This lot has been purchased' + (lot.buy_now ? ' for ' + money(lot.buy_now) : '') + '.</div>' : '<div class="won-h">Auction ended.</div><div class="won-sub">No bids were placed.</div>'))) +
             '</div>' :
             (isPreview ?

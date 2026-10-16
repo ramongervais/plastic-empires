@@ -475,7 +475,7 @@ async function fetchLots() {
   // lot is the archive: "what did this actually fetch" is a real search and the
   // answer is a page we already own.
   const url = SUPA_URL + "/rest/v1/lots?select=" + LOT_COLS + (HAS_UPDATED_AT ? ",updated_at" : "") + ",created_at" +
-    "&status=in.(live,preview,sold,unsold)&order=created_at.desc";
+    "&status=in.(live,preview,offer,sold,unsold)&order=created_at.desc";
   const res = await fetch(url, { headers: { apikey: SUPA_KEY, Authorization: "Bearer " + SUPA_KEY } });
   if (!res.ok) throw new Error("lots fetch failed: HTTP " + res.status + " " + (await res.text()).slice(0, 200));
   const rows = await res.json();
