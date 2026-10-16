@@ -1600,27 +1600,12 @@
 
   /* ---------- Phone tuning ---------- */
   @media (max-width:600px){
-    /* Two columns on a phone. One column meant two lots per screen on a shop
-       with twenty-three of them, which is a scroll nobody finishes. The rest of
-       this block is what has to give for a card to still work at about 160px:
-       the column gap comes in so the cards get the width instead of the gutter,
-       and the type steps down with it. */
-    .collection, .featured-grid { grid-template-columns:1fr 1fr; gap:24px 10px; }
-    .label { margin-top:10px; }
-    .label .nm { font-size:13px; line-height:1.26; }
-    .label .meta { font-size:9px; letter-spacing:.06em; margin-top:4px; }
-    /* Price and countdown cannot share a line at this width. Stacked, not
-       shrunk to fit: a price is the thing being read, not the thing to sacrifice. */
-    .auc-card { flex-direction:column; align-items:flex-start; gap:3px;
-      margin-top:7px; padding-top:8px; }
-    .auc-card .amt { font-size:15px; }
-    .auc-card .sub { margin-inline-start:5px; font-size:9px; }
-    .auc-card .cd { font-size:9.5px; }
-    .card-ended { font-size:9.5px; letter-spacing:.06em; padding:9px 6px; margin-top:9px; }
-    .card-badge { font-size:9px; letter-spacing:.1em; padding:4px 7px; top:8px; inset-inline-start:8px; }
-    /* .watch-btn is deliberately left at 34px. It is already under the 44px
-       touch target guidance and a narrower card is not a reason to make a
-       control harder to hit. */
+    /* One column on a phone again (Ramon, 16 Oct 2026: "2 columns are getting
+       too tight"). The badge icons, long keyword titles and the price row did not
+       fit a 160px card. At full width the card keeps its desktop type, so the
+       shrinking that two columns needed (13px titles, 9px labels, the price
+       stacked over the countdown) went with them. */
+    .collection, .featured-grid { grid-template-columns:1fr; gap:36px; }
     .wrap { padding:0 20px 56px; }
     .hero h1, .art-title, .empire-title { letter-spacing:.06em; }
     .hero h1 { font-size:30px; line-height:1.06; letter-spacing:.06em; }
@@ -1639,12 +1624,6 @@
     input, select, textarea { font-size:16px; }
     /* comfortable, thumb-sized tap targets */
     .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
-    /* The glass badges go a size down so two of them do not cover a third of a
-       150px photo. */
-    .vitrine .lot-badges { inset-inline-start:8px; inset-inline-end:8px; bottom:8px; gap:4px; }
-    .card-icons { bottom:8px; inset-inline-start:8px; gap:4px; }
-    .vitrine:has(.card-icons) .lot-badges { inset-inline-start:46px; }
-    .vitrine .lot-badge { font-size:11px; padding:3px 7px; }
     .btn, button { -webkit-tap-highlight-color:rgba(0,0,0,0); touch-action:manipulation; }
     /* stop double-tap zoom fighting our own buttons */
     a, button, [role="button"] { touch-action:manipulation; }
