@@ -659,5 +659,6 @@
   "Bid up to {amount}": "{amount}まで入札",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "{min}から入札できます。{start}未満はオークション後に出品者が判断し、{start}以上は通常の入札です。",
   "Highest bid, waiting for your decision": "最高入札、あなたの判断待ち",
-  "{pct}% lower": "{pct}%安く"
+  "{pct}% lower": "{pct}%安く",
+  "Bid": "入札"
 }

@@ -659,5 +659,6 @@
   "Bid up to {amount}": "مزايدة أعلى حتى {amount}",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "زايد من {min}. تحت {start} يقرّر البائع بعد المزاد، ومن {start} تصبح مزايدة عادية.",
   "Highest bid, waiting for your decision": "أعلى عرض، بانتظار قرارك",
-  "{pct}% lower": "أقل بنسبة {pct}%"
+  "{pct}% lower": "أقل بنسبة {pct}%",
+  "Bid": "زايد"
 }

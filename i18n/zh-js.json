@@ -659,5 +659,6 @@
   "Bid up to {amount}": "出價至 {amount}",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "出價自 {min} 起。低於 {start} 時由賣家在拍賣後決定，{start} 起為一般出價。",
   "Highest bid, waiting for your decision": "最高出價，等待你的決定",
-  "{pct}% lower": "低 {pct}%"
+  "{pct}% lower": "低 {pct}%",
+  "Bid": "出價"
 }

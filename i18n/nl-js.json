@@ -662,5 +662,6 @@
   "Bid up to {amount}": "Hoger bieden tot {amount}",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Bied vanaf {min}. Onder {start} beslist de verkoper na de veiling, vanaf {start} is het een gewoon bod.",
   "Highest bid, waiting for your decision": "Hoogste bod, wacht op jouw beslissing",
-  "{pct}% lower": "{pct}% lager"
+  "{pct}% lower": "{pct}% lager",
+  "Bid": "Bied"
 }

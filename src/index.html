@@ -248,16 +248,17 @@
      down in light grey, up in ink. */
   .tr-row { display:grid; grid-template-columns:1fr 1fr; gap:2px; align-items:stretch; }
   .tr-row.one { grid-template-columns:1fr; }
-  /* Down white with an outline, up in ink. A lone Bid up is one line, white with
-     an outline (Ramon, 16 Oct 2026). The price is set like the card's price, the
-     word 8px under it. */
-  .tr-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:56px; padding:8px 12px; border:1.5px solid #131313; border-radius:0; cursor:pointer; text-align:center; white-space:nowrap; font:inherit; }
-  .tr-down { background:var(--paper); color:#131313; }
-  .tr-up { background:#131313; color:#fff; }
-  .tr-row.one .tr-btn { flex-direction:row; align-items:baseline; gap:8px; min-height:48px; background:var(--paper); color:#131313; }
-  .tr-btn:hover { box-shadow:inset 0 0 0 1.5px #131313; }
-  .tr-k { font-family:var(--label); font-size:8px; letter-spacing:.14em; text-transform:uppercase; line-height:1; }
-  .tr-v { font-family:var(--body); font-size:16px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
+  /* One outlined block: Bid down | the price in ink | Bid up. With only Bid up
+     the price takes two thirds (Ramon's frames, 16 Oct 2026). */
+  .tr-row { display:grid; grid-template-columns:33.333% 1fr 33.333%; align-items:stretch; border:2px solid #131313; container-type:inline-size; }
+  /* No Bid down: the price stretches, Bid up keeps its width. */
+  .tr-row.one { grid-template-columns:1fr 33.333%; }
+  .tr-px { display:flex; align-items:center; justify-content:center; padding:0 12px; min-height:52px; background:#131313; color:#fff;
+    font-family:var(--body); font-size:min(20px, 7.5cqi); font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .tr-btn { display:flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:0 12px; border:0; border-radius:0; background:var(--paper); color:#131313; cursor:pointer; white-space:nowrap; font:inherit; }
+  .tr-btn:hover { background:#f2f2f2; }
+  .tr-k { font-family:var(--body); font-size:min(20px, 7.5cqi); font-weight:600; line-height:1; }
+  .tr-ar { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:butt; stroke-linejoin:miter; flex:none; }
   .tr-btn:focus-visible, .tr-buy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .tr-est { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:72px; padding:8px 10px; background:#131313; color:#fff; border-radius:0; }
   .tr-est-v { font-family:var(--display); font-size:16px; font-weight:600; font-variant-numeric:tabular-nums; }
@@ -991,8 +992,9 @@
   .bs-ticks { display:flex; justify-content:space-between; margin-top:6px; font-family:var(--label); font-size:11px; letter-spacing:.08em; color:var(--ink-3); font-variant-numeric:tabular-nums; }
   .bidinput-row.slid { display:block; }
   .bidinput-row.slid .btn { width:100%; }
-  .bid-dir { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:56px; padding:8px 12px; border:1.5px solid #131313; border-radius:0; background:var(--paper); color:#131313; cursor:pointer; white-space:nowrap; font:inherit; }
+  .bid-dir { display:flex; flex-direction:row; align-items:center; justify-content:center; gap:8px; min-height:56px; padding:8px 12px; border:1.5px solid #131313; border-radius:0; background:var(--paper); color:#131313; cursor:pointer; white-space:nowrap; font:inherit; }
   .bid-dir[data-dir="up"] { background:#131313; color:#fff; }
+  .bid-dir .tr-k { font-size:20px; }
   .bid-dir.on { outline:2px solid #131313; outline-offset:2px; }
   /* The delivery form. Two columns on anything wider than a phone, one below, and
      smaller type than a bid: a bid is a single number and earns 20px bold, an
@@ -7242,7 +7244,8 @@
     const live = !!(SB && lotId);
     const eurC = n => '\u20ac ' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
     openModal(both ? phrase('Place a bid') : range ? phrase(range.dir === 'down' ? 'Bid down' : 'Bid up') : 'Place a bid', name,
-      both ? phrase('Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.', { min: eurC(range.down.min), start: eurC(range.up.min) }) :
+      // The lowest amount appears only once the slider is in use (Ramon).
+      both ? '' :
       range ? (maxBid != null ? phrase('Bid between {min} and {max}. At the Buy now price, buy it now instead.', { min: eurC(minNext), max: eurC(maxBid) }) : phrase('Enter at least {min}.', { min: eurC(minNext) }))
             : phrase('Current bid {bid} · {n} bids. Enter at least {min}.', { bid: eur(bid), n: bids, min: eur(minNext) }));
     bidForm.hidden = false;
@@ -7277,20 +7280,22 @@
       input.hidden = sliding; if (lblEl) lblEl.style.display = sliding ? 'none' : '';
       if (rowEl) rowEl.classList.toggle('slid', sliding);
       dirs.querySelectorAll('.bid-dir').forEach(x => x.classList.toggle('on', x.dataset.dir === d));
-      if (sliding) { const r = slide.querySelector('input'); r.value = 0; r.dispatchEvent(new Event('input')); }
+      // Opens on the smallest step down, nearest the price: the floor only shows
+      // once someone slides to it.
+      if (sliding) { const r = slide.querySelector('input'); r.value = steps.length - 1; r.dispatchEvent(new Event('input')); }
       else if (d === 'up' && range && range.up) input.value = range.up.prefill;
     };
     dirs.hidden = !both;
     if (both) {
       const chip = (d, rr) => '<button type="button" class="bid-dir" data-dir="' + d + '">' +
-        '<span class="tr-k">' + hx(phrase(d === 'down' ? 'Bid down' : 'Bid up')) + '</span><span class="tr-v">' + hx(eurC(rr.prefill)) + '</span></button>';
+        '<span class="tr-k">' + hx(phrase('Bid')) + '</span>' + (d === 'down' ? TR_DOWN : TR_UP) + '</button>';
       dirs.innerHTML = chip('down', range.down) + chip('up', range.up);
       dirs.querySelectorAll('.bid-dir').forEach(c => c.addEventListener('click', () => setMode(c.dataset.dir)));
     }
     if (steps.length) {
       // Left is the lowest bid (most percent off), right the highest.
       slide.innerHTML = '<div class="bs-amt"><span class="bs-v"></span><span class="bs-k"></span></div>' +
-        '<input type="range" min="0" max="' + (steps.length - 1) + '" step="1" value="0" aria-label="' + hx(phrase('Bid down')) + '"' + (steps.length === 1 ? ' disabled' : '') + '>' +
+        '<input type="range" min="0" max="' + (steps.length - 1) + '" step="1" value="' + (steps.length - 1) + '" aria-label="' + hx(phrase('Bid down')) + '"' + (steps.length === 1 ? ' disabled' : '') + '>' +
         '<div class="bs-ticks">' + steps.map(st => '<span>' + st.k + '%</span>').join('') + '</div>';
       const r = slide.querySelector('input');
       r.addEventListener('input', () => {
@@ -7530,24 +7535,30 @@
     const min = top == null ? start : r2(top + Math.max(10, Math.round(top * 0.05)));
     return { buyNow: bn > 0 ? bn : 0, up: { min, max: bn > 0 ? r2(bn - 0.01) : null, prefill: min } };
   }
+  const TR_DOWN = '<svg class="tr-ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v17M5 13l7 7 7-7"/></svg>';
+  const TR_UP = '<svg class="tr-ar" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V4M5 11l7-7 7 7"/></svg>';
   function tradeHtml(t, esc){
     const R = tradeRange(t), m = n => '€\u00a0' + r2(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
     const btn = (dir, rr) => '<button type="button" class="tr-btn tr-' + dir + '" data-trade="' + dir + '" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') +
       '" data-min="' + rr.min + '"' + (rr.max != null ? ' data-max="' + rr.max + '"' : '') + ' data-prefill="' + rr.prefill + '"' +
-      (rr.ref ? ' data-ref="' + rr.ref + '" data-pct="' + rr.pct + '"' : '') + ' data-seller="' + esc(t.sellerId || '') + '">' +
+      (rr.ref ? ' data-ref="' + rr.ref + '" data-pct="' + rr.pct + '"' : '') + ' data-seller="' + esc(t.sellerId || '') + '"' +
+      ' aria-label="' + esc(phrase(dir === 'down' ? 'Bid down' : 'Bid up')) + '">' +
       // One line, in the same type as Buy now: the action and its amount are one
       // phrase, not a label over a figure (Ramon, 16 Oct 2026).
       // The word over the price, like a trading app's Sell and Buy (Ramon, 16 Oct
       // 2026). The price is where the bid starts: the lowest for Bid down, the
       // suggested one for Bid up. No "from" or "to".
-      '<span class="tr-k">' + esc(phrase(dir === 'down' ? 'Bid down' : 'Bid up')) + '</span>' +
-      '<span class="tr-v">' + esc(m(rr.prefill)) + '</span></button>';
+      '<span class="tr-k">' + esc(phrase('Bid')) + '</span>' + (dir === 'down' ? TR_DOWN : TR_UP) + '</button>';
     // The estimate lives in the photo again (estStickerHtml), not in this row.
     const est = false
       ? '<div class="tr-est" tabindex="0" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: m(t.estLow), high: m(t.estHigh) })) + '"><span class="tr-est-v">~' + m(estMid(t.estLow, t.estHigh)).replace('\u00a0', '') + '</span><span class="tr-est-k">' + esc(phrase('Estimate')) + '</span></div>'
       : '';
-    const row = (R.down || R.up || est)
-      ? '<div class="tr-row' + (R.down ? '' : ' one') + '">' + (R.down ? btn('down', R.down) : '') + est + (R.up ? btn('up', R.up) : '') + '</div>'
+    // Bid down | the price | Bid up, one outlined block (Ramon's frames, 16 Oct
+    // 2026). The price in the middle is where the lot stands now.
+    const now = t.top != null ? t.top : (Number(t.start) || 0);
+    const row = (R.down || R.up)
+      ? '<div class="tr-row' + (R.down ? '' : ' one') + '">' + (R.down ? btn('down', R.down) : '') +
+          '<div class="tr-px">' + esc(m(now)) + '</div>' + (R.up ? btn('up', R.up) : '') + '</div>'
       : '';
     const buy = R.buyNow > 0
       ? '<button type="button" class="tr-buy" data-trade="buy" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') + '" data-amount="' + R.buyNow + '">' + esc(phrase('Buy now')) + ' · ' + m(R.buyNow) + '</button>'
@@ -8785,7 +8796,9 @@
         // them shows the highest bid once there is one, never a starting price of 0.
         ((!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
           ? '<div class="auc-card"><div><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>'
-          : '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' ) +
+          // One price, in the middle of the bid block (Ramon, 16 Oct 2026): a live
+          // lot's card no longer repeats it here.
+          : '<div class="auc-card"><div>' + ((!isClosed && !isPreview && !isFixed) ? '' : '<span class="amt">' + money(l.bid) + '</span>') + '<span class="sub"' + ((!isClosed && !isPreview && !isFixed) ? ' style="margin:0"' : '') + '>' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' ) +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
         // No delivery figure on a card, on Ramon's call. Sixteen of them down a
