@@ -658,5 +658,6 @@
   "Bid up from {amount}": "Offri di più da {amount}",
   "Bid up to {amount}": "Offri di più fino a {amount}",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Offri da {min}. Sotto {start} decide il venditore dopo l'asta, da {start} è un'offerta normale.",
-  "Highest bid, waiting for your decision": "Offerta più alta, in attesa della tua decisione"
+  "Highest bid, waiting for your decision": "Offerta più alta, in attesa della tua decisione",
+  "{pct}% lower": "{pct}% in meno"
 }

@@ -661,5 +661,6 @@
   "Bid up from {amount}": "Viša ponuda od {amount}",
   "Bid up to {amount}": "Viša ponuda do {amount}",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Ponudi od {min}. Ispod {start} prodavatelj odlučuje nakon dražbe, od {start} je to obična ponuda.",
-  "Highest bid, waiting for your decision": "Najviša ponuda, čeka tvoju odluku"
+  "Highest bid, waiting for your decision": "Najviša ponuda, čeka tvoju odluku",
+  "{pct}% lower": "{pct}% niže"
 }

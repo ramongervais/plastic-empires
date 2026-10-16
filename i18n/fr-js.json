@@ -658,5 +658,6 @@
   "Bid up from {amount}": "Surenchérir dès {amount}",
   "Bid up to {amount}": "Surenchérir jusqu'à {amount}",
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Enchérissez dès {min}. Sous {start}, le vendeur décide après la vente ; dès {start}, c'est une enchère ordinaire.",
-  "Highest bid, waiting for your decision": "Meilleure offre, en attente de votre décision"
+  "Highest bid, waiting for your decision": "Meilleure offre, en attente de votre décision",
+  "{pct}% lower": "{pct}% de moins"
 }
