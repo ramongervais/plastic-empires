@@ -611,5 +611,11 @@
   "The range does not add up.": "範囲が正しくありません。",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "下限と上限の両方を入力し、上限は下限以上にしてください。評価額なしにする場合は両方を空欄にします。",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "評価額の下限で、購入者に表示されます。AIの数値が正しければそのままに。変更するとロットには出品者の評価額と表示されます。",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "評価額の上限で、購入者に表示されます。目安であって価格ではないため、この金額では購入できません。"
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "評価額の上限で、購入者に表示されます。目安であって価格ではないため、この金額では購入できません。",
+  "Estimate checked": "評価額を確認済み",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "評価額は、あなたが確認して初めて購入者に表示されます。数値を変更すると確認済みになります。",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "評価額はまだ確認されていないため、購入者には表示されません。編集を開いて数値を確認し、「評価額を確認済み」にチェックを入れてください。",
+  "AI estimate, checked by the seller": "AIによる評価額（出品者が確認済み）",
+  "AI estimate based on {n} recent sale, checked by the seller": "最近の落札{n}件に基づくAI評価額（出品者が確認済み）",
+  "AI estimate based on {n} recent sales, checked by the seller": "最近の落札{n}件に基づくAI評価額（出品者が確認済み）"
 }

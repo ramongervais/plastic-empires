@@ -614,5 +614,11 @@
   "The range does not add up.": "Raspon nije ispravan.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Upišite donju i gornju vrijednost, pri čemu gornja mora biti barem jednaka donjoj. Ostavite oba prazna ako nema procjene.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Donja granica raspona vrijednosti, vidljiva kupcima. Zadržite brojku umjetne inteligencije ako je točna; ako je promijenite, uz lot piše da je to vaša procjena.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Gornja granica raspona vrijednosti, vidljiva kupcima. Procjena, a ne cijena: nitko ne može kupiti po njoj."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Gornja granica raspona vrijednosti, vidljiva kupcima. Procjena, a ne cijena: nitko ne može kupiti po njoj.",
+  "Estimate checked": "Procjena provjerena",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "Kupci vide procjenu tek kad je provjerite. Ako promijenite neki broj, smatra se provjerenom.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "Procjena još nije provjerena pa je kupci ne vide. Otvorite Uredi, pogledajte brojke i označite Procjena provjerena.",
+  "AI estimate, checked by the seller": "Procjena umjetne inteligencije, provjerio prodavatelj",
+  "AI estimate based on {n} recent sale, checked by the seller": "Procjena umjetne inteligencije na temelju {n} nedavne prodaje, provjerio prodavatelj",
+  "AI estimate based on {n} recent sales, checked by the seller": "Procjena umjetne inteligencije na temelju {n} nedavnih prodaja, provjerio prodavatelj"
 }

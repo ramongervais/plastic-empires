@@ -611,5 +611,11 @@
   "The range does not add up.": "El rango no cuadra.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Indica un valor bajo y uno alto, con el alto al menos igual que el bajo. Deja ambos vacíos para no poner estimación.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "La parte baja del rango de valor, visible para los compradores. Mantén la cifra de la IA si es correcta; si la cambias, el lote indica que es tu estimación.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "La parte alta del rango de valor, visible para los compradores. Una estimación, no un precio: nadie puede comprar a ese importe."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "La parte alta del rango de valor, visible para los compradores. Una estimación, no un precio: nadie puede comprar a ese importe.",
+  "Estimate checked": "Estimación revisada",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "Los compradores solo ven la estimación cuando la hayas revisado. Si cambias una cifra, cuenta como revisada.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "La estimación aún no está revisada, así que los compradores no la ven. Abre Editar, mira las cifras y marca Estimación revisada.",
+  "AI estimate, checked by the seller": "Estimación de la IA, revisada por el vendedor",
+  "AI estimate based on {n} recent sale, checked by the seller": "Estimación de la IA basada en {n} venta reciente, revisada por el vendedor",
+  "AI estimate based on {n} recent sales, checked by the seller": "Estimación de la IA basada en {n} ventas recientes, revisada por el vendedor"
 }

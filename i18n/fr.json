@@ -2091,5 +2091,11 @@
   "The range does not add up.": "La fourchette n'est pas cohérente.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Indiquez une valeur basse et une valeur haute, la haute au moins égale à la basse. Laissez les deux vides pour aucune estimation.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Le bas de la fourchette de valeur, visible par les acheteurs. Gardez le chiffre de l'IA s'il est juste ; modifiez-le et le lot indique qu'il s'agit de votre estimation.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Le haut de la fourchette de valeur, visible par les acheteurs. Une estimation, pas un prix : personne ne peut acheter à ce montant."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Le haut de la fourchette de valeur, visible par les acheteurs. Une estimation, pas un prix : personne ne peut acheter à ce montant.",
+  "Estimate checked": "Estimation vérifiée",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "Les acheteurs ne voient l'estimation qu'une fois que vous l'avez vérifiée. Si vous modifiez un chiffre, elle compte comme vérifiée.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "L'estimation n'est pas encore vérifiée, les acheteurs ne la voient donc pas. Ouvrez Modifier, regardez les chiffres et cochez Estimation vérifiée.",
+  "AI estimate, checked by the seller": "Estimation de l'IA, vérifiée par le vendeur",
+  "AI estimate based on {n} recent sale, checked by the seller": "Estimation de l'IA fondée sur {n} vente récente, vérifiée par le vendeur",
+  "AI estimate based on {n} recent sales, checked by the seller": "Estimation de l'IA fondée sur {n} ventes récentes, vérifiée par le vendeur"
 }

@@ -611,5 +611,11 @@
   "The range does not add up.": "L'intervallo non torna.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Indica un valore basso e uno alto, con quello alto almeno pari al basso. Lascia entrambi vuoti per nessuna stima.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Il limite basso dell'intervallo di valore, visibile agli acquirenti. Tieni la cifra dell'IA se è corretta; se la cambi, il lotto indica che è la tua stima.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Il limite alto dell'intervallo di valore, visibile agli acquirenti. Una stima, non un prezzo: nessuno può comprare a quella cifra."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Il limite alto dell'intervallo di valore, visibile agli acquirenti. Una stima, non un prezzo: nessuno può comprare a quella cifra.",
+  "Estimate checked": "Stima verificata",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "Gli acquirenti vedono la stima solo dopo che l'hai verificata. Se modifichi una cifra, vale come verificata.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "La stima non è ancora verificata, quindi gli acquirenti non la vedono. Apri Modifica, controlla le cifre e spunta Stima verificata.",
+  "AI estimate, checked by the seller": "Stima dell'IA, verificata dal venditore",
+  "AI estimate based on {n} recent sale, checked by the seller": "Stima dell'IA basata su {n} vendita recente, verificata dal venditore",
+  "AI estimate based on {n} recent sales, checked by the seller": "Stima dell'IA basata su {n} vendite recenti, verificata dal venditore"
 }

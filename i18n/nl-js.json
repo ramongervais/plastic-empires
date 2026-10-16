@@ -614,5 +614,11 @@
   "The range does not add up.": "De bandbreedte klopt niet.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Vul een lage en een hoge waarde in, met de hoge minstens zo groot als de lage. Laat beide leeg voor geen schatting.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "De onderkant van de waardebandbreedte, zichtbaar voor kopers. Houd het AI-getal als het klopt; pas je het aan, dan staat er dat het jouw schatting is.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "De bovenkant van de waardebandbreedte, zichtbaar voor kopers. Een schatting, geen prijs: niemand kan ervoor kopen."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "De bovenkant van de waardebandbreedte, zichtbaar voor kopers. Een schatting, geen prijs: niemand kan ervoor kopen.",
+  "Estimate checked": "Schatting gecontroleerd",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "Kopers zien de schatting pas als jij hem hebt gecontroleerd. Pas je een getal aan, dan telt hij als gecontroleerd.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "De schatting is nog niet gecontroleerd, dus kopers zien hem niet. Open Bewerken, bekijk de getallen en vink Schatting gecontroleerd aan.",
+  "AI estimate, checked by the seller": "AI-schatting, gecontroleerd door de verkoper",
+  "AI estimate based on {n} recent sale, checked by the seller": "AI-schatting op basis van {n} recente verkoop, gecontroleerd door de verkoper",
+  "AI estimate based on {n} recent sales, checked by the seller": "AI-schatting op basis van {n} recente verkopen, gecontroleerd door de verkoper"
 }

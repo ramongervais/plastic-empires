@@ -227,6 +227,13 @@
   .watch-link:hover { color:var(--ink-3); }
   /* Bottom left, one above the other (Ramon, 15 Oct 2026). Original box, the one
      badge still in words, sits to the right of the column on the same baseline. */
+  .est-sticker { position:absolute; top:12px; inset-inline-end:12px; z-index:3; width:64px; height:64px; border-radius:50%; background:#131313; color:#fff;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; box-shadow:0 2px 8px rgba(0,0,0,.22); }
+  .est-sticker .est-v { font-family:var(--display); font-size:17px; font-weight:600; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+  .est-sticker .est-t { font-family:var(--display); font-size:12px; font-weight:600; line-height:.7; }
+  /* [data-tip] sets position:relative further down; this wins it back. */
+  .est-sticker[data-tip] { position:absolute; }
+  .est-sticker[data-tip]::after { top:calc(100% + 8px); inset-inline-end:0; }
   .card-est { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; font-variant-numeric:tabular-nums; }
   .lot-est { display:flex; flex-direction:column; gap:2px; margin:14px 0 4px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; }
   .lot-est-v { font-family:var(--display); font-size:16px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; }
@@ -6384,7 +6391,7 @@
   // number, bid exactly that, win on the floor. Same shape as the ship_to leak
   // in September. The page only ever needed "is there one" and "is it met",
   // and reserveState() asks the database for exactly those two booleans.
-  const LOT_COLS_PUBLIC = 'auction_days,badges,blurb,estimate_by,estimate_comps,box_condition,box_notes,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,rare_reason,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
+  const LOT_COLS_PUBLIC = 'auction_days,badges,blurb,estimate_by,estimate_checked,estimate_comps,box_condition,box_notes,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,rare_reason,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
 
   // Booleans only, any number of lots at once. Returns an empty map rather than
   // throwing when the function is not there yet, so this ships before the
@@ -7273,6 +7280,18 @@
   const BOOK_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M7.99988 4.98145H6C4.11438 4.98145 3.17157 4.98145 2.58579 5.56723C2 6.15302 2 7.09606 2 8.98213V15.8814C2 17.3811 2 18.1309 2.38151 18.6564C2.50511 18.8267 2.6548 18.9763 2.82505 19.0999C3.35059 19.4815 4.10006 19.4815 5.59901 19.4815H8.95053C10.433 19.4815 11.7093 20.5278 12 21.9815V6.98145C11.7072 6.591 11.5608 6.39578 11.401 6.22746C10.756 5.54809 9.89308 5.11663 8.96261 5.00829C8.73208 4.98145 8.48802 4.98145 7.99988 4.98145Z"/><path stroke-linecap="square" d="M12 6.98145V21.9815C12.2907 20.5278 13.5671 19.4815 15.0495 19.4815H18.401C19.8999 19.4815 20.6494 19.4815 21.1749 19.0999C21.3452 18.9763 21.4949 18.8267 21.6185 18.6564C22 18.1309 22 17.3811 22 15.8814V7.48198C22 7.01697 22 6.78446 21.9616 6.59127C21.8038 5.79789 21.1836 5.17769 20.3902 5.01988C20.197 4.98145 19.9647 4.98145 19.5 4.98145"/><path d="M12 7.48027C12 7.48027 12.7705 3.24271 17.0165 2.20672C17.829 2.00848 18.2353 1.90936 18.6176 2.20964C19 2.50993 19 3.00004 19 3.98027V14.4803C19 15.3489 19 15.7832 18.7865 16.0551C18.5729 16.327 18.0541 16.4536 17.0165 16.7067C12.7705 17.7427 12 21.9803 12 21.9803"/></svg>';
   const BADGE_ICONS = { complete: COMPLETE_SVG, rare: GEM_SVG, box: BOX_SVG, instructions: BOOK_SVG };
+  // The estimate on a card as a price sticker (Ramon, 16 Oct 2026): the middle of
+  // the range, rounded so it reads as an indication and not a price. Under 20 to
+  // the euro, under 100 to five, then to ten. The full range is on the lot page.
+  const estMid = (lo, hi) => {
+    const m = (Number(lo) + Number(hi)) / 2;
+    const step = m < 20 ? 1 : (m < 100 ? 5 : 10);
+    return Math.round(m / step) * step;
+  };
+  const estStickerHtml = (lo, hi, esc) => (lo && hi)
+    ? '<span class="est-sticker" role="img" tabindex="0" aria-label="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(lo).toLocaleString('nl-NL'), high: '\u20ac ' + Number(hi).toLocaleString('nl-NL') })) + '" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(lo).toLocaleString('nl-NL'), high: '\u20ac ' + Number(hi).toLocaleString('nl-NL') })) + '">' +
+        '<span class="est-t" aria-hidden="true">~</span><span class="est-v">\u20ac' + estMid(lo, hi).toLocaleString('nl-NL') + '</span><span class="est-t" aria-hidden="true">~</span></span>'
+    : '';
   const badgeLabel = id => (BADGES.find(b => b.id === id) || {}).label || '';
   // On a card (onCard) Complete is left out of the chips: it is the icon
   // beside the star instead, from completeIconHtml(). On the lot page it is
@@ -7565,6 +7584,7 @@
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
         estimate_by: current.estimateBy === 'seller' ? 'seller' : 'ai',
+        estimate_checked: current.estimateChecked === true,
         estimate_comps: current.estimateBy === 'seller' ? null : (Array.isArray(current.comps) ? current.comps.length : null),
         auction_days: current.auctionDays || 7, status: pre ? 'preview' : 'live', ends_at: ends, sale_type: fixedSale ? 'fixed' : 'auction',
         shipping_eur: Number(current.shipping || 0),
@@ -7872,6 +7892,9 @@
               : '<div class="stamp-warn"><b>A close-up of the moulded stamp is missing.</b> The year, country and factory marks are the only text unique to your toy, so they are what let us date it and search for what it really sells for. Without them the price is a guess. Look at the soles, the lower back or between the shoulders; worn or scratched is fine. <button type="button" class="stamp-btn" id="stampNone">This toy has no legible stamp</button></div>')
           : '') +
         estWarn +
+        ((c.estimateLow && c.estimateHigh && !c.estimateChecked)
+          ? '<div class="stamp-warn">' + esc(phrase('The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.')) + '</div>'
+          : '') +
         '<div class="sale-toggle"><button type="button" class="' + (!fixed ? 'on' : '') + '" data-sale="auction">Auction</button><button type="button" class="' + (fixed ? 'on' : '') + '" data-sale="fixed">Direct sale</button></div>' +
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
           // The badges, said in words, with the reason beside Very Rare and the
@@ -8134,6 +8157,10 @@
         // blind bidding on Marktplaats, with no idea of value, is what we are not).
         // The AI's figures are the default; a seller who knows better changes them,
         // and the lot then says it is the seller's estimate rather than ours.
+        // Buyers only see an estimate a person has checked (Ramon, 16 Oct 2026: the
+        // AI indicator does not work without human curation). Changing a figure
+        // checks it by itself: the seller has just set it.
+        '<label class="box-toggle" for="e_estchecked"><input type="checkbox" id="e_estchecked"' + (c.estimateChecked ? ' checked' : '') + '><span><b>' + esc(phrase('Estimate checked')) + '</b><span>' + esc(phrase('Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.')) + '</span></span></label>' +
         '<div class="ef-row">' + ef('Est. low €', 'e_estlow', c.estimateLow, 'number', 'The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.') + ef('Est. high €', 'e_esthigh', c.estimateHigh, 'number', 'The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.') + '</div>' +
         '<div class="ef-row">' + ef('Buy Now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs, counted from the FIRST bid rather than from the day you list. Your lot waits in the shop until someone bids, so it does not disappear in a week nobody happened to look. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
         // Weight, and no postage price.
@@ -8229,6 +8256,7 @@
         // Whose estimate it is: still the AI's when both figures are what it said.
         const ai = current.ai || {};
         next.estimateBy = (Number(next.estimateLow) === Number(ai.low) && Number(next.estimateHigh) === Number(ai.high)) ? 'ai' : 'seller';
+        next.estimateChecked = next.estimateBy === 'seller' || !!(document.getElementById('e_estchecked') || {}).checked;
         if ((next.estimateLow || next.estimateHigh) && !(next.estimateLow > 0 && next.estimateHigh >= next.estimateLow)){
           openModal('Check the estimate', 'The range does not add up.', 'Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.');
           return;
@@ -8395,7 +8423,7 @@
     document.getElementById('sellerLotsIntro').textContent = liveLots.length
       ? phrase(liveLots.length === 1 ? '{seller} has {n} lot live right now.' : '{seller} has {n} lots live right now.', { seller: name, n: liveLots.length })
       : phrase('{seller} has no live lots right now.', { seller: name });
-    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '', estLow: l.estimate_low, estHigh: l.estimate_high }; });
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '', estLow: l.estimate_low, estHigh: l.estimate_high, estChecked: l.estimate_checked === true }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
@@ -8470,6 +8498,7 @@
         // an icon top right, where the favourite star used to be.
         badgesHtml(l.badges, e, true) +
         completeIconHtml(l.badges, e, l.rareReason) +
+        (l.estChecked ? estStickerHtml(l.estLow, l.estHigh, e) : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       // The title is a real link now. It was an anchor with the destination in a
@@ -8484,9 +8513,6 @@
         // that says the same thing, and a longer note would push the year off.
         '<div class="meta">' + e([l.line, makerLabel(l.maker), l.year].filter(Boolean).join(' · ')) + '</div>' +
         '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
-        // The estimate, so nobody bids blind (Ramon, 16 Oct 2026). A range, and
-        // never a price: it sits under the figure a buyer actually pays.
-        (l.estLow && l.estHigh ? '<div class="card-est">' + e(phrase('Est. {low} – {high}', { low: money(l.estLow), high: money(l.estHigh) })) + '</div>' : '') +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
         // No delivery figure on a card, on Ramon's call. Sixteen of them down a
@@ -8583,7 +8609,7 @@
       // No shipping column here on purpose. A card names no delivery figure at
       // all now, and if it ever does again it will come from the carriers rather
       // than from a stored estimate that was wrong on every lot.
-      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges,rare_reason,estimate_low,estimate_high';
+      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges,rare_reason,estimate_low,estimate_high,estimate_checked';
       const since = new Date(Date.now() - 86400000).toISOString();
       // ilike patterns go inside an or() string, so strip what would break it
       const q = shopQuery.replace(/[,()*%\\]/g, ' ').trim();
@@ -8636,7 +8662,7 @@
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high, estChecked: r.estimate_checked === true };
       });
     } else {
       lots = loadDraftLots();
@@ -8846,7 +8872,7 @@
     // lot and filtered to sold/ended in the browser, so live and preview lots
     // ate the row budget and the archive shrank as the shop grew.
     const res = await SB.from('lots')
-      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,badges,rare_reason,estimate_low,estimate_high', { count: 'exact' })
+      .select('id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,badges,rare_reason,estimate_low,estimate_high,estimate_checked', { count: 'exact' })
       .in('status', ['sold', 'ended'])
       .order('closed_at', { ascending: false, nullsFirst: false })
       .range(0, soldPage * SHOP_PAGE - 1);
@@ -8859,7 +8885,7 @@
     const mapped = rows.map(r => {
       const a = agg[r.id] || { max: 0, count: 0 };
       const state = r.status === 'sold' ? 'sold' : 'ended';
-      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) , badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high };
+      return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: a.count ? a.max : (r.buy_now ? Number(r.buy_now) : r.starting_bid), bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs: r.closed_at ? new Date(r.closed_at).getTime() : (r.ends_at ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime()) , badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high, estChecked: r.estimate_checked === true };
     });
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<p style="font-family:var(--body);color:var(--ink-3);padding:24px 0">No past results yet.</p>';
     if (countEl) countEl.textContent = total ? (mapped.length < total ? mapped.length + ' of ' + total + ' results' : total + ' result' + (total === 1 ? '' : 's')) : '';
@@ -10851,10 +10877,10 @@
           ((!ended && !isPreview && !isFixed && reserve) ? '<div class="reserve-note' + (reserveMet ? ' met' : '') + '">' + (reserveMet ? 'Reserve met' : 'Reserve not yet met') + '</div>' : '') +
           // The estimate, and where it comes from. The AI's carries the number of
           // sales it rests on when we know it; a seller's says it is theirs.
-          ((lot.estimate_low && lot.estimate_high)
+          ((lot.estimate_low && lot.estimate_high && lot.estimate_checked)
             ? '<div class="lot-est"><span class="lot-est-v">' + e(phrase('Estimate {low} – {high}', { low: money(lot.estimate_low), high: money(lot.estimate_high) })) + '</span>' +
               '<span class="lot-est-s">' + e(lot.estimate_by === 'seller' ? phrase("Seller's estimate")
-                : (Number(lot.estimate_comps) > 0 ? phrase(Number(lot.estimate_comps) === 1 ? 'AI estimate based on {n} recent sale' : 'AI estimate based on {n} recent sales', { n: Number(lot.estimate_comps) }) : phrase('AI estimate'))) +
+                : (Number(lot.estimate_comps) > 0 ? phrase(Number(lot.estimate_comps) === 1 ? 'AI estimate based on {n} recent sale, checked by the seller' : 'AI estimate based on {n} recent sales, checked by the seller', { n: Number(lot.estimate_comps) }) : phrase('AI estimate, checked by the seller'))) +
               '. ' + e(phrase('An indication of value, not a price.')) + '</span></div>'
             : '') +
           (ended ?

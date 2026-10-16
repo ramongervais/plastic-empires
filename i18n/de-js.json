@@ -619,5 +619,11 @@
   "The range does not add up.": "Die Spanne stimmt nicht.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Gib einen unteren und einen oberen Wert an, der obere mindestens so hoch wie der untere. Lass beide leer für keine Schätzung.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Das untere Ende der Wertspanne, für Käufer sichtbar. Behalte den KI-Wert, wenn er stimmt; änderst du ihn, steht beim Los, dass es deine Schätzung ist.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Das obere Ende der Wertspanne, für Käufer sichtbar. Eine Schätzung, kein Preis: niemand kann dazu kaufen."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Das obere Ende der Wertspanne, für Käufer sichtbar. Eine Schätzung, kein Preis: niemand kann dazu kaufen.",
+  "Estimate checked": "Schätzung geprüft",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "Käufer sehen die Schätzung erst, wenn du sie geprüft hast. Änderst du eine Zahl, gilt sie als geprüft.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "Die Schätzung ist noch nicht geprüft, Käufer sehen sie also nicht. Öffne Bearbeiten, prüfe die Zahlen und hake Schätzung geprüft an.",
+  "AI estimate, checked by the seller": "KI-Schätzung, vom Verkäufer geprüft",
+  "AI estimate based on {n} recent sale, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkauf, vom Verkäufer geprüft",
+  "AI estimate based on {n} recent sales, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkäufen, vom Verkäufer geprüft"
 }

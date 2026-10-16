@@ -2093,5 +2093,11 @@
   "The range does not add up.": "النطاق غير منطقي.",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "أدخل قيمة دنيا وقيمة عليا، على ألا تقل العليا عن الدنيا. اترك الحقلين فارغين لعدم وضع تقدير.",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "الحد الأدنى لنطاق القيمة، ويظهر للمشترين. أبقِ رقم الذكاء الاصطناعي إن كان صحيحًا؛ وإن غيّرته، تذكر القطعة أنه تقديرك.",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "الحد الأعلى لنطاق القيمة، ويظهر للمشترين. تقدير وليس سعرًا: لا يمكن لأحد الشراء به."
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "الحد الأعلى لنطاق القيمة، ويظهر للمشترين. تقدير وليس سعرًا: لا يمكن لأحد الشراء به.",
+  "Estimate checked": "تم التحقق من التقدير",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "لا يرى المشترون التقدير إلا بعد أن تتحقق منه. إذا غيّرت رقمًا، يُعدّ قد تم التحقق منه.",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "لم يتم التحقق من التقدير بعد، لذا لا يراه المشترون. افتح التعديل وراجع الأرقام وحدد تم التحقق من التقدير.",
+  "AI estimate, checked by the seller": "تقدير الذكاء الاصطناعي، تحقق منه البائع",
+  "AI estimate based on {n} recent sale, checked by the seller": "تقدير الذكاء الاصطناعي بناءً على {n} عملية بيع حديثة، تحقق منه البائع",
+  "AI estimate based on {n} recent sales, checked by the seller": "تقدير الذكاء الاصطناعي بناءً على {n} عمليات بيع حديثة، تحقق منه البائع"
 }

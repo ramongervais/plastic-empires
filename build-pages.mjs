@@ -429,7 +429,7 @@ const NO_EN_FILE = new Set();
 const SUPA_URL = (rawHtml.match(/SUPA_URL = '([^']+)'/) || [])[1];
 const SUPA_KEY = (rawHtml.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
-const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges,rare_reason,estimate_low,estimate_high";
+const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges,rare_reason,estimate_low,estimate_high,estimate_checked";
 
 // Honest lastmod needs a date the page's own content actually moved on.
 //
@@ -670,12 +670,20 @@ function staticCard(l) {
             : "") +
           "</div>"
         : "") +
+      // The estimate sticker, same markup and rounding as estStickerHtml().
+      (l.estimate_low && l.estimate_high && l.estimate_checked ? (() => {
+        const m = (Number(l.estimate_low) + Number(l.estimate_high)) / 2, st = m < 20 ? 1 : (m < 100 ? 5 : 10);
+        const tip = "Estimate \u20ac " + Number(l.estimate_low).toLocaleString("nl-NL") + " \u2013 \u20ac " + Number(l.estimate_high).toLocaleString("nl-NL");
+        const v = "\u20ac" + (Math.round(m / st) * st).toLocaleString("nl-NL");
+        for (const t of [v, "~", tip]) { cardContent.add(t); cardContent.add(esc(t)); }
+        return '<span class="est-sticker" role="img" tabindex="0" aria-label="' + esc(tip) + '" data-tip="' + esc(tip) + '"><span class="est-t" aria-hidden="true">~</span><span class="est-v">\u20ac' +
+          (Math.round(m / st) * st).toLocaleString("nl-NL") + '</span><span class="est-t" aria-hidden="true">~</span></span>';
+      })() : "") +
       '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
     "</div>" +
     '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +
       '<div class="meta">' + esc([clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 ")) + "</div>" +
       '<div class="auc-card"><div><span class="amt">' + money + '</span><span class="sub">' + sub + "</span></div></div>" +
-      (l.estimate_low && l.estimate_high ? '<div class="card-est">' + esc((l.estimate_low && l.estimate_high ? "Est. \u20ac " + Number(l.estimate_low).toLocaleString("nl-NL") + " \u2013 \u20ac " + Number(l.estimate_high).toLocaleString("nl-NL") : "")) + "</div>" : "") +
     "</div></article>";
 }
 const openLots = lots.filter((l) => l.status === "live" || l.status === "preview");

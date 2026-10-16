@@ -611,5 +611,11 @@
   "The range does not add up.": "估價區間有誤。",
   "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "請填寫下限與上限，且上限不得低於下限。若不估價，兩者皆留空。",
   "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "估價區間的下限，買家可見。若 AI 數字正確請保留；修改後，拍品將標示為你的估價。",
-  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "估價區間的上限，買家可見。這是估價而非售價：無人能以此價購買。"
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "估價區間的上限，買家可見。這是估價而非售價：無人能以此價購買。",
+  "Estimate checked": "估價已確認",
+  "Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.": "買家只會在你確認後看到估價。修改任一數字即視為已確認。",
+  "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "估價尚未確認，因此買家看不到。請開啟編輯、檢查數字並勾選「估價已確認」。",
+  "AI estimate, checked by the seller": "AI 估價，已經賣家確認",
+  "AI estimate based on {n} recent sale, checked by the seller": "依據近期 {n} 筆成交的 AI 估價，已經賣家確認",
+  "AI estimate based on {n} recent sales, checked by the seller": "依據近期 {n} 筆成交的 AI 估價，已經賣家確認"
 }
