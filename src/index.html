@@ -248,12 +248,16 @@
      down in light grey, up in ink. */
   .tr-row { display:grid; grid-template-columns:1fr 1fr; gap:2px; align-items:stretch; }
   .tr-row.one { grid-template-columns:1fr; }
-  .tr-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:64px; padding:8px 12px; border:0; border-radius:0; cursor:pointer; text-align:center; white-space:nowrap; font:inherit; }
-  .tr-down { background:#e6e6e6; color:#131313; }
+  /* Down white with an outline, up in ink. A lone Bid up is one line, white with
+     an outline (Ramon, 16 Oct 2026). The price is set like the card's price, the
+     word 8px under it. */
+  .tr-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:56px; padding:8px 12px; border:1.5px solid #131313; border-radius:0; cursor:pointer; text-align:center; white-space:nowrap; font:inherit; }
+  .tr-down { background:var(--paper); color:#131313; }
   .tr-up { background:#131313; color:#fff; }
-  .tr-btn:hover { opacity:.86; }
-  .tr-k { font-family:var(--display); font-size:15px; font-weight:600; line-height:1.2; }
-  .tr-v { font-family:var(--display); font-size:20px; font-weight:400; line-height:1.2; font-variant-numeric:tabular-nums; }
+  .tr-row.one .tr-btn { flex-direction:row; align-items:baseline; gap:8px; min-height:48px; background:var(--paper); color:#131313; }
+  .tr-btn:hover { box-shadow:inset 0 0 0 1.5px #131313; }
+  .tr-k { font-family:var(--label); font-size:8px; letter-spacing:.14em; text-transform:uppercase; line-height:1; }
+  .tr-v { font-family:var(--body); font-size:16px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
   .tr-btn:focus-visible, .tr-buy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .tr-est { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:72px; padding:8px 10px; background:#131313; color:#fff; border-radius:0; }
   .tr-est-v { font-family:var(--display); font-size:16px; font-weight:600; font-variant-numeric:tabular-nums; }
@@ -987,7 +991,7 @@
   .bs-ticks { display:flex; justify-content:space-between; margin-top:6px; font-family:var(--label); font-size:11px; letter-spacing:.08em; color:var(--ink-3); font-variant-numeric:tabular-nums; }
   .bidinput-row.slid { display:block; }
   .bidinput-row.slid .btn { width:100%; }
-  .bid-dir { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:64px; padding:8px 12px; border:0; border-radius:0; background:#e6e6e6; color:#131313; cursor:pointer; white-space:nowrap; font:inherit; }
+  .bid-dir { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; min-height:56px; padding:8px 12px; border:1.5px solid #131313; border-radius:0; background:var(--paper); color:#131313; cursor:pointer; white-space:nowrap; font:inherit; }
   .bid-dir[data-dir="up"] { background:#131313; color:#fff; }
   .bid-dir.on { outline:2px solid #131313; outline-offset:2px; }
   /* The delivery form. Two columns on anything wider than a phone, one below, and
