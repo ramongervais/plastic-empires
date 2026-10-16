@@ -668,5 +668,10 @@
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Biete ab {min}. Unter {start} entscheidet der Verkäufer nach der Auktion, ab {start} ist es ein normales Gebot.",
   "Highest bid, waiting for your decision": "Höchstgebot, wartet auf deine Entscheidung",
   "{pct}% lower": "{pct}% niedriger",
-  "Bid": "Bieten"
+  "Bid": "Bieten",
+  "Remove the reserve": "Mindestpreis entfernen",
+  "Bid down and a reserve do not go together.": "Niedriger bieten und ein Mindestpreis passen nicht zusammen.",
+  "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "Niedriger bieten zählt ab deinem Startpreis. Entferne den Mindestpreis, um es zu nutzen, oder stelle Niedriger bieten auf Aus.",
+  "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "Käufer dürfen bis zu so viel unter deinem Startpreis bieten. Ein Höchstgebot darunter kommt nach der Auktion zu dir, zum Annehmen oder Ablehnen innerhalb von 48 Stunden. Nicht zusammen mit einem Mindestpreis. Aus bedeutet normales Bieten.",
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "Entferne den Mindestpreis: Niedriger bieten ist an, und beides passt nicht zusammen."
 }

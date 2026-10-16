@@ -660,5 +660,10 @@
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "{min}から入札できます。{start}未満はオークション後に出品者が判断し、{start}以上は通常の入札です。",
   "Highest bid, waiting for your decision": "最高入札、あなたの判断待ち",
   "{pct}% lower": "{pct}%安く",
-  "Bid": "入札"
+  "Bid": "入札",
+  "Remove the reserve": "最低落札価格を削除してください",
+  "Bid down and a reserve do not go together.": "下値入札と最低落札価格は併用できません。",
+  "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "下値入札は開始価格から計算されます。使うには最低落札価格を削除するか、下値入札をオフにしてください。",
+  "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "購入者は開始価格からこの割合まで低く入札できます。それを下回る最高入札はオークション後にあなたに届き、48時間以内に承認または拒否します。最低落札価格とは併用できません。オフは通常の入札です。",
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "最低落札価格を削除してください：下値入札がオンになっており、両者は併用できません。"
 }

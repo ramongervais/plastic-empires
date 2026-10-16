@@ -660,5 +660,10 @@
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Puja desde {min}. Por debajo de {start} el vendedor decide tras la subasta; desde {start} es una puja normal.",
   "Highest bid, waiting for your decision": "Puja más alta, pendiente de tu decisión",
   "{pct}% lower": "{pct}% menos",
-  "Bid": "Pujar"
+  "Bid": "Pujar",
+  "Remove the reserve": "Quita el precio de reserva",
+  "Bid down and a reserve do not go together.": "La puja a la baja y un precio de reserva no van juntos.",
+  "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "La puja a la baja cuenta desde tu precio de salida. Quita el precio de reserva para usarla, o desactívala.",
+  "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "Los compradores pueden pujar hasta este porcentaje por debajo de tu precio de salida. Una puja más alta por debajo te llega tras la subasta, para aceptarla o rechazarla en 48 horas. No va junto con un precio de reserva. Desactivado significa pujas normales.",
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "Quita el precio de reserva: la puja a la baja está activada y las dos no van juntas."
 }

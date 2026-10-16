@@ -535,7 +535,7 @@
                 <option value="0">Off</option><option value="1">1% lower</option><option value="2">2% lower</option>
                 <option value="3">3% lower</option><option value="4">4% lower</option><option value="5">5% lower</option>
               </select>
-              <p class="s">Counts down from the reserve, or without a reserve from the Buy now price. A bid between that floor and the reserve comes to you after the auction, to accept or decline within 48 hours. Shown to buyers as the lowest bid, so it gives away roughly where the reserve is.</p>
+              <p class="s">Counts down from the starting bid, or without one from the Buy now price. A highest bid under the starting bid comes to the seller after the auction, to accept or decline within 48 hours. Does not go together with a reserve: remove the reserve to use it.</p>
             </div>
             <!-- The estimate buyers see as a range (section 28). Changing it makes
                  it the seller's estimate on the lot page instead of the AI's. -->
@@ -1584,9 +1584,15 @@
       say('lMsg', 'The estimate needs a low and a high figure, high at least as large as low, or both empty.', 'err'); toast('Check the estimate: low and high, high at least as large as low.', 'err'); return;
     }
     patch.estimate_low = eLow; patch.estimate_high = eHigh;
-    // Bid down needs something to count down from: the reserve, or Buy now.
-    const dnRef = Number(patch.reserve != null ? patch.reserve : l.reserve) > 0 || Number(patch.buy_now != null ? patch.buy_now : l.buy_now) > 0;
+    // Bid down counts from the starting bid (section 32), or without one from Buy
+    // now. A reserve does not go with it: refused here, with the reason.
+    const dnRef = Number(patch.starting_bid != null ? patch.starting_bid : l.starting_bid) > 0 || Number(patch.buy_now != null ? patch.buy_now : l.buy_now) > 0;
     patch.down_pct = dnRef ? (parseInt($('le_downpct').value, 10) || 0) : 0;
+    if (patch.down_pct > 0 && Number(patch.reserve) > 0) {
+      say('lMsg', 'Bid down counts down from the starting bid. Remove the reserve price to use it, or set Bid down to Off.', 'err');
+      toast('Remove the reserve price: Bid down and a reserve do not go together.', 'err');
+      return;
+    }
     const eChanged = Number(eLow) !== Number(l.estimate_low) || Number(eHigh) !== Number(l.estimate_high);
     if (eChanged) { patch.estimate_by = 'seller'; patch.estimate_comps = null; }
     // Checked when ticked, or when the figures were just set by hand.

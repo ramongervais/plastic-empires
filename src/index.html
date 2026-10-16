@@ -984,6 +984,7 @@
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
   .bidform { margin:2px 0 20px; }
+  .acct-warn { margin:-4px 0 12px; padding:8px 12px; border:1px solid var(--ink); font-size:13px; line-height:1.4; color:var(--ink); cursor:pointer; }
   .bid-dirs { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-bottom:16px; }
   .bid-dirs[hidden] { display:none; }
   /* The ticket again, in the bid window, in the same colours as on the card:
@@ -7873,7 +7874,7 @@
         variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
-        down_pct: (Number(current.buyNow || (fixedSale ? current.startingBid : 0)) > 0 || (!fixedSale && Number(current.reserve) > 0)) ? (Number(current.downPct) || 0) : 0,
+        down_pct: (Number(current.buyNow || (fixedSale ? current.startingBid : 0)) > 0 || (!fixedSale && (Number(current.reserve) > 0 || Number(current.startingBid) > 0))) ? (Number(current.downPct) || 0) : 0,
         estimate_by: current.estimateBy === 'seller' ? 'seller' : 'ai',
         estimate_checked: current.estimateChecked === true,
         estimate_comps: current.estimateBy === 'seller' ? null : (Array.isArray(current.comps) ? current.comps.length : null),
@@ -8457,7 +8458,7 @@
         // How far under Buy now a buyer may bid (Ramon, 16 Oct 2026): Bid down. Off
         // keeps the lot a plain auction or direct sale. The database refuses
         // anything outside the range whatever the page says (check_bid).
-        efSel('Bid down', 'e_downpct', c.downPct ? c.downPct + '%' : 'Off', ['Off', '1%', '2%', '3%', '4%', '5%'], 'Buyers may bid up to this much below your reserve, or without a reserve below your Buy now price. A bid under the reserve comes to you after the auction, to accept or decline within 48 hours. Off means ordinary bidding.') +
+        efSel('Bid down', 'e_downpct', c.downPct ? c.downPct + '%' : 'Off', ['Off', '1%', '2%', '3%', '4%', '5%'], 'Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.') +
         // Weight, and no postage price.
         //
         // Asking a seller to name a shipping amount was asking them to guess a
@@ -8555,6 +8556,11 @@
         next.estimateChecked = next.estimateBy === 'seller' || !!(document.getElementById('e_estchecked') || {}).checked;
         if ((next.estimateLow || next.estimateHigh) && !(next.estimateLow > 0 && next.estimateHigh >= next.estimateLow)){
           openModal('Check the estimate', 'The range does not add up.', 'Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.');
+          return;
+        }
+        // Bid down and a reserve do not go together (Ramon, 16 Oct 2026).
+        if (Number(next.downPct) > 0 && Number(next.reserve) > 0 && next.saleType !== 'fixed'){
+          openModal(phrase('Remove the reserve'), phrase('Bid down and a reserve do not go together.'), phrase('Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.'));
           return;
         }
         if (next.badges.includes('rare') && !next.rareReason){
@@ -9610,7 +9616,7 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no,decide_by';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no,decide_by,down_pct';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       // Was a filter on bidder_id, which is private now: anyone with the public
@@ -9660,6 +9666,11 @@
     // That used to be read off lot.reserve; the number is private now, so the
     // database answers the question instead of handing over the figure.
     const rState = await reserveState(bidLots.map(l => l.id));
+    // My own live lots with Bid down AND a reserve: those need the reserve removed
+    // (Ramon, 16 Oct 2026). The database answers whether there is one.
+    const dnIds = lots.filter(l => Number(l.down_pct) > 0 && l.status === 'live').map(l => l.id);
+    const myRes = dnIds.length ? await reserveState(dnIds) : {};
+    const needsReserveOff = id => !!(myRes[id] && myRes[id].has);
     const wins = bidLots.filter(l => {
       // 'offer' is still with the seller and 'unsold' was declined or lapsed:
       // leading either is not winning, and neither may show Pay now.
@@ -9734,7 +9745,10 @@
       const right = l.status === 'unsold'
         ? '<div style="text-align:end"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 listing</div></div>'
         : '<div><div class="price">' + money(finalPrice(l, myTop)) + '</div><div class="st" style="text-align:end">' + stateOf(l) + '</div></div>';
-      return row(l, right, [l.maker, l.year].filter(Boolean).join(' · '));
+      const warn = needsReserveOff(l.id)
+        ? '<div class="acct-warn" data-nav="lot" data-lot="' + e(l.id) + '">' + e(phrase('Remove the reserve price: Bid down is on, and the two do not go together.')) + '</div>'
+        : '';
+      return row(l, right, [l.maker, l.year].filter(Boolean).join(' · ')) + warn;
     }).join('') : '<div class="acct-empty">You have not listed anything yet.</div>');
     const winsHtml = wins.length ? wins.map(l => row(l, (l.status !== 'sold' ? '<button class="acct-pay" data-pay="' + e(l.id) + '" data-amt="' + bidTop[l.id].amount + '" data-label="' + e(l.toy) + '">Pay now · ' + money(bidTop[l.id].amount) + '</button>' : '<div class="st">Paid</div>'), phrase('Won at {amount}', { amount: money(bidTop[l.id].amount) }))).join('') : '<div class="acct-empty">No lots won yet.</div>';
     const bidsHtml = bidLots.length ? bidLots.map(l => { const leading = !!iLead[l.id]; return row(l, '<div><div class="price">' + money(myBidByLot[l.id]) + '</div><div class="st" style="text-align:end">' + (l.status === 'offer' ? (leading ? phrase('With the seller') : 'Lost') : l.status === 'unsold' ? (leading ? 'Not sold' : 'Lost') : isEnded(l) ? (leading ? 'Won' : 'Lost') : (leading ? 'Leading' : 'Outbid')) + '</div></div>', 'Your bid'); }).join('') : '<div class="acct-empty">You have not bid on anything yet.</div>';

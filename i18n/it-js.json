@@ -660,5 +660,10 @@
   "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Offri da {min}. Sotto {start} decide il venditore dopo l'asta, da {start} è un'offerta normale.",
   "Highest bid, waiting for your decision": "Offerta più alta, in attesa della tua decisione",
   "{pct}% lower": "{pct}% in meno",
-  "Bid": "Offri"
+  "Bid": "Offri",
+  "Remove the reserve": "Togli il prezzo di riserva",
+  "Bid down and a reserve do not go together.": "L'offerta al ribasso e un prezzo di riserva non vanno insieme.",
+  "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "L'offerta al ribasso parte dal tuo prezzo di partenza. Togli il prezzo di riserva per usarla, oppure disattivala.",
+  "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "Gli acquirenti possono offrire fino a questa percentuale sotto il tuo prezzo di partenza. Un'offerta più alta al di sotto arriva a te dopo l'asta, da accettare o rifiutare entro 48 ore. Non va insieme a un prezzo di riserva. Disattivato significa offerte normali.",
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "Togli il prezzo di riserva: l'offerta al ribasso è attiva e le due cose non vanno insieme."
 }
