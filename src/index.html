@@ -255,7 +255,9 @@
   .tr-row.one { grid-template-columns:1fr 33.333%; }
   /* Hierarchy: the price first, in the card's bold price type; Bid second, in
      small label type. 40px tall, so the photograph stays the main thing. */
-  .tr-k { font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; line-height:1; }
+  /* "Bid" twice in a row is repetition, so it is not emphasised: medium, small,
+     a step lighter. The arrow carries the direction (Ramon, 16 Oct 2026). */
+  .tr-k { font-family:var(--label); font-size:10px; font-weight:500; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; line-height:1; color:var(--ink-2); }
   .tr-px { display:flex; align-items:center; justify-content:center; padding:0 8px; min-height:38px; background:var(--ink); color:var(--paper);
     font-family:var(--body); font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
   .tr-btn { display:flex; align-items:center; justify-content:center; gap:8px; min-height:38px; padding:0 8px; border:0; border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; white-space:nowrap; font:inherit; }
