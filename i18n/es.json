@@ -2099,5 +2099,16 @@
   "AI estimate based on {n} recent sale, checked by the seller": "Estimación de la IA basada en {n} venta reciente, revisada por el vendedor",
   "AI estimate based on {n} recent sales, checked by the seller": "Estimación de la IA basada en {n} ventas recientes, revisada por el vendedor",
   "Search": "Buscar",
-  "Categories": "Categorías"
+  "Categories": "Categorías",
+  "Bid down": "Pujar a la baja",
+  "Bid up": "Pujar al alza",
+  "Estimate": "Estimación",
+  "from {amount}": "desde {amount}",
+  "to {amount}": "hasta {amount}",
+  "Off": "Desactivado",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "Puja entre {min} y {max}. Al precio de compra inmediata, cómpralo directamente.",
+  "At most {max}. At the Buy now price, buy it now instead.": "Como máximo {max}. Al precio de compra inmediata, cómpralo directamente.",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "Con un precio de compra inmediata, los compradores pueden pujar hasta este porcentaje por debajo, y tú aceptas o rechazas la puja más alta en 48 horas tras la subasta. Desactivado significa solo compra inmediata o pujas normales.",
+  "Buy now": "Comprar ya",
+  "No bids yet": "Sin pujas todavía"
 }

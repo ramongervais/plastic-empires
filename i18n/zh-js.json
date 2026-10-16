@@ -622,5 +622,16 @@
   "Menu": "選單",
   "Categories": "分類",
   "Close": "關閉",
-  "Everything for sale": "全部待售"
+  "Everything for sale": "全部待售",
+  "Bid down": "低價出價",
+  "Bid up": "加價出價",
+  "Estimate": "估價",
+  "from {amount}": "自 {amount} 起",
+  "to {amount}": "最高 {amount}",
+  "Off": "關閉",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "請在 {min} 至 {max} 之間出價。以直購價可直接購買。",
+  "At most {max}. At the Buy now price, buy it now instead.": "最高 {max}。以直購價可直接購買。",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "設定直購價時，買家可出價至低於直購價此比例，拍賣結束後你需在 48 小時內接受或拒絕最高出價。關閉表示僅限直購或一般出價。",
+  "Buy now": "立即購買",
+  "No bids yet": "尚無出價"
 }

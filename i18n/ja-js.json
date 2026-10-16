@@ -622,5 +622,16 @@
   "Menu": "メニュー",
   "Categories": "カテゴリー",
   "Close": "閉じる",
-  "Everything for sale": "出品中のすべて"
+  "Everything for sale": "出品中のすべて",
+  "Bid down": "下値で入札",
+  "Bid up": "上値で入札",
+  "Estimate": "評価額",
+  "from {amount}": "{amount}から",
+  "to {amount}": "{amount}まで",
+  "Off": "オフ",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "{min}から{max}の間で入札してください。即決価格なら、そのまま購入できます。",
+  "At most {max}. At the Buy now price, buy it now instead.": "上限は{max}です。即決価格なら、そのまま購入できます。",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "即決価格がある場合、購入者はその分まで低い金額で入札でき、オークション終了後48時間以内に最高入札を承認または拒否します。オフは即決のみ、または通常の入札です。",
+  "Buy now": "今すぐ購入",
+  "No bids yet": "まだ入札はありません"
 }

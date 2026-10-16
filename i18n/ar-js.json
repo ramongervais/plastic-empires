@@ -622,5 +622,16 @@
   "Menu": "القائمة",
   "Categories": "الفئات",
   "Close": "إغلاق",
-  "Everything for sale": "كل المعروض للبيع"
+  "Everything for sale": "كل المعروض للبيع",
+  "Bid down": "مزايدة أقل",
+  "Bid up": "مزايدة أعلى",
+  "Estimate": "التقدير",
+  "from {amount}": "من {amount}",
+  "to {amount}": "حتى {amount}",
+  "Off": "إيقاف",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "زايد بين {min} و{max}. بسعر الشراء الفوري، اشترِه مباشرة.",
+  "At most {max}. At the Buy now price, buy it now instead.": "بحد أقصى {max}. بسعر الشراء الفوري، اشترِه مباشرة.",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "مع سعر الشراء الفوري، يمكن للمشترين المزايدة حتى هذه النسبة تحته، وتقبل أعلى عرض أو ترفضه خلال 48 ساعة بعد المزاد. إيقاف يعني الشراء الفوري فقط أو المزايدة العادية.",
+  "Buy now": "اشترِ الآن",
+  "No bids yet": "لا توجد مزايدات بعد"
 }

@@ -2107,5 +2107,16 @@
   "AI estimate based on {n} recent sale, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkauf, vom Verkäufer geprüft",
   "AI estimate based on {n} recent sales, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkäufen, vom Verkäufer geprüft",
   "Search": "Suchen",
-  "Categories": "Kategorien"
+  "Categories": "Kategorien",
+  "Bid down": "Niedriger bieten",
+  "Bid up": "Höher bieten",
+  "Estimate": "Schätzung",
+  "from {amount}": "ab {amount}",
+  "to {amount}": "bis {amount}",
+  "Off": "Aus",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "Biete zwischen {min} und {max}. Zum Sofortkauf-Preis kaufst du ihn direkt.",
+  "At most {max}. At the Buy now price, buy it now instead.": "Höchstens {max}. Zum Sofortkauf-Preis kaufst du ihn direkt.",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "Mit einem Sofortkauf-Preis dürfen Käufer bis zu so viel darunter bieten, und du nimmst das höchste Gebot innerhalb von 48 Stunden nach der Auktion an oder lehnst es ab. Aus heißt nur Sofortkauf oder normales Bieten.",
+  "Buy now": "Sofort kaufen",
+  "No bids yet": "Noch keine Gebote"
 }

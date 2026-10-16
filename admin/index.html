@@ -527,6 +527,15 @@
               <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
               <div><label class="f" for="le_buynow">Buy now &euro;</label><input class="f" id="le_buynow" type="number" step="1" min="0"></div>
             </div>
+            <!-- Bid down (section 29): how far under Buy now a buyer may bid. -->
+            <div>
+              <label class="f" for="le_downpct">Bid down</label>
+              <select class="f" id="le_downpct">
+                <option value="0">Off</option><option value="1">1% under Buy now</option><option value="2">2% under Buy now</option>
+                <option value="3">3% under Buy now</option><option value="4">4% under Buy now</option><option value="5">5% under Buy now</option>
+              </select>
+              <p class="s">Needs a Buy now price. After the auction you accept or decline the highest bid within 48 hours.</p>
+            </div>
             <!-- The estimate buyers see as a range (section 28). Changing it makes
                  it the seller's estimate on the lot page instead of the AI's. -->
             <div class="cms-row-2">
@@ -1108,7 +1117,7 @@
     // off lots for everyone on 26 September and moved behind lot_private(), so
     // a star select now fails with 42501 and takes the whole console down. This
     // console never reads either column, so it asks for what it uses.
-    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,badges,rare_reason,box_condition,box_notes,estimate_by,estimate_comps,estimate_checked,' +
+    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,badges,rare_reason,box_condition,box_notes,estimate_by,estimate_comps,estimate_checked,down_pct,decide_by,' +
       'starting_bid,buy_now,estimate_low,estimate_high,confidence,' +
       'condition,completeness,blurb,notes,variants,image_urls,stamp_shown,' +
       'care_level,care_note,letterbox,size_class,service_point,weight_kg,' +
@@ -1330,6 +1339,7 @@
     const bs = Array.isArray(l.badges) ? l.badges : [];
     ['box', 'complete', 'rare', 'instructions'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
     v('le_rare', l.rare_reason || ''); v('le_boxcond', l.box_condition || ''); v('le_boxnotes', l.box_notes || '');
+    v('le_downpct', String(Math.round(Number(l.down_pct) || 0)));
     v('le_estlow', l.estimate_low == null ? '' : l.estimate_low); v('le_esthigh', l.estimate_high == null ? '' : l.estimate_high);
     $('le_estchecked').checked = l.estimate_checked === true;
     $('le_estHint').textContent = (l.estimate_checked ? 'Buyers see it as a range, never as a price. ' : 'Not checked, so buyers do not see it. Tick when the figures are right. ') + 'Now: ' +
@@ -1573,6 +1583,8 @@
       say('lMsg', 'The estimate needs a low and a high figure, high at least as large as low, or both empty.', 'err'); toast('Check the estimate: low and high, high at least as large as low.', 'err'); return;
     }
     patch.estimate_low = eLow; patch.estimate_high = eHigh;
+    // Bid down only means something with a Buy now price.
+    patch.down_pct = (Number(patch.buy_now != null ? patch.buy_now : l.buy_now) > 0) ? (parseInt($('le_downpct').value, 10) || 0) : 0;
     const eChanged = Number(eLow) !== Number(l.estimate_low) || Number(eHigh) !== Number(l.estimate_high);
     if (eChanged) { patch.estimate_by = 'seller'; patch.estimate_comps = null; }
     // Checked when ticked, or when the figures were just set by hand.

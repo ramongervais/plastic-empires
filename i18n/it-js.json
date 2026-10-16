@@ -622,5 +622,16 @@
   "Menu": "Menu",
   "Categories": "Categorie",
   "Close": "Chiudi",
-  "Everything for sale": "Tutto quello in vendita"
+  "Everything for sale": "Tutto quello in vendita",
+  "Bid down": "Offerta al ribasso",
+  "Bid up": "Rilancia",
+  "Estimate": "Stima",
+  "from {amount}": "da {amount}",
+  "to {amount}": "fino a {amount}",
+  "Off": "Disattivato",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "Offri tra {min} e {max}. Al prezzo Compralo subito, compralo direttamente.",
+  "At most {max}. At the Buy now price, buy it now instead.": "Al massimo {max}. Al prezzo Compralo subito, compralo direttamente.",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "Con un prezzo Compralo subito, gli acquirenti possono offrire fino a questa percentuale in meno, e tu accetti o rifiuti l'offerta più alta entro 48 ore dalla fine dell'asta. Disattivato significa solo Compralo subito, o offerte normali.",
+  "Buy now": "Compralo subito",
+  "No bids yet": "Ancora nessuna offerta"
 }

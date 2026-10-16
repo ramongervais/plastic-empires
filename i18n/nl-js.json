@@ -625,5 +625,16 @@
   "Menu": "Menu",
   "Categories": "Categorieën",
   "Close": "Sluiten",
-  "Everything for sale": "Alles wat te koop is"
+  "Everything for sale": "Alles wat te koop is",
+  "Bid down": "Lager bieden",
+  "Bid up": "Hoger bieden",
+  "Estimate": "Schatting",
+  "from {amount}": "vanaf {amount}",
+  "to {amount}": "tot {amount}",
+  "Off": "Uit",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "Bied tussen {min} en {max}. Voor de Buy now-prijs koop je hem meteen.",
+  "At most {max}. At the Buy now price, buy it now instead.": "Maximaal {max}. Voor de Buy now-prijs koop je hem meteen.",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "Met een Buy now-prijs mogen kopers tot zoveel daaronder bieden, en jij accepteert of weigert het hoogste bod binnen 48 uur na de veiling. Uit betekent alleen Buy now, of gewoon bieden.",
+  "Buy now": "Nu kopen",
+  "No bids yet": "Nog geen biedingen"
 }

@@ -670,15 +670,6 @@ function staticCard(l) {
             : "") +
           "</div>"
         : "") +
-      // The estimate sticker, same markup and rounding as estStickerHtml().
-      (l.estimate_low && l.estimate_high && l.estimate_checked ? (() => {
-        const m = (Number(l.estimate_low) + Number(l.estimate_high)) / 2, st = m < 20 ? 1 : (m < 100 ? 5 : 10);
-        const tip = "Estimate \u20ac " + Number(l.estimate_low).toLocaleString("nl-NL") + " \u2013 \u20ac " + Number(l.estimate_high).toLocaleString("nl-NL");
-        const v = "\u20ac" + (Math.round(m / st) * st).toLocaleString("nl-NL");
-        for (const t of [v, "~", tip]) { cardContent.add(t); cardContent.add(esc(t)); }
-        return '<span class="est-sticker" role="img" tabindex="0" aria-label="' + esc(tip) + '" data-tip="' + esc(tip) + '"><span class="est-t" aria-hidden="true">~</span><span class="est-v">\u20ac' +
-          (Math.round(m / st) * st).toLocaleString("nl-NL") + '</span><span class="est-t" aria-hidden="true">~</span></span>';
-      })() : "") +
       '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
     "</div>" +
     '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +

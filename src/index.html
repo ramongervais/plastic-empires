@@ -238,6 +238,22 @@
   .lot-est { display:flex; flex-direction:column; gap:2px; margin:14px 0 4px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; }
   .lot-est-v { font-family:var(--display); font-size:16px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; }
   .lot-est-s { font-family:var(--body); font-size:12px; color:var(--ink-3); }
+  .trade { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  .tr-row { display:grid; grid-template-columns:1fr auto 1fr; gap:6px; align-items:stretch; }
+  .tr-row.one { grid-template-columns:auto 1fr; }
+  .tr-row.one:not(:has(.tr-est)) { grid-template-columns:1fr; }
+  .tr-btn { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:3px; min-height:56px; padding:10px 12px; border:1.5px solid var(--ink); border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; text-align:start; font:inherit; }
+  .tr-btn:hover { background:var(--ink); color:var(--paper); }
+  .tr-btn:focus-visible, .tr-buy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+  .tr-k { font-family:var(--label); font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+  .tr-v { font-family:var(--display); font-size:15px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .tr-est { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:72px; padding:8px 10px; background:#131313; color:#fff; border-radius:0; }
+  .tr-est-v { font-family:var(--display); font-size:16px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .tr-est-k { font-family:var(--label); font-size:9px; letter-spacing:.14em; text-transform:uppercase; opacity:.75; margin-top:2px; }
+  .tr-est[data-tip]::after { top:auto; bottom:calc(100% + 8px); inset-inline-end:auto; inset-inline-start:50%; transform:translateX(-50%); }
+  .tr-est[data-tip]:hover::after, .tr-est[data-tip]:focus-visible::after { transform:translateX(-50%); }
+  .tr-buy { width:100%; min-height:48px; border:0; border-radius:0; background:#131313; color:#fff; cursor:pointer; font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-variant-numeric:tabular-nums; }
+  .tr-buy:hover { opacity:.86; }
   .card-icons { position:absolute; bottom:12px; inset-inline-start:12px; z-index:3; display:flex; flex-direction:column; gap:6px; }
   .vitrine:has(.card-icons) .lot-badges { inset-inline-start:52px; }
   /* The tip opens to the right of the icon: below it would leave the photo. */
@@ -1620,6 +1636,9 @@
     .fab-btn:active { transform:scale(.94); }
     .fab-btn:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
     .fab.hide { display:none; }
+    .fab { transition:transform .22s ease, opacity .22s ease; }
+    .fab.away { transform:translateY(calc(100% + 24px)); opacity:0; pointer-events:none; }
+    @media (prefers-reduced-motion: reduce) { .fab { transition:none; } }
     .fab-scrim:not([hidden]) { display:block; position:fixed; inset:0; z-index:61; background:rgba(0,0,0,.32); }
     .fab-sheet:not([hidden]) { display:flex; flex-direction:column; position:fixed; z-index:62; left:0; right:0; bottom:0; max-height:86vh; overflow-y:auto; background:var(--paper);
       border-radius:14px 14px 0 0; padding:8px max(20px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
@@ -6453,7 +6472,7 @@
   // number, bid exactly that, win on the floor. Same shape as the ship_to leak
   // in September. The page only ever needed "is there one" and "is it met",
   // and reserveState() asks the database for exactly those two booleans.
-  const LOT_COLS_PUBLIC = 'auction_days,badges,blurb,estimate_by,estimate_checked,estimate_comps,box_condition,box_notes,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,rare_reason,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
+  const LOT_COLS_PUBLIC = 'auction_days,badges,blurb,decide_by,down_pct,estimate_by,estimate_checked,estimate_comps,box_condition,box_notes,buy_now,buyer_id,care_level,care_note,closed_at,completeness,condition,confidence,created_at,delivered_at,ends_at,estimate_high,estimate_low,extended,id,image_urls,letterbox,line,maker,notes,rare_reason,sale_type,seller_id,service_point,shipped_at,shipping_eur,shipping_nl_eur,shipping_row_eur,size_class,stamp_shown,starting_bid,status,toy,variants,weight_kg,year,withdrawn_at';
 
   // Booleans only, any number of lots at once. Returns an empty map rather than
   // throwing when the function is not there yet, so this ships before the
@@ -7154,18 +7173,36 @@
   }
   const eur = n => '€ ' + Number(n).toLocaleString('nl-NL');
 
-  function openBid(name, bid, bids, lotId, sellerId){
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-trade]'); if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    if (b.dataset.trade === 'buy'){
+      if (SB && !authUser){ openAuth(); return; }
+      startCheckout({ lotId: b.dataset.lot, kind: 'buynow', amount: Number(b.dataset.amount), label: b.dataset.name });
+      return;
+    }
+    openBid(b.dataset.name, 0, 0, b.dataset.lot, b.dataset.seller || null, {
+      dir: b.dataset.trade, min: Number(b.dataset.min), max: b.dataset.max ? Number(b.dataset.max) : null, prefill: Number(b.dataset.prefill) });
+  });
+
+  function openBid(name, bid, bids, lotId, sellerId, range){
     track('bid_open', null, lotId);
-    const minNext = bid + Math.max(10, Math.round(bid * 0.05));
+    const minNext = range ? range.min : bid + Math.max(10, Math.round(bid * 0.05));
+    const maxBid = range && range.max != null ? range.max : null;
     const live = !!(SB && lotId);
-    openModal('Place a bid', name, phrase('Current bid {bid} · {n} bids. Enter at least {min}.', { bid: eur(bid), n: bids, min: eur(minNext) }));
+    const eurC = n => '\u20ac ' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
+    openModal(range ? phrase(range.dir === 'down' ? 'Bid down' : 'Bid up') : 'Place a bid', name,
+      range ? (maxBid != null ? phrase('Bid between {min} and {max}. At the Buy now price, buy it now instead.', { min: eurC(minNext), max: eurC(maxBid) }) : phrase('Enter at least {min}.', { min: eurC(minNext) }))
+            : phrase('Current bid {bid} · {n} bids. Enter at least {min}.', { bid: eur(bid), n: bids, min: eur(minNext) }));
     bidForm.hidden = false;
     const input = document.getElementById('bidInput');
-    input.value = minNext; input.min = minNext;
+    input.step = range ? '0.01' : '1'; input.setAttribute('inputmode', range ? 'decimal' : 'numeric');
+    input.value = range ? range.prefill : minNext; input.min = minNext; if (maxBid != null) input.max = maxBid; else input.removeAttribute('max');
     document.getElementById('bidHint').textContent = live ? 'Binding bid · a hidden reserve may apply.' : 'Binding bid · a hidden reserve may apply · layout preview only.';
     document.getElementById('bidConfirm').onclick = async () => {
-      const v = parseInt(input.value, 10);
-      if (!v || v < minNext) { document.getElementById('bidHint').textContent = phrase('Enter at least {min}.', { min: eur(minNext) }); input.focus(); return; }
+      const v = range ? Math.round(parseFloat(String(input.value).replace(',', '.')) * 100) / 100 : parseInt(input.value, 10);
+      if (!v || v < minNext) { document.getElementById('bidHint').textContent = phrase('Enter at least {min}.', { min: eurC(minNext) }); input.focus(); return; }
+      if (maxBid != null && v > maxBid) { document.getElementById('bidHint').textContent = phrase('At most {max}. At the Buy now price, buy it now instead.', { max: eurC(maxBid) }); input.focus(); return; }
       let extended = false;
       if (live) {
         if (!authUser) { openAuth(); return; }
@@ -7354,6 +7391,46 @@
     ? '<span class="est-sticker" role="img" tabindex="0" aria-label="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(lo).toLocaleString('nl-NL'), high: '\u20ac ' + Number(hi).toLocaleString('nl-NL') })) + '" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(lo).toLocaleString('nl-NL'), high: '\u20ac ' + Number(hi).toLocaleString('nl-NL') })) + '">' +
         '<span class="est-t" aria-hidden="true">~</span><span class="est-v">\u20ac' + estMid(lo, hi).toLocaleString('nl-NL') + '</span><span class="est-t" aria-hidden="true">~</span></span>'
     : '';
+  // ---- The trade control (Ramon, 16 Oct 2026) ----
+  // A lot reads like a quote in a trading app: Bid down on the left, Bid up on
+  // the right, the estimate as the spread in the middle, Buy now under them.
+  // On a lot with a Buy now price the seller allows bids down to down_pct below
+  // it; the database checks every bid (check_bid, section 29), so these figures
+  // are guidance for the reader and never the rule itself.
+  const bidStep = n => (Number(n) < 50 ? 0.5 : 1);
+  const r2 = n => Math.round(Number(n) * 100) / 100;
+  // min/max/prefill for each button, or null when that button does not apply.
+  function tradeRange(t){
+    const bn = Number(t.buyNow) || 0, pct = Number(t.downPct) || 0, top = (t.top == null ? null : Number(t.top));
+    if (bn > 0 && pct > 0){
+      const lo = r2(bn * (1 - pct / 100));
+      const min = top == null ? lo : Math.max(lo, r2(top + bidStep(bn)));
+      const max = r2(bn - 0.01);
+      if (min > max) return { buyNow: bn };                       // the range is used up: only Buy now
+      return { buyNow: bn, down: { min, max, prefill: min }, up: { min, max, prefill: max } };
+    }
+    if (t.fixed) return { buyNow: bn };
+    const start = Number(t.start) || 0;
+    const min = top == null ? start : r2(top + Math.max(10, Math.round(top * 0.05)));
+    return { buyNow: bn > 0 ? bn : 0, up: { min, max: bn > 0 ? r2(bn - 0.01) : null, prefill: min } };
+  }
+  function tradeHtml(t, esc){
+    const R = tradeRange(t), m = n => '€\u00a0' + r2(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
+    const btn = (dir, rr) => '<button type="button" class="tr-btn tr-' + dir + '" data-trade="' + dir + '" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') +
+      '" data-min="' + rr.min + '"' + (rr.max != null ? ' data-max="' + rr.max + '"' : '') + ' data-prefill="' + rr.prefill + '" data-seller="' + esc(t.sellerId || '') + '">' +
+      '<span class="tr-k">' + (dir === 'down' ? '↓ ' : '↑ ') + esc(phrase(dir === 'down' ? 'Bid down' : 'Bid up')) + '</span>' +
+      '<span class="tr-v">' + esc(dir === 'down' || rr.max == null ? phrase('from {amount}', { amount: m(rr.min) }) : phrase('to {amount}', { amount: m(rr.max) })) + '</span></button>';
+    const est = (t.estChecked && t.estLow && t.estHigh)
+      ? '<div class="tr-est" tabindex="0" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: m(t.estLow), high: m(t.estHigh) })) + '"><span class="tr-est-v">~' + m(estMid(t.estLow, t.estHigh)).replace('\u00a0', '') + '</span><span class="tr-est-k">' + esc(phrase('Estimate')) + '</span></div>'
+      : '';
+    const row = (R.down || R.up || est)
+      ? '<div class="tr-row' + (R.down ? '' : ' one') + '">' + (R.down ? btn('down', R.down) : '') + est + (R.up ? btn('up', R.up) : '') + '</div>'
+      : '';
+    const buy = R.buyNow > 0
+      ? '<button type="button" class="tr-buy" data-trade="buy" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') + '" data-amount="' + R.buyNow + '">' + esc(phrase('Buy now')) + ' · ' + m(R.buyNow) + '</button>'
+      : '';
+    return '<div class="trade">' + row + buy + '</div>';
+  }
   const badgeLabel = id => (BADGES.find(b => b.id === id) || {}).label || '';
   // On a card (onCard) Complete is left out of the chips: it is the icon
   // beside the star instead, from completeIconHtml(). On the lot page it is
@@ -7645,6 +7722,7 @@
         variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
+        down_pct: (Number(current.buyNow || (fixedSale ? current.startingBid : 0)) > 0) ? (Number(current.downPct) || 0) : 0,
         estimate_by: current.estimateBy === 'seller' ? 'seller' : 'ai',
         estimate_checked: current.estimateChecked === true,
         estimate_comps: current.estimateBy === 'seller' ? null : (Array.isArray(current.comps) ? current.comps.length : null),
@@ -8225,6 +8303,10 @@
         '<label class="box-toggle" for="e_estchecked"><input type="checkbox" id="e_estchecked"' + (c.estimateChecked ? ' checked' : '') + '><span><b>' + esc(phrase('Estimate checked')) + '</b><span>' + esc(phrase('Buyers only see the estimate once you have checked it. Change a figure and it counts as checked.')) + '</span></span></label>' +
         '<div class="ef-row">' + ef('Est. low €', 'e_estlow', c.estimateLow, 'number', 'The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.') + ef('Est. high €', 'e_esthigh', c.estimateHigh, 'number', 'The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.') + '</div>' +
         '<div class="ef-row">' + ef('Buy Now \u20ac (optional)', 'e_buynow', c.buyNow, 'number', 'An instant-purchase price that ends the auction on the spot. Set it above what you expect bidding to reach, or someone will simply take it. Leave blank for auction only.') + efSel('Auction length (days)', 'e_days', String(c.auctionDays || 7), DAYS, 'How long bidding runs, counted from the FIRST bid rather than from the day you list. Your lot waits in the shop until someone bids, so it does not disappear in a week nobody happened to look. Seven days is the default and catches two weekends. A bid in the final minutes extends the clock by two minutes, so it cannot be sniped.') + '</div>' +
+        // How far under Buy now a buyer may bid (Ramon, 16 Oct 2026): Bid down. Off
+        // keeps the lot a plain auction or direct sale. The database refuses
+        // anything outside the range whatever the page says (check_bid).
+        efSel('Bid down', 'e_downpct', c.downPct ? c.downPct + '%' : 'Off', ['Off', '1%', '2%', '3%', '4%', '5%'], 'With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.') +
         // Weight, and no postage price.
         //
         // Asking a seller to name a shipping amount was asking them to guess a
@@ -8312,6 +8394,7 @@
           boxCondition: g('e_boxcond') || null,
           boxNotes: g('e_boxnotes'),
           estimateLow: num('e_estlow'), estimateHigh: num('e_esthigh'),
+          downPct: parseInt(g('e_downpct'), 10) || 0,
           // confidence is the AI's assessment and carries over untouched
           auctionDays: parseInt(g('e_days'), 10) || 7, edited: true,
         };
@@ -8485,7 +8568,7 @@
     document.getElementById('sellerLotsIntro').textContent = liveLots.length
       ? phrase(liveLots.length === 1 ? '{seller} has {n} lot live right now.' : '{seller} has {n} lots live right now.', { seller: name, n: liveLots.length })
       : phrase('{seller} has no live lots right now.', { seller: name });
-    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '', estLow: l.estimate_low, estHigh: l.estimate_high, estChecked: l.estimate_checked === true }; });
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '', estLow: l.estimate_low, estHigh: l.estimate_high, estChecked: l.estimate_checked === true, buyNow: Number(l.buy_now) || 0, downPct: Number(l.down_pct) || 0 }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
@@ -8560,7 +8643,6 @@
         // an icon top right, where the favourite star used to be.
         badgesHtml(l.badges, e, true) +
         completeIconHtml(l.badges, e, l.rareReason) +
-        (l.estChecked ? estStickerHtml(l.estLow, l.estHigh, e) : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       // The title is a real link now. It was an anchor with the destination in a
@@ -8574,7 +8656,11 @@
         // that already puts "HASBRO (TITAN SPORTS INC.)" on a card next to a line
         // that says the same thing, and a longer note would push the year off.
         '<div class="meta">' + e([l.line, makerLabel(l.maker), l.year].filter(Boolean).join(' · ')) + '</div>' +
-        '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' +
+        // A lot with Buy now has its prices on the trade buttons; the row above
+        // them shows the highest bid once there is one, never a starting price of 0.
+        ((!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
+          ? '<div class="auc-card"><div><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>'
+          : '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' ) +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
         // No delivery figure on a card, on Ramon's call. Sixteen of them down a
@@ -8582,7 +8668,10 @@
         // a shopper scanning a wall of toys is choosing what to look at, not what
         // to pay. It belongs on the lot page, where someone has already decided
         // to consider this piece and the postage is part of the real total.
-        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>' : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">In preview</div>' : (isFixed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">Buy now &middot; ' + money(l.bid) + '</div>' : '<button class="card-bid draft-bid" type="button" data-name="' + e(l.name) + '" data-bid="' + (l.bid || 0) + '" data-bids="' + (l.bids || 0) + '" data-lot="' + e(l.id || '') + '">Place a bid</button>'))) +
+        (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>'
+          : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">In preview</div>'
+          : tradeHtml({ id: l.id, name: l.name, buyNow: l.buyNow, downPct: l.downPct, top: l.bids ? l.bid : null, start: l.bid, fixed: isFixed,
+                        estChecked: l.estChecked, estLow: l.estLow, estHigh: l.estHigh }, e))) +
       '</div></article>';
   }
 
@@ -8671,7 +8760,7 @@
       // No shipping column here on purpose. A card names no delivery figure at
       // all now, and if it ever does again it will come from the carriers rather
       // than from a stored estimate that was wrong on every lot.
-      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges,rare_reason,estimate_low,estimate_high,estimate_checked';
+      const COLS = 'id,toy,maker,line,year,starting_bid,buy_now,image_urls,ends_at,status,closed_at,created_at,extended,sale_type,badges,rare_reason,estimate_low,estimate_high,estimate_checked,down_pct';
       const since = new Date(Date.now() - 86400000).toISOString();
       // ilike patterns go inside an or() string, so strip what would break it
       const q = shopQuery.replace(/[,()*%\\]/g, ' ').trim();
@@ -8724,7 +8813,7 @@
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high, estChecked: r.estimate_checked === true };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high, estChecked: r.estimate_checked === true, buyNow: Number(r.buy_now) || 0, downPct: Number(r.down_pct) || 0 };
       });
     } else {
       lots = loadDraftLots();
@@ -10956,12 +11045,9 @@
             '</div>' :
             (isPreview ?
               '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item is not on sale yet.' : 'Bidding has not opened yet.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
-              (isFixed ?
-                '<div class="buy-row"><button class="btn accent" type="button" id="lotBuy">Buy now &middot; ' + money(fixedPrice) + '</button></div>' + watchLink :
-                '<div class="buy-row">' +
-                  '<button class="btn accent" type="button" id="lotBid">Place a bid</button>' +
-                  (lot.buy_now ? '<button class="btn ghost" type="button" id="lotBuy">Buy now &middot; ' + money(lot.buy_now) + '</button>' : '') +
-                '</div>' + watchLink))) +
+              tradeHtml({ id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, top: bids.length ? cur : null,
+                          start: Number(lot.starting_bid) || 0, fixed: isFixed, sellerId: lot.seller_id,
+                          estChecked: lot.estimate_checked === true, estLow: lot.estimate_low, estHigh: lot.estimate_high }, e) + watchLink)) +
           // No third shipping statement here. This one read shipping_eur, a column
           // filled from an estimated table before the carriers were wired up, and
           // it printed EUR 15.00 under the buy button while the live quote three
@@ -11659,6 +11745,15 @@
     // once on a timer and showing a figure from before the results came back.
     const sc = document.getElementById('shopCount');
     if (sc && window.MutationObserver) new MutationObserver(syncCount).observe(sc, { childList: true, characterData: true, subtree: true });
+    // Out of the way while reading down, back on the first move up: the squares
+    // sat over full-width buttons such as Buy now (Safari's own bars do this).
+    let lastY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY, d = y - lastY;
+      if (Math.abs(d) < 8) return;
+      fab.classList.toggle('away', d > 0 && y > 120);
+      lastY = y;
+    }, { passive: true });
     bS.addEventListener('click', () => open('search'));
     bM.addEventListener('click', () => open('menu'));
     document.getElementById('fabClose').addEventListener('click', close);

@@ -625,5 +625,16 @@
   "Menu": "Izbornik",
   "Categories": "Kategorije",
   "Close": "Zatvori",
-  "Everything for sale": "Sve što je na prodaju"
+  "Everything for sale": "Sve što je na prodaju",
+  "Bid down": "Ponuda niže",
+  "Bid up": "Ponuda više",
+  "Estimate": "Procjena",
+  "from {amount}": "od {amount}",
+  "to {amount}": "do {amount}",
+  "Off": "Isključeno",
+  "Bid between {min} and {max}. At the Buy now price, buy it now instead.": "Ponudite između {min} i {max}. Po cijeni Kupi odmah kupite ga odmah.",
+  "At most {max}. At the Buy now price, buy it now instead.": "Najviše {max}. Po cijeni Kupi odmah kupite ga odmah.",
+  "With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.": "Uz cijenu Kupi odmah kupci smiju ponuditi do ovoliko manje, a vi prihvaćate ili odbijate najvišu ponudu unutar 48 sati nakon dražbe. Isključeno znači samo Kupi odmah ili obično nadmetanje.",
+  "Buy now": "Kupi odmah",
+  "No bids yet": "Još nema ponuda"
 }
