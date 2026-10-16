@@ -1728,6 +1728,11 @@
     input, select, textarea { font-size:16px; }
     /* comfortable, thumb-sized tap targets */
     .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
+    /* The bid block follows the 44px tap size as a whole, or the price cell
+       (not a button) stays 38px and leaves a gap under it. Same 16px line box,
+       so the baseline stays shared. */
+    .tr-px, .tr-btn { height:44px; padding:14px 8px; }
+    .tr-buy { height:46px; padding:14px 8px; }
     .btn, button { -webkit-tap-highlight-color:rgba(0,0,0,0); touch-action:manipulation; }
     /* stop double-tap zoom fighting our own buttons */
     a, button, [role="button"] { touch-action:manipulation; }
