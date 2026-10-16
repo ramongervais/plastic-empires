@@ -11143,7 +11143,7 @@
         '<div class="lot-main" id="lotMain">' +
           '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
           (mainImg ? '<img class="lot-img" id="lotImg" src="' + e(mainImg) + '" alt="' + e(lot.toy) + '" draggable="false">' : '<div class="vlabel"><div class="k">' + e([lot.maker, lot.year].filter(Boolean).join(' · ')) + '</div><div class="n">' + e(lot.toy) + '</div></div>') +
-          (lot.estimate_checked === true ? estStickerHtml(lot.estimate_low, lot.estimate_high, e) : '') +
+          // No estimate in the photo: the lot page states it in the text beside it.
           '<div class="zoom-lens" id="zoomLens" hidden></div>' +
         '</div>' +
         (imgs.length > 1 ? '<div class="lot-thumbs">' + imgs.map((u, i) => '<button class="lot-th' + (i === 0 ? ' active' : '') + '" type="button" data-img="' + e(u) + '" style="background-image:url(' + e(u) + ')"></button>').join('') + '</div>' : '') +
