@@ -664,5 +664,7 @@
   "This lot is back with you. Relist it from your account.": "Dieses Los ist wieder bei dir. Stelle es in deinem Konto erneut ein.",
   "Bid down from {amount}": "Niedriger bieten ab {amount}",
   "Bid up from {amount}": "Höher bieten ab {amount}",
-  "Bid up to {amount}": "Höher bieten bis {amount}"
+  "Bid up to {amount}": "Höher bieten bis {amount}",
+  "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Biete ab {min}. Unter {start} entscheidet der Verkäufer nach der Auktion, ab {start} ist es ein normales Gebot.",
+  "Highest bid, waiting for your decision": "Höchstgebot, wartet auf deine Entscheidung"
 }

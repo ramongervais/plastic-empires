@@ -656,5 +656,7 @@
   "This lot is back with you. Relist it from your account.": "Este lote ha vuelto a ti. Vuelve a publicarlo desde tu cuenta.",
   "Bid down from {amount}": "Pujar a la baja desde {amount}",
   "Bid up from {amount}": "Pujar más desde {amount}",
-  "Bid up to {amount}": "Pujar más hasta {amount}"
+  "Bid up to {amount}": "Pujar más hasta {amount}",
+  "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Puja desde {min}. Por debajo de {start} el vendedor decide tras la subasta; desde {start} es una puja normal.",
+  "Highest bid, waiting for your decision": "Puja más alta, pendiente de tu decisión"
 }

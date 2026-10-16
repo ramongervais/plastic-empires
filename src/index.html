@@ -977,6 +977,12 @@
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
   .bidform { margin:2px 0 20px; }
+  .bid-dirs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .bid-dirs[hidden] { display:none; }
+  .bid-dir { min-height:48px; padding:8px 12px; border:1.5px solid var(--ink); border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; white-space:nowrap;
+    font-family:var(--label); font-size:12px; letter-spacing:.12em; text-transform:uppercase; font-variant-numeric:tabular-nums; }
+  .bid-dir.on { background:var(--ink); color:var(--paper); }
+  @media (max-width:520px){ .bid-dirs { grid-template-columns:1fr; } }
   /* The delivery form. Two columns on anything wider than a phone, one below, and
      smaller type than a bid: a bid is a single number and earns 20px bold, an
      address is seven fields and at that size it shouts and does not fit.
@@ -6489,6 +6495,17 @@
   // Booleans only, any number of lots at once. Returns an empty map rather than
   // throwing when the function is not there yet, so this ships before the
   // migration runs instead of depending on it.
+  // Bid down from the reserve (section 30): the lowest bid each lot accepts. Only
+  // the floor, never the reserve, and only for lots with Bid down on.
+  const FLOORS = {};
+  async function loadFloors(ids){
+    if (!SB || !ids || !ids.length) return FLOORS;
+    try {
+      const { data, error } = await SB.rpc('bid_floors', { p_ids: ids });
+      if (!error && data) data.forEach(function(r){ FLOORS[r.lot_id] = Number(r.floor); });
+    } catch (e) { /* before section 30 runs: lots simply show ordinary bidding */ }
+    return FLOORS;
+  }
   async function reserveState(ids){
     const out = {};
     if (!SB || !ids || !ids.length) return out;
@@ -7193,23 +7210,46 @@
       startCheckout({ lotId: b.dataset.lot, kind: 'buynow', amount: Number(b.dataset.amount), label: b.dataset.name });
       return;
     }
-    openBid(b.dataset.name, 0, 0, b.dataset.lot, b.dataset.seller || null, {
-      dir: b.dataset.trade, min: Number(b.dataset.min), max: b.dataset.max ? Number(b.dataset.max) : null, prefill: Number(b.dataset.prefill) });
+    // Both directions travel to the modal, so it can offer Bid down and Bid up
+    // side by side whichever button opened it.
+    const rng = x => x ? { dir: x.dataset.trade, min: Number(x.dataset.min), max: x.dataset.max ? Number(x.dataset.max) : null, prefill: Number(x.dataset.prefill) } : null;
+    const box = b.closest('.trade');
+    const r = rng(b);
+    r.down = rng(box && box.querySelector('[data-trade="down"]'));
+    r.up = rng(box && box.querySelector('[data-trade="up"]'));
+    openBid(b.dataset.name, 0, 0, b.dataset.lot, b.dataset.seller || null, r);
   });
 
   function openBid(name, bid, bids, lotId, sellerId, range){
     track('bid_open', null, lotId);
-    const minNext = range ? range.min : bid + Math.max(10, Math.round(bid * 0.05));
-    const maxBid = range && range.max != null ? range.max : null;
+    // Bid down and Bid up both open: one range from the lowest down to the highest
+    // up, with the two as choices that fill in the amount (Ramon, 16 Oct 2026).
+    const both = !!(range && range.down && range.up);
+    const minNext = both ? range.down.min : (range ? range.min : bid + Math.max(10, Math.round(bid * 0.05)));
+    const maxBid = both ? (range.up.max != null ? range.up.max : null) : (range && range.max != null ? range.max : null);
     const live = !!(SB && lotId);
     const eurC = n => '\u20ac ' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
-    openModal(range ? phrase(range.dir === 'down' ? 'Bid down' : 'Bid up') : 'Place a bid', name,
+    openModal(both ? phrase('Place a bid') : range ? phrase(range.dir === 'down' ? 'Bid down' : 'Bid up') : 'Place a bid', name,
+      both ? phrase('Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.', { min: eurC(range.down.min), start: eurC(range.up.min) }) :
       range ? (maxBid != null ? phrase('Bid between {min} and {max}. At the Buy now price, buy it now instead.', { min: eurC(minNext), max: eurC(maxBid) }) : phrase('Enter at least {min}.', { min: eurC(minNext) }))
             : phrase('Current bid {bid} · {n} bids. Enter at least {min}.', { bid: eur(bid), n: bids, min: eur(minNext) }));
     bidForm.hidden = false;
     const input = document.getElementById('bidInput');
     input.step = range ? '0.01' : '1'; input.setAttribute('inputmode', range ? 'decimal' : 'numeric');
     input.value = range ? range.prefill : minNext; input.min = minNext; if (maxBid != null) input.max = maxBid; else input.removeAttribute('max');
+    let dirs = document.getElementById('bidDirs');
+    if (!dirs) { dirs = document.createElement('div'); dirs.id = 'bidDirs'; dirs.className = 'bid-dirs'; bidForm.insertBefore(dirs, bidForm.firstChild); }
+    dirs.hidden = !both;
+    if (both) {
+      const hx = v => String(v).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+      const chip = (d, rr) => '<button type="button" class="bid-dir' + (range.dir === d ? ' on' : '') + '" data-dir="' + d + '" data-v="' + rr.prefill + '">' +
+        hx(d === 'down' ? phrase('Bid down from {amount}', { amount: eurC(rr.min) }) : (rr.max != null ? phrase('Bid up to {amount}', { amount: eurC(rr.max) }) : phrase('Bid up from {amount}', { amount: eurC(rr.min) }))) + '</button>';
+      dirs.innerHTML = chip('down', range.down) + chip('up', range.up);
+      dirs.querySelectorAll('.bid-dir').forEach(c => c.addEventListener('click', () => {
+        dirs.querySelectorAll('.bid-dir').forEach(x => x.classList.toggle('on', x === c));
+        input.value = c.dataset.v; input.focus();
+      }));
+    }
     document.getElementById('bidHint').textContent = live ? 'Binding bid · a hidden reserve may apply.' : 'Binding bid · a hidden reserve may apply · layout preview only.';
     document.getElementById('bidConfirm').onclick = async () => {
       const v = range ? Math.round(parseFloat(String(input.value).replace(',', '.')) * 100) / 100 : parseInt(input.value, 10);
@@ -7414,6 +7454,19 @@
   // min/max/prefill for each button, or null when that button does not apply.
   function tradeRange(t){
     const bn = Number(t.buyNow) || 0, pct = Number(t.downPct) || 0, top = (t.top == null ? null : Number(t.top));
+    const floor = (t.floor != null && pct > 0) ? Number(t.floor) : null;
+    if (floor != null && !t.fixed){
+      // Reserve mode: one ladder in small steps from the floor. Under the starting
+      // bid it is Bid down (the seller decides after the auction), from there Bid up.
+      const start = Number(t.start) || 0;
+      const step = bidStep(start || floor);
+      const next = top == null ? floor : r2(top + step);
+      const cap = bn > 0 ? r2(bn - 0.01) : null;
+      const down = next < start ? { min: next, max: r2(start - 0.01), prefill: next } : null;
+      const upMin = Math.max(next, start);
+      const up = (cap == null || upMin <= cap) ? { min: upMin, max: cap, prefill: upMin } : null;
+      return { buyNow: bn, down, up };
+    }
     if (bn > 0 && pct > 0){
       const lo = r2(bn * (1 - pct / 100));
       const min = top == null ? lo : Math.max(lo, r2(top + bidStep(bn)));
@@ -7738,7 +7791,7 @@
         variants: current.variants || [], image_urls: urls, starting_bid: current.startingBid || 0,
         reserve: fixedSale ? null : (current.reserve || null), buy_now: fixedSale ? (current.buyNow || current.startingBid || 0) : (current.buyNow || null),
         estimate_low: current.estimateLow || null, estimate_high: current.estimateHigh || null, confidence: current.confidence || null,
-        down_pct: (Number(current.buyNow || (fixedSale ? current.startingBid : 0)) > 0) ? (Number(current.downPct) || 0) : 0,
+        down_pct: (Number(current.buyNow || (fixedSale ? current.startingBid : 0)) > 0 || (!fixedSale && Number(current.reserve) > 0)) ? (Number(current.downPct) || 0) : 0,
         estimate_by: current.estimateBy === 'seller' ? 'seller' : 'ai',
         estimate_checked: current.estimateChecked === true,
         estimate_comps: current.estimateBy === 'seller' ? null : (Array.isArray(current.comps) ? current.comps.length : null),
@@ -8322,7 +8375,7 @@
         // How far under Buy now a buyer may bid (Ramon, 16 Oct 2026): Bid down. Off
         // keeps the lot a plain auction or direct sale. The database refuses
         // anything outside the range whatever the page says (check_bid).
-        efSel('Bid down', 'e_downpct', c.downPct ? c.downPct + '%' : 'Off', ['Off', '1%', '2%', '3%', '4%', '5%'], 'With a Buy now price, buyers may bid up to this much below it, and you accept or decline the highest bid within 48 hours after the auction. Off means only Buy now, or ordinary bidding.') +
+        efSel('Bid down', 'e_downpct', c.downPct ? c.downPct + '%' : 'Off', ['Off', '1%', '2%', '3%', '4%', '5%'], 'Buyers may bid up to this much below your reserve, or without a reserve below your Buy now price. A bid under the reserve comes to you after the auction, to accept or decline within 48 hours. Off means ordinary bidding.') +
         // Weight, and no postage price.
         //
         // Asking a seller to name a shipping amount was asking them to guess a
@@ -8584,7 +8637,8 @@
     document.getElementById('sellerLotsIntro').textContent = liveLots.length
       ? phrase(liveLots.length === 1 ? '{seller} has {n} lot live right now.' : '{seller} has {n} lots live right now.', { seller: name, n: liveLots.length })
       : phrase('{seller} has no live lots right now.', { seller: name });
-    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '', estLow: l.estimate_low, estHigh: l.estimate_high, estChecked: l.estimate_checked === true, buyNow: Number(l.buy_now) || 0, downPct: Number(l.down_pct) || 0 }; });
+    await loadFloors(lots.filter(l => Number(l.down_pct) > 0).map(l => l.id));
+    const mapped = lots.map(l => { const a = agg[l.id] || { max: 0, count: 0 }; const state = l.status === 'sold' ? 'sold' : (l.status === 'preview' ? 'preview' : (isEnded(l) ? 'ended' : 'live')); const bidV = l.sale_type === 'fixed' ? Number(l.buy_now || l.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && l.buy_now) ? Number(l.buy_now) : l.starting_bid)); return { id: l.id, name: l.toy, maker: l.maker, line: l.line, year: l.year, bid: bidV, bids: a.count, img: (l.image_urls && l.image_urls[0]) || '', ends_at: l.ends_at, state, saleType: l.sale_type, badges: l.badges || [], rareReason: l.rare_reason || '', estLow: l.estimate_low, estHigh: l.estimate_high, estChecked: l.estimate_checked === true, buyNow: Number(l.buy_now) || 0, downPct: Number(l.down_pct) || 0, start: Number(l.starting_bid) || 0 }; });
     const grid = document.getElementById('sellerLots');
     grid.innerHTML = mapped.length ? mapped.map(lotCardHtml).join('') : '<div class="acct-empty">No lots yet.</div>';
     grid.querySelectorAll('.card-bid.draft-bid').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); openBid(b.dataset.name, parseInt(b.dataset.bid, 10) || 0, parseInt(b.dataset.bids, 10) || 0, b.dataset.lot || null); }));
@@ -8687,7 +8741,7 @@
         // to consider this piece and the postage is part of the real total.
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>'
           : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">In preview</div>'
-          : tradeHtml({ id: l.id, name: l.name, buyNow: l.buyNow, downPct: l.downPct, top: l.bids ? l.bid : null, start: l.bid, fixed: isFixed,
+          : tradeHtml({ id: l.id, name: l.name, buyNow: l.buyNow, downPct: l.downPct, floor: FLOORS[l.id], top: l.bids ? l.bid : null, start: l.start != null ? l.start : l.bid, fixed: isFixed,
                         estChecked: l.estChecked, estLow: l.estLow, estHigh: l.estHigh }, e))) +
       '</div></article>';
   }
@@ -8824,13 +8878,14 @@
         const { data: bd } = await SB.from('bids').select('lot_id,amount').in('lot_id', ids);
         (bd || []).forEach(x => { const m = agg[x.lot_id] || { max: 0, count: 0 }; m.max = Math.max(m.max, Number(x.amount)); m.count++; agg[x.lot_id] = m; });
       }
+      await loadFloors(rows.filter(r => Number(r.down_pct) > 0).map(r => r.id));
       lots = rows.map(r => {
         const a = agg[r.id] || { max: 0, count: 0 };
         const timeEnded = r.ends_at && new Date(r.ends_at) <= now;
         const state = r.status === 'sold' ? 'sold' : (r.status === 'preview' ? 'preview' : ((r.status === 'ended' || timeEnded) ? 'ended' : 'live'));
         const closedMs = r.closed_at ? new Date(r.closed_at).getTime() : ((state !== 'live' && r.ends_at) ? new Date(r.ends_at).getTime() : new Date(r.created_at).getTime());
         const bidVal = (r.sale_type === 'fixed') ? Number(r.buy_now || r.starting_bid || 0) : (a.count ? a.max : ((state !== 'live' && r.buy_now) ? Number(r.buy_now) : r.starting_bid));
-        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high, estChecked: r.estimate_checked === true, buyNow: Number(r.buy_now) || 0, downPct: Number(r.down_pct) || 0 };
+        return { id: r.id, name: r.toy, maker: r.maker, line: r.line, year: r.year, bid: bidVal, bids: a.count, img: (r.image_urls && r.image_urls[0]) || '', ends_at: r.ends_at, state, closedMs, extended: r.extended, saleType: r.sale_type, featured: Object.prototype.hasOwnProperty.call(featRank, r.id), featRank: featRank[r.id] || 0, badges: r.badges || [], rareReason: r.rare_reason || '', estLow: r.estimate_low, estHigh: r.estimate_high, estChecked: r.estimate_checked === true, buyNow: Number(r.buy_now) || 0, downPct: Number(r.down_pct) || 0, start: Number(r.starting_bid) || 0 };
       });
     } else {
       lots = loadDraftLots();
@@ -9586,7 +9641,7 @@
             '<button class="acct-signout" data-offer="decline" data-lotid="' + e(l.id) + '" data-label="' + e(l.toy) + '" data-amt="' + e(amt) + '">' + phrase('Decline') + '</button>' +
           '</div>' +
           (due ? '<div class="st">' + phrase('Decide by {date}', { date: e(due) }) + '</div>' : '') +
-        '</div>', phrase('Highest bid, under your Buy now price'));
+        '</div>', phrase('Highest bid, waiting for your decision'));
       }
       const right = l.status === 'unsold'
         ? '<div style="text-align:end"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 listing</div></div>'
@@ -10922,6 +10977,7 @@
     // Two booleans, never the figure. One round trip, and the page still draws
     // if it fails: no note rather than a wrong one.
     const rs = (await reserveState([lot.id]))[lot.id] || { has: false, met: false };
+    if (Number(lot.down_pct) > 0) await loadFloors([lot.id]);
     const reserve = rs.has;
     const reserveMet = !rs.has || rs.met;
     // Bid down: 'offer' is the seller's 48 hours, 'unsold' a declined or lapsed
@@ -11122,7 +11178,7 @@
             '</div>' :
             (isPreview ?
               '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item is not on sale yet.' : 'Bidding has not opened yet.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
-              tradeHtml({ id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, top: bids.length ? cur : null,
+              tradeHtml({ id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, floor: FLOORS[lot.id], top: bids.length ? cur : null,
                           start: Number(lot.starting_bid) || 0, fixed: isFixed, sellerId: lot.seller_id,
                           estChecked: lot.estimate_checked === true, estLow: lot.estimate_low, estHigh: lot.estimate_high }, e) + watchLink)) +
           // No third shipping statement here. This one read shipping_eur, a column

@@ -659,5 +659,7 @@
   "This lot is back with you. Relist it from your account.": "Dit kavel staat weer bij jou. Bied het opnieuw aan vanuit je account.",
   "Bid down from {amount}": "Lager bieden vanaf {amount}",
   "Bid up from {amount}": "Hoger bieden vanaf {amount}",
-  "Bid up to {amount}": "Hoger bieden tot {amount}"
+  "Bid up to {amount}": "Hoger bieden tot {amount}",
+  "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Bied vanaf {min}. Onder {start} beslist de verkoper na de veiling, vanaf {start} is het een gewoon bod.",
+  "Highest bid, waiting for your decision": "Hoogste bod, wacht op jouw beslissing"
 }

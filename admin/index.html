@@ -527,14 +527,15 @@
               <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
               <div><label class="f" for="le_buynow">Buy now &euro;</label><input class="f" id="le_buynow" type="number" step="1" min="0"></div>
             </div>
-            <!-- Bid down (section 29): how far under Buy now a buyer may bid. -->
+            <!-- Bid down (sections 29-30): how far under the reserve, or without one
+                 under Buy now, a buyer may bid. -->
             <div>
               <label class="f" for="le_downpct">Bid down</label>
               <select class="f" id="le_downpct">
-                <option value="0">Off</option><option value="1">1% under Buy now</option><option value="2">2% under Buy now</option>
-                <option value="3">3% under Buy now</option><option value="4">4% under Buy now</option><option value="5">5% under Buy now</option>
+                <option value="0">Off</option><option value="1">1% lower</option><option value="2">2% lower</option>
+                <option value="3">3% lower</option><option value="4">4% lower</option><option value="5">5% lower</option>
               </select>
-              <p class="s">Needs a Buy now price. After the auction you accept or decline the highest bid within 48 hours.</p>
+              <p class="s">Counts down from the reserve, or without a reserve from the Buy now price. A bid between that floor and the reserve comes to you after the auction, to accept or decline within 48 hours. Shown to buyers as the lowest bid, so it gives away roughly where the reserve is.</p>
             </div>
             <!-- The estimate buyers see as a range (section 28). Changing it makes
                  it the seller's estimate on the lot page instead of the AI's. -->
@@ -1583,8 +1584,9 @@
       say('lMsg', 'The estimate needs a low and a high figure, high at least as large as low, or both empty.', 'err'); toast('Check the estimate: low and high, high at least as large as low.', 'err'); return;
     }
     patch.estimate_low = eLow; patch.estimate_high = eHigh;
-    // Bid down only means something with a Buy now price.
-    patch.down_pct = (Number(patch.buy_now != null ? patch.buy_now : l.buy_now) > 0) ? (parseInt($('le_downpct').value, 10) || 0) : 0;
+    // Bid down needs something to count down from: the reserve, or Buy now.
+    const dnRef = Number(patch.reserve != null ? patch.reserve : l.reserve) > 0 || Number(patch.buy_now != null ? patch.buy_now : l.buy_now) > 0;
+    patch.down_pct = dnRef ? (parseInt($('le_downpct').value, 10) || 0) : 0;
     const eChanged = Number(eLow) !== Number(l.estimate_low) || Number(eHigh) !== Number(l.estimate_high);
     if (eChanged) { patch.estimate_by = 'seller'; patch.estimate_comps = null; }
     // Checked when ticked, or when the figures were just set by hand.

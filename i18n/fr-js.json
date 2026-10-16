@@ -656,5 +656,7 @@
   "This lot is back with you. Relist it from your account.": "Ce lot vous est revenu. Remettez-le en vente depuis votre compte.",
   "Bid down from {amount}": "Offre basse dès {amount}",
   "Bid up from {amount}": "Surenchérir dès {amount}",
-  "Bid up to {amount}": "Surenchérir jusqu'à {amount}"
+  "Bid up to {amount}": "Surenchérir jusqu'à {amount}",
+  "Bid from {min}. Under {start} the seller decides after the auction, from {start} it is an ordinary bid.": "Enchérissez dès {min}. Sous {start}, le vendeur décide après la vente ; dès {start}, c'est une enchère ordinaire.",
+  "Highest bid, waiting for your decision": "Meilleure offre, en attente de votre décision"
 }
