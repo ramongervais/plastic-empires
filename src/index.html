@@ -8814,7 +8814,7 @@
         // Buy now only, bidding never set up: no bid text, but the row stays (empty,
         // same height) so the button lines up with its neighbours' bid blocks.
         ((!isClosed && !isPreview && !isFixed && Number(l.buyNow) > 0 && !l.bids && !(Number(l.start) > 0))
-          ? '<div class="auc-card" aria-hidden="true"><span class="sub" style="margin:0;visibility:hidden">0</span></div>'
+          ? '<div class="auc-card" aria-hidden="true"><div style="visibility:hidden"><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd" style="visibility:hidden">' + endsTxt + '</div></div>'
         : (!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
           ? '<div class="auc-card"><div><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>'
           // One price, in the middle of the bid block (Ramon, 16 Oct 2026): a live
