@@ -8781,7 +8781,7 @@
         // an icon top right, where the favourite star used to be.
         badgesHtml(l.badges, e, true) +
         completeIconHtml(l.badges, e, l.rareReason) +
-        (l.estChecked ? estStickerHtml(l.estLow, l.estHigh, e) : '') +
+        // The estimate is on the lot page only, not on cards (Ramon, 16 Oct 2026).
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       // The title is a real link now. It was an anchor with the destination in a
