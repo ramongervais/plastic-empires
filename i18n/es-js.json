@@ -653,5 +653,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "Las pujas se cerraron en {amount}. El vendedor decide antes del {date}.",
   "Decide now": "Decidir ahora",
   "Not sold.": "No vendido.",
-  "This lot is back with you. Relist it from your account.": "Este lote ha vuelto a ti. Vuelve a publicarlo desde tu cuenta."
+  "This lot is back with you. Relist it from your account.": "Este lote ha vuelto a ti. Vuelve a publicarlo desde tu cuenta.",
+  "Bid down from {amount}": "Pujar a la baja desde {amount}",
+  "Bid up from {amount}": "Pujar más desde {amount}",
+  "Bid up to {amount}": "Pujar más hasta {amount}"
 }

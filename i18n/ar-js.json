@@ -653,5 +653,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "أُغلق المزاد عند {amount}. يقرّر البائع قبل {date}.",
   "Decide now": "قرّر الآن",
   "Not sold.": "غير مباعة.",
-  "This lot is back with you. Relist it from your account.": "عادت هذه القطعة إليك. أعد عرضها من حسابك."
+  "This lot is back with you. Relist it from your account.": "عادت هذه القطعة إليك. أعد عرضها من حسابك.",
+  "Bid down from {amount}": "مزايدة أدنى من {amount}",
+  "Bid up from {amount}": "مزايدة أعلى من {amount}",
+  "Bid up to {amount}": "مزايدة أعلى حتى {amount}"
 }

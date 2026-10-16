@@ -656,5 +656,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "Het bieden is gesloten op {amount}. De verkoper beslist vóór {date}.",
   "Decide now": "Nu beslissen",
   "Not sold.": "Niet verkocht.",
-  "This lot is back with you. Relist it from your account.": "Dit kavel staat weer bij jou. Bied het opnieuw aan vanuit je account."
+  "This lot is back with you. Relist it from your account.": "Dit kavel staat weer bij jou. Bied het opnieuw aan vanuit je account.",
+  "Bid down from {amount}": "Lager bieden vanaf {amount}",
+  "Bid up from {amount}": "Hoger bieden vanaf {amount}",
+  "Bid up to {amount}": "Hoger bieden tot {amount}"
 }

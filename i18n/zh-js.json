@@ -653,5 +653,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "競標已在 {amount} 結束。賣家將在 {date} 前決定。",
   "Decide now": "立即決定",
   "Not sold.": "未售出。",
-  "This lot is back with you. Relist it from your account.": "這件拍品已退回給你。可從帳戶重新上架。"
+  "This lot is back with you. Relist it from your account.": "這件拍品已退回給你。可從帳戶重新上架。",
+  "Bid down from {amount}": "自 {amount} 起低價出價",
+  "Bid up from {amount}": "自 {amount} 起出價",
+  "Bid up to {amount}": "出價至 {amount}"
 }

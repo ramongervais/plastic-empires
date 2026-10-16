@@ -656,5 +656,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "Licitiranje je zatvoreno na {amount}. Prodavatelj odlučuje do {date}.",
   "Decide now": "Odluči sada",
   "Not sold.": "Nije prodano.",
-  "This lot is back with you. Relist it from your account.": "Ovaj lot je ponovno kod tebe. Ponovno ga ponudi iz svog računa."
+  "This lot is back with you. Relist it from your account.": "Ovaj lot je ponovno kod tebe. Ponovno ga ponudi iz svog računa.",
+  "Bid down from {amount}": "Niža ponuda od {amount}",
+  "Bid up from {amount}": "Viša ponuda od {amount}",
+  "Bid up to {amount}": "Viša ponuda do {amount}"
 }

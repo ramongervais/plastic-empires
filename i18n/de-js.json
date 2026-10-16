@@ -661,5 +661,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "Die Gebote endeten bei {amount}. Der Verkäufer entscheidet bis {date}.",
   "Decide now": "Jetzt entscheiden",
   "Not sold.": "Nicht verkauft.",
-  "This lot is back with you. Relist it from your account.": "Dieses Los ist wieder bei dir. Stelle es in deinem Konto erneut ein."
+  "This lot is back with you. Relist it from your account.": "Dieses Los ist wieder bei dir. Stelle es in deinem Konto erneut ein.",
+  "Bid down from {amount}": "Niedriger bieten ab {amount}",
+  "Bid up from {amount}": "Höher bieten ab {amount}",
+  "Bid up to {amount}": "Höher bieten bis {amount}"
 }

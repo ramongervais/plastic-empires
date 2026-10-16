@@ -242,7 +242,15 @@
   .tr-row { display:grid; grid-template-columns:1fr auto 1fr; gap:6px; align-items:stretch; }
   .tr-row.one { grid-template-columns:auto 1fr; }
   .tr-row.one:not(:has(.tr-est)) { grid-template-columns:1fr; }
-  .tr-btn { display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:3px; min-height:56px; padding:10px 12px; border:1.5px solid var(--ink); border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; text-align:start; font:inherit; }
+  /* Bid down and Bid up together: stacked beside the estimate, so each keeps its
+     text on one line even on a phone card. */
+  .tr-row:not(.one) { grid-template-columns:auto 1fr; }
+  .tr-row:not(.one) .tr-est { grid-column:1; grid-row:1 / span 2; }
+  .tr-row:not(.one) .tr-down { grid-column:2; grid-row:1; }
+  .tr-row:not(.one) .tr-up { grid-column:2; grid-row:2; }
+  .tr-row:not(.one):not(:has(.tr-est)) { grid-template-columns:1fr; }
+  .tr-row:not(.one):not(:has(.tr-est)) .tr-btn { grid-column:1; }
+  .tr-btn { display:flex; align-items:center; justify-content:center; min-height:56px; padding:8px 12px; border:1.5px solid var(--ink); border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; text-align:center; white-space:nowrap; font-family:var(--label); font-size:12px; letter-spacing:.12em; text-transform:uppercase; font-variant-numeric:tabular-nums; }
   .tr-btn:hover { background:var(--ink); color:var(--paper); }
   .tr-btn:focus-visible, .tr-buy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .tr-k { font-family:var(--label); font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
@@ -7418,8 +7426,11 @@
     const R = tradeRange(t), m = n => '€\u00a0' + r2(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
     const btn = (dir, rr) => '<button type="button" class="tr-btn tr-' + dir + '" data-trade="' + dir + '" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') +
       '" data-min="' + rr.min + '"' + (rr.max != null ? ' data-max="' + rr.max + '"' : '') + ' data-prefill="' + rr.prefill + '" data-seller="' + esc(t.sellerId || '') + '">' +
-      '<span class="tr-k">' + (dir === 'down' ? '↓ ' : '↑ ') + esc(phrase(dir === 'down' ? 'Bid down' : 'Bid up')) + '</span>' +
-      '<span class="tr-v">' + esc(dir === 'down' || rr.max == null ? phrase('from {amount}', { amount: m(rr.min) }) : phrase('to {amount}', { amount: m(rr.max) })) + '</span></button>';
+      // One line, in the same type as Buy now: the action and its amount are one
+      // phrase, not a label over a figure (Ramon, 16 Oct 2026).
+      esc(dir === 'down' ? phrase('Bid down from {amount}', { amount: m(rr.min) })
+        : rr.max == null ? phrase('Bid up from {amount}', { amount: m(rr.min) })
+        : phrase('Bid up to {amount}', { amount: m(rr.max) })) + '</button>';
     const est = (t.estChecked && t.estLow && t.estHigh)
       ? '<div class="tr-est" tabindex="0" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: m(t.estLow), high: m(t.estHigh) })) + '"><span class="tr-est-v">~' + m(estMid(t.estLow, t.estHigh)).replace('\u00a0', '') + '</span><span class="tr-est-k">' + esc(phrase('Estimate')) + '</span></div>'
       : '';

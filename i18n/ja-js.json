@@ -653,5 +653,8 @@
   "Bidding has closed at {amount}. The seller decides before {date}.": "入札は{amount}で締め切られました。出品者が{date}までに判断します。",
   "Decide now": "今すぐ判断",
   "Not sold.": "未落札。",
-  "This lot is back with you. Relist it from your account.": "このロットはあなたのもとに戻りました。アカウントから再出品できます。"
+  "This lot is back with you. Relist it from your account.": "このロットはあなたのもとに戻りました。アカウントから再出品できます。",
+  "Bid down from {amount}": "{amount}から下値入札",
+  "Bid up from {amount}": "{amount}から入札",
+  "Bid up to {amount}": "{amount}まで入札"
 }
