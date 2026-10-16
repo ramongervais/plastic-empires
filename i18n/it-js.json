@@ -617,5 +617,10 @@
   "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "La stima non è ancora verificata, quindi gli acquirenti non la vedono. Apri Modifica, controlla le cifre e spunta Stima verificata.",
   "AI estimate, checked by the seller": "Stima dell'IA, verificata dal venditore",
   "AI estimate based on {n} recent sale, checked by the seller": "Stima dell'IA basata su {n} vendita recente, verificata dal venditore",
-  "AI estimate based on {n} recent sales, checked by the seller": "Stima dell'IA basata su {n} vendite recenti, verificata dal venditore"
+  "AI estimate based on {n} recent sales, checked by the seller": "Stima dell'IA basata su {n} vendite recenti, verificata dal venditore",
+  "Search": "Cerca",
+  "Menu": "Menu",
+  "Categories": "Categorie",
+  "Close": "Chiudi",
+  "Everything for sale": "Tutto quello in vendita"
 }

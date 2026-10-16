@@ -2097,5 +2097,7 @@
   "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "Procjena još nije provjerena pa je kupci ne vide. Otvorite Uredi, pogledajte brojke i označite Procjena provjerena.",
   "AI estimate, checked by the seller": "Procjena umjetne inteligencije, provjerio prodavatelj",
   "AI estimate based on {n} recent sale, checked by the seller": "Procjena umjetne inteligencije na temelju {n} nedavne prodaje, provjerio prodavatelj",
-  "AI estimate based on {n} recent sales, checked by the seller": "Procjena umjetne inteligencije na temelju {n} nedavnih prodaja, provjerio prodavatelj"
+  "AI estimate based on {n} recent sales, checked by the seller": "Procjena umjetne inteligencije na temelju {n} nedavnih prodaja, provjerio prodavatelj",
+  "Search": "Pretraži",
+  "Categories": "Kategorije"
 }

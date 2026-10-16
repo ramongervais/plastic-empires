@@ -2097,5 +2097,7 @@
   "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "評価額はまだ確認されていないため、購入者には表示されません。編集を開いて数値を確認し、「評価額を確認済み」にチェックを入れてください。",
   "AI estimate, checked by the seller": "AIによる評価額（出品者が確認済み）",
   "AI estimate based on {n} recent sale, checked by the seller": "最近の落札{n}件に基づくAI評価額（出品者が確認済み）",
-  "AI estimate based on {n} recent sales, checked by the seller": "最近の落札{n}件に基づくAI評価額（出品者が確認済み）"
+  "AI estimate based on {n} recent sales, checked by the seller": "最近の落札{n}件に基づくAI評価額（出品者が確認済み）",
+  "Search": "検索",
+  "Categories": "カテゴリー"
 }

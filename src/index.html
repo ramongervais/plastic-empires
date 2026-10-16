@@ -1609,6 +1609,41 @@
   @media (max-width:860px){ .navtoggle { display:inline-flex; } }
   @media (min-width:861px){ .mobile-panel { display:none !important; } }
 
+
+  /* ---------- Floating menu (phone) ---------- */
+  .fab, .fab-sheet, .fab-scrim { display:none; }
+  @media (max-width:860px){
+    .navtoggle { display:none !important; }
+    .fab { display:flex; gap:8px; position:fixed; z-index:60; right:max(16px, env(safe-area-inset-right, 0px)); bottom:calc(16px + env(safe-area-inset-bottom, 0px)); }
+    .fab-btn { width:52px; height:52px; border-radius:10px; border:0; background:#131313; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;
+      box-shadow:0 4px 14px rgba(0,0,0,.24); transition:transform .12s ease; }
+    .fab-btn:active { transform:scale(.94); }
+    .fab-btn:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+    .fab.hide { display:none; }
+    .fab-scrim:not([hidden]) { display:block; position:fixed; inset:0; z-index:61; background:rgba(0,0,0,.32); }
+    .fab-sheet:not([hidden]) { display:flex; flex-direction:column; position:fixed; z-index:62; left:0; right:0; bottom:0; max-height:86vh; overflow-y:auto; background:var(--paper);
+      border-radius:14px 14px 0 0; padding:8px max(20px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+      box-shadow:0 -8px 30px rgba(0,0,0,.18); animation:fabUp .2s ease; }
+    @keyframes fabUp { from { transform:translateY(24px); opacity:.6; } to { transform:none; opacity:1; } }
+    @media (prefers-reduced-motion: reduce) { .fab-sheet:not([hidden]) { animation:none; } }
+    .fab-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 14px; position:sticky; top:-8px; background:var(--paper); }
+    .fab-title { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+    .fab-x { width:44px; height:44px; border:1px solid var(--line); border-radius:10px; background:transparent; color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .fab-pane[hidden] { display:none; }
+    .fab-input { width:100%; font-family:var(--body); font-size:17px; color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+    .fab-input:focus { outline:none; border-color:var(--ink); }
+    .fab-count { font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin-top:10px; min-height:14px; }
+    .fab-lbl { font-family:var(--label); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin:4px 0 10px; }
+    .fab-cats { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+    .fab-cats a { font-family:var(--body); font-size:14px; color:var(--ink); text-decoration:none; padding:10px 14px; border:1px solid var(--line); border-radius:999px; }
+    .fab-cats a:active { background:var(--panel); }
+    .fab-links { display:flex; flex-direction:column; border-top:1px solid var(--line); }
+    .fab-links a { font-family:var(--display); font-size:15px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); text-decoration:none; padding:14px 0; border-bottom:1px solid var(--line); }
+    .fab-links .mob-lbl { font-family:var(--label); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); padding:18px 0 4px; }
+    /* room under the last thing on a page, so the squares never sit on a button */
+    body { padding-bottom:calc(84px + env(safe-area-inset-bottom, 0px)); }
+  }
+
   /* ---------- Phone tuning ---------- */
   @media (max-width:600px){
     /* One column on a phone again (Ramon, 16 Oct 2026: "2 columns are getting
@@ -1860,6 +1895,33 @@
     <a id="authLinkM" data-auth-label>Sign in</a>
   </div>
 </header>
+
+<!-- The floating menu on a phone (Ramon, 16 Oct 2026): search and the menu as two
+     black squares, bottom right where a thumb is, there wherever the reader has
+     scrolled to. They open one sheet from the bottom, in search or menu mode.
+     The header's own burger goes on a phone, so there is one menu, not two. -->
+<div class="fab" id="fab">
+  <button type="button" class="fab-btn" id="fabSearch" aria-label="Search" aria-controls="fabSheet" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+  <button type="button" class="fab-btn" id="fabMenu" aria-label="Menu" aria-controls="fabSheet" aria-expanded="false"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+</div>
+<div class="fab-scrim" id="fabScrim" hidden></div>
+<div class="fab-sheet" id="fabSheet" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+  <div class="fab-head">
+    <span class="fab-title" id="fabTitle">Menu</span>
+    <button type="button" class="fab-x" id="fabClose" aria-label="Close"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="fab-pane" id="fabPaneSearch">
+    <input id="fabQuery" class="fab-input" type="search" placeholder="Search by toy, maker or line…" autocomplete="off" enterkeyhint="search" aria-label="Search lots">
+    <div class="fab-count" id="fabCount" aria-live="polite"></div>
+  </div>
+  <div class="fab-pane" id="fabPaneMenu">
+    <div class="fab-lbl" id="fabCatsLbl">Categories</div>
+    <div class="fab-cats" id="fabCats">
+      <a href="/#collection" data-shopmk="">Everything for sale</a>
+    </div>
+    <div class="fab-links" id="fabLinks"></div>
+  </div>
+</div>
 
 <!-- ============================ HOME ============================ -->
 <main class="view" id="view-home">
@@ -8804,6 +8866,10 @@
     if (lbl) lbl.textContent = 'By molder';
     box.innerHTML = makers.map(m =>
       '<a href="/#collection" data-shopmk="' + mkEsc(m) + '" role="menuitem">' + mkEsc(m) + '</a>').join('');
+    // The floating menu's categories, from the same list.
+    const fc = document.getElementById('fabCats');
+    if (fc) fc.innerHTML = '<a href="/#collection" data-shopmk="">' + mkEsc(phrase('Everything for sale')) + '</a>' +
+      makers.map(m => '<a href="/#collection" data-shopmk="' + mkEsc(m) + '">' + mkEsc(m) + '</a>').join('');
   }
 
   // ----- The two nav menus -----
@@ -11554,6 +11620,71 @@
   })();
 
   // ----- Mobile menu -----
+
+  // ----- Floating menu (phone) -----
+  (function(){
+    const fab = document.getElementById('fab'), sheet = document.getElementById('fabSheet'), scrim = document.getElementById('fabScrim');
+    if (!fab || !sheet) return;
+    const bS = document.getElementById('fabSearch'), bM = document.getElementById('fabMenu');
+    const paneS = document.getElementById('fabPaneSearch'), paneM = document.getElementById('fabPaneMenu');
+    const q = document.getElementById('fabQuery'), count = document.getElementById('fabCount'), title = document.getElementById('fabTitle');
+    // The menu's links are the header's own, so the two can never disagree.
+    const links = document.getElementById('fabLinks'), panel = document.getElementById('mobilePanel');
+    if (links && panel) links.innerHTML = panel.innerHTML.replace(/ id="authLinkM"/, ' data-fab-auth');
+    let lastFocus = null;
+    function open(mode){
+      lastFocus = document.activeElement;
+      const search = mode === 'search';
+      paneS.hidden = !search; paneM.hidden = search;
+      title.textContent = phrase(search ? 'Search' : 'Menu');
+      sheet.setAttribute('aria-label', title.textContent);
+      sheet.hidden = false; scrim.hidden = false; fab.classList.add('hide');
+      bS.setAttribute('aria-expanded', String(search)); bM.setAttribute('aria-expanded', String(!search));
+      if (search){
+        const ss = document.getElementById('shopSearch');
+        q.value = ss ? ss.value : '';
+        setTimeout(() => q.focus(), 30);
+        syncCount();
+      } else {
+        const first = sheet.querySelector('.fab-cats a'); if (first) setTimeout(() => first.focus({ preventScroll: true }), 30);
+      }
+    }
+    function close(){
+      sheet.hidden = true; scrim.hidden = true; fab.classList.remove('hide');
+      bS.setAttribute('aria-expanded', 'false'); bM.setAttribute('aria-expanded', 'false');
+      if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+    }
+    function syncCount(){ const c = document.getElementById('shopCount'); count.textContent = c ? c.textContent : ''; }
+    // Follow the shop's own count as the search lands, rather than reading it
+    // once on a timer and showing a figure from before the results came back.
+    const sc = document.getElementById('shopCount');
+    if (sc && window.MutationObserver) new MutationObserver(syncCount).observe(sc, { childList: true, characterData: true, subtree: true });
+    bS.addEventListener('click', () => open('search'));
+    bM.addEventListener('click', () => open('menu'));
+    document.getElementById('fabClose').addEventListener('click', close);
+    scrim.addEventListener('click', close);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !sheet.hidden) close(); });
+    // Typing searches the shop itself, live; the shop is shown underneath.
+    q.addEventListener('input', () => {
+      const ss = document.getElementById('shopSearch'); if (!ss) return;
+      if (views && views.home && views.home.hidden) show('home');
+      ss.value = q.value; ss.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    // Enter: to the results.
+    q.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault(); close();
+      setTimeout(() => { const t = document.getElementById('collection'); if (t) t.scrollIntoView({ block: 'start' }); }, 80);
+    });
+    // Any link in the sheet closes it; the site's own click handlers do the rest.
+    sheet.addEventListener('click', e => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      if (a.hasAttribute('data-fab-auth')){ e.preventDefault(); close(); const real = document.getElementById('authLinkM') || document.querySelector('[data-auth-label]'); if (real) real.click(); return; }
+      close();
+    });
+  })();
+
   (function(){
     const mast = document.querySelector('header.mast');
     const navToggle = document.getElementById('navToggle');

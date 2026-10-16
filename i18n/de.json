@@ -2105,5 +2105,7 @@
   "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "Die Schätzung ist noch nicht geprüft, Käufer sehen sie also nicht. Öffne Bearbeiten, prüfe die Zahlen und hake Schätzung geprüft an.",
   "AI estimate, checked by the seller": "KI-Schätzung, vom Verkäufer geprüft",
   "AI estimate based on {n} recent sale, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkauf, vom Verkäufer geprüft",
-  "AI estimate based on {n} recent sales, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkäufen, vom Verkäufer geprüft"
+  "AI estimate based on {n} recent sales, checked by the seller": "KI-Schätzung auf Basis von {n} aktuellen Verkäufen, vom Verkäufer geprüft",
+  "Search": "Suchen",
+  "Categories": "Kategorien"
 }

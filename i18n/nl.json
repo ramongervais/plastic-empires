@@ -2130,5 +2130,7 @@
   "The estimate is not checked yet, so buyers do not see it. Open Edit, look at the figures and tick Estimate checked.": "De schatting is nog niet gecontroleerd, dus kopers zien hem niet. Open Bewerken, bekijk de getallen en vink Schatting gecontroleerd aan.",
   "AI estimate, checked by the seller": "AI-schatting, gecontroleerd door de verkoper",
   "AI estimate based on {n} recent sale, checked by the seller": "AI-schatting op basis van {n} recente verkoop, gecontroleerd door de verkoper",
-  "AI estimate based on {n} recent sales, checked by the seller": "AI-schatting op basis van {n} recente verkopen, gecontroleerd door de verkoper"
+  "AI estimate based on {n} recent sales, checked by the seller": "AI-schatting op basis van {n} recente verkopen, gecontroleerd door de verkoper",
+  "Search": "Zoeken",
+  "Categories": "Categorieën"
 }
