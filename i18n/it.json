@@ -2079,5 +2079,17 @@
   "Complete, with all original accessories": "Completo, con tutti gli accessori originali",
   "Instructions": "Istruzioni",
   "Instructions included": "Istruzioni incluse",
-  "The original instruction sheet, inserts or paperwork are included.": "Il foglio di istruzioni originale, gli inserti o i documenti sono inclusi."
+  "The original instruction sheet, inserts or paperwork are included.": "Il foglio di istruzioni originale, gli inserti o i documenti sono inclusi.",
+  "Estimate {low} – {high}": "Stima {low} – {high}",
+  "AI estimate": "Stima dell'IA",
+  "AI estimate based on {n} recent sale": "Stima dell'IA basata su {n} vendita recente",
+  "AI estimate based on {n} recent sales": "Stima dell'IA basata su {n} vendite recenti",
+  "Seller's estimate": "Stima del venditore",
+  "An indication of value, not a price.": "Un'indicazione di valore, non un prezzo.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "Il tuo prezzo di partenza supera la stima alta. Gli acquirenti vedono entrambi: alza la stima se sai che vale di più, oppure abbassa la partenza.",
+  "Check the estimate": "Controlla la stima",
+  "The range does not add up.": "L'intervallo non torna.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Indica un valore basso e uno alto, con quello alto almeno pari al basso. Lascia entrambi vuoti per nessuna stima.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Il limite basso dell'intervallo di valore, visibile agli acquirenti. Tieni la cifra dell'IA se è corretta; se la cambi, il lotto indica che è la tua stima.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Il limite alto dell'intervallo di valore, visibile agli acquirenti. Una stima, non un prezzo: nessuno può comprare a quella cifra."
 }

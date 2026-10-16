@@ -599,5 +599,17 @@
   "Original box included": "Boîte d'origine incluse",
   "Instructions": "Notice",
   "Instructions included": "Notice incluse",
-  "The original instruction sheet, inserts or paperwork are included.": "La notice d'origine, les encarts ou les papiers sont inclus."
+  "The original instruction sheet, inserts or paperwork are included.": "La notice d'origine, les encarts ou les papiers sont inclus.",
+  "Estimate {low} – {high}": "Estimation {low} – {high}",
+  "AI estimate": "Estimation de l'IA",
+  "AI estimate based on {n} recent sale": "Estimation de l'IA fondée sur {n} vente récente",
+  "AI estimate based on {n} recent sales": "Estimation de l'IA fondée sur {n} ventes récentes",
+  "Seller's estimate": "Estimation du vendeur",
+  "An indication of value, not a price.": "Une indication de valeur, pas un prix.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "Votre prix de départ dépasse l'estimation haute. Les acheteurs voient les deux : relevez l'estimation si vous savez que l'objet vaut plus, ou baissez le départ.",
+  "Check the estimate": "Vérifiez l'estimation",
+  "The range does not add up.": "La fourchette n'est pas cohérente.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Indiquez une valeur basse et une valeur haute, la haute au moins égale à la basse. Laissez les deux vides pour aucune estimation.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Le bas de la fourchette de valeur, visible par les acheteurs. Gardez le chiffre de l'IA s'il est juste ; modifiez-le et le lot indique qu'il s'agit de votre estimation.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Le haut de la fourchette de valeur, visible par les acheteurs. Une estimation, pas un prix : personne ne peut acheter à ce montant."
 }

@@ -527,6 +527,13 @@
               <div><label class="f" for="le_reserve">Reserve &euro;</label><input class="f" id="le_reserve" type="number" step="1" min="0"></div>
               <div><label class="f" for="le_buynow">Buy now &euro;</label><input class="f" id="le_buynow" type="number" step="1" min="0"></div>
             </div>
+            <!-- The estimate buyers see as a range (section 28). Changing it makes
+                 it the seller's estimate on the lot page instead of the AI's. -->
+            <div class="cms-row-2">
+              <div><label class="f" for="le_estlow">Estimate low &euro;</label><input class="f" id="le_estlow" type="number" step="1" min="0"></div>
+              <div><label class="f" for="le_esthigh">Estimate high &euro;</label><input class="f" id="le_esthigh" type="number" step="1" min="0"></div>
+            </div>
+            <p class="s" id="le_estHint">Shown to buyers as a range, never as a price.</p>
           </div>
         </section>
 
@@ -1100,7 +1107,7 @@
     // off lots for everyone on 26 September and moved behind lot_private(), so
     // a star select now fails with 42501 and takes the whole console down. This
     // console never reads either column, so it asks for what it uses.
-    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,badges,rare_reason,box_condition,box_notes,' +
+    const LOT_COLS = 'id,toy,maker,line,year,status,sale_type,seller_id,buyer_id,badges,rare_reason,box_condition,box_notes,estimate_by,estimate_comps,' +
       'starting_bid,buy_now,estimate_low,estimate_high,confidence,' +
       'condition,completeness,blurb,notes,variants,image_urls,stamp_shown,' +
       'care_level,care_note,letterbox,size_class,service_point,weight_kg,' +
@@ -1322,6 +1329,10 @@
     const bs = Array.isArray(l.badges) ? l.badges : [];
     ['box', 'complete', 'rare', 'instructions'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
     v('le_rare', l.rare_reason || ''); v('le_boxcond', l.box_condition || ''); v('le_boxnotes', l.box_notes || '');
+    v('le_estlow', l.estimate_low == null ? '' : l.estimate_low); v('le_esthigh', l.estimate_high == null ? '' : l.estimate_high);
+    $('le_estHint').textContent = 'Shown to buyers as a range, never as a price. Now: ' +
+      (l.estimate_by === 'seller' ? "the seller's estimate." : (l.estimate_comps ? 'the AI estimate, from ' + l.estimate_comps + ' recent sales.' : 'the AI estimate.')) +
+      ((l.estimate_high && Number(l.starting_bid) > Number(l.estimate_high)) ? ' The starting bid is above the high estimate, which buyers will see.' : '');
     syncBadgeFields();
 
     // Lock the money fields rather than hide them, so it is obvious why.
@@ -1554,6 +1565,13 @@
       if (fixed) patch.ends_at = null;
     }
 
+    // The estimate: edited figures make it the seller's.
+    const eLow = num('le_estlow'), eHigh = num('le_esthigh');
+    if ((eLow || eHigh) && !(eLow > 0 && eHigh >= eLow)){
+      say('lMsg', 'The estimate needs a low and a high figure, high at least as large as low, or both empty.', 'err'); toast('Check the estimate: low and high, high at least as large as low.', 'err'); return;
+    }
+    patch.estimate_low = eLow; patch.estimate_high = eHigh;
+    if (Number(eLow) !== Number(l.estimate_low) || Number(eHigh) !== Number(l.estimate_high)) { patch.estimate_by = 'seller'; patch.estimate_comps = null; }
     if (patch.badges.includes('rare') && !patch.rare_reason){
       say('lMsg', 'Very Rare needs a reason. It is shown next to the badge, and without one it is a sales claim.', 'err'); toast('Very Rare needs a reason: fill in why it is very rare.', 'err');
       return;

@@ -599,5 +599,17 @@
   "Original box included": "العلبة الأصلية مرفقة",
   "Instructions": "التعليمات",
   "Instructions included": "التعليمات مرفقة",
-  "The original instruction sheet, inserts or paperwork are included.": "ورقة التعليمات الأصلية أو المرفقات أو الأوراق مرفقة."
+  "The original instruction sheet, inserts or paperwork are included.": "ورقة التعليمات الأصلية أو المرفقات أو الأوراق مرفقة.",
+  "Estimate {low} – {high}": "التقدير {low} – {high}",
+  "AI estimate": "تقدير الذكاء الاصطناعي",
+  "AI estimate based on {n} recent sale": "تقدير الذكاء الاصطناعي بناءً على {n} عملية بيع حديثة",
+  "AI estimate based on {n} recent sales": "تقدير الذكاء الاصطناعي بناءً على {n} عمليات بيع حديثة",
+  "Seller's estimate": "تقدير البائع",
+  "An indication of value, not a price.": "مؤشر على القيمة، وليس سعرًا.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "سعر البدء أعلى من التقدير الأعلى. يرى المشترون الاثنين، لذا ارفع التقدير إن كنت تعرف أنه يساوي أكثر، أو اخفض سعر البدء.",
+  "Check the estimate": "تحقق من التقدير",
+  "The range does not add up.": "النطاق غير منطقي.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "أدخل قيمة دنيا وقيمة عليا، على ألا تقل العليا عن الدنيا. اترك الحقلين فارغين لعدم وضع تقدير.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "الحد الأدنى لنطاق القيمة، ويظهر للمشترين. أبقِ رقم الذكاء الاصطناعي إن كان صحيحًا؛ وإن غيّرته، تذكر القطعة أنه تقديرك.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "الحد الأعلى لنطاق القيمة، ويظهر للمشترين. تقدير وليس سعرًا: لا يمكن لأحد الشراء به."
 }

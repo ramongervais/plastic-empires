@@ -599,5 +599,17 @@
   "Original box included": "オリジナル箱付き",
   "Instructions": "説明書",
   "Instructions included": "説明書付き",
-  "The original instruction sheet, inserts or paperwork are included.": "オリジナルの説明書、封入物、書類が付属しています。"
+  "The original instruction sheet, inserts or paperwork are included.": "オリジナルの説明書、封入物、書類が付属しています。",
+  "Estimate {low} – {high}": "評価額 {low} – {high}",
+  "AI estimate": "AIによる評価額",
+  "AI estimate based on {n} recent sale": "最近の落札{n}件に基づくAI評価額",
+  "AI estimate based on {n} recent sales": "最近の落札{n}件に基づくAI評価額",
+  "Seller's estimate": "出品者による評価額",
+  "An indication of value, not a price.": "価値の目安であり、価格ではありません。",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "開始価格が評価額の上限を上回っています。購入者には両方が見えるため、価値が高いと分かっているなら評価額を上げるか、開始価格を下げてください。",
+  "Check the estimate": "評価額を確認してください",
+  "The range does not add up.": "範囲が正しくありません。",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "下限と上限の両方を入力し、上限は下限以上にしてください。評価額なしにする場合は両方を空欄にします。",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "評価額の下限で、購入者に表示されます。AIの数値が正しければそのままに。変更するとロットには出品者の評価額と表示されます。",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "評価額の上限で、購入者に表示されます。目安であって価格ではないため、この金額では購入できません。"
 }

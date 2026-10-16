@@ -599,5 +599,17 @@
   "Original box included": "Caja original incluida",
   "Instructions": "Instrucciones",
   "Instructions included": "Instrucciones incluidas",
-  "The original instruction sheet, inserts or paperwork are included.": "Incluye la hoja de instrucciones original, los insertos o la documentación."
+  "The original instruction sheet, inserts or paperwork are included.": "Incluye la hoja de instrucciones original, los insertos o la documentación.",
+  "Estimate {low} – {high}": "Estimación {low} – {high}",
+  "AI estimate": "Estimación de la IA",
+  "AI estimate based on {n} recent sale": "Estimación de la IA basada en {n} venta reciente",
+  "AI estimate based on {n} recent sales": "Estimación de la IA basada en {n} ventas recientes",
+  "Seller's estimate": "Estimación del vendedor",
+  "An indication of value, not a price.": "Una indicación del valor, no un precio.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "Tu precio de salida supera la estimación alta. Los compradores ven ambos: sube la estimación si sabes que vale más, o baja la salida.",
+  "Check the estimate": "Revisa la estimación",
+  "The range does not add up.": "El rango no cuadra.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Indica un valor bajo y uno alto, con el alto al menos igual que el bajo. Deja ambos vacíos para no poner estimación.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "La parte baja del rango de valor, visible para los compradores. Mantén la cifra de la IA si es correcta; si la cambias, el lote indica que es tu estimación.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "La parte alta del rango de valor, visible para los compradores. Una estimación, no un precio: nadie puede comprar a ese importe."
 }

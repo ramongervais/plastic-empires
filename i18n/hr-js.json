@@ -602,5 +602,17 @@
   "Original box included": "Originalna kutija uključena",
   "Instructions": "Upute",
   "Instructions included": "Upute uključene",
-  "The original instruction sheet, inserts or paperwork are included.": "Uključeni su originalni list s uputama, umetci ili papiri."
+  "The original instruction sheet, inserts or paperwork are included.": "Uključeni su originalni list s uputama, umetci ili papiri.",
+  "Estimate {low} – {high}": "Procjena {low} – {high}",
+  "AI estimate": "Procjena umjetne inteligencije",
+  "AI estimate based on {n} recent sale": "Procjena umjetne inteligencije na temelju {n} nedavne prodaje",
+  "AI estimate based on {n} recent sales": "Procjena umjetne inteligencije na temelju {n} nedavnih prodaja",
+  "Seller's estimate": "Procjena prodavatelja",
+  "An indication of value, not a price.": "Pokazatelj vrijednosti, a ne cijena.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "Vaša početna cijena viša je od gornje procjene. Kupci vide oboje, pa povisite procjenu ako znate da vrijedi više ili snizite početnu cijenu.",
+  "Check the estimate": "Provjerite procjenu",
+  "The range does not add up.": "Raspon nije ispravan.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Upišite donju i gornju vrijednost, pri čemu gornja mora biti barem jednaka donjoj. Ostavite oba prazna ako nema procjene.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Donja granica raspona vrijednosti, vidljiva kupcima. Zadržite brojku umjetne inteligencije ako je točna; ako je promijenite, uz lot piše da je to vaša procjena.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Gornja granica raspona vrijednosti, vidljiva kupcima. Procjena, a ne cijena: nitko ne može kupiti po njoj."
 }

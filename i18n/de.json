@@ -2087,5 +2087,17 @@
   "Complete, with all original accessories": "Komplett, mit allem Originalzubehör",
   "Instructions": "Anleitung",
   "Instructions included": "Anleitung dabei",
-  "The original instruction sheet, inserts or paperwork are included.": "Das originale Anleitungsblatt, Beilagen oder Papiere sind dabei."
+  "The original instruction sheet, inserts or paperwork are included.": "Das originale Anleitungsblatt, Beilagen oder Papiere sind dabei.",
+  "Estimate {low} – {high}": "Schätzung {low} – {high}",
+  "AI estimate": "KI-Schätzung",
+  "AI estimate based on {n} recent sale": "KI-Schätzung auf Basis von {n} aktuellen Verkauf",
+  "AI estimate based on {n} recent sales": "KI-Schätzung auf Basis von {n} aktuellen Verkäufen",
+  "Seller's estimate": "Schätzung des Verkäufers",
+  "An indication of value, not a price.": "Ein Richtwert, kein Preis.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "Dein Startpreis liegt über der oberen Schätzung. Käufer sehen beides: Erhöhe die Schätzung, wenn du weißt, dass es mehr wert ist, oder senke den Start.",
+  "Check the estimate": "Prüfe die Schätzung",
+  "The range does not add up.": "Die Spanne stimmt nicht.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Gib einen unteren und einen oberen Wert an, der obere mindestens so hoch wie der untere. Lass beide leer für keine Schätzung.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "Das untere Ende der Wertspanne, für Käufer sichtbar. Behalte den KI-Wert, wenn er stimmt; änderst du ihn, steht beim Los, dass es deine Schätzung ist.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "Das obere Ende der Wertspanne, für Käufer sichtbar. Eine Schätzung, kein Preis: niemand kann dazu kaufen."
 }

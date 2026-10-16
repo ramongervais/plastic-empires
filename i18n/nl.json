@@ -2112,5 +2112,17 @@
   "Complete, with all original accessories": "Compleet, met alle originele accessoires",
   "Instructions": "Handleiding",
   "Instructions included": "Handleiding inbegrepen",
-  "The original instruction sheet, inserts or paperwork are included.": "Het originele instructieblad, de inserts of het papierwerk zitten erbij."
+  "The original instruction sheet, inserts or paperwork are included.": "Het originele instructieblad, de inserts of het papierwerk zitten erbij.",
+  "Estimate {low} – {high}": "Schatting {low} – {high}",
+  "AI estimate": "AI-schatting",
+  "AI estimate based on {n} recent sale": "AI-schatting op basis van {n} recente verkoop",
+  "AI estimate based on {n} recent sales": "AI-schatting op basis van {n} recente verkopen",
+  "Seller's estimate": "Schatting van de verkoper",
+  "An indication of value, not a price.": "Een indicatie van de waarde, geen prijs.",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "Je startprijs ligt boven de hoge schatting. Kopers zien beide, dus verhoog de schatting als je weet dat het meer waard is, of verlaag de start.",
+  "Check the estimate": "Controleer de schatting",
+  "The range does not add up.": "De bandbreedte klopt niet.",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "Vul een lage en een hoge waarde in, met de hoge minstens zo groot als de lage. Laat beide leeg voor geen schatting.",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "De onderkant van de waardebandbreedte, zichtbaar voor kopers. Houd het AI-getal als het klopt; pas je het aan, dan staat er dat het jouw schatting is.",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "De bovenkant van de waardebandbreedte, zichtbaar voor kopers. Een schatting, geen prijs: niemand kan ervoor kopen."
 }

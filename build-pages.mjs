@@ -429,7 +429,7 @@ const NO_EN_FILE = new Set();
 const SUPA_URL = (rawHtml.match(/SUPA_URL = '([^']+)'/) || [])[1];
 const SUPA_KEY = (rawHtml.match(/SUPA_KEY = '([^']+)'/) || [])[1];
 
-const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges,rare_reason";
+const LOT_COLS = "id,seller_id,toy,maker,line,year,condition,completeness,blurb,notes,image_urls,starting_bid,buy_now,sale_type,status,ends_at,closed_at,badges,rare_reason,estimate_low,estimate_high";
 
 // Honest lastmod needs a date the page's own content actually moved on.
 //
@@ -642,7 +642,7 @@ function staticCard(l) {
   const maker = String(l.maker || "").split(/[(,]/)[0].trim();
   const badge = l.status === "sold" ? "Sold" : closed ? "Ended" : "";
   const id = esc(l.id), href = "/lot/" + encodeURIComponent(l.id) + "/";
-  for (const t of [clean(l.toy), [clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 "), a.count + " bids", "Very Rare: " + clean(l.rare_reason)]) { cardContent.add(t); cardContent.add(esc(t)); }
+  for (const t of [clean(l.toy), [clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 "), a.count + " bids", "Very Rare: " + clean(l.rare_reason), (l.estimate_low && l.estimate_high ? "Est. \u20ac " + Number(l.estimate_low).toLocaleString("nl-NL") + " \u2013 \u20ac " + Number(l.estimate_high).toLocaleString("nl-NL") : "")]) { cardContent.add(t); cardContent.add(esc(t)); }
   return '<article class="artifact-card draft-lot">' +
     '<div class="vitrine' + (closed ? " closed" : "") + '" data-nav="lot" data-lot="' + id + '" style="cursor:pointer">' +
       (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
@@ -675,6 +675,7 @@ function staticCard(l) {
     '<div class="label"><div class="ln"><a class="nm" href="' + href + '" data-nav="lot" data-lot="' + id + '">' + esc(clean(l.toy)) + "</a></div>" +
       '<div class="meta">' + esc([clean(l.line), maker, l.year].filter(Boolean).join(" \u00b7 ")) + "</div>" +
       '<div class="auc-card"><div><span class="amt">' + money + '</span><span class="sub">' + sub + "</span></div></div>" +
+      (l.estimate_low && l.estimate_high ? '<div class="card-est">' + esc((l.estimate_low && l.estimate_high ? "Est. \u20ac " + Number(l.estimate_low).toLocaleString("nl-NL") + " \u2013 \u20ac " + Number(l.estimate_high).toLocaleString("nl-NL") : "")) + "</div>" : "") +
     "</div></article>";
 }
 const openLots = lots.filter((l) => l.status === "live" || l.status === "preview");

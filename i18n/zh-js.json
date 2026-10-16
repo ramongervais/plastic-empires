@@ -599,5 +599,17 @@
   "Original box included": "附原裝盒",
   "Instructions": "說明書",
   "Instructions included": "附說明書",
-  "The original instruction sheet, inserts or paperwork are included.": "附原廠說明書、內附單張或文件。"
+  "The original instruction sheet, inserts or paperwork are included.": "附原廠說明書、內附單張或文件。",
+  "Estimate {low} – {high}": "估價 {low} – {high}",
+  "AI estimate": "AI 估價",
+  "AI estimate based on {n} recent sale": "依據近期 {n} 筆成交的 AI 估價",
+  "AI estimate based on {n} recent sales": "依據近期 {n} 筆成交的 AI 估價",
+  "Seller's estimate": "賣家估價",
+  "An indication of value, not a price.": "價值參考，並非售價。",
+  "Your starting price is above the high estimate. Buyers see both, so either raise the estimate if you know it is worth more, or lower the start.": "起標價高於估價上限。買家會同時看到兩者：若確知價值更高，請調高估價，否則請降低起標價。",
+  "Check the estimate": "請檢查估價",
+  "The range does not add up.": "估價區間有誤。",
+  "Give both a low and a high figure, with the high one at least as large as the low one. Leave both empty for no estimate.": "請填寫下限與上限，且上限不得低於下限。若不估價，兩者皆留空。",
+  "The bottom of the value range, shown to buyers. Keep the AI figure if it is right; change it and the lot says it is your estimate.": "估價區間的下限，買家可見。若 AI 數字正確請保留；修改後，拍品將標示為你的估價。",
+  "The top of the value range, shown to buyers. An estimate, not a price: nobody can buy at it.": "估價區間的上限，買家可見。這是估價而非售價：無人能以此價購買。"
 }
