@@ -7535,6 +7535,9 @@
     }
     if (t.fixed) return { buyNow: bn };
     const start = Number(t.start) || 0;
+    // A Buy now price with no starting bid and no bids means bidding was never
+    // set up: only Buy now, no "€0" (Ramon, 16 Oct 2026).
+    if (bn > 0 && start <= 0 && top == null) return { buyNow: bn };
     const min = top == null ? start : r2(top + Math.max(10, Math.round(top * 0.05)));
     return { buyNow: bn > 0 ? bn : 0, up: { min, max: bn > 0 ? r2(bn - 0.01) : null, prefill: min } };
   }
@@ -8797,7 +8800,10 @@
         '<div class="meta">' + e([l.line, makerLabel(l.maker), l.year].filter(Boolean).join(' · ')) + '</div>' +
         // A lot with Buy now has its prices on the trade buttons; the row above
         // them shows the highest bid once there is one, never a starting price of 0.
-        ((!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
+        // Buy now only, bidding never set up: no bid line at all.
+        ((!isClosed && !isPreview && !isFixed && Number(l.buyNow) > 0 && !l.bids && !(Number(l.start) > 0))
+          ? ''
+        : (!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
           ? '<div class="auc-card"><div><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>'
           // One price, in the middle of the bid block (Ramon, 16 Oct 2026): a live
           // lot's card no longer repeats it here.
