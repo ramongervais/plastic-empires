@@ -242,34 +242,36 @@
   .lot-est { display:flex; flex-direction:column; gap:2px; margin:14px 0 4px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; }
   .lot-est-v { font-family:var(--display); font-size:16px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; }
   .lot-est-s { font-family:var(--body); font-size:12px; color:var(--ink-3); }
-  .trade { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
-  /* A trading ticket (Ramon, 16 Oct 2026): Bid down and Bid up as two halves of
-     one block, a hairline between them, the word over the price. Monochrome:
-     down in light grey, up in ink. */
-  .tr-row { display:grid; grid-template-columns:1fr 1fr; gap:2px; align-items:stretch; }
-  .tr-row.one { grid-template-columns:1fr; }
+  .trade { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
   /* One outlined block: Bid down | the price in ink | Bid up. With only Bid up
      the price stretches and Bid up keeps its third (Ramon's frames, 16 Oct 2026).
-     House rules as .btn: a 1px line, 12px label type, uppercase. */
+     House rules: a 1px line, 40px tall. */
   .tr-row { display:grid; grid-template-columns:33.333% 1fr 33.333%; align-items:stretch; border:1px solid var(--ink); }
   .tr-row.one { grid-template-columns:1fr 33.333%; }
   /* Hierarchy: the price first, in the card's bold price type; Bid second, in
      small label type. 40px tall, so the photograph stays the main thing. */
   /* "Bid" twice in a row is repetition, so it is not emphasised: medium, small,
      a step lighter. The arrow carries the direction (Ramon, 16 Oct 2026). */
-  .tr-k { font-family:var(--body); font-size:12px; font-weight:500; white-space:nowrap; line-height:1; color:var(--ink-2); }
-  .tr-px { display:flex; align-items:center; justify-content:center; padding:0 8px; min-height:38px; background:var(--ink); color:var(--paper);
-    font-family:var(--body); font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; line-height:1; }
-  .tr-btn { display:flex; align-items:center; justify-content:center; gap:8px; min-height:38px; padding:0 8px; border:0; border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; white-space:nowrap; font:inherit; }
+  .tr-k { font-size:12px; font-weight:500; color:var(--ink-2); }
+  /* One baseline for every cell: each is a 16px line box in the 14px body font
+     with 12px above and below (38px inside the 1px line), and smaller text sits
+     on that baseline inline rather than being centred on its own. */
+  .tr-px, .tr-btn, .tr-buy { display:block; box-sizing:border-box; height:38px; overflow:hidden; padding:11px 8px; font-family:var(--body); font-size:14px; line-height:16px; text-align:center; white-space:nowrap; }
+  .tr-px { background:var(--ink); color:var(--paper); font-weight:700; font-variant-numeric:tabular-nums; }
+  .tr-btn { border:0; border-radius:0; background:var(--paper); color:var(--ink); cursor:pointer; }
   .tr-btn:hover { background:var(--line-2); }
-  .tr-ar { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.5; flex:none; }
+  .tr-ar { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.5; margin-inline-start:8px; vertical-align:-1px; }
   .tr-btn:focus-visible, .tr-buy:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
   .tr-est { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:72px; padding:8px 10px; background:#131313; color:#fff; border-radius:0; }
   .tr-est-v { font-family:var(--display); font-size:16px; font-weight:600; font-variant-numeric:tabular-nums; }
   .tr-est-k { font-family:var(--label); font-size:9px; letter-spacing:.14em; text-transform:uppercase; opacity:.75; margin-top:2px; }
   .tr-est[data-tip]::after { top:auto; bottom:calc(100% + 8px); inset-inline-end:auto; inset-inline-start:50%; transform:translateX(-50%); }
   .tr-est[data-tip]:hover::after, .tr-est[data-tip]:focus-visible::after { transform:translateX(-50%); }
-  .tr-buy { width:100%; min-height:48px; border:0; border-radius:0; background:#131313; color:#fff; cursor:pointer; font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; font-variant-numeric:tabular-nums; }
+  /* Buy now on the bid block's rules: 40px, the 12px label and the 14px bold
+     price on one baseline (Ramon, 16 Oct 2026). */
+  .tr-buy { width:100%; height:40px; border:1px solid var(--ink); border-radius:0; background:var(--ink); color:var(--paper); cursor:pointer; }
+  .tr-buy .tr-k { color:inherit; opacity:.8; margin-inline-end:8px; }
+  .tr-buy .tr-bp { font-weight:700; font-variant-numeric:tabular-nums; }
   .tr-buy:hover { opacity:.86; }
   .card-icons { position:absolute; bottom:12px; inset-inline-start:12px; z-index:3; display:flex; flex-direction:column; gap:6px; }
   .vitrine:has(.card-icons) .lot-badges { inset-inline-start:52px; }
@@ -7479,6 +7481,11 @@
     '<path d="M9 12L11 14L15 10"/><path d="M14.3942 3.00083L14.1481 2.79115C12.9103 1.73628 11.0897 1.73628 9.85189 2.79115L9.60584 3.00083C8.96518 3.54679 8.16862 3.87674 7.32956 3.9437L7.00731 3.96941C5.38613 4.09878 4.09878 5.38613 3.96941 7.00731L3.9437 7.32956C3.87674 8.16862 3.54679 8.96518 3.00083 9.60584L2.79115 9.85189C1.73628 11.0897 1.73628 12.9103 2.79115 14.1481L3.00083 14.3942C3.54679 15.0348 3.87674 15.8314 3.9437 16.6704L3.96941 16.9927C4.09878 18.6139 5.38613 19.9012 7.00731 20.0306L7.32956 20.0563C8.16862 20.1233 8.96518 20.4532 9.60584 20.9992L9.85188 21.2089C11.0897 22.2637 12.9103 22.2637 14.1481 21.2089L14.3942 20.9992C15.0348 20.4532 15.8314 20.1233 16.6704 20.0563L16.9927 20.0306C18.6139 19.9012 19.9012 18.6139 20.0306 16.9927L20.0563 16.6704C20.1233 15.8314 20.4532 15.0348 20.9992 14.3942L21.2089 14.1481C22.2637 12.9103 22.2637 11.0897 21.2089 9.85188L20.9992 9.60584C20.4532 8.96518 20.1233 8.16862 20.0563 7.32956L20.0306 7.00731C19.9012 5.38613 18.6139 4.09878 16.9927 3.96941L16.6704 3.9437C15.8314 3.87674 15.0348 3.54679 14.3942 3.00083Z"/></svg>';
   // Very Rare as a diamond on a card (Ramon, 15 Oct 2026). Ramon's own icon,
   // 24px at a 1.5 stroke like the badge-check. File: Empires/icons/gem.svg.
+  // Ramon's tag-01.svg (16 Oct 2026): a lot with a checked estimate.
+  const TAG_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M17.5 5C18.3284 5 19 5.67157 19 6.5C19 7.32843 18.3284 8 17.5 8C16.6716 8 16 7.32843 16 6.5C16 5.67157 16.6716 5 17.5 5Z"/>' +
+    '<path stroke-linecap="butt" stroke-linejoin="miter" d="M2.77423 11.1439C1.77108 12.2643 1.7495 13.9546 2.67016 15.1437C4.49711 17.5033 6.49674 19.5029 8.85633 21.3298C10.0454 22.2505 11.7357 22.2289 12.8561 21.2258C15.8979 18.5022 18.6835 15.6559 21.3719 12.5279C21.6377 12.2187 21.8039 11.8397 21.8412 11.4336C22.0062 9.63798 22.3452 4.46467 20.9403 3.05974C19.5353 1.65481 14.362 1.99377 12.5664 2.15876C12.1603 2.19608 11.7813 2.36233 11.472 2.62811C8.34412 5.31646 5.49781 8.10211 2.77423 11.1439Z"/>' +
+    '<path d="M7 14L9.99998 17"/></svg>';
   const GEM_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
     '<path d="M17 9.5L12 3L7 9.5L12 21L17 9.5Z"/><path d="M7 9.5H2L6.5 4L12 3L17.5 4L22 9.5H17M17.5 4L17 9.5M17 9.5H7M6.5 4L7 9.5"/><path d="M22 9.5L12 21L2 9.5"/></svg>';
   // Original box as an icon too (Ramon, 15 Oct 2026), his own drawing, so a
@@ -7567,7 +7574,7 @@
           '<div class="tr-px">' + esc(m(now)) + '</div>' + (R.up ? btn('up', R.up) : '') + '</div>'
       : '';
     const buy = R.buyNow > 0
-      ? '<button type="button" class="tr-buy" data-trade="buy" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') + '" data-amount="' + R.buyNow + '">' + esc(phrase('Buy now')) + ' · ' + m(R.buyNow) + '</button>'
+      ? '<button type="button" class="tr-buy" data-trade="buy" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') + '" data-amount="' + R.buyNow + '"><span class="tr-k">' + esc(phrase('Buy now')) + '</span><span class="tr-bp">' + esc(m(R.buyNow)) + '</span></button>'
       : '';
     return '<div class="trade">' + row + buy + '</div>';
   }
@@ -7586,13 +7593,17 @@
   };
   // The icon badges on a card, top right where the favourite star was. The tip
   // says what the icon means; Very Rare carries its reason when there is one.
-  const completeIconHtml = (list, esc, rareReason) => {
-    if (!Array.isArray(list)) return '';
+  const completeIconHtml = (list, esc, rareReason, est) => {
+    if (!Array.isArray(list)) list = [];
+    // A checked estimate: a tag on top of the column, the range in its tip.
+    const tag = (est && est.checked && est.low && est.high)
+      ? '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(est.low).toLocaleString('nl-NL'), high: '\u20ac ' + Number(est.high).toLocaleString('nl-NL') })) + '" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(est.low).toLocaleString('nl-NL'), high: '\u20ac ' + Number(est.high).toLocaleString('nl-NL') })) + '">' + TAG_SVG + '</span>'
+      : '';
     const tips = { complete: phrase(COMPLETE_TIP), rare: phrase('Very Rare') + (rareReason ? ': ' + rareReason : ''), box: phrase('Original box included'), instructions: phrase('Instructions included') };
     // Very Rare on top, Complete under it, then the box and its paperwork.
     const on = ['rare', 'complete', 'box', 'instructions'].filter(k => list.includes(k));
-    return on.length
-      ? '<div class="card-icons">' + on.map(k => '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc(tips[k]) + '" data-tip="' + esc(tips[k]) + '">' + BADGE_ICONS[k] + '</span>').join('') + '</div>'
+    return (on.length || tag)
+      ? '<div class="card-icons">' + tag + on.map(k => '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc(tips[k]) + '" data-tip="' + esc(tips[k]) + '">' + BADGE_ICONS[k] + '</span>').join('') + '</div>'
       : '';
   };
 
@@ -8783,7 +8794,7 @@
         // Original box and Very Rare in the photograph, bottom left; Complete as
         // an icon top right, where the favourite star used to be.
         badgesHtml(l.badges, e, true) +
-        completeIconHtml(l.badges, e, l.rareReason) +
+        completeIconHtml(l.badges, e, l.rareReason, { checked: l.estChecked, low: l.estLow, high: l.estHigh }) +
         // The estimate is on the lot page only, not on cards (Ramon, 16 Oct 2026).
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
@@ -8800,9 +8811,10 @@
         '<div class="meta">' + e([l.line, makerLabel(l.maker), l.year].filter(Boolean).join(' · ')) + '</div>' +
         // A lot with Buy now has its prices on the trade buttons; the row above
         // them shows the highest bid once there is one, never a starting price of 0.
-        // Buy now only, bidding never set up: no bid line at all.
+        // Buy now only, bidding never set up: no bid text, but the row stays (empty,
+        // same height) so the button lines up with its neighbours' bid blocks.
         ((!isClosed && !isPreview && !isFixed && Number(l.buyNow) > 0 && !l.bids && !(Number(l.start) > 0))
-          ? ''
+          ? '<div class="auc-card" aria-hidden="true"><span class="sub" style="margin:0;visibility:hidden">0</span></div>'
         : (!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
           ? '<div class="auc-card"><div><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>'
           // One price, in the middle of the bid block (Ramon, 16 Oct 2026): a live
