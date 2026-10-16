@@ -227,13 +227,17 @@
   .watch-link:hover { color:var(--ink-3); }
   /* Bottom left, one above the other (Ramon, 15 Oct 2026). Original box, the one
      badge still in words, sits to the right of the column on the same baseline. */
-  .est-sticker { position:absolute; top:12px; inset-inline-end:12px; z-index:3; width:64px; height:64px; border-radius:50%; background:#131313; color:#fff;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1; box-shadow:0 2px 8px rgba(0,0,0,.22); }
-  .est-sticker .est-v { font-family:var(--display); font-size:17px; font-weight:600; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
-  .est-sticker .est-t { font-family:var(--display); font-size:12px; font-weight:600; line-height:.7; }
+    /* The estimate, top left in the photo, in the same glass as the badge icons
+     (Ramon, 16 Oct 2026). Just the figure: the tip says what it is. */
+  .est-sticker { position:absolute; top:12px; inset-inline-start:12px; z-index:3; height:34px; padding:0 10px; border-radius:0; color:#131313;
+    display:flex; align-items:center; line-height:1;
+    background:rgba(255,255,255,.58); -webkit-backdrop-filter:blur(10px) saturate(1.4); backdrop-filter:blur(10px) saturate(1.4); box-shadow:0 1px 2px rgba(0,0,0,.12); }
+  .est-sticker .est-v { font-family:var(--display); font-size:15px; font-weight:600; letter-spacing:-.01em; font-variant-numeric:tabular-nums; }
+  /* Under a Sold, Preview or Extended label rather than on top of it. */
+  .card-badge ~ .est-sticker { top:48px; }
   /* [data-tip] sets position:relative further down; this wins it back. */
   .est-sticker[data-tip] { position:absolute; }
-  .est-sticker[data-tip]::after { top:calc(100% + 8px); inset-inline-end:0; }
+  .est-sticker[data-tip]::after { top:calc(100% + 8px); inset-inline-start:0; inset-inline-end:auto; }
   .card-est { font-family:var(--label); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-top:6px; font-variant-numeric:tabular-nums; }
   .lot-est { display:flex; flex-direction:column; gap:2px; margin:14px 0 4px; padding:12px 14px; border:1px solid var(--line); border-radius:3px; }
   .lot-est-v { font-family:var(--display); font-size:16px; font-weight:600; color:var(--ink); font-variant-numeric:tabular-nums; }
@@ -7397,7 +7401,7 @@
   };
   const estStickerHtml = (lo, hi, esc) => (lo && hi)
     ? '<span class="est-sticker" role="img" tabindex="0" aria-label="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(lo).toLocaleString('nl-NL'), high: '\u20ac ' + Number(hi).toLocaleString('nl-NL') })) + '" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: '\u20ac ' + Number(lo).toLocaleString('nl-NL'), high: '\u20ac ' + Number(hi).toLocaleString('nl-NL') })) + '">' +
-        '<span class="est-t" aria-hidden="true">~</span><span class="est-v">\u20ac' + estMid(lo, hi).toLocaleString('nl-NL') + '</span><span class="est-t" aria-hidden="true">~</span></span>'
+        '<span class="est-v">~\u20ac' + estMid(lo, hi).toLocaleString('nl-NL') + '</span></span>'
     : '';
   // ---- The trade control (Ramon, 16 Oct 2026) ----
   // A lot reads like a quote in a trading app: Bid down on the left, Bid up on
@@ -7431,7 +7435,8 @@
       esc(dir === 'down' ? phrase('Bid down from {amount}', { amount: m(rr.min) })
         : rr.max == null ? phrase('Bid up from {amount}', { amount: m(rr.min) })
         : phrase('Bid up to {amount}', { amount: m(rr.max) })) + '</button>';
-    const est = (t.estChecked && t.estLow && t.estHigh)
+    // The estimate lives in the photo again (estStickerHtml), not in this row.
+    const est = false
       ? '<div class="tr-est" tabindex="0" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: m(t.estLow), high: m(t.estHigh) })) + '"><span class="tr-est-v">~' + m(estMid(t.estLow, t.estHigh)).replace('\u00a0', '') + '</span><span class="tr-est-k">' + esc(phrase('Estimate')) + '</span></div>'
       : '';
     const row = (R.down || R.up || est)
@@ -8654,6 +8659,7 @@
         // an icon top right, where the favourite star used to be.
         badgesHtml(l.badges, e, true) +
         completeIconHtml(l.badges, e, l.rareReason) +
+        (l.estChecked ? estStickerHtml(l.estLow, l.estHigh, e) : '') +
         '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
         (l.img ? '' : '<div class="vlabel"><div class="k">' + e([l.maker, l.year].filter(Boolean).join(' · ')) + '</div><div class="n" style="font-size:19px">' + e(l.name) + '</div></div>') + '</div>' +
       // The title is a real link now. It was an anchor with the destination in a
@@ -10993,6 +10999,7 @@
         '<div class="lot-main" id="lotMain">' +
           '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
           (mainImg ? '<img class="lot-img" id="lotImg" src="' + e(mainImg) + '" alt="' + e(lot.toy) + '" draggable="false">' : '<div class="vlabel"><div class="k">' + e([lot.maker, lot.year].filter(Boolean).join(' · ')) + '</div><div class="n">' + e(lot.toy) + '</div></div>') +
+          (lot.estimate_checked === true ? estStickerHtml(lot.estimate_low, lot.estimate_high, e) : '') +
           '<div class="zoom-lens" id="zoomLens" hidden></div>' +
         '</div>' +
         (imgs.length > 1 ? '<div class="lot-thumbs">' + imgs.map((u, i) => '<button class="lot-th' + (i === 0 ? ' active' : '') + '" type="button" data-img="' + e(u) + '" style="background-image:url(' + e(u) + ')"></button>').join('') + '</div>' : '') +
