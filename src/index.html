@@ -11226,44 +11226,6 @@
         // notes rather than losing their opening paragraph entirely.
         ((lot.blurb || lot.notes) ? '<p style="font-family:var(--body);font-size:18px;color:var(--ink);margin:0;max-width:46ch">' + e(lot.blurb || lot.notes) + '</p>' : '') +
         varHtml +
-        '<div class="spec">' +
-          (lot.maker ? row('Maker', lot.maker) : '') +
-          (lot.year ? row('Released', lot.year) : '') +
-          (lot.line ? row('Line', lot.line) : '') +
-          (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
-          (lot.stamp_shown === false ? row("Maker's mark", 'Not shown, dated from the sculpt') : (lot.stamp_shown === true ? row("Maker's mark", 'Photographed') : '')) +
-          (lot.completeness ? row('Completeness', lot.completeness) : '') +
-          // The badges, then what stands behind them: why it is very rare, and the
-          // box graded on its own, because collectors price the toy and the box apart.
-          ((lot.badges || []).length ? '<div class="row"><span class="k">Badges</span><span class="v">' + badgesHtml(lot.badges, e) + '</span></div>' : '') +
-          ((lot.badges || []).includes('rare') && lot.rare_reason ? row('Why it is very rare', lot.rare_reason) : '') +
-          ((lot.badges || []).includes('box') && (lot.box_condition || lot.box_notes)
-            ? '<div class="row' + (lot.box_notes ? ' col' : '') + '"><span class="k">Box</span><span class="v">' +
-                (lot.box_condition ? '<b>' + e(lot.box_condition) + '</b>' : '') +
-                (lot.box_notes ? (lot.box_condition ? '<br>' : '') + e(lot.box_notes) : '') +
-              '</span></div>'
-            : '') +
-          // Right under Completeness, above the notes. Condition says how it looks,
-          // this says why: a repainted figure and an original one are different
-          // objects at different prices, and a buyer who finds that out after paying
-          // does not come back. Only rendered when the seller answered, because
-          // inventing "as found" for the twenty older lots would be a claim we made
-          // up on their behalf.
-          (lot.care_level
-            ? '<div class="row' + (lot.care_note ? ' col' : '') + '"><span class="k">Restoration</span><span class="v">' +
-                '<b>' + e(careLabel(lot.care_level)) + '</b>' +
-                (lot.care_note ? '<br>' + e(lot.care_note) : '') +
-              '</span></div>'
-            : '') +
-          // The forensics: stamp transcription, dating, variant reasoning. Only
-          // shown when a blurb took over the lead, or it would appear twice.
-          ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
-          (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
-          (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
-          // Written out rather than passed through row(), which escapes its value:
-          // this one needs a real element for the live quote to write into.
-          '<div class="row col"><span class="k">Shipping</span><span class="v" id="lotShip">Quoted for your address at checkout</span></div>' +
-        '</div>' +
         '<div class="auction">' +
           '<div class="auction-row">' +
             '<div><div class="auc-label">' + (ended ? (topBid ? (reserveMet ? 'Winning bid' : 'Highest bid') : (isSold ? 'Sold for' : 'Result')) : (isFixed ? 'Price' : (bids.length ? phrase(bids.length === 1 ? 'Current bid · {n} bid' : 'Current bid · {n} bids', { n: bids.length }) : 'Starting bid'))) + '</div><div class="auc-amount">' + (ended ? (topBid ? money(cur) : (isSold && lot.buy_now ? money(lot.buy_now) : (isFixed ? money(fixedPrice) : '-'))) : (isFixed ? money(fixedPrice) : money(cur))) + '</div>' +
@@ -11332,6 +11294,46 @@
             '<ul class="protect-list" hidden>' + PROTECTION.map(function(x){ return '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>'; }).join('') +
           '</ul></div>' +
           ownerHtml + shipHtml + shipStatusHtml +
+        '</div>' +
+        // The details under the bid, not above it (Ramon, 18 Oct 2026): price and
+        // action straight after the title and description.
+        '<div class="spec">' +
+          (lot.maker ? row('Maker', lot.maker) : '') +
+          (lot.year ? row('Released', lot.year) : '') +
+          (lot.line ? row('Line', lot.line) : '') +
+          (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
+          (lot.stamp_shown === false ? row("Maker's mark", 'Not shown, dated from the sculpt') : (lot.stamp_shown === true ? row("Maker's mark", 'Photographed') : '')) +
+          (lot.completeness ? row('Completeness', lot.completeness) : '') +
+          // The badges, then what stands behind them: why it is very rare, and the
+          // box graded on its own, because collectors price the toy and the box apart.
+          ((lot.badges || []).length ? '<div class="row"><span class="k">Badges</span><span class="v">' + badgesHtml(lot.badges, e) + '</span></div>' : '') +
+          ((lot.badges || []).includes('rare') && lot.rare_reason ? row('Why it is very rare', lot.rare_reason) : '') +
+          ((lot.badges || []).includes('box') && (lot.box_condition || lot.box_notes)
+            ? '<div class="row' + (lot.box_notes ? ' col' : '') + '"><span class="k">Box</span><span class="v">' +
+                (lot.box_condition ? '<b>' + e(lot.box_condition) + '</b>' : '') +
+                (lot.box_notes ? (lot.box_condition ? '<br>' : '') + e(lot.box_notes) : '') +
+              '</span></div>'
+            : '') +
+          // Right under Completeness, above the notes. Condition says how it looks,
+          // this says why: a repainted figure and an original one are different
+          // objects at different prices, and a buyer who finds that out after paying
+          // does not come back. Only rendered when the seller answered, because
+          // inventing "as found" for the twenty older lots would be a claim we made
+          // up on their behalf.
+          (lot.care_level
+            ? '<div class="row' + (lot.care_note ? ' col' : '') + '"><span class="k">Restoration</span><span class="v">' +
+                '<b>' + e(careLabel(lot.care_level)) + '</b>' +
+                (lot.care_note ? '<br>' + e(lot.care_note) : '') +
+              '</span></div>'
+            : '') +
+          // The forensics: stamp transcription, dating, variant reasoning. Only
+          // shown when a blurb took over the lead, or it would appear twice.
+          ((lot.blurb && lot.notes) ? row("Curator's notes", lot.notes) : '') +
+          (seller ? '<div class="row"><span class="k">Seller</span><span class="v"><a data-nav="seller" data-seller="' + e(lot.seller_id) + '" style="text-decoration:underline;text-underline-offset:3px;cursor:pointer">' + e(seller.display_name || 'Private seller') + '</a>' + (seller.location ? ' · ' + e(seller.location) : '') + '</span></div>' : '') +
+          (lot.weight_kg ? row('Packed weight', Number(lot.weight_kg) + ' kg') : '') +
+          // Written out rather than passed through row(), which escapes its value:
+          // this one needs a real element for the live quote to write into.
+          '<div class="row col"><span class="k">Shipping</span><span class="v" id="lotShip">Quoted for your address at checkout</span></div>' +
         '</div>' +
       '</div>';
     const hist = bids.length ?
