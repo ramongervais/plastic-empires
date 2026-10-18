@@ -690,7 +690,39 @@ function withShop(page, view) {
     if (!page.includes(SOLD_GRID)) throw new Error("results: soldGrid not found, cards not injected");
     page = page.replace(SOLD_GRID, SOLD_GRID.replace("></div>", ">" + closedLots.map(staticCard).join("") + "</div>"));
   }
+  if (MOLDER.has(view)) page = withMakerLots(page, view);
   return page;
+}
+
+// Each maker page links to that maker's lots in the shop (Ramon, 18 Oct 2026).
+// Search Console said of the Jabba lot "no referring page": the lots were
+// reachable from the home grid and the sitemap and from nowhere else, while
+// /molders/kenner/ is exactly the page a Kenner collector lands on. Up to eight
+// cards, then the rest as plain links, so every lot is reachable without the
+// page carrying thirty-five photographs.
+const MAKER_MATCH = {
+  empire: /^kenner/i, tmnt: /playmates/i, ljn: /^ljn/i, galoob: /galoob/i,
+  thinkway: /thinkway/i, kaiju: /marusan|bullmark|popy/i, imperial: /imperial/i,
+  palitoy: /palitoy/i, dormei: /dor\s*mei/i, sofubi: /sofubi/i,
+};
+function withMakerLots(page, view) {
+  const re = MAKER_MATCH[view];
+  const mine = re ? openLots.filter((l) => l.status === "live" && re.test(String(l.maker || ""))) : [];
+  if (!mine.length) return page;
+  const start = page.indexOf('<main class="view" id="view-' + view + '"');
+  if (start < 0) throw new Error(view + ": view not found for maker lots");
+  const kr = page.indexOf('<div class="ey">Keep reading</div>', start);
+  const end = page.indexOf("</main>", start);
+  const at = (kr > 0 && kr < end) ? page.lastIndexOf("<section", kr) : end;
+  const cards = mine.slice(0, 8).map(staticCard).join("");
+  const rest = mine.slice(8).map((l) =>
+    '<li><a href="/lot/' + encodeURIComponent(l.id) + '/" data-nav="lot" data-lot="' + esc(l.id) + '">' + esc(clean(l.toy)) + "</a></li>").join("");
+  const html = '<section class="band maker-lots"><div class="wrap">' +
+    '<div class="band-head"><div><div class="ey">' + esc(MOLDER_NAME[view] || "") + '</div><h2>In the shop now</h2></div></div>' +
+    '<div class="collection">' + cards + "</div>" +
+    (rest ? '<div class="terms-h">More in the shop</div><ul class="maker-more">' + rest + "</ul>" : "") +
+    "</div></section>";
+  return page.slice(0, at) + html + page.slice(at);
 }
 
 let written = 0;
