@@ -9128,6 +9128,11 @@
   // several hundred lines above this point and only gets away with it because
   // nothing renders a card during evaluation. A const would put that on a
   // temporal dead zone; a function makes the order not matter.
+  // A lot's maker to its page under The Molders, or null.
+  const MAKER_PAGES = [[/^kenner/i, 'kenner', '/molders/kenner/'], [/playmates/i, 'tmnt', '/molders/playmates/'], [/^ljn/i, 'ljn', '/molders/ljn/'],
+    [/galoob/i, 'galoob', '/molders/galoob/'], [/thinkway/i, 'thinkway', '/molders/thinkway/'], [/marusan|bullmark|popy/i, 'kaiju', '/molders/kaiju/'],
+    [/imperial/i, 'imperial', '/molders/imperial/'], [/palitoy/i, 'palitoy', '/molders/palitoy/'], [/dor\s*mei/i, 'dormei', '/molders/dor-mei/']];
+  function makerPage(m){ const hit = MAKER_PAGES.find(x => x[0].test(String(m || ''))); return hit ? [hit[1], hit[2]] : null; }
   function makerLabel(m){ return String(m || '').split(/[(,]/)[0].trim(); }
   // Local, because esc() lives inside the sell closure. Quotes matter here: the
   // label goes into a data attribute and it comes from the database.
@@ -11336,7 +11341,11 @@
         // The details under the bid, not above it (Ramon, 18 Oct 2026): price and
         // action straight after the title and description.
         '<div class="spec">' +
-          (lot.maker ? row('Maker', lot.maker) : '') +
+          // The maker links to its page on the site when there is one: the other
+          // half of "In the shop now" on the maker pages (Ramon, 18 Oct 2026).
+          (lot.maker ? (makerPage(lot.maker)
+            ? '<div class="row"><span class="k">Maker</span><span class="v"><a href="' + makerPage(lot.maker)[1] + '" data-empire="' + makerPage(lot.maker)[0] + '" style="text-decoration:underline;text-underline-offset:3px">' + e(lot.maker) + '</a></span></div>'
+            : row('Maker', lot.maker)) : '') +
           (lot.year ? row('Released', lot.year) : '') +
           (lot.line ? row('Line', lot.line) : '') +
           (lot.condition ? '<div class="row"><span class="k">Condition</span><span class="v">' + (condPct ? qstarsPct(condPct) + ' ' : '') + e(lot.condition) + '</span></div>' : '') +
