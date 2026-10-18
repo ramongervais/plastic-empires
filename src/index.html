@@ -11166,6 +11166,29 @@
     const variants = Array.isArray(lot.variants) ? lot.variants : [];
     const varHtml = variants.length ? '<div class="lot-variants">' + variants.map(v => '<span class="lot-chip"><b>' + e(v.axis || '') + '</b> ' + e(v.value || '') + '</span>').join('') + '</div>' : '';
     const mainImg = imgs.length ? imgs[0] : '';
+    // Share sits under the photos now, below the thumbnails (Ramon, 18 Oct 2026).
+    const shareHtml =
+          '<div class="share">' +
+            '<span class="sl">Share</span>' +
+            // Every one carries its mark. A row of word-only buttons reads as a
+            // list of settings; the glyph is what makes it read as sharing. Solid
+            // shapes on currentColor, so they invert with the button on hover and
+            // work on both themes without a second colour.
+            // "Share this lot" next to the row's own "Share" label was saying the
+            // word twice and it was the width that pushed X onto a second line.
+            '<button type="button" id="shNative" hidden>' + SH_ICON.share + 'Send</button>' +
+            '<button type="button" id="shCopy">' + SH_ICON.link + 'Copy link</button>' +
+            '<a id="shWa" target="_blank" rel="noopener">' + SH_ICON.whatsapp + 'WhatsApp</a>' +
+            '<a id="shFb" target="_blank" rel="noopener">' + SH_ICON.facebook + 'Facebook</a>' +
+            // Instagram has no share URL. There is no facebook.com/sharer for it,
+            // there never has been, and a link in a caption is not clickable on
+            // Instagram anyway. So this button does the thing a person actually
+            // does next: it puts a finished caption on the clipboard, ready to
+            // paste under the photo. On a phone the Send button is the better
+            // route, because the operating system sheet has real Instagram in it.
+            '<button type="button" id="shIg">' + SH_ICON.instagram + 'Instagram</button>' +
+            '<a id="shX" target="_blank" rel="noopener">' + SH_ICON.x + 'X</a>' +
+          '</div>';
     const gallery =
       '<div class="art-media">' +
         '<div class="lot-main" id="lotMain">' +
@@ -11176,6 +11199,7 @@
         '</div>' +
         (imgs.length > 1 ? '<div class="lot-thumbs">' + imgs.map((u, i) => '<button class="lot-th' + (i === 0 ? ' active' : '') + '" type="button" data-img="' + e(u) + '" style="background-image:url(' + e(u) + ')"></button>').join('') + '</div>' : '') +
         '<div class="vcap" style="text-align:start">' + (imgs.length ? phrase(imgs.length === 1 ? '{n} photo from the seller.' : '{n} photos from the seller.', { n: imgs.length }) : 'No photos yet.') + '</div>' +
+        shareHtml +
       '</div>';
     const isOwner = authUser && lot.seller_id && authUser.id === lot.seller_id;
     // Edit sits next to Remove, because this is where an owner looks for it. It
@@ -11268,27 +11292,6 @@
           // the same URL, so a link sent to a friend opened the home page and the
           // toy was never seen. Native sheet where the browser has one, a copy
           // button and two direct links where it does not.
-          '<div class="share">' +
-            '<span class="sl">Share</span>' +
-            // Every one carries its mark. A row of word-only buttons reads as a
-            // list of settings; the glyph is what makes it read as sharing. Solid
-            // shapes on currentColor, so they invert with the button on hover and
-            // work on both themes without a second colour.
-            // "Share this lot" next to the row's own "Share" label was saying the
-            // word twice and it was the width that pushed X onto a second line.
-            '<button type="button" id="shNative" hidden>' + SH_ICON.share + 'Send</button>' +
-            '<button type="button" id="shCopy">' + SH_ICON.link + 'Copy link</button>' +
-            '<a id="shWa" target="_blank" rel="noopener">' + SH_ICON.whatsapp + 'WhatsApp</a>' +
-            '<a id="shFb" target="_blank" rel="noopener">' + SH_ICON.facebook + 'Facebook</a>' +
-            // Instagram has no share URL. There is no facebook.com/sharer for it,
-            // there never has been, and a link in a caption is not clickable on
-            // Instagram anyway. So this button does the thing a person actually
-            // does next: it puts a finished caption on the clipboard, ready to
-            // paste under the photo. On a phone the Send button is the better
-            // route, because the operating system sheet has real Instagram in it.
-            '<button type="button" id="shIg">' + SH_ICON.instagram + 'Instagram</button>' +
-            '<a id="shX" target="_blank" rel="noopener">' + SH_ICON.x + 'X</a>' +
-          '</div>' +
           '<div class="protect"><button class="protect-h" type="button" id="lotProtect" aria-expanded="false">' +
             '<span>Buyer protection</span><span class="protect-x">+</span></button>' +
             '<ul class="protect-list" hidden>' + PROTECTION.map(function(x){ return '<li><b>' + x[0] + '</b><span>' + x[1] + '</span></li>'; }).join('') +
