@@ -8831,10 +8831,14 @@
         ((!isClosed && !isPreview)
           ? (() => {
               const bnOnly = !isFixed && Number(l.buyNow) > 0 && !l.bids && !(Number(l.start) > 0);
-              const label = isFixed ? phrase('Price') : bnOnly ? phrase('Buy now') : (l.bids ? phrase('Current bid') : phrase('Starting bid'));
+              // "Current bid" also before the first bid: the starting bid is what
+              // stands now (Ramon, 18 Oct 2026).
+              const label = isFixed ? phrase('Price') : bnOnly ? phrase('Buy now') : phrase('Current bid');
               const amt = bnOnly ? Number(l.buyNow) : l.bid;
               return '<div class="auc-card"><div class="cp"><span class="sub" style="margin:0">' + e(label) + '</span><span class="amt">' + money(amt) + '</span></div>' +
-                '<div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>';
+                // The clock only once bidding has started; before that "7 days
+                // from first bid" says nothing a shopper needs on a card.
+                ((isFixed || l.bids) ? '<div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div>' : '') + '</div>';
             })()
           : '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : 'Starting bid') + '</span></div><div class="cd' + (isPreview ? ' extended' : '') + '">' + endsTxt + '</div></div>') +
         // Under the price, not beside it, so the number a buyer actually pays
