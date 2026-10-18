@@ -343,7 +343,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // /<code>/views/<view>.html, translated), which the router fetches the first
 // time a reader goes there. The app views (home, sell, lot, account...) stay
 // in every page: they are small, and they are the application.
-const DEFER = ["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "sofubi",
+const DEFER = ["empire", "tmnt", "ljn", "galoob", "hasbrowwf", "thinkway", "kaiju", "sofubi",
   "imperial", "palitoy", "dormei", "retrobright", "moulds", "privacy", "help", "terms"];
 
 function viewSpan(page, v) {
@@ -379,7 +379,7 @@ function writeFragments(page, prefix) {
   }
 }
 
-const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "thinkway", "kaiju", "imperial", "palitoy", "dormei", "sofubi"]);
+const MOLDER = new Set(["empire", "tmnt", "ljn", "galoob", "hasbrowwf", "thinkway", "kaiju", "imperial", "palitoy", "dormei", "sofubi"]);
 // Not a molder, but the same kind of page: researched, argued, signed. It gets
 // the same Article node, with a subject that is a process rather than a company.
 const ARTICLE_SUBJECT = { retrobright: "Retrobrighting", moulds: "Toy manufacturing" };
@@ -388,6 +388,7 @@ const MOLDER_NAME = {
   tmnt: "Playmates Toys",
   ljn: "LJN",
   galoob: "Galoob",
+  hasbrowwf: "Hasbro",
   thinkway: "Thinkway Toys",
   kaiju: "Marusan Shoten, Bullmark and Popy",
   imperial: "Imperial Toy Corporation",
@@ -702,12 +703,12 @@ function withShop(page, view) {
 // page carrying thirty-five photographs.
 const MAKER_MATCH = {
   empire: /^kenner/i, tmnt: /playmates/i, ljn: /^ljn/i, galoob: /galoob/i,
-  thinkway: /thinkway/i, kaiju: /marusan|bullmark|popy/i, imperial: /imperial/i,
+  thinkway: /thinkway/i, hasbrowwf: /hasbro/i, kaiju: /marusan|bullmark|popy/i, imperial: /imperial/i,
   palitoy: /palitoy/i, dormei: /dor\s*mei/i, sofubi: /sofubi/i,
 };
 function withMakerLots(page, view) {
   const re = MAKER_MATCH[view];
-  const mine = re ? openLots.filter((l) => l.status === "live" && re.test(String(l.maker || ""))) : [];
+  const mine = re ? openLots.filter((l) => l.status === "live" && re.test(String(l.maker || "")) && (view !== "hasbrowwf" || /\bwwf\b/i.test(String(l.toy || "")))) : [];
   if (!mine.length) return page;
   const start = page.indexOf('<main class="view" id="view-' + view + '"');
   if (start < 0) throw new Error(view + ": view not found for maker lots");
