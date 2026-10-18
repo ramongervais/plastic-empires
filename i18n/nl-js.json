@@ -668,5 +668,7 @@
   "Bid down and a reserve do not go together.": "Lager bieden en een reserveprijs gaan niet samen.",
   "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "Lager bieden telt vanaf je startprijs. Haal de reserveprijs weg om het te gebruiken, of zet Lager bieden op Uit.",
   "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "Kopers mogen tot zoveel onder je startprijs bieden. Een hoogste bod daaronder komt na de veiling bij jou, om binnen 48 uur te accepteren of te weigeren. Gaat niet samen met een reserveprijs. Uit betekent gewoon bieden.",
-  "Remove the reserve price: Bid down is on, and the two do not go together.": "Haal de reserveprijs weg: Lager bieden staat aan, en die twee gaan niet samen."
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "Haal de reserveprijs weg: Lager bieden staat aan, en die twee gaan niet samen.",
+  "Edit listing": "Advertentie bewerken",
+  "Sell": "Verkopen"
 }

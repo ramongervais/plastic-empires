@@ -665,5 +665,7 @@
   "Bid down and a reserve do not go together.": "低價出價與底價不能同時使用。",
   "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "低價出價以起標價計算。要使用請移除底價，或將低價出價關閉。",
   "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "買家可以低於起標價最多此比例出價。低於起標價的最高出價會在拍賣後交給你，於 48 小時內接受或拒絕。不能與底價同時使用。關閉代表一般出價。",
-  "Remove the reserve price: Bid down is on, and the two do not go together.": "請移除底價：低價出價已開啟，兩者不能同時使用。"
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "請移除底價：低價出價已開啟，兩者不能同時使用。",
+  "Edit listing": "編輯刊登",
+  "Sell": "出售"
 }

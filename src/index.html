@@ -994,6 +994,9 @@
   .bidform { margin:2px 0 20px; }
   #view-sell:has(#resultCard:not(.empty)) .sell-plans-band { display:none; }
   #resultCard { scroll-margin-top:96px; }
+  #view-sell.sell-editing .empire-hero, #view-sell.sell-editing .sell-how, #view-sell.sell-editing .sell-left, #view-sell.sell-editing .sell-plans-band { display:none; }
+  #view-sell.sell-editing .sell-grid { display:block; max-width:880px; }
+  .hm-authed #view-sell .sell-plans-band { display:none; }
   .acct-warn { margin:-4px 0 12px; padding:8px 12px; border:1px solid var(--ink); font-size:13px; line-height:1.4; color:var(--ink); cursor:pointer; }
   .bid-dirs { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-bottom:16px; }
   .bid-dirs[hidden] { display:none; }
@@ -5666,7 +5669,7 @@
 <!-- ============================ SELL ============================ -->
 <main class="view" id="view-sell" hidden>
   <div class="wrap">
-    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here">Sell</span></div>
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><span class="here" id="sellCrumb">Sell</span></div>
     <section class="empire-hero">
       <div class="ey">Sell with us</div>
       <h1 class="empire-title">Upload. AI builds the listing</h1>
@@ -5674,7 +5677,7 @@
       <p class="empire-lede">Upload a few clear photos. Our AI identifies the toy, dates it, checks the condition and builds the listing for you. It also reviews recent sales to suggest a fair starting price.<br><br>Identification is free. You only use a listing when you decide to sell.</p>
     </section>
   </div>
-  <section class="band">
+  <section class="band sell-how">
     <div class="wrap">
       <div class="ey" style="margin-bottom:8px">How it works</div>
       <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:.06em;text-transform:uppercase;margin:0 0 28px">From photos to listing in two steps</h2>
@@ -8381,6 +8384,7 @@
       if (rc) rc.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     function viewMode(){
+      editPage(false);
       const c = current;
       const est = (c.estimateLow && c.estimateHigh) ? phrase('Est. {low} – {high}', { low: eur(c.estimateLow), high: eur(c.estimateHigh) }) : '';
       // Buyers see both numbers, so a start above the top of the range reads as
@@ -8638,8 +8642,18 @@
       else openModal('Check the prices', 'That combination would cost you money.', msg);
     }
 
+    // Editing is its own page (Ramon, 18 Oct 2026): everything that is not the
+    // form goes, the form takes the width, and the crumb says what this is.
+    function editPage(on){
+      const v = document.getElementById('view-sell');
+      if (v) v.classList.toggle('sell-editing', !!on);
+      const cr = document.getElementById('sellCrumb');
+      if (cr) cr.textContent = on ? phrase('Edit listing') : phrase('Sell');
+      if (on) window.scrollTo({ top: 0, behavior: 'auto' });
+    }
     function editMode(){
       editing = true;
+      editPage(true);
       const c = current;
       const html =
         '<div class="ef-top"><div class="rc-sub">Edit curation</div>' +
@@ -12019,6 +12033,9 @@
   const escA = s => String(s == null ? '' : s).replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
   function currentUser(){ if (authUser) return authUser.email || ''; try { return localStorage.getItem('pe_user') || ''; } catch (e) { return ''; } }
   function refreshAuthUI(){
+    // Signed in, the sell page drops its package pitch (Ramon, 18 Oct 2026): a
+    // seller already has a package, and the block followed every edit.
+    document.documentElement.classList.toggle('hm-authed', !!authUser);
     const u = currentUser();
     document.querySelectorAll('[data-auth-label]').forEach(el => { el.textContent = u ? ('· ' + u.split('@')[0]) : 'Sign in'; });
     // The banner's own call to action. Its click handler always knew whether

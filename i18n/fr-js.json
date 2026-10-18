@@ -665,5 +665,7 @@
   "Bid down and a reserve do not go together.": "L'offre basse et un prix de réserve ne vont pas ensemble.",
   "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "L'offre basse se compte à partir de votre prix de départ. Retirez le prix de réserve pour l'utiliser, ou désactivez l'offre basse.",
   "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "Les acheteurs peuvent enchérir jusqu'à ce pourcentage sous votre prix de départ. Une meilleure offre en dessous vous revient après la vente, à accepter ou refuser sous 48 heures. Incompatible avec un prix de réserve. Désactivé signifie des enchères ordinaires.",
-  "Remove the reserve price: Bid down is on, and the two do not go together.": "Retirez le prix de réserve : l'offre basse est activée, et les deux ne vont pas ensemble."
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "Retirez le prix de réserve : l'offre basse est activée, et les deux ne vont pas ensemble.",
+  "Edit listing": "Modifier l'annonce",
+  "Sell": "Vendre"
 }

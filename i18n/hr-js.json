@@ -668,5 +668,7 @@
   "Bid down and a reserve do not go together.": "Niža ponuda i minimalna cijena ne idu zajedno.",
   "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "Niža ponuda računa se od tvoje početne cijene. Ukloni minimalnu cijenu da je koristiš ili je isključi.",
   "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "Kupci smiju ponuditi do toliko ispod tvoje početne cijene. Najviša ponuda ispod nje dolazi tebi nakon dražbe, da je prihvatiš ili odbiješ u roku od 48 sati. Ne ide zajedno s minimalnom cijenom. Isključeno znači obično licitiranje.",
-  "Remove the reserve price: Bid down is on, and the two do not go together.": "Ukloni minimalnu cijenu: niža ponuda je uključena, a to dvoje ne ide zajedno."
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "Ukloni minimalnu cijenu: niža ponuda je uključena, a to dvoje ne ide zajedno.",
+  "Edit listing": "Uredi oglas",
+  "Sell": "Prodaj"
 }

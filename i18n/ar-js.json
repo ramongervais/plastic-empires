@@ -665,5 +665,7 @@
   "Bid down and a reserve do not go together.": "المزايدة الأدنى والسعر الأدنى لا يجتمعان.",
   "Bid down counts down from your starting bid. Remove the reserve price to use it, or set Bid down to Off.": "تُحسب المزايدة الأدنى من سعر البداية. احذف السعر الأدنى لاستخدامها، أو أوقفها.",
   "Buyers may bid up to this much below your starting bid. A highest bid under it comes to you after the auction, to accept or decline within 48 hours. Does not go together with a reserve. Off means ordinary bidding.": "يمكن للمشترين المزايدة بأقل من سعر البداية بهذه النسبة. يصلك أعلى عرض تحته بعد المزاد لتقبله أو ترفضه خلال 48 ساعة. لا يجتمع مع سعر أدنى. الإيقاف يعني مزايدة عادية.",
-  "Remove the reserve price: Bid down is on, and the two do not go together.": "احذف السعر الأدنى: المزايدة الأدنى مفعّلة ولا يجتمع الاثنان."
+  "Remove the reserve price: Bid down is on, and the two do not go together.": "احذف السعر الأدنى: المزايدة الأدنى مفعّلة ولا يجتمع الاثنان.",
+  "Edit listing": "تعديل الإعلان",
+  "Sell": "بيع"
 }
