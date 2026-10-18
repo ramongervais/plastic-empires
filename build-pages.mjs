@@ -870,6 +870,52 @@ const lotLocs = [];
 // unchanged, which is correct, but they are content and not interface and have
 // no business on a worklist of strings somebody ought to translate.
 const lotContent = new Set();
+// The lot itself in the HTML, not only after JavaScript (Ramon, 18 Oct 2026).
+// #lotBody was empty until the script drew it, so any crawler that reads HTML
+// without running scripts (the AI search bots robots.txt invites in) saw a lot
+// page with a title and nothing else. This is a plain summary in the same
+// classes; the router replaces it with the live page the moment it runs.
+const MOLDER_PATH = { empire: "/molders/kenner/", tmnt: "/molders/playmates/", ljn: "/molders/ljn/", galoob: "/molders/galoob/",
+  hasbrowwf: "/molders/hasbro-wwf/", thinkway: "/molders/thinkway/", kaiju: "/molders/kaiju/", imperial: "/molders/imperial/",
+  palitoy: "/molders/palitoy/", dormei: "/molders/dor-mei/", sofubi: "/molders/sofubi/" };
+function lotMolder(l) {
+  for (const [v, re] of Object.entries(MAKER_MATCH)) {
+    if (!re.test(String(l.maker || ""))) continue;
+    if (v === "hasbrowwf" && !/\bwwf\b/i.test(String(l.toy || ""))) continue;
+    return v;
+  }
+  return null;
+}
+function staticLot(l) {
+  const a = bidAgg[l.id] || { max: 0, count: 0 };
+  const eur = (n) => "\u20ac " + Number(n).toLocaleString("nl-NL", { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  const fixed = l.sale_type === "fixed";
+  const live = l.status === "live" || l.status === "preview";
+  const bn = Number(l.buy_now) || 0, start = Number(l.starting_bid) || 0;
+  const price = !live ? (l.status === "sold" ? ["Sold", ""] : ["Not for sale", ""])
+    : fixed ? ["Price", eur(bn || start)]
+    : (bn > 0 && !a.count && !(start > 0)) ? ["Buy now", eur(bn)]
+    : ["Current bid", eur(a.count ? a.max : start)];
+  const img = (Array.isArray(l.image_urls) ? l.image_urls : []).filter(Boolean)[0] || "";
+  const maker = String(l.maker || "").split(/[(,]/)[0].trim();
+  const mv = lotMolder(l);
+  const row = (k, v) => v ? '<div class="row"><span class="k">' + k + '</span><span class="v">' + v + "</span></div>" : "";
+  const text = clean(l.blurb || l.notes);
+  for (const x of [clean(l.toy), text, clean(l.condition), clean(l.completeness), clean(l.line), maker, String(l.year || "")]) { lotContent.add(x); lotContent.add(esc(x)); }
+  return '<div class="lot-static">' +
+    '<h1 class="art-title">' + esc(clean(l.toy)) + "</h1>" +
+    (img ? '<img class="lot-img" src="' + esc(img) + '" alt="' + esc(clean(l.toy)) + '" loading="eager">' : "") +
+    (text ? '<p style="font-family:var(--body);font-size:18px;max-width:46ch">' + esc(text) + "</p>" : "") +
+    '<div class="spec">' +
+      row("Maker", maker ? (mv ? '<a href="' + MOLDER_PATH[mv] + '">' + esc(maker) + "</a>" : esc(maker)) : "") +
+      row("Released", esc(String(l.year || ""))) +
+      row("Line", esc(clean(l.line))) +
+      row("Condition", esc(clean(l.condition))) +
+      row("Completeness", esc(clean(l.completeness))) +
+      row(price[0], price[1]) +
+    "</div>" +
+  "</div>";
+}
 for (const l of lots) {
   if (!l || !l.id) continue;
   const path = "/lot/" + encodeURIComponent(l.id) + "/";
@@ -907,6 +953,8 @@ for (const l of lots) {
     JSON.stringify(lotSchema(l, url)) + "</script></head>");
 
   if (!out.includes('href="' + esc(url) + '"')) throw new Error(l.id + ": canonical was not rewritten");
+  if (!out.includes('<div id="lotBody"></div>')) throw new Error(l.id + ": #lotBody not found for the static lot");
+  out = out.replace('<div id="lotBody"></div>', '<div id="lotBody">' + staticLot(l) + "</div>");
 
   const dir = "." + path;
   fs.mkdirSync(dir, { recursive: true });
