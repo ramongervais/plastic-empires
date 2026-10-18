@@ -946,6 +946,7 @@
   .auc-label { font-family:var(--label); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-3); margin-bottom:9px; }
   .auc-amount, .auc-countdown { font-family:var(--body); font-weight:700; font-size:30px; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .auc-card { display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-top:8px; padding-top:10px; border-top:1px solid var(--line-2); }
+  .auc-card .cp { display:flex; align-items:baseline; gap:8px; }
   .auc-card .amt { font-family:var(--body); font-weight:700; font-size:16px; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .auc-card .sub { font-family:var(--label); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); margin-inline-start:6px; white-space:nowrap; }
   .auc-del { font-family:var(--body); font-size:14px; color:var(--ink-3); margin-top:6px; font-variant-numeric:tabular-nums; }
@@ -8824,15 +8825,18 @@
         '<div class="meta">' + e([l.line, makerLabel(l.maker), l.year].filter(Boolean).join(' · ')) + '</div>' +
         // A lot with Buy now has its prices on the trade buttons; the row above
         // them shows the highest bid once there is one, never a starting price of 0.
-        // Buy now only, bidding never set up: no bid text, but the row stays (empty,
-        // same height) so the button lines up with its neighbours' bid blocks.
-        ((!isClosed && !isPreview && !isFixed && Number(l.buyNow) > 0 && !l.bids && !(Number(l.start) > 0))
-          ? '<div class="auc-card" aria-hidden="true"><div style="visibility:hidden"><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd" style="visibility:hidden">' + endsTxt + '</div></div>'
-        : (!isClosed && !isPreview && Number(l.buyNow) > 0 && !l.bids)
-          ? '<div class="auc-card"><div><span class="sub" style="margin:0">' + e(phrase('No bids yet')) + '</span></div><div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>'
-          // One price, in the middle of the bid block (Ramon, 16 Oct 2026): a live
-          // lot's card no longer repeats it here.
-          : '<div class="auc-card"><div>' + ((!isClosed && !isPreview && !isFixed) ? '' : '<span class="amt">' + money(l.bid) + '</span>') + '<span class="sub"' + ((!isClosed && !isPreview && !isFixed) ? ' style="margin:0"' : '') + '>' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : (isPreview ? 'Starting bid' : (isFixed ? 'Fixed price' : (l.bids || 0) + ' bids'))) + '</span></div><div class="cd' + (!isClosed && (l.extended || isPreview) ? ' extended' : '') + '">' + endsTxt + '</div></div>' ) +
+        // Cards show one price line, no bid buttons: those are on the lot page
+        // (Ramon, 18 Oct 2026). Current bid once there is one, the starting bid
+        // before, Buy now when that is the only way to buy, the price on a direct sale.
+        ((!isClosed && !isPreview)
+          ? (() => {
+              const bnOnly = !isFixed && Number(l.buyNow) > 0 && !l.bids && !(Number(l.start) > 0);
+              const label = isFixed ? phrase('Price') : bnOnly ? phrase('Buy now') : (l.bids ? phrase('Current bid') : phrase('Starting bid'));
+              const amt = bnOnly ? Number(l.buyNow) : l.bid;
+              return '<div class="auc-card"><div class="cp"><span class="sub" style="margin:0">' + e(label) + '</span><span class="amt">' + money(amt) + '</span></div>' +
+                '<div class="cd' + (l.extended ? ' extended' : '') + '">' + endsTxt + '</div></div>';
+            })()
+          : '<div class="auc-card"><div><span class="amt">' + money(l.bid) + '</span><span class="sub">' + (isClosed ? (l.bids ? l.bids + ' bids' : 'Final price') : 'Starting bid') + '</span></div><div class="cd' + (isPreview ? ' extended' : '') + '">' + endsTxt + '</div></div>') +
         // Under the price, not beside it, so the number a buyer actually pays
         // reads as one thought. Closed lots leave it out: nothing is shipping.
         // No delivery figure on a card, on Ramon's call. Sixteen of them down a
@@ -8842,8 +8846,7 @@
         // to consider this piece and the postage is part of the real total.
         (isClosed ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">' + badgeWord + ' · view result</div>'
           : (isPreview ? '<div class="card-ended" data-nav="lot" data-lot="' + e(l.id || '') + '">In preview</div>'
-          : tradeHtml({ id: l.id, name: l.name, buyNow: l.buyNow, downPct: l.downPct, floor: FLOORS[l.id], top: l.bids ? l.bid : null, start: l.start != null ? l.start : l.bid, fixed: isFixed,
-                        estChecked: l.estChecked, estLow: l.estLow, estHigh: l.estHigh }, e))) +
+          : '')) +
       '</div></article>';
   }
 
