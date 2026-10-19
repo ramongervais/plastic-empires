@@ -11396,6 +11396,16 @@
       if (lot.year) ld.releaseDate = String(lot.year);
       let tag = document.getElementById('lotLd');
       if (!tag){ tag = document.createElement('script'); tag.type = 'application/ld+json'; tag.id = 'lotLd'; document.head.appendChild(tag); }
+      // The build wrote the return policy and carrier-priced postage into this
+      // tag; keep them when the live data replaces the rest (19 Oct 2026).
+      try {
+        const prev = JSON.parse(tag.textContent || '{}');
+        const po = prev && prev.offers;
+        if (po && String(po.url).replace(/\/$/, '') === String(ld.offers.url).replace(/\/$/, '')) {
+          if (po.shippingDetails) ld.offers.shippingDetails = po.shippingDetails;
+          if (po.hasMerchantReturnPolicy) ld.offers.hasMerchantReturnPolicy = po.hasMerchantReturnPolicy;
+        }
+      } catch (e) {}
       tag.textContent = JSON.stringify(ld);
     })();
 

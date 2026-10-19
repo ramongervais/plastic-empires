@@ -574,8 +574,26 @@ function lotSchema(l, url) {
       availability: "https://schema.org/" + avail,
       itemCondition: "https://schema.org/" + cond,
       seller: { "@type": "Organization", "@id": SITE + "/#org" },
+      // From our own terms: fourteen days from receipt, by post, return postage
+      // on the buyer for a change of mind (ours when it arrives damaged or not
+      // as described, which schema has no field for).
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: ["NL", "BE", "DE", "FR", "ES", "IT", "AT", "IE", "PT", "PL", "DK", "SE", "FI", "GB", "US", "JP"],
+        returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 14,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+      },
     },
   };
+  const q = shipQuote[l.id] || {};
+  const ships = SHIP_ZONES.filter((cc) => q[cc] > 0).map((cc) => ({
+    "@type": "OfferShippingDetails",
+    shippingRate: { "@type": "MonetaryAmount", value: q[cc].toFixed(2), currency: "EUR" },
+    shippingDestination: { "@type": "DefinedRegion", addressCountry: cc },
+  }));
+  if (ships.length) node.offers.shippingDetails = ships;
   const brand = clean(l.maker).split(/[(,]/)[0].trim();
   if (brand) node.brand = { "@type": "Brand", name: brand };
   if (clean(l.year)) node.releaseDate = clean(l.year);
@@ -584,6 +602,27 @@ function lotSchema(l, url) {
 
 await probeUpdatedAt();
 const lots = await fetchLots();
+
+// Real postage for the product schema (Search Console, 19 Oct 2026: offers
+// without shippingDetails). Asked from the pay worker, which prices it with the
+// carriers exactly as checkout does: the cheapest rate per lot to three places
+// that stand for the three zones. If the worker cannot answer, the schema goes
+// without shipping rather than with a guessed figure.
+const SHIP_ZONES = ["NL", "DE", "US"];
+const shipQuote = {};
+for (const cc of SHIP_ZONES) {
+  const ids = lots.filter((l) => l.status === "live" || l.status === "preview").map((l) => l.id);
+  for (let i = 0; i < ids.length; i += 60) {
+    try {
+      const r = await fetch("https://plasticempires-pay.ramongervais.workers.dev/shipping-quotes", {
+        method: "POST", headers: { "Content-Type": "application/json", Origin: "https://hammerandmold.com" },
+        body: JSON.stringify({ country: cc, lotIds: ids.slice(i, i + 60) }),
+      });
+      const d = await r.json();
+      for (const [id, price] of Object.entries((d && d.quotes) || {})) (shipQuote[id] = shipQuote[id] || {})[cc] = Number(price);
+    } catch (e) { console.warn("shipping quotes " + cc + ": " + e.message); }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // The shop, in the HTML.
