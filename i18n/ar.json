@@ -2219,5 +2219,7 @@
   "Completeness": "الاكتمال",
   "Current bid": "المزايدة الحالية",
   "Price": "السعر",
-  "Not for sale": "ليست للبيع"
+  "Not for sale": "ليست للبيع",
+  "When you chat with a Buyer or Seller about a lot, we store the messages, who sent them and when, and when each of you last read the conversation. Only the two of you can read it. We read a conversation only when one of you reports a message, and only to decide on that report. Phone numbers, email addresses, bank account numbers and links are hidden automatically before a message is stored, so that sales and payment stay on the Platform where Buyer protection applies. If a message stays unread for 15 minutes we email you a notice, which you can switch off in your account. If you block someone or report a message, we store that with the conversation. Neither party's email address is ever shown to the other.": "عندما تتحادث مع مشترٍ أو بائع بخصوص قطعة، نحفظ الرسائل ومن أرسلها ومتى، ومتى قرأ كل منكما المحادثة آخر مرة. لا يستطيع قراءتها سواكما. لا نقرأ المحادثة إلا إذا أبلغ أحدكما عن رسالة، وفقط للبتّ في ذلك البلاغ. تُخفى أرقام الهواتف وعناوين البريد وأرقام الحسابات المصرفية والروابط تلقائيًا قبل حفظ الرسالة، لكي يبقى البيع والدفع على المنصة حيث تسري حماية المشتري. إذا بقيت رسالة غير مقروءة 15 دقيقة نرسل إليك بريدًا إلكترونيًا يمكنك إيقافه من حسابك. إذا حظرت أحدًا أو أبلغت عن رسالة نحفظ ذلك مع المحادثة. لا يُعرض البريد الإلكتروني لأي طرف على الطرف الآخر أبدًا.",
+  "Chat messages, blocks and reports: 24 months after the last message in the conversation, then deleted automatically. Reviews: while the profile they concern exists.": "رسائل المحادثة وعمليات الحظر والبلاغات: 24 شهرًا بعد آخر رسالة في المحادثة، ثم تُحذف تلقائيًا. المراجعات: ما دام الملف الذي تخصه موجودًا."
 }

@@ -716,5 +716,9 @@
   "What is wrong with this message? (optional)": "このメッセージの問題点は？（任意）",
   "Reported": "報告しました",
   "No conversations yet. Use Ask the seller on a lot to start one.": "まだ会話はありません。ロットの「出品者に質問」から始められます。",
-  "Ask the seller": "出品者に質問"
+  "Ask the seller": "出品者に質問",
+  "Unblock": "ブロック解除",
+  "Block": "ブロック",
+  "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} をブロックしますか？この会話ではお互いにメッセージを送れなくなります。元に戻せます。",
+  "New chat messages I have not read": "未読の新しいチャットメッセージ"
 }

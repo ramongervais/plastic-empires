@@ -716,5 +716,9 @@
   "What is wrong with this message? (optional)": "Qu'est-ce qui ne va pas avec ce message ? (facultatif)",
   "Reported": "Signalé",
   "No conversations yet. Use Ask the seller on a lot to start one.": "Pas encore de conversations. Utilisez Demander au vendeur sur un lot pour en commencer une.",
-  "Ask the seller": "Demander au vendeur"
+  "Ask the seller": "Demander au vendeur",
+  "Unblock": "Débloquer",
+  "Block": "Bloquer",
+  "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "Bloquer {name} ? Aucun de vous ne pourra plus envoyer de messages dans cette conversation. Vous pouvez annuler.",
+  "New chat messages I have not read": "Nouveaux messages de chat non lus"
 }

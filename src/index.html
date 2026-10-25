@@ -1004,6 +1004,8 @@
   .chat-lt { min-width:0; display:grid; gap:2px; }
   .chat-lt a { font-family:var(--body); font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .chat-who { font-size:12px; color:var(--ink-3); }
+  .chat-blk { flex:none; height:32px; padding:0 10px; border:1px solid var(--line); background:var(--paper); color:var(--ink-3); font-size:12px; cursor:pointer; }
+  .chat-blk:hover { color:var(--ink); border-color:var(--ink); }
   .chat-x { flex:none; width:32px; height:32px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:18px; cursor:pointer; }
   .chat-list { overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; }
   .chat-m { display:grid; gap:2px; max-width:82%; }
@@ -6087,7 +6089,7 @@
         <p><b>Listings.</b> The photographs you upload and the description, condition, variant and price data attached to them.</p>
         <p><b>Activity.</b> Bids you place, lots you win or sell, lots you add to your watchlist, and reviews you write or receive.</p>
         <p><b>Delivery.</b> When you buy, our payment provider collects your name, delivery address, phone number and email and passes them to us so the Seller can ship. A tracking number if one is added.</p>
-        <p><b>Messages.</b> If you message a Seller, we process the message text and your email address so they can reply. Neither party's address is shown publicly.</p>
+        <p><b>Messages.</b> When you chat with a Buyer or Seller about a lot, we store the messages, who sent them and when, and when each of you last read the conversation. Only the two of you can read it. We read a conversation only when one of you reports a message, and only to decide on that report. Phone numbers, email addresses, bank account numbers and links are hidden automatically before a message is stored, so that sales and payment stay on the Platform where Buyer protection applies. If a message stays unread for 15 minutes we email you a notice, which you can switch off in your account. If you block someone or report a message, we store that with the conversation. Neither party's email address is ever shown to the other.</p>
         <p><b>Technical.</b> Our host, content networks and providers log IP addresses and request data to serve the site and keep it secure. Your browser stores a sign-in token, your theme choice and any unsent listing draft locally on your own device.</p>
 
         <div class="terms-h">3 · Why, and on what legal basis</div>
@@ -6124,7 +6126,7 @@
         Transaction, invoice and commission records: <b>seven years</b>, as Dutch tax law requires.<br>
         Listings and photographs: while listed, and afterwards in the sold archive as a price record.<br>
         Bids: kept with the lot, so a completed auction stays auditable.<br>
-        Messages: 24 months. Reviews: while the profile they concern exists.<br>
+        Chat messages, blocks and reports: 24 months after the last message in the conversation, then deleted automatically. Reviews: while the profile they concern exists.<br>
         Server and security logs: 90 days, per each provider's own retention.</p>
 
         <div class="terms-h">9 · Cookies and local storage</div>
@@ -10172,6 +10174,7 @@
         tog('notify_won', 'When I win a lot', prefs.notify_won) +
         tog('notify_bid', 'When someone bids on my lot', prefs.notify_bid) +
         tog('notify_sold', 'When one of my items sells', prefs.notify_sold) +
+        tog('notify_messages', phrase('New chat messages I have not read'), prefs.notify_messages) +
       '</div>';
     document.getElementById('acctOut').addEventListener('click', async () => { if (SB){ await SB.auth.signOut(); authUser = null; } try { localStorage.removeItem('pe_user'); } catch (e) {} refreshAuthUI(); show('home'); injectDraftLots(); });
     body.querySelectorAll('[data-pay]').forEach(b => b.addEventListener('click', () => startCheckout({ lotId: b.dataset.pay, kind: 'win', amount: parseFloat(b.dataset.amt), label: b.dataset.label })));
@@ -11414,7 +11417,7 @@
       document.body.appendChild(panel);
     }
     panel.hidden = false;
-    panel.innerHTML = '<div class="chat-hd"><div class="chat-lot" id="chatLot"></div><button type="button" class="chat-x" id="chatX" aria-label="' + chatT(phrase('Close')) + '">×</button></div>' +
+    panel.innerHTML = '<div class="chat-hd"><div class="chat-lot" id="chatLot"></div><button type="button" class="chat-blk" id="chatBlock" hidden></button><button type="button" class="chat-x" id="chatX" aria-label="' + chatT(phrase('Close')) + '">×</button></div>' +
       '<div class="chat-list" id="chatList"><div class="chat-sys">' + chatT(phrase('Loading…')) + '</div></div>' +
       '<form class="chat-in" id="chatForm"><textarea id="chatText" rows="2" maxlength="2000" placeholder="' + chatT(phrase('Write a message…')) + '"></textarea>' +
       '<button type="submit" class="chat-send" id="chatSend">' + chatT(phrase('Send')) + '</button></form>' +
@@ -11426,6 +11429,22 @@
     const iAmSeller = conv.seller_id === authUser.id;
     let other = iAmSeller ? phrase('Buyer') : phrase('Seller');
     if (!iAmSeller) { try { const { data: sp } = await SB.from('seller_public').select('display_name').eq('id', conv.seller_id).maybeSingle(); if (sp && sp.display_name) other = sp.display_name; } catch (e) {} }
+    // Blocking: the other person can no longer write to you, nor you to them.
+    const otherId = iAmSeller ? conv.buyer_id : conv.seller_id;
+    const blkBtn = document.getElementById('chatBlock');
+    const paintBlock = async () => {
+      let blocked = false;
+      try { const { data } = await SB.from('chat_blocks').select('blocked_id').eq('blocked_id', otherId).maybeSingle(); blocked = !!data; } catch (e) {}
+      blkBtn.hidden = false;
+      blkBtn.textContent = blocked ? phrase('Unblock') : phrase('Block');
+      blkBtn.onclick = async () => {
+        if (!blocked && !confirm(phrase('Block {name}? Neither of you can send messages in this conversation any more. You can undo this.', { name: other }))) return;
+        const r = await SB.rpc('block_in_conversation', { p_conversation: convId, p_block: !blocked });
+        if (r.error) { document.getElementById('chatErr').textContent = r.error.message; return; }
+        paintBlock();
+      };
+    };
+    paintBlock();
     const img = lot && (lot.image_urls || []).filter(Boolean)[0];
     document.getElementById('chatLot').innerHTML =
       (img ? '<span class="chat-th" style="background-image:url(' + chatT(img) + ')"></span>' : '') +

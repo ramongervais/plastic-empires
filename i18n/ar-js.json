@@ -716,5 +716,9 @@
   "What is wrong with this message? (optional)": "ما المشكلة في هذه الرسالة؟ (اختياري)",
   "Reported": "تم الإبلاغ",
   "No conversations yet. Use Ask the seller on a lot to start one.": "لا محادثات بعد. استخدم اسأل البائع في صفحة القطعة لبدء واحدة.",
-  "Ask the seller": "اسأل البائع"
+  "Ask the seller": "اسأل البائع",
+  "Unblock": "إلغاء الحظر",
+  "Block": "حظر",
+  "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "حظر {name}؟ لن يتمكن أي منكما من إرسال رسائل في هذه المحادثة بعد الآن. يمكنك التراجع عن ذلك.",
+  "New chat messages I have not read": "رسائل محادثة جديدة لم أقرأها"
 }

@@ -2217,5 +2217,7 @@
   "Completeness": "完整性",
   "Current bid": "目前出價",
   "Price": "價格",
-  "Not for sale": "非賣品"
+  "Not for sale": "非賣品",
+  "When you chat with a Buyer or Seller about a lot, we store the messages, who sent them and when, and when each of you last read the conversation. Only the two of you can read it. We read a conversation only when one of you reports a message, and only to decide on that report. Phone numbers, email addresses, bank account numbers and links are hidden automatically before a message is stored, so that sales and payment stay on the Platform where Buyer protection applies. If a message stays unread for 15 minutes we email you a notice, which you can switch off in your account. If you block someone or report a message, we store that with the conversation. Neither party's email address is ever shown to the other.": "當你就某件拍品與買家或賣家聊天時，我們會保存訊息、寄件人與時間，以及雙方最後閱讀對話的時間。只有你們兩人能閱讀。只有在其中一方檢舉訊息時，我們才會閱讀該對話，而且僅用於處理該檢舉。電話號碼、電子郵件地址、銀行帳號和連結會在訊息儲存前自動隱藏，讓交易與付款留在平台上，享有買家保障。若訊息 15 分鐘未讀，我們會寄電子郵件通知你，你可以在帳戶中關閉。若你封鎖某人或檢舉訊息，我們會將其與對話一併保存。任何一方的電子郵件地址都不會向另一方顯示。",
+  "Chat messages, blocks and reports: 24 months after the last message in the conversation, then deleted automatically. Reviews: while the profile they concern exists.": "聊天訊息、封鎖與檢舉：對話最後一則訊息後 24 個月自動刪除。評價：在其相關的個人檔案存在期間保留。"
 }

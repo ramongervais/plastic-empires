@@ -35,6 +35,8 @@ await db.exec(`
   insert into public.lots values ('${LOT}', '${SELLER}', 'live'), ('${SOLD}', '${SELLER}', 'sold');
 `);
 await db.exec(readFileSync(new URL('../admin/add-chat.sql', import.meta.url), 'utf8'));
+await db.exec(`alter table public.profiles add column if not exists email text`);
+await db.exec(readFileSync(new URL('../admin/add-chat-safety.sql', import.meta.url), 'utf8'));
 
 async function as(uid, sql, params) {
   await db.exec(`reset role; select set_config('test.uid', '${uid || ''}', false); set role authenticated;`);
@@ -104,6 +106,22 @@ test('reporting: only a message sent to you, and only the admin sees reports', a
 test('the spam limit holds at thirty an hour', async () => {
   for (let i = 0; i < 29; i++) await as(BUYER, 'select public.send_message($1, $2)', [conv, 'message ' + i]);
   await fails(() => as(BUYER, 'select public.send_message($1, $2)', [conv, 'one too many']), /a lot of messages/);
+});
+
+test('blocking closes the conversation both ways, and unblocking reopens it', async () => {
+  await as(SELLER, 'select public.block_in_conversation($1, true)', [conv]);
+  await fails(() => as(BUYER, 'select * from public.send_message($1, $2)', [conv, 'hello?']), /blocked/);
+  await fails(() => as(SELLER, 'select * from public.send_message($1, $2)', [conv, 'hello?']), /blocked/);
+  assert.equal((await as(BUYER, 'select count(*)::int as n from public.chat_blocks')).rows[0].n, 0, 'the blocked side does not see the block');
+  await as(SELLER, 'select public.block_in_conversation($1, false)', [conv]);
+  await db.exec("delete from public.messages where sender_id = '" + SELLER + "' and body like 'ok%'");
+});
+
+test('only an admin handles a report', async () => {
+  const rep = (await as(ADMIN, 'select id from public.message_reports limit 1')).rows[0].id;
+  await fails(() => as(BUYER, 'select public.admin_handle_report($1)', [rep]), /Admins only/);
+  await as(ADMIN, 'select public.admin_handle_report($1)', [rep]);
+  assert.ok((await as(ADMIN, 'select handled_at from public.message_reports where id = $1', [rep])).rows[0].handled_at);
 });
 
 test('users cannot run the clean-up', async () => {

@@ -719,5 +719,9 @@
   "What is wrong with this message? (optional)": "Wat is er mis met dit bericht? (optioneel)",
   "Reported": "Gemeld",
   "No conversations yet. Use Ask the seller on a lot to start one.": "Nog geen gesprekken. Gebruik Vraag de verkoper op een kavel om er een te beginnen.",
-  "Ask the seller": "Vraag de verkoper"
+  "Ask the seller": "Vraag de verkoper",
+  "Unblock": "Deblokkeren",
+  "Block": "Blokkeren",
+  "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} blokkeren? Jullie kunnen in dit gesprek allebei geen berichten meer sturen. Je kunt dit ongedaan maken.",
+  "New chat messages I have not read": "Nieuwe chatberichten die ik niet gelezen heb"
 }

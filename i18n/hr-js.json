@@ -719,5 +719,9 @@
   "What is wrong with this message? (optional)": "Što nije u redu s ovom porukom? (neobavezno)",
   "Reported": "Prijavljeno",
   "No conversations yet. Use Ask the seller on a lot to start one.": "Još nema razgovora. Upotrijebi Pitaj prodavatelja na lotu da započneš.",
-  "Ask the seller": "Pitaj prodavatelja"
+  "Ask the seller": "Pitaj prodavatelja",
+  "Unblock": "Odblokiraj",
+  "Block": "Blokiraj",
+  "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "Blokirati {name}? Nitko od vas više ne može slati poruke u ovom razgovoru. Možeš to poništiti.",
+  "New chat messages I have not read": "Nove poruke u chatu koje nisam pročitao"
 }

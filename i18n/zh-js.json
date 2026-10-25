@@ -716,5 +716,9 @@
   "What is wrong with this message? (optional)": "這則訊息有什麼問題？（選填）",
   "Reported": "已檢舉",
   "No conversations yet. Use Ask the seller on a lot to start one.": "尚無對話。在拍品頁使用「詢問賣家」即可開始。",
-  "Ask the seller": "詢問賣家"
+  "Ask the seller": "詢問賣家",
+  "Unblock": "解除封鎖",
+  "Block": "封鎖",
+  "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "要封鎖 {name} 嗎？你們雙方都無法再於此對話中傳送訊息。之後可以復原。",
+  "New chat messages I have not read": "我尚未讀取的新聊天訊息"
 }

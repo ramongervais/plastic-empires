@@ -255,6 +255,7 @@
       <button class="tab" data-sec="calibration" type="button">Calibration</button>
       <button class="tab" data-sec="funnel" type="button">Funnel</button>
       <button class="tab" data-sec="offers" type="button">Offers</button>
+      <button class="tab" data-sec="reports" type="button">Reports <span id="repCount"></span></button>
       <button class="tab" data-sec="settings" type="button">Site settings</button>
     </div>
 
@@ -658,6 +659,19 @@
       <p class="note" id="ofEmpty" hidden>No offers yet.</p>
     </section>
 
+    <!-- ---------- Chat reports (25 Oct 2026) ---------- -->
+    <section class="sec" id="sec-reports" hidden>
+      <div class="sec-head">
+        <div>
+          <div class="ey">Chat</div>
+          <h1>Reports</h1>
+          <p class="lede">Messages a buyer or seller reported. You see the reported message and the conversation around it; read only what you need to decide. Mark a report handled once it is dealt with.</p>
+        </div>
+      </div>
+      <div id="repList"></div>
+      <p class="note" id="repEmpty" hidden>No open reports.</p>
+    </section>
+
     <!-- ---------- Funnel ---------- -->
     <section class="sec" id="sec-funnel" hidden>
       <div class="sec-head">
@@ -843,7 +857,7 @@
     }
     $('gate').hidden = true; $('app').hidden = false;
     $('whoEmail').textContent = me.email || '';
-    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots(); loadFunnel(); loadOffers();
+    loadFeatured(); loadSellers(); loadSettings(); loadCalibration(); loadLots(); loadFunnel(); loadOffers(); loadReports();
     $('fnDays').addEventListener('change', loadFunnel);
   }
 
@@ -1631,6 +1645,46 @@
   // inbox, so this is the record that an offer arrived, who from, and where it
   // got to. Without it a mail that got lost would take the offer with it.
   const OFFER_STATES = ['new', 'offered', 'accepted', 'declined', 'closed'];
+
+  // Chat reports: the open ones, each with the conversation around it.
+  async function loadReports(){
+    const { data: reps, error } = await SB.from('message_reports').select('id,message_id,reporter_id,reason,created_at,handled_at').is('handled_at', null).order('created_at', { ascending: false }).limit(100);
+    if (error){ $('repList').innerHTML = ''; $('repEmpty').hidden = false; $('repEmpty').textContent = explain(error); return; }
+    $('repCount').textContent = (reps || []).length ? '(' + reps.length + ')' : '';
+    $('repEmpty').hidden = (reps || []).length > 0;
+    if (!reps || !reps.length){ $('repList').innerHTML = ''; return; }
+    const { data: msgs } = await SB.from('messages').select('id,conversation_id,sender_id,body,created_at').in('id', reps.map(r => r.message_id));
+    const convIds = [...new Set((msgs || []).map(m => m.conversation_id))];
+    const [{ data: convs }, { data: thread }] = await Promise.all([
+      SB.from('conversations').select('id,lot_id,buyer_id,seller_id').in('id', convIds),
+      SB.from('messages').select('id,conversation_id,sender_id,body,created_at').in('conversation_id', convIds).order('created_at', { ascending: true }).limit(1000),
+    ]);
+    const lotIds = [...new Set((convs || []).map(c => c.lot_id))];
+    const { data: lots } = lotIds.length ? await SB.from('lots').select('id,toy').in('id', lotIds) : { data: [] };
+    const when = d => new Date(d).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    $('repList').innerHTML = reps.map(r => {
+      const m = (msgs || []).find(x => x.id === r.message_id); if (!m) return '';
+      const c = (convs || []).find(x => x.id === m.conversation_id) || {};
+      const lot = (lots || []).find(x => x.id === c.lot_id) || {};
+      const who = id => id === c.seller_id ? 'Seller' : 'Buyer';
+      const around = (thread || []).filter(x => x.conversation_id === m.conversation_id);
+      const at = around.findIndex(x => x.id === m.id);
+      const slice = around.slice(Math.max(0, at - 3), at + 4);
+      return '<div class="card" style="margin-bottom:16px;padding:16px;border:1px solid var(--line)">' +
+        '<div class="note">' + esc(when(r.created_at)) + ' · reported by the ' + esc(who(r.reporter_id).toLowerCase()) + ' · lot <a href="/lot/' + encodeURIComponent(c.lot_id || '') + '/" target="_blank" rel="noopener">' + esc(lot.toy || c.lot_id || '') + '</a></div>' +
+        (r.reason ? '<p><b>Reason:</b> ' + esc(r.reason) + '</p>' : '') +
+        '<div style="display:grid;gap:6px;margin:10px 0">' + slice.map(x =>
+          '<div style="padding:8px 10px;' + (x.id === m.id ? 'outline:2px solid var(--ink);' : '') + 'background:var(--paper-2, #f5f5f5)"><span class="note">' + esc(who(x.sender_id)) + ', ' + esc(when(x.created_at)) + '</span><br>' + esc(x.body) + '</div>').join('') + '</div>' +
+        '<button class="btn" type="button" data-handle="' + esc(r.id) + '">Mark handled</button></div>';
+    }).join('');
+  }
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-handle]'); if (!b) return;
+    b.disabled = true;
+    const { error } = await SB.rpc('admin_handle_report', { p_report: b.dataset.handle });
+    if (error){ b.disabled = false; alert(explain(error)); return; }
+    loadReports();
+  });
 
   async function loadOffers(){
     const res = await SB.rpc('admin_buy_offers', { lim: 200 });
