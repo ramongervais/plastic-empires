@@ -343,7 +343,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 // /<code>/views/<view>.html, translated), which the router fetches the first
 // time a reader goes there. The app views (home, sell, lot, account...) stay
 // in every page: they are small, and they are the application.
-const DEFER = ["empire", "tmnt", "ljn", "galoob", "hasbrowwf", "thinkway", "kaiju", "sofubi",
+const DEFER = ["empire", "tmnt", "ljn", "galoob", "hasbrowwf", "howitworks", "thinkway", "kaiju", "sofubi",
   "imperial", "palitoy", "dormei", "retrobright", "moulds", "privacy", "help", "terms"];
 
 function viewSpan(page, v) {

@@ -992,6 +992,29 @@
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
   .bidform { margin:2px 0 20px; }
+  /* How it works: a comic in the line style of Notion's illustrations (25 Oct 2026) */
+  .hiw-hero { padding-block:24px 8px; max-width:720px; }
+  .hiw-title { font-family:var(--display); font-weight:700; font-size:clamp(32px, 5vw, 52px); letter-spacing:.02em; text-transform:uppercase; line-height:1.05; margin:10px 0 14px; text-wrap:balance; }
+  .hiw-lede { font-family:var(--body); font-size:19px; line-height:1.5; color:var(--ink-2); margin:0; max-width:56ch; }
+  .hiw-link { margin-inline-start:12px; color:var(--ink); text-decoration:underline; text-underline-offset:3px; letter-spacing:.06em; }
+  .hiw-grid { list-style:none; margin:32px 0 0; padding:0; display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; }
+  .hiw-panel { border:1.5px solid var(--ink); background:var(--paper); display:grid; grid-template-rows:auto 1fr auto; min-width:0; }
+  .hiw-cap { padding:10px 14px; border-bottom:1.5px solid var(--ink); font-family:var(--label); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
+  .hiw-art { position:relative; height:260px; overflow:hidden; }
+  .hiw-kong { position:absolute; bottom:-6px; left:12%; height:84%; width:auto; max-width:none; }
+  .hiw-art.flip .hiw-kong { left:auto; right:12%; transform:scaleX(-1); }
+  .hiw-prop { position:absolute; top:22%; left:58%; width:72px; height:72px; fill:var(--paper); stroke:var(--ink); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .hiw-art.flip .hiw-prop { left:auto; right:58%; }
+  .hiw-bubble { position:absolute; top:14px; right:14px; max-width:60%; padding:8px 12px; background:var(--paper); border:1.5px solid var(--ink); border-radius:16px; font-family:var(--body); font-size:14px; line-height:1.3; }
+  .hiw-bubble::after { content:''; position:absolute; bottom:-8px; left:22px; width:12px; height:12px; background:var(--paper); border-right:1.5px solid var(--ink); border-bottom:1.5px solid var(--ink); transform:rotate(45deg); }
+  .hiw-art.flip .hiw-bubble { right:auto; left:14px; }
+  .hiw-art.flip .hiw-bubble::after { left:auto; right:22px; }
+  .hiw-txt { margin:0; padding:14px; border-top:1.5px solid var(--ink); font-family:var(--body); font-size:15px; line-height:1.5; }
+  .hiw-cta { margin:40px 0 24px; padding:28px; border:1.5px solid var(--ink); display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
+  .hiw-cta h2 { margin:0; font-family:var(--display); font-weight:600; font-size:clamp(20px, 2.4vw, 28px); }
+  .hiw-acts { display:flex; gap:12px; flex-wrap:wrap; }
+  @media (max-width:900px){ .hiw-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+  @media (max-width:560px){ .hiw-grid { grid-template-columns:1fr; } .hiw-art { height:240px; } }
   /* Chat (25 Oct 2026) */
   .chat-ask { width:100%; height:40px; margin-top:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; font-family:var(--body); font-size:14px; font-weight:500; border-radius:0; }
   .chat-ask:hover { border-color:var(--ink); }
@@ -2036,6 +2059,7 @@
     <a href="/moulds/" data-nav="moulds">Moulds</a>
     <span class="mob-lbl">Selling</span>
     <a href="/sell/" data-nav="sell">Sell</a>
+    <a href="/how-it-works/" data-nav="howitworks">How it works</a>
     <a href="/packages/" data-nav="plans">Packages</a>
     <a href="/we-buy/" data-nav="buy">We buy</a>
     <a href="https://www.instagram.com/meetthemolders/" target="_blank" rel="noopener">Instagram</a>
@@ -5754,7 +5778,7 @@
   </div>
   <section class="band sell-how">
     <div class="wrap">
-      <div class="ey" style="margin-bottom:8px">How it works</div>
+      <div class="ey" style="margin-bottom:8px">How it works <a href="/how-it-works/" data-nav="howitworks" class="hiw-link">The whole story, in six panels &#8594;</a></div>
       <h2 style="font-family:var(--display);font-weight:600;font-size:clamp(26px,3.4vw,38px);letter-spacing:.06em;text-transform:uppercase;margin:0 0 28px">From photos to listing in two steps</h2>
       <div class="moat two">
         <div class="cell"><div class="num">1 &middot; Upload &amp; guide</div><h4>Add photos and direction</h4><p>Add clear photos of the front, back, accessories and any visible flaws. Include a close-up of the maker's stamp where possible.</p><p>You can also add your own source or a note of direction, either to point us at something you already trust or to have the identification double-checked against it.</p><p>A worn or partly legible stamp is fine.</p></div>
@@ -5824,6 +5848,86 @@
       </div>
     </div>
   </section>
+</main>
+
+<main class="view" id="view-howitworks" hidden>
+  <div class="wrap">
+    <div class="crumb"><a data-nav="home">Home</a><span class="sep">/</span><a data-nav="sell" href="/sell/">Sell</a><span class="sep">/</span><span class="here">How it works</span></div>
+    <section class="hiw-hero">
+      <div class="ey">For sellers</div>
+      <h1 class="hiw-title">How Hammer &amp; Mold works</h1>
+      <p class="hiw-lede">Six steps from the toy on your shelf to the money in your account. Kong will walk you through it.</p>
+    </section>
+
+    <!-- The comic (Ramon, 25 Oct 2026): Kong's silhouette in every panel, a drawn
+         prop in his raised hand, in the line style of Notion's illustrations.
+         The silhouette is cut from kong-agfa.jpg for now; Ramon's own poses
+         replace it panel by panel. -->
+    <ol class="hiw-grid">
+      <li class="hiw-panel">
+        <div class="hiw-cap">1 · Photograph it</div>
+        <div class="hiw-art">
+          <div class="hiw-bubble">Front, back, and the stamp!</div>
+          <img class="hiw-kong" src="/Empires/Brandedimages/kong-silhouette.png" alt="" width="402" height="587" loading="lazy">
+          <svg class="hiw-prop" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 22h12l4-6h16l4 6h12v28H8z"/><circle cx="32" cy="35" r="10"/><circle cx="32" cy="35" r="4"/><path d="M48 27h4"/></svg>
+        </div>
+        <p class="hiw-txt">Take a few clear photos of your toy: the front, the back and the maker's stamp. With the original box, up to twelve.</p>
+      </li>
+      <li class="hiw-panel">
+        <div class="hiw-cap">2 · We identify it</div>
+        <div class="hiw-art flip">
+          <div class="hiw-bubble">So that's who I am.</div>
+          <img class="hiw-kong" src="/Empires/Brandedimages/kong-silhouette.png" alt="" width="402" height="587" loading="lazy">
+          <svg class="hiw-prop" viewBox="0 0 64 64" aria-hidden="true"><circle cx="26" cy="26" r="16"/><path d="M38 38l18 18"/><path d="M18 22c2-4 6-6 10-6"/></svg>
+        </div>
+        <p class="hiw-txt">Our AI reads the toy like an expert: maker, line, year, condition and what originally came with it. Free, as often as you like.</p>
+      </li>
+      <li class="hiw-panel">
+        <div class="hiw-cap">3 · Set your price</div>
+        <div class="hiw-art">
+          <div class="hiw-bubble">Auction or Buy now?</div>
+          <img class="hiw-kong" src="/Empires/Brandedimages/kong-silhouette.png" alt="" width="402" height="587" loading="lazy">
+          <svg class="hiw-prop" viewBox="0 0 64 64" aria-hidden="true"><path d="M30 8h24v24L30 56 8 34z"/><circle cx="44" cy="18" r="4"/><path d="M24 34l8-8M28 40l10-10"/></svg>
+        </div>
+        <p class="hiw-txt">Start an auction, set a Buy now price, or both. Allow Bid down, and give a discount when someone buys a Collection.</p>
+      </li>
+      <li class="hiw-panel">
+        <div class="hiw-cap">4 · Collectors find it</div>
+        <div class="hiw-art flip">
+          <div class="hiw-bubble">Is it complete?</div>
+          <img class="hiw-kong" src="/Empires/Brandedimages/kong-silhouette.png" alt="" width="402" height="587" loading="lazy">
+          <svg class="hiw-prop" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 10h34v20H18l-8 8v-8H6z"/><path d="M26 36h20l8 8v-8h4V18h-12"/><path d="M14 18h18M14 23h12"/></svg>
+        </div>
+        <p class="hiw-txt">Your lot is in the shop and on its maker's page. Buyers bid, buy, or ask you a question in the chat, without ever seeing your email.</p>
+      </li>
+      <li class="hiw-panel">
+        <div class="hiw-cap">5 · Pack and post</div>
+        <div class="hiw-art">
+          <div class="hiw-bubble">Handle with care.</div>
+          <img class="hiw-kong" src="/Empires/Brandedimages/kong-silhouette.png" alt="" width="402" height="587" loading="lazy">
+          <svg class="hiw-prop" viewBox="0 0 64 64" aria-hidden="true"><path d="M8 20l24-10 24 10v28L32 58 8 48z"/><path d="M8 20l24 10 24-10M32 30v28"/><path d="M20 15l24 10"/></svg>
+        </div>
+        <p class="hiw-txt">When it sells you get the address, and the buyer has already paid the postage. Pack it well and send it with tracking.</p>
+      </li>
+      <li class="hiw-panel">
+        <div class="hiw-cap">6 · Get paid</div>
+        <div class="hiw-art flip">
+          <div class="hiw-bubble">Kerching!</div>
+          <img class="hiw-kong" src="/Empires/Brandedimages/kong-silhouette.png" alt="" width="402" height="587" loading="lazy">
+          <svg class="hiw-prop" viewBox="0 0 64 64" aria-hidden="true"><ellipse cx="26" cy="46" rx="16" ry="6"/><path d="M10 46v-8c0 3 7 6 16 6s16-3 16-6v8"/><ellipse cx="26" cy="38" rx="16" ry="6"/><ellipse cx="42" cy="22" rx="12" ry="12"/><path d="M46.5 17.5a6.5 6.5 0 1 0 0 9M35 20.5h8M35 23.5h8"/></svg>
+        </div>
+        <p class="hiw-txt">We pay out monthly to your bank, once the buyer's fourteen days to return have passed. The commission depends on your package.</p>
+      </li>
+    </ol>
+
+    <section class="hiw-cta">
+      <h2>Your first listing is ready in minutes.</h2>
+      <div class="hiw-acts">
+        <a class="btn accent" href="/sell/" data-nav="sell">Start selling</a>
+        <a class="btn ghost" href="/packages/" data-nav="plans">Compare packages</a>
+      </div>
+    </section>
+  </div>
 </main>
 
 <!-- ============================ BUY ============================ -->
@@ -6870,7 +6974,7 @@
   }
 
   // ----- View router -----
-  const views = { home: document.getElementById('view-home'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), hasbrowwf: document.getElementById('view-hasbrowwf'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), dormei: document.getElementById('view-dormei'), sofubi: document.getElementById('view-sofubi'), retrobright: document.getElementById('view-retrobright'), moulds: document.getElementById('view-moulds'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy'), checkout: document.getElementById('view-checkout') };
+  const views = { home: document.getElementById('view-home'), empire: document.getElementById('view-empire'), tmnt: document.getElementById('view-tmnt'), ljn: document.getElementById('view-ljn'), galoob: document.getElementById('view-galoob'), hasbrowwf: document.getElementById('view-hasbrowwf'), thinkway: document.getElementById('view-thinkway'), kaiju: document.getElementById('view-kaiju'), imperial: document.getElementById('view-imperial'), palitoy: document.getElementById('view-palitoy'), dormei: document.getElementById('view-dormei'), sofubi: document.getElementById('view-sofubi'), retrobright: document.getElementById('view-retrobright'), moulds: document.getElementById('view-moulds'), about: document.getElementById('view-about'), sell: document.getElementById('view-sell'), howitworks: document.getElementById('view-howitworks'), seller: document.getElementById('view-seller'), terms: document.getElementById('view-terms'), help: document.getElementById('view-help'), privacy: document.getElementById('view-privacy'), lot: document.getElementById('view-lot'), sold: document.getElementById('view-sold'), account: document.getElementById('view-account'), plans: document.getElementById('view-plans'), buy: document.getElementById('view-buy'), checkout: document.getElementById('view-checkout') };
   // ---- Paths ----
   // Every view had the same URL, hammerandmold.com/, because nothing ever wrote
   // to the address bar. Three things were broken by that and only one of them is
@@ -6878,7 +6982,7 @@
   // any measurement tool would have reported one pageview per visit with nothing
   // to compare. One path per view fixes all three at once.
   const PATHS = {
-    home: '/', about: '/about', sell: '/sell', plans: '/packages', buy: '/we-buy',
+    home: '/', about: '/about', sell: '/sell', howitworks: '/how-it-works', plans: '/packages', buy: '/we-buy',
     sold: '/results', account: '/account', terms: '/terms', privacy: '/privacy',
     help: '/help',
     empire: '/molders/kenner', tmnt: '/molders/playmates', ljn: '/molders/ljn',
@@ -6927,6 +7031,7 @@
     home:      ['Hammer & Mold \u00b7 Know the toy. Then own it.', 'Auction house for original vintage toys. Kenner Star Wars, The Real Ghostbusters and Japanese kaiju, each one identified, graded and told.'],
     about:     ['About \u00b7 Hammer & Mold', 'A private collection that grew into an auction house. What we hunt for, and why we prefer the toys that were actually played with.'],
     sell:      ['Sell your vintage toys \u00b7 Hammer & Mold', 'Photograph a toy and our AI identifies it, dates the line, grades the condition and researches what it really sells for. Identification is free and unlimited.'],
+    howitworks: ['How Hammer & Mold works \u00b7 Selling vintage toys \u00b7 Hammer & Mold', 'Six steps from the toy on your shelf to the money in your account: photograph it, let us identify it, set your price, answer collectors, post it and get paid. Explained by Kong.'],
     plans:     ['Selling packages \u00b7 Hammer & Mold', 'Three packages for sellers, priced so the one that matches what you sell is always the cheapest. Starter is free. Work out which one fits your volume.'],
     buy:       ['We buy vintage toy collections \u00b7 Hammer & Mold', 'Skip the auction and take the money today. Send photographs of a collection and we make one offer for the lot, with the reasoning attached.'],
     sold:      ['Past results \u00b7 Hammer & Mold', 'What vintage toys actually sold for at Hammer & Mold. Every closed lot with its final price.'],
