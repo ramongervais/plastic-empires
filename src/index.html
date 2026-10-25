@@ -992,6 +992,23 @@
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
   .bidform { margin:2px 0 20px; }
+  /* Collection (25 Oct 2026) */
+  .coll-lot { margin-top:8px; }
+  .coll-add { width:100%; height:40px; border:1px solid var(--cta, var(--ink)); background:var(--paper); color:var(--ink); cursor:pointer; font-family:var(--body); font-size:14px; font-weight:600; border-radius:0; }
+  .coll-add.on { background:var(--line-2); }
+  .coll-hint { margin-top:8px; font-family:var(--body); font-size:13px; color:var(--ink-3); }
+  .coll-pill { position:fixed; left:16px; bottom:16px; z-index:60; display:flex; align-items:center; gap:8px; height:48px; padding:0 16px; border:0; border-radius:0; background:var(--ink); color:var(--paper); cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.18); font-family:var(--body); }
+  .coll-pill[hidden] { display:none; }
+  .coll-pill .cp-k { font-size:12px; font-weight:500; }
+  .coll-pill .cp-n { min-width:24px; height:24px; display:inline-flex; align-items:center; justify-content:center; background:var(--paper); color:var(--ink); font-size:12px; font-weight:700; }
+  .coll-row { display:grid; grid-template-columns:48px 1fr auto 32px; gap:12px; align-items:center; padding:8px 0; border-bottom:1px solid var(--line-2); }
+  .coll-th { width:48px; height:48px; background:var(--line-2) center/cover no-repeat; }
+  .coll-nm { font-family:var(--body); font-size:14px; }
+  .coll-pr { font-family:var(--body); font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .coll-rm { width:32px; height:32px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; font-size:16px; line-height:1; }
+  .coll-acts { display:grid; gap:8px; margin-top:16px; --cta:color-mix(in srgb, var(--ink) 90%, var(--paper)); }
+  .coll-acts .tr-buy[disabled] { opacity:.4; cursor:not-allowed; }
+  .coll-empty { height:40px; border:0; background:none; color:var(--ink-3); cursor:pointer; font-family:var(--body); font-size:13px; text-decoration:underline; text-underline-offset:3px; }
   #view-sell:has(#resultCard:not(.empty)) .sell-plans-band { display:none; }
   #resultCard { scroll-margin-top:96px; }
   #view-sell.sell-editing .empire-hero, #view-sell.sell-editing .sell-how, #view-sell.sell-editing .sell-left, #view-sell.sell-editing .sell-plans-band { display:none; }
@@ -10098,6 +10115,15 @@
         '</select></label>' +
         '<div class="acct-empty" id="acctCountryMsg"></div>' +
       '</div>' +
+      // Collection (25 Oct 2026): the discount a buyer gets on two or more of
+      // this seller's fixed-price pieces bought together. Off unless chosen.
+      '<div class="acct-sec"><div class="h">' + e(phrase('Collection discount')) + '</div>' +
+        '<div class="acct-empty" style="padding-bottom:12px">' + e(phrase('Buyers can put two or more of your fixed-price pieces in one Collection: one payment, one parcel. Choose the discount they get on every piece in it.')) + '</div>' +
+        '<label class="ef" style="max-width:320px"><span>' + e(phrase('Discount')) + '</span><select class="ei" id="acctCollPct">' +
+          [0, 5, 7, 10, 12, 15].map(function(v){ return '<option value="' + v + '"' + (Number(prefs.collection_pct || 0) === v ? ' selected' : '') + '>' + (v ? v + '%' : e(phrase('Off'))) + '</option>'; }).join('') +
+        '</select></label>' +
+        '<div class="acct-empty" id="acctCollMsg"></div>' +
+      '</div>' +
       (brandNew ? '' : '<div class="acct-sec"><div class="h">Drafts</div>' + draftsHtml + '</div>') +
       (brandNew ? '' : '<div class="acct-sec"><div class="h">Your listings</div>' + listingsHtml + '</div>') +
       (brandNew ? '' : '<div class="acct-sec"><div class="h">Your bids</div>' + bidsHtml + '</div>') +
@@ -10188,6 +10214,14 @@
     }));
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
+    var collSel = document.getElementById('acctCollPct');
+    if (collSel) collSel.addEventListener('change', async function(){
+      var msg = document.getElementById('acctCollMsg');
+      var v = Number(collSel.value) || 0;
+      var res = await SB.from('profiles').update({ collection_pct: v }).eq('id', uid);
+      msg.textContent = res.error ? phrase('Could not save: {reason}', { reason: res.error.message })
+        : (v ? phrase('Saved. Buyers get {pct}% off every piece in a Collection.', { pct: v }) : phrase('Saved. Collections have no discount.'));
+    });
     var cSel = document.getElementById('acctCountry');
     if (cSel) cSel.addEventListener('change', async function(){
       var msg = document.getElementById('acctCountryMsg');
@@ -11080,7 +11114,8 @@
         ptRow +
         '<div class="del-row"><span>' + esc(opts.label || 'Lot') + '</span><span>' + money(opts.amount) + '</span></div>' +
         (collecting()
-          ? '<div class="del-row"><span>Collection</span><span>Free</span></div>'
+          // "Collection" is the bundle now; collecting in person is a pickup.
+          ? '<div class="del-row"><span>' + esc(phrase('Pickup')) + '</span><span>Free</span></div>'
           : '<div class="del-row"><span>Delivery' + (chosen && quoted.length === 1 ? ', ' + esc(chosen.label.toLowerCase()) : '') + '</span><span>' + (chosen ? money(ship) : '\u2014') + '</span></div>') +
         '<div class="del-row"><span><b>Total</b></span><span><b>' + (chosen ? money(Number(opts.amount) + ship) : '\u2014') + '</b></span></div>' +
         '<div class="del-note">Charged once, at Stripe. Nothing is invoiced afterwards.</div>';
@@ -11108,7 +11143,7 @@
       try {
         const r = await fetch(PAY_URL.replace(/\/checkout$/, '') + '/shipping-quote', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lotId: opts.lotId, country: cc }),
+          body: JSON.stringify({ lotId: opts.lotId, lotIds: opts.lotIds, country: cc }),
         });
         const d = await r.json();
         quoted = (d && d.options) || [];
@@ -11160,7 +11195,7 @@
   async function goToStripe(opts, addr){
     try {
       const r = await fetch(PAY_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lotId: opts.lotId, kind: opts.kind, email: authUser ? authUser.email : '',
+        body: JSON.stringify({ lotId: opts.lotId, lotIds: opts.lotIds, kind: opts.kind, email: authUser ? authUser.email : '',
           buyerId: authUser ? authUser.id : '', origin: location.origin,
           country: addr.country, address: addr, shipLevel: addr.shipLevel, point: addr.point }) });
       const d = await r.json();
@@ -11168,6 +11203,126 @@
       else openModal('Checkout error', 'Could not start payment', (d && d.error) || 'Please try again.');
     } catch (err){ openModal('Checkout error', 'Could not start payment', err.message); }
   }
+
+  // ===================== COLLECTION =====================
+  // Several fixed-price pieces from one seller, one payment, one parcel, the
+  // seller's own discount (Ramon, 25 Oct 2026). Kept in this browser until paid;
+  // every price is checked again by the pay worker, so nothing here decides money.
+  const COLL_KEY = 'hm_collection';
+  const collEsc = v => String(v == null ? '' : v).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  const collEur = n => '€ ' + Number(n || 0).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  function collGet(){ try { const c = JSON.parse(localStorage.getItem(COLL_KEY) || 'null'); return (c && Array.isArray(c.items)) ? c : null; } catch (e) { return null; } }
+  function collSet(c){ try { if (c && c.items.length) localStorage.setItem(COLL_KEY, JSON.stringify(c)); else localStorage.removeItem(COLL_KEY); } catch (e) {} collPill(); }
+  function collTotals(c){
+    const sub = c.items.reduce((t, i) => t + Number(i.price || 0), 0);
+    const pct = c.items.length >= 2 ? Number(c.pct || 0) : 0;
+    const total = c.items.reduce((t, i) => t + Math.round(Number(i.price || 0) * 100 * (1 - pct / 100)) / 100, 0);
+    return { sub, pct, off: Math.round((sub - total) * 100) / 100, total: Math.round(total * 100) / 100 };
+  }
+  function collPill(){
+    let b = document.getElementById('collPill');
+    const c = collGet();
+    if (!c){ if (b) b.hidden = true; return; }
+    if (!b){ b = document.createElement('button'); b.id = 'collPill'; b.type = 'button'; b.className = 'coll-pill'; document.body.appendChild(b); b.addEventListener('click', collOpen); }
+    b.hidden = false;
+    b.innerHTML = '<span class="cp-k">' + collEsc(phrase('Collection')) + '</span><span class="cp-n">' + c.items.length + '</span>';
+  }
+  async function collAdd(item, seller){
+    let c = collGet();
+    if (c && c.seller !== seller.id){
+      if (!confirm(phrase('Your Collection holds pieces from {seller}. A Collection comes from one seller. Start a new one with this piece?', { seller: c.sellerName || '' }))) return;
+      c = null;
+    }
+    if (!c) c = { seller: seller.id, sellerName: seller.name || '', pct: seller.pct || 0, items: [] };
+    c.pct = seller.pct || 0;
+    if (!c.items.some(i => i.id === item.id)) c.items.push(item);
+    collSet(c);
+    collOpen();
+  }
+  // Opening the Collection checks every piece is still for sale at the price we
+  // stored, and drops what sold or changed, before a total is shown.
+  async function collOpen(){
+    let c = collGet(); if (!c) return;
+    if (SB){
+      try {
+        const ids = c.items.map(i => i.id);
+        const [{ data: rows }, { data: bidRows }, pr] = await Promise.all([
+          SB.from('lots').select('id,status,sale_type,buy_now,starting_bid').in('id', ids),
+          SB.from('bids').select('lot_id').in('lot_id', ids),
+          SB.rpc('seller_collection_pct', { p_seller: c.seller }),
+        ]);
+        const gone = [];
+        c.items = c.items.filter(i => {
+          const r = (rows || []).find(x => x.id === i.id);
+          const price = r ? (r.sale_type === 'fixed' ? Number(r.buy_now || r.starting_bid || 0) : Number(r.buy_now || 0)) : 0;
+          const ok = r && r.status === 'live' && price > 0 && !(bidRows || []).some(b => b.lot_id === i.id);
+          if (!ok) gone.push(i.name); else i.price = price;
+          return ok;
+        });
+        if (pr && !pr.error && pr.data != null) c.pct = Number(pr.data) || 0;
+        collSet(c);
+        if (gone.length) c.note = phrase('No longer available, so taken out: {lots}', { lots: gone.join(', ') });
+      } catch (e) {}
+      c = collGet() || c;
+    }
+    if (!c.items.length){ openModal(phrase('Collection'), phrase('Your Collection is empty'), phrase('The pieces in it have sold or are no longer at a fixed price.')); return; }
+    const T = collTotals(c);
+    openModal(phrase('Collection'), c.sellerName ? phrase('From {seller}', { seller: c.sellerName }) : phrase('Your Collection'), '');
+    const body = document.getElementById('modalBody');
+    const wrap = document.createElement('div'); wrap.className = 'coll-box ck-form';
+    wrap.innerHTML =
+      (c.note ? '<div class="del-note">' + collEsc(c.note) + '</div>' : '') +
+      c.items.map(i => '<div class="coll-row">' +
+        (i.img ? '<span class="coll-th" style="background-image:url(' + collEsc(i.img) + ')"></span>' : '<span class="coll-th"></span>') +
+        '<span class="coll-nm">' + collEsc(i.name) + '</span><span class="coll-pr">' + collEur(i.price) + '</span>' +
+        '<button type="button" class="coll-rm" data-coll-rm="' + collEsc(i.id) + '" aria-label="' + collEsc(phrase('Remove')) + '">×</button></div>').join('') +
+      '<div class="del-row"><span>' + collEsc(phrase('Subtotal')) + '</span><span>' + collEur(T.sub) + '</span></div>' +
+      (T.pct ? '<div class="del-row"><span>' + collEsc(phrase('Collection discount, {pct}%', { pct: T.pct })) + '</span><span>− ' + collEur(T.off) + '</span></div>' : '') +
+      '<div class="del-row"><span><b>' + collEsc(phrase('Total')) + '</b></span><span><b>' + collEur(T.total) + '</b></span></div>' +
+      '<div class="del-note">' + collEsc(c.items.length < 2
+        ? (c.pct ? phrase('Add one more piece from {seller} to make it a Collection and get {pct}% off.', { seller: c.sellerName || '', pct: c.pct })
+                 : phrase('Add one more piece from {seller} to make it a Collection.', { seller: c.sellerName || '' }))
+        : phrase('One parcel. Postage for all of it is priced at checkout.')) + '</div>' +
+      '<div class="coll-acts"><button type="button" class="tr-buy" id="collGo"' + (c.items.length < 2 ? ' disabled' : '') + '><span class="tr-k">' + collEsc(phrase('Check out')) + '</span><span class="tr-bp">' + collEur(T.total) + '</span></button>' +
+      '<button type="button" class="coll-empty" id="collEmpty">' + collEsc(phrase('Empty Collection')) + '</button></div>';
+    body.appendChild(wrap);
+    const close = document.getElementById('modalClose'); if (close) close.hidden = true;
+    wrap.querySelectorAll('[data-coll-rm]').forEach(b => b.addEventListener('click', () => {
+      const cc = collGet(); if (!cc) return;
+      cc.items = cc.items.filter(i => i.id !== b.dataset.collRm); collSet(cc);
+      if (cc.items.length) collOpen(); else modal.hidden = true;
+    }));
+    document.getElementById('collEmpty').addEventListener('click', () => { collSet(null); modal.hidden = true; });
+    document.getElementById('collGo').addEventListener('click', () => {
+      const cc = collGet(); if (!cc || cc.items.length < 2) return;
+      const TT = collTotals(cc);
+      modal.hidden = true;
+      startCheckout({ kind: 'collection', lotIds: cc.items.map(i => i.id), lotId: cc.items[0].id, amount: TT.total,
+        label: phrase('Collection of {n} pieces', { n: cc.items.length }) });
+    });
+  }
+  // The button on a lot page, filled once the seller's discount is known.
+  async function collLotBox(lot, sellerName, price){
+    const box = document.getElementById('collBox'); if (!box) return;
+    let pct = 0;
+    try { const r = await SB.rpc('seller_collection_pct', { p_seller: lot.seller_id }); if (!r.error) pct = Number(r.data) || 0; } catch (e) {}
+    const c = collGet();
+    const inIt = !!(c && c.items.some(i => i.id === lot.id));
+    box.innerHTML =
+      '<button type="button" class="coll-add' + (inIt ? ' on' : '') + '" id="collAdd">' + collEsc(inIt ? phrase('In your Collection') : phrase('Add to Collection')) + '</button>' +
+      '<div class="coll-hint">' + collEsc(pct
+        ? phrase('Buy two or more from {seller} together and get {pct}% off each, in one parcel.', { seller: sellerName || phrase('this seller'), pct: pct })
+        : phrase('Buy two or more from {seller} together, in one parcel.', { seller: sellerName || phrase('this seller') })) + '</div>';
+    document.getElementById('collAdd').addEventListener('click', () => {
+      if (collGet() && collGet().items.some(i => i.id === lot.id)) { collOpen(); return; }
+      const img = (lot.image_urls || []).filter(Boolean)[0] || '';
+      collAdd({ id: lot.id, name: lot.toy || 'Lot', price: price, img: img }, { id: lot.seller_id, name: sellerName, pct: pct });
+      collLotBox(lot, sellerName, price);
+    });
+  }
+  // A paid Collection empties itself.
+  try { const paid = new URLSearchParams(location.search).get('paid'); const c = collGet(); if (paid && c && c.items.some(i => i.id === paid)) collSet(null); } catch (e) {}
+  setTimeout(collPill, 0);
 
   async function startCheckout(opts){
     opts = opts || {};
@@ -11341,6 +11496,10 @@
     // Bid down: 'offer' is the seller's 48 hours, 'unsold' a declined or lapsed
     // bid. Leading either is not winning, so neither shows Pay now.
     const isOffer = lot.status === 'offer';
+    // Collection: a fixed price, still live, nobody bidding, and not your own lot.
+    const collPrice = lot.sale_type === 'fixed' ? Number(lot.buy_now || lot.starting_bid || 0) : Number(lot.buy_now || 0);
+    const collectible = lot.status === 'live' && !(lot.ends_at && new Date(lot.ends_at) <= Date.now()) && collPrice > 0 &&
+      (bidRows || []).length === 0 && !(authUser && authUser.id === lot.seller_id);
     const iWon = ended && !isOffer && lot.status !== 'unsold' && topBid && reserveMet && authUser && iAmLeading;
     const iSell = !!(authUser && authUser.id === lot.seller_id);
     const decideDate = lot.decide_by ? new Date(lot.decide_by).toLocaleString(LOC(), { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '';
@@ -11534,7 +11693,8 @@
               '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item is not on sale yet.' : 'Bidding has not opened yet.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
               tradeHtml({ id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, floor: FLOORS[lot.id], top: bids.length ? cur : null,
                           start: Number(lot.starting_bid) || 0, fixed: isFixed, sellerId: lot.seller_id,
-                          estChecked: lot.estimate_checked === true, estLow: lot.estimate_low, estHigh: lot.estimate_high }, e) + watchLink)) +
+                          estChecked: lot.estimate_checked === true, estLow: lot.estimate_low, estHigh: lot.estimate_high }, e) +
+              (collectible ? '<div id="collBox" class="coll-lot"></div>' : '') + watchLink)) +
           // No third shipping statement here. This one read shipping_eur, a column
           // filled from an estimated table before the carriers were wired up, and
           // it printed EUR 15.00 under the buy button while the live quote three
@@ -11615,6 +11775,7 @@
         : '') +
       '</div></div></section>' : '';
     body.innerHTML = '<div class="art-top">' + gallery + detail + '</div>' + hist;
+    if (collectible) collLotBox(lot, seller && seller.display_name, collPrice);
 
     // ---- Share ----
     (function shareWire(){
