@@ -992,6 +992,42 @@
   .card-bid { display:block; width:100%; margin-top:12px; font-family:var(--label); font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:12px; text-align:center; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer; transition:transform .12s ease; }
   .card-bid:hover { transform:translateY(-2px); }
   .bidform { margin:2px 0 20px; }
+  /* Chat (25 Oct 2026) */
+  .chat-ask { width:100%; height:40px; margin-top:8px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; font-family:var(--body); font-size:14px; font-weight:500; border-radius:0; }
+  .chat-ask:hover { border-color:var(--ink); }
+  .chat-dot { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 4px; margin-inline-start:6px; background:var(--ink); color:var(--paper); font-size:11px; font-weight:700; vertical-align:1px; }
+  .chat-panel { position:fixed; z-index:70; right:16px; bottom:16px; width:min(400px, calc(100vw - 32px)); height:min(600px, calc(100vh - 120px)); display:grid; grid-template-rows:auto 1fr auto auto; background:var(--paper); color:var(--ink); border:1px solid var(--ink); box-shadow:0 12px 40px rgba(0,0,0,.2); }
+  .chat-panel[hidden] { display:none; }
+  .chat-hd { display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid var(--line); }
+  .chat-lot { flex:1; min-width:0; display:flex; align-items:center; gap:10px; }
+  .chat-th { flex:none; width:40px; height:40px; background:var(--line-2) center/cover no-repeat; }
+  .chat-lt { min-width:0; display:grid; gap:2px; }
+  .chat-lt a { font-family:var(--body); font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chat-who { font-size:12px; color:var(--ink-3); }
+  .chat-x { flex:none; width:32px; height:32px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:18px; cursor:pointer; }
+  .chat-list { overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; }
+  .chat-m { display:grid; gap:2px; max-width:82%; }
+  .chat-m.me { align-self:flex-end; justify-items:end; }
+  .chat-m.them { align-self:flex-start; }
+  .chat-b { padding:8px 12px; font-family:var(--body); font-size:14px; line-height:1.4; overflow-wrap:anywhere; }
+  .chat-m.me .chat-b { background:var(--ink); color:var(--paper); }
+  .chat-m.them .chat-b { background:var(--line-2); }
+  .chat-meta { font-size:11px; color:var(--ink-3); }
+  .chat-rep { border:0; background:none; padding:0; color:var(--ink-3); font-size:11px; text-decoration:underline; cursor:pointer; }
+  .chat-sys { align-self:center; text-align:center; font-size:12px; color:var(--ink-3); padding:6px 8px; border:1px dashed var(--line); }
+  .chat-in { display:grid; grid-template-columns:1fr auto; gap:8px; padding:12px; border-top:1px solid var(--line); }
+  .chat-in textarea { resize:none; border:1px solid var(--line); background:var(--paper); color:var(--ink); padding:8px; font-family:var(--body); font-size:16px; }
+  .chat-send { padding:0 16px; border:0; background:var(--ink); color:var(--paper); cursor:pointer; font-family:var(--body); font-size:14px; font-weight:600; }
+  .chat-err { padding:0 12px 8px; font-size:12px; color:var(--ink); }
+  .chat-err:empty { display:none; }
+  .chat-inbox { display:grid; }
+  .chat-row { display:grid; grid-template-columns:40px 1fr auto; gap:12px; align-items:center; padding:10px 0; border:0; border-bottom:1px solid var(--line-2); background:none; color:var(--ink); text-align:start; cursor:pointer; font:inherit; }
+  .chat-rt { min-width:0; display:grid; gap:2px; }
+  .chat-rn { font-family:var(--body); font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chat-rp { font-size:13px; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chat-row.unread .chat-rn, .chat-row.unread .chat-rp { font-weight:700; color:var(--ink); }
+  .chat-rd { font-size:12px; color:var(--ink-3); white-space:nowrap; }
+  @media (max-width:640px){ .chat-panel { inset:0; width:auto; height:auto; border:0; } }
   /* Collection (25 Oct 2026) */
   .coll-lot { margin-top:8px; }
   .coll-add { width:100%; height:40px; border:1px solid var(--cta, var(--ink)); background:var(--paper); color:var(--ink); cursor:pointer; font-family:var(--body); font-size:14px; font-weight:600; border-radius:0; }
@@ -10103,6 +10139,7 @@
       // Directly under Membership, above the lists. Getting paid outranks
       // everything else a seller does here, and until this is done a sale earns
       // them nothing they can actually reach.
+      '<div class="acct-sec" id="acctMessages"><div class="h">' + e(phrase('Messages')) + '</div><div class="acct-empty">' + e(phrase('Loading\u2026')) + '</div></div>' +
       '<div class="acct-sec"><div class="h">Getting paid</div>' + payoutHtml(prefs) + '</div>' +
       '<div class="acct-sec"><div class="h">Your storefront</div>' + shopfrontHtml(prefs) + '</div>' +
       (brandNew ? '' : '<div class="acct-sec"><div class="h">Items you\'ve won</div>' + winsHtml + '</div>') +
@@ -10215,6 +10252,7 @@
     }));
     body.querySelectorAll('[data-review]').forEach(b => b.addEventListener('click', () => openReview(b.dataset.seller, b.dataset.review, b.dataset.name)));
     const mBuy = document.getElementById('mBuy'); if (mBuy) mBuy.addEventListener('click', () => goCheckout(TOKENS_URL));
+    chatInboxHtml().then(html => { const sec = document.getElementById('acctMessages'); if (sec) sec.innerHTML = '<div class="h">' + e(phrase('Messages')) + '</div>' + (html || ''); }).catch(() => {});
     var collSel = document.getElementById('acctCollPct');
     if (collSel) collSel.addEventListener('change', async function(){
       var msg = document.getElementById('acctCollMsg');
@@ -11325,6 +11363,156 @@
   try { const paid = new URLSearchParams(location.search).get('paid'); const c = collGet(); if (paid && c && c.items.some(i => i.id === paid)) collSet(null); } catch (e) {}
   setTimeout(collPill, 0);
 
+
+  // ===================== CHAT =====================
+  // Buyer and seller, one conversation per lot (Ramon, 25 Oct 2026). Every write
+  // goes through the database functions in admin/add-chat.sql, which check who
+  // may write, hide contact details and hold the limits; this is only the window.
+  const chatT = v => String(v == null ? '' : v).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+  let chatOpenId = null, chatChannel = null, chatInboxChannel = null;
+  function chatTime(iso){
+    const d = new Date(iso), now = new Date();
+    return d.toDateString() === now.toDateString()
+      ? d.toLocaleTimeString(LOC(), { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString(LOC(), { day: 'numeric', month: 'short' }) + ', ' + d.toLocaleTimeString(LOC(), { hour: '2-digit', minute: '2-digit' });
+  }
+  async function chatUnread(){
+    if (!SB || !authUser) { document.querySelectorAll('.chat-dot').forEach(x => x.remove()); return; }
+    let n = 0;
+    try { const r = await SB.rpc('my_unread_conversations'); if (!r.error) n = Number(r.data) || 0; } catch (e) {}
+    document.querySelectorAll('[data-auth-label]').forEach(el => {
+      let dot = el.querySelector('.chat-dot');
+      if (!n) { if (dot) dot.remove(); return; }
+      if (!dot) { dot = document.createElement('span'); dot.className = 'chat-dot'; el.appendChild(dot); }
+      dot.textContent = n; dot.title = phrase('{n} unread conversations', { n: n });
+    });
+    // Any new message to me, anywhere, moves the number.
+    if (!chatInboxChannel && SB.channel) {
+      chatInboxChannel = SB.channel('chat-inbox')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+          const m = payload && payload.new;
+          if (m && m.conversation_id === chatOpenId) return;   // the open window handles its own
+          setTimeout(chatUnread, 300);
+        }).subscribe();
+    }
+  }
+  async function chatStart(lotId){
+    if (!SB) return;
+    if (!authUser) { openAuth(); return; }
+    const r = await SB.rpc('start_conversation', { p_lot: lotId });
+    if (r.error) { openModal(phrase('Messages'), phrase('Could not start the conversation'), r.error.message); return; }
+    chatOpen(r.data);
+  }
+  async function chatOpen(convId){
+    if (!SB || !authUser) return;
+    chatClose();
+    chatOpenId = convId;
+    let panel = document.getElementById('chatPanel');
+    if (!panel) {
+      panel = document.createElement('aside'); panel.id = 'chatPanel'; panel.className = 'chat-panel';
+      panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'false');
+      document.body.appendChild(panel);
+    }
+    panel.hidden = false;
+    panel.innerHTML = '<div class="chat-hd"><div class="chat-lot" id="chatLot"></div><button type="button" class="chat-x" id="chatX" aria-label="' + chatT(phrase('Close')) + '">×</button></div>' +
+      '<div class="chat-list" id="chatList"><div class="chat-sys">' + chatT(phrase('Loading…')) + '</div></div>' +
+      '<form class="chat-in" id="chatForm"><textarea id="chatText" rows="2" maxlength="2000" placeholder="' + chatT(phrase('Write a message…')) + '"></textarea>' +
+      '<button type="submit" class="chat-send" id="chatSend">' + chatT(phrase('Send')) + '</button></form>' +
+      '<div class="chat-err" id="chatErr"></div>';
+    document.getElementById('chatX').addEventListener('click', chatClose);
+    const { data: conv } = await SB.from('conversations').select('id,lot_id,buyer_id,seller_id').eq('id', convId).maybeSingle();
+    if (!conv) { document.getElementById('chatList').innerHTML = '<div class="chat-sys">' + chatT(phrase('This conversation is not available.')) + '</div>'; return; }
+    const { data: lot } = await SB.from('lots').select('id,toy,image_urls,buy_now,starting_bid,sale_type').eq('id', conv.lot_id).maybeSingle();
+    const iAmSeller = conv.seller_id === authUser.id;
+    let other = iAmSeller ? phrase('Buyer') : phrase('Seller');
+    if (!iAmSeller) { try { const { data: sp } = await SB.from('seller_public').select('display_name').eq('id', conv.seller_id).maybeSingle(); if (sp && sp.display_name) other = sp.display_name; } catch (e) {} }
+    const img = lot && (lot.image_urls || []).filter(Boolean)[0];
+    document.getElementById('chatLot').innerHTML =
+      (img ? '<span class="chat-th" style="background-image:url(' + chatT(img) + ')"></span>' : '') +
+      '<span class="chat-lt"><a href="/lot/' + encodeURIComponent(conv.lot_id) + '/" data-nav="lot" data-lot="' + chatT(conv.lot_id) + '">' + chatT(lot ? lot.toy : phrase('Lot')) + '</a>' +
+      '<span class="chat-who">' + chatT(phrase('With {name}', { name: other })) + '</span></span>';
+    const draw = (msgs) => {
+      const list = document.getElementById('chatList'); if (!list) return;
+      list.innerHTML = msgs.length ? msgs.map(m => {
+        const mine = m.sender_id === authUser.id;
+        return '<div class="chat-m ' + (mine ? 'me' : 'them') + '"><div class="chat-b">' + chatT(m.body).replace(/\n/g, '<br>') + '</div>' +
+          '<div class="chat-meta">' + chatT(chatTime(m.created_at)) +
+          (!mine ? ' · <button type="button" class="chat-rep" data-rep="' + chatT(m.id) + '">' + chatT(phrase('Report')) + '</button>' : '') + '</div>' +
+          (m.flagged ? '<div class="chat-sys">' + chatT(phrase('Phone numbers, e-mail addresses and links are hidden in chat. Pay through the site to keep buyer protection.')) + '</div>' : '') +
+          '</div>';
+      }).join('') : '<div class="chat-sys">' + chatT(iAmSeller ? phrase('No messages yet.') : phrase('Ask anything about this lot. The seller gets your message here and by e-mail.')) + '</div>';
+      list.scrollTop = list.scrollHeight;
+      list.querySelectorAll('[data-rep]').forEach(b => b.addEventListener('click', async () => {
+        const reason = window.prompt ? window.prompt(phrase('What is wrong with this message? (optional)')) : '';
+        const r = await SB.rpc('report_message', { p_message: b.dataset.rep, p_reason: reason || '' });
+        b.textContent = r.error ? r.error.message : phrase('Reported');
+        b.disabled = true;
+      }));
+    };
+    let msgs = [];
+    const load = async () => {
+      const { data } = await SB.from('messages').select('id,sender_id,body,flagged,created_at').eq('conversation_id', convId).order('created_at', { ascending: true }).limit(500);
+      msgs = data || []; draw(msgs);
+      SB.rpc('mark_conversation_read', { p_conversation: convId }).then(chatUnread).catch(() => {});
+    };
+    await load();
+    if (SB.channel) {
+      chatChannel = SB.channel('chat-' + convId)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: 'conversation_id=eq.' + convId }, payload => {
+          const m = payload && payload.new; if (!m || msgs.some(x => x.id === m.id)) return;
+          msgs.push(m); draw(msgs);
+          SB.rpc('mark_conversation_read', { p_conversation: convId }).catch(() => {});
+        }).subscribe();
+    }
+    const form = document.getElementById('chatForm'), ta = document.getElementById('chatText');
+    ta.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); } });
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const body = ta.value.trim(); if (!body) return;
+      const btn = document.getElementById('chatSend'); btn.disabled = true;
+      const r = await SB.rpc('send_message', { p_conversation: convId, p_body: body });
+      btn.disabled = false;
+      const err = document.getElementById('chatErr');
+      if (r.error) { err.textContent = r.error.message; return; }
+      err.textContent = '';
+      ta.value = '';
+      const m = Array.isArray(r.data) ? r.data[0] : r.data;
+      if (m && !msgs.some(x => x.id === m.id)) { msgs.push(m); draw(msgs); }
+    });
+    ta.focus();
+  }
+  function chatClose(){
+    if (chatChannel && SB && SB.removeChannel) { try { SB.removeChannel(chatChannel); } catch (e) {} }
+    chatChannel = null; chatOpenId = null;
+    const p = document.getElementById('chatPanel'); if (p) p.hidden = true;
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && chatOpenId) chatClose(); });
+  // The account's Messages section: every conversation, newest first.
+  async function chatInboxHtml(){
+    if (!SB || !authUser) return '';
+    const { data: convs, error } = await SB.from('conversations').select('id,lot_id,buyer_id,seller_id,last_message_at,buyer_read_at,seller_read_at').order('last_message_at', { ascending: false }).limit(100);
+    if (error) return '';
+    if (!convs || !convs.length) return '<div class="acct-empty">' + chatT(phrase('No conversations yet. Use Ask the seller on a lot to start one.')) + '</div>';
+    const ids = [...new Set(convs.map(c => c.lot_id))];
+    const [{ data: lots }, { data: last }] = await Promise.all([
+      SB.from('lots').select('id,toy,image_urls').in('id', ids),
+      SB.from('messages').select('conversation_id,body,sender_id,created_at').in('conversation_id', convs.map(c => c.id)).order('created_at', { ascending: false }).limit(400),
+    ]);
+    return '<div class="chat-inbox">' + convs.map(c => {
+      const l = (lots || []).find(x => x.id === c.lot_id) || {};
+      const m = (last || []).find(x => x.conversation_id === c.id);
+      const mineRead = c.buyer_id === authUser.id ? c.buyer_read_at : c.seller_read_at;
+      const unread = m && m.sender_id !== authUser.id && (!mineRead || new Date(m.created_at) > new Date(mineRead));
+      const img = (l.image_urls || []).filter(Boolean)[0];
+      return '<button type="button" class="chat-row' + (unread ? ' unread' : '') + '" data-chat="' + chatT(c.id) + '">' +
+        (img ? '<span class="chat-th" style="background-image:url(' + chatT(img) + ')"></span>' : '<span class="chat-th"></span>') +
+        '<span class="chat-rt"><span class="chat-rn">' + chatT(l.toy || phrase('Lot')) + '</span>' +
+        '<span class="chat-rp">' + chatT(c.seller_id === authUser.id ? phrase('Buyer') : phrase('Seller')) + (m ? ': ' + chatT(String(m.body).slice(0, 90)) : '') + '</span></span>' +
+        '<span class="chat-rd">' + (m ? chatT(chatTime(m.created_at)) : '') + '</span></button>';
+    }).join('') + '</div>';
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-chat]'); if (b) { e.preventDefault(); chatOpen(b.dataset.chat); } });
+
   // ===================== WELCOME =====================
   // Once, on a first visit to the home page (Ramon, 25 Oct 2026): sell, or
   // carry on shopping. Not for someone signed in, not on a return from payment
@@ -11718,7 +11906,10 @@
               tradeHtml({ id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, floor: FLOORS[lot.id], top: bids.length ? cur : null,
                           start: Number(lot.starting_bid) || 0, fixed: isFixed, sellerId: lot.seller_id,
                           estChecked: lot.estimate_checked === true, estLow: lot.estimate_low, estHigh: lot.estimate_high }, e) +
-              (collectible ? '<div id="collBox" class="coll-lot"></div>' : '') + watchLink)) +
+              (collectible ? '<div id="collBox" class="coll-lot"></div>' : '') +
+              ((lot.status === 'live' || lot.status === 'preview') && lot.seller_id && !(authUser && authUser.id === lot.seller_id)
+                ? '<button type="button" class="chat-ask" data-ask="' + e(lot.id) + '">' + e(phrase('Ask the seller')) + '</button>' : '') +
+              watchLink)) +
           // No third shipping statement here. This one read shipping_eur, a column
           // filled from an estimated table before the carriers were wired up, and
           // it printed EUR 15.00 under the buy button while the live quote three
@@ -11800,6 +11991,7 @@
       '</div></div></section>' : '';
     body.innerHTML = '<div class="art-top">' + gallery + detail + '</div>' + hist;
     if (collectible) collLotBox(lot, seller && seller.display_name, collPrice);
+    body.querySelectorAll('[data-ask]').forEach(b => b.addEventListener('click', () => chatStart(b.dataset.ask)));
 
     // ---- Share ----
     (function shareWire(){
@@ -12231,6 +12423,7 @@
     // Signed in, the sell page drops its package pitch (Ramon, 18 Oct 2026): a
     // seller already has a package, and the block followed every edit.
     document.documentElement.classList.toggle('hm-authed', !!authUser);
+    setTimeout(() => { if (typeof chatUnread === 'function') chatUnread(); }, 0);
     const u = currentUser();
     document.querySelectorAll('[data-auth-label]').forEach(el => { el.textContent = u ? ('· ' + u.split('@')[0]) : 'Sign in'; });
     // The banner's own call to action. Its click handler always knew whether
