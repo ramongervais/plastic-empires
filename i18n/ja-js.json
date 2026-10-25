@@ -695,5 +695,8 @@
   "Buy two or more from {seller} together and get {pct}% off each, in one parcel.": "{seller} の品を2点以上まとめて買うと、各品{pct}%引きで1つの荷物に。",
   "Buy two or more from {seller} together, in one parcel.": "{seller} の品を2点以上まとめて1つの荷物で。",
   "this seller": "この出品者",
-  "Pickup": "受け取り"
+  "Pickup": "受け取り",
+  "Vintage toys, identified, dated and graded before they are listed. Buy them, or sell your own.": "ヴィンテージ玩具を、出品前に特定・年代判定・状態評価。買うことも、自分の品を売ることもできます。",
+  "Start selling, build your store now": "出品を始めて、今すぐストアを作る",
+  "Continue shopping": "買い物を続ける"
 }

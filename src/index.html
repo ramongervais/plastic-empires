@@ -1006,6 +1006,7 @@
   .coll-nm { font-family:var(--body); font-size:14px; }
   .coll-pr { font-family:var(--body); font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; }
   .coll-rm { width:32px; height:32px; border:1px solid var(--line); background:var(--paper); color:var(--ink); cursor:pointer; font-size:16px; line-height:1; }
+  .welcome-acts { display:grid; gap:8px; margin-top:20px; --cta:color-mix(in srgb, var(--ink) 90%, var(--paper)); }
   .coll-acts { display:grid; gap:8px; margin-top:16px; --cta:color-mix(in srgb, var(--ink) 90%, var(--paper)); }
   .coll-acts .tr-buy[disabled] { opacity:.4; cursor:not-allowed; }
   .coll-empty { height:40px; border:0; background:none; color:var(--ink-3); cursor:pointer; font-family:var(--body); font-size:13px; text-decoration:underline; text-underline-offset:3px; }
@@ -11323,6 +11324,29 @@
   // A paid Collection empties itself.
   try { const paid = new URLSearchParams(location.search).get('paid'); const c = collGet(); if (paid && c && c.items.some(i => i.id === paid)) collSet(null); } catch (e) {}
   setTimeout(collPill, 0);
+
+  // ===================== WELCOME =====================
+  // Once, on a first visit to the home page (Ramon, 25 Oct 2026): sell, or
+  // carry on shopping. Not for someone signed in, not on a return from payment
+  // or a sign-in link, and never again in this browser once answered.
+  setTimeout(function welcome(){
+    try {
+      if (localStorage.getItem('hm_welcome_seen')) return;
+      const path = location.pathname.replace(/^\/(nl|de|fr|es|it|hr|ar|ja|zh)(?=\/|$)/, '') || '/';
+      if (path !== '/' || location.search || /access_token|error=/.test(location.hash)) return;
+      if (authUser) return;
+      if (!modal.hidden) return;
+      localStorage.setItem('hm_welcome_seen', '1');
+    } catch (e) { return; }
+    openModal(phrase('Welcome'), phrase('Hammer & Mold'), phrase('Vintage toys, identified, dated and graded before they are listed. Buy them, or sell your own.'));
+    const close = document.getElementById('modalClose'); if (close) close.hidden = true;
+    const box = document.createElement('div'); box.className = 'ck-form welcome-acts';
+    box.innerHTML = '<button type="button" class="tr-buy" id="wSell"><span class="tr-bp">' + collEsc(phrase('Start selling, build your store now')) + '</span></button>' +
+      '<button type="button" class="coll-add" id="wShop">' + collEsc(phrase('Continue shopping')) + '</button>';
+    document.getElementById('modalBody').appendChild(box);
+    document.getElementById('wSell').addEventListener('click', () => { modal.hidden = true; routeTo('sell'); });
+    document.getElementById('wShop').addEventListener('click', () => { modal.hidden = true; });
+  }, 1800);
 
   async function startCheckout(opts){
     opts = opts || {};
