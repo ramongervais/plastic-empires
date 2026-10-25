@@ -720,5 +720,6 @@
   "Unblock": "ブロック解除",
   "Block": "ブロック",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} をブロックしますか？この会話ではお互いにメッセージを送れなくなります。元に戻せます。",
-  "New chat messages I have not read": "未読の新しいチャットメッセージ"
+  "New chat messages I have not read": "未読の新しいチャットメッセージ",
+  "Inbox": "受信箱"
 }

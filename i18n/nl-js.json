@@ -723,5 +723,6 @@
   "Unblock": "Deblokkeren",
   "Block": "Blokkeren",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} blokkeren? Jullie kunnen in dit gesprek allebei geen berichten meer sturen. Je kunt dit ongedaan maken.",
-  "New chat messages I have not read": "Nieuwe chatberichten die ik niet gelezen heb"
+  "New chat messages I have not read": "Nieuwe chatberichten die ik niet gelezen heb",
+  "Inbox": "Inbox"
 }

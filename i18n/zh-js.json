@@ -720,5 +720,6 @@
   "Unblock": "解除封鎖",
   "Block": "封鎖",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "要封鎖 {name} 嗎？你們雙方都無法再於此對話中傳送訊息。之後可以復原。",
-  "New chat messages I have not read": "我尚未讀取的新聊天訊息"
+  "New chat messages I have not read": "我尚未讀取的新聊天訊息",
+  "Inbox": "收件匣"
 }

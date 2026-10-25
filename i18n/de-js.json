@@ -728,5 +728,6 @@
   "Unblock": "Blockierung aufheben",
   "Block": "Blockieren",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} blockieren? Ihr könnt in dieser Unterhaltung beide keine Nachrichten mehr senden. Du kannst das rückgängig machen.",
-  "New chat messages I have not read": "Neue Chatnachrichten, die ich nicht gelesen habe"
+  "New chat messages I have not read": "Neue Chatnachrichten, die ich nicht gelesen habe",
+  "Inbox": "Posteingang"
 }
