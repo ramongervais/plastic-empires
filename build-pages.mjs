@@ -688,12 +688,9 @@ function staticCard(l) {
       (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
         '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : "") +
       (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
-      // The two badges that are words, not icons: the figures line, bottom left.
-      (Array.isArray(l.badges) && l.badges.includes("separate") ? '<div class="lot-badges"><span class="lot-badge">Figures sold separately.</span></div>' : "") +
-      (Array.isArray(l.badges) && l.badges.includes("included") ? '<div class="lot-badges"><span class="lot-badge">All figures included.</span></div>' : "") +
       // Same markup and order as lotCardHtml(), so the swap to the live card
       // does not move anything: all three badges as icons, bottom left.
-      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare") || l.badges.includes("box") || l.badges.includes("instructions"))
+      (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare") || l.badges.includes("box") || l.badges.includes("instructions") || l.badges.includes("included") || l.badges.includes("separate"))
         ? '<div class="card-icons">' +
           (l.badges.includes("rare")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '" data-tip="' + esc("Very Rare" + (l.rare_reason ? ": " + l.rare_reason : "")) + '">' +
@@ -710,6 +707,14 @@ function staticCard(l) {
           (l.badges.includes("instructions")
             ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Instructions included" data-tip="Instructions included">' +
               '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.99988 4.98145H6C4.11438 4.98145 3.17157 4.98145 2.58579 5.56723C2 6.15302 2 7.09606 2 8.98213V15.8814C2 17.3811 2 18.1309 2.38151 18.6564C2.50511 18.8267 2.6548 18.9763 2.82505 19.0999C3.35059 19.4815 4.10006 19.4815 5.59901 19.4815H8.95053C10.433 19.4815 11.7093 20.5278 12 21.9815V6.98145C11.7072 6.591 11.5608 6.39578 11.401 6.22746C10.756 5.54809 9.89308 5.11663 8.96261 5.00829C8.73208 4.98145 8.48802 4.98145 7.99988 4.98145Z"/><path stroke-linecap="square" d="M12 6.98145V21.9815C12.2907 20.5278 13.5671 19.4815 15.0495 19.4815H18.401C19.8999 19.4815 20.6494 19.4815 21.1749 19.0999C21.3452 18.9763 21.4949 18.8267 21.6185 18.6564C22 18.1309 22 17.3811 22 15.8814V7.48198C22 7.01697 22 6.78446 21.9616 6.59127C21.8038 5.79789 21.1836 5.17769 20.3902 5.01988C20.197 4.98145 19.9647 4.98145 19.5 4.98145"/><path d="M12 7.48027C12 7.48027 12.7705 3.24271 17.0165 2.20672C17.829 2.00848 18.2353 1.90936 18.6176 2.20964C19 2.50993 19 3.00004 19 3.98027V14.4803C19 15.3489 19 15.7832 18.7865 16.0551C18.5729 16.327 18.0541 16.4536 17.0165 16.7067C12.7705 17.7427 12 21.9803 12 21.9803"/></svg></span>'
+            : "") +
+          (l.badges.includes("included")
+            ? '<span class="complete-icon" role="img" tabindex="0" aria-label="All figures included." data-tip="All figures included.">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 8C15 5.23858 12.7614 3 10 3C7.23858 3 5 5.23858 5 8C5 10.7614 7.23858 13 10 13C12.7614 13 15 10.7614 15 8Z"/><path d="M17.5 21V14M14 17.5H21"/><path d="M3 20C3 16.134 6.13401 13 10 13C11.4872 13 12.8662 13.4638 14 14.2547"/></svg></span>'
+            : "") +
+          (l.badges.includes("separate")
+            ? '<span class="complete-icon" role="img" tabindex="0" aria-label="Figures sold separately." data-tip="Figures sold separately.">' +
+              '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 21L18.5 18M18.5 18L21.5 15M18.5 18L15.5 15M18.5 18L21.5 21"/><path d="M2.5 19V16.9704C2.5 15.7281 3.05927 14.5099 4.18968 13.9946C5.5685 13.3661 7.22212 13 9 13C10.4418 13 11.8019 13.2407 13 13.667"/><path d="M9 10C10.933 10 12.5 8.433 12.5 6.5C12.5 4.567 10.933 3 9 3C7.067 3 5.5 4.567 5.5 6.5C5.5 8.433 7.067 10 9 10Z"/></svg></span>'
             : "") +
           "</div>"
         : "") +
