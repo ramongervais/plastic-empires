@@ -725,5 +725,12 @@
   "Figures sold separately.": "フィギュアは別売りです。",
   "The photos show other figures for scale or company. Only what the title names is for sale.": "写真には大きさの比較や演出のために他のフィギュアも写っています。販売するのはタイトルに記載のものだけです。",
   "All figures included.": "フィギュアはすべて付属します。",
-  "Every figure in the photos comes with this lot.": "写真に写っているフィギュアはすべてこのロットに含まれます。"
+  "Every figure in the photos comes with this lot.": "写真に写っているフィギュアはすべてこのロットに含まれます。",
+  "Make an offer": "オファーする",
+  "Your offer (€)": "あなたのオファー額（€）",
+  "Send offer": "オファーを送る",
+  "Binding offer · the seller decides whether to accept it.": "拘束力のあるオファー · 受け入れるかは出品者が決めます。",
+  "Your bid (€)": "あなたの入札額（€）",
+  "Place bid": "入札する",
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "{min}から{max}の間でオファーしてください。即決価格なら、そのまま購入できます。"
 }

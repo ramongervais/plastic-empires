@@ -248,6 +248,7 @@
      House rules: a 1px line, 40px tall. */
   .tr-row { display:grid; grid-template-columns:33.333% 1fr 33.333%; align-items:stretch; border:1px solid var(--cta); }
   .tr-row.one { grid-template-columns:1fr 33.333%; }
+  .tr-row.offer { grid-template-columns:1fr; }
   /* Hierarchy: the price first, in the card's bold price type; Bid second, in
      small label type. 40px tall, so the photograph stays the main thing. */
   /* "Bid" twice in a row is repetition, so it is not emphasised: medium, small,
@@ -1303,6 +1304,11 @@
   .stamp-btn { display:block; margin-top:10px; font-family:var(--label); font-size:10px; letter-spacing:.12em; text-transform:uppercase; background:transparent; border:1px solid rgba(181,138,63,.55); color:#8a6a2e; border-radius:3px; padding:7px 11px; cursor:pointer; }
   .stamp-btn:hover { border-color:#8a6a2e; }
   .stamp-warn { font-family:var(--body); font-size:13px; color:#8a6a2e; background:rgba(181,138,63,.12); border:1px solid rgba(181,138,63,.4); border-radius:4px; padding:12px 14px; margin:16px 0 4px; line-height:1.5; }
+  .rc-badges { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .rc-badge { display:inline-flex; align-items:center; gap:4px; font-family:var(--body); font-size:12px; font-weight:500; line-height:16px; padding:4px 8px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink-2); cursor:pointer; }
+  .rc-badge svg { width:16px; height:16px; flex-shrink:0; }
+  .rc-badge.on { background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .rc-rare { display:block; margin-top:8px; color:var(--ink-2); }
   .sale-toggle { display:flex; margin:16px 0; border:1px solid var(--line); border-radius:4px; overflow:hidden; max-width:320px; }
   .sale-toggle button { flex:1; font-family:var(--label); font-size:11px; letter-spacing:.1em; text-transform:uppercase; padding:11px; border:0; background:var(--paper); color:var(--ink-2); cursor:pointer; transition:background .12s, color .12s; }
   .sale-toggle button + button { border-inline-start:1px solid var(--line); }
@@ -7654,7 +7660,7 @@
     // Both directions travel to the modal, so it can offer Bid down and Bid up
     // side by side whichever button opened it.
     const rng = x => x ? { dir: x.dataset.trade, min: Number(x.dataset.min), max: x.dataset.max ? Number(x.dataset.max) : null, prefill: Number(x.dataset.prefill),
-      ref: x.dataset.ref ? Number(x.dataset.ref) : null, pct: x.dataset.pct ? Number(x.dataset.pct) : 0 } : null;
+      ref: x.dataset.ref ? Number(x.dataset.ref) : null, pct: x.dataset.pct ? Number(x.dataset.pct) : 0, offer: x.dataset.offer === '1' } : null;
     const box = b.closest('.trade');
     const r = rng(b);
     r.down = rng(box && box.querySelector('[data-trade="down"]'));
@@ -7671,10 +7677,10 @@
     const maxBid = both ? (range.up.max != null ? range.up.max : null) : (range && range.max != null ? range.max : null);
     const live = !!(SB && lotId);
     const eurC = n => '\u20ac ' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: Number(n) % 1 ? 2 : 0, maximumFractionDigits: 2 });
-    openModal(both ? phrase('Place a bid') : range ? phrase(range.dir === 'down' ? 'Bid down' : 'Bid up') : 'Place a bid', name,
+    openModal(both ? phrase('Place a bid') : range ? phrase(range.dir === 'down' ? (range.offer ? 'Make an offer' : 'Bid down') : 'Bid up') : 'Place a bid', name,
       // The lowest amount appears only once the slider is in use (Ramon).
       both ? '' :
-      range ? (maxBid != null ? phrase('Bid between {min} and {max}. At the Buy now price, buy it now instead.', { min: eurC(minNext), max: eurC(maxBid) }) : phrase('Enter at least {min}.', { min: eurC(minNext) }))
+      range ? (maxBid != null ? phrase((!both && range.offer) ? 'Offer between {min} and {max}. At the Buy now price, buy it now instead.' : 'Bid between {min} and {max}. At the Buy now price, buy it now instead.', { min: eurC(minNext), max: eurC(maxBid) }) : phrase('Enter at least {min}.', { min: eurC(minNext) }))
             : phrase('Current bid {bid} · {n} bids. Enter at least {min}.', { bid: eur(bid), n: bids, min: eur(minNext) }));
     bidForm.hidden = false;
     const input = document.getElementById('bidInput');
@@ -7716,7 +7722,7 @@
     dirs.hidden = !both;
     if (both) {
       const chip = (d, rr) => '<button type="button" class="bid-dir" data-dir="' + d + '">' +
-        '<span class="tr-k">' + hx(phrase('Bid')) + '</span>' + (d === 'down' ? TR_DOWN : TR_UP) + '</button>';
+        ((d === 'down' && dn && dn.offer) ? '<span class="tr-k">' + hx(phrase('Make an offer')) + '</span>' : '<span class="tr-k">' + hx(phrase('Bid')) + '</span>' + (d === 'down' ? TR_DOWN : TR_UP)) + '</button>';
       dirs.innerHTML = chip('down', range.down) + chip('up', range.up);
       dirs.querySelectorAll('.bid-dir').forEach(c => c.addEventListener('click', () => setMode(c.dataset.dir)));
     }
@@ -7735,6 +7741,12 @@
     } else slide.innerHTML = '';
     setMode(range ? range.dir : 'up');
     document.getElementById('bidHint').textContent = live ? 'Binding bid · a hidden reserve may apply.' : 'Binding bid · a hidden reserve may apply · layout preview only.';
+    // A direct sale has no bidding, only Buy now or an offer under it, so the
+    // form speaks of an offer (Ramon, 31 Oct 2026).
+    const isOffer = !both && !!(range && range.dir === 'down' && range.offer);
+    if (lblEl) lblEl.textContent = phrase(isOffer ? 'Your offer (€)' : 'Your bid (€)');
+    document.getElementById('bidConfirm').textContent = phrase(isOffer ? 'Send offer' : 'Place bid');
+    if (isOffer) document.getElementById('bidHint').textContent = phrase('Binding offer · the seller decides whether to accept it.');
     document.getElementById('bidConfirm').onclick = async () => {
       const v = range ? Math.round(parseFloat(String(input.value).replace(',', '.')) * 100) / 100 : parseInt(input.value, 10);
       if (!v || v < minNext) { document.getElementById('bidHint').textContent = phrase('Enter at least {min}.', { min: eurC(minNext) }); input.focus(); return; }
@@ -7971,7 +7983,9 @@
       const min = top == null ? lo : Math.max(lo, r2(top + bidStep(bn)));
       const max = r2(bn - 0.01);
       if (min > max) return { buyNow: bn };                       // the range is used up: only Buy now
-      return { buyNow: bn, down: { min, max, prefill: min, ref: bn, pct }, up: { min, max, prefill: max } };
+      // A direct sale has a price already: Buy now is the way up, so only Bid
+      // down is offered (Ramon, 31 Oct 2026).
+      return { buyNow: bn, down: { min, max, prefill: min, ref: bn, pct }, up: t.fixed ? null : { min, max, prefill: max } };
     }
     if (t.fixed) return { buyNow: bn };
     const start = Number(t.start) || 0;
@@ -7988,13 +8002,15 @@
     const btn = (dir, rr) => '<button type="button" class="tr-btn tr-' + dir + '" data-trade="' + dir + '" data-lot="' + esc(t.id) + '" data-name="' + esc(t.name || '') +
       '" data-min="' + rr.min + '"' + (rr.max != null ? ' data-max="' + rr.max + '"' : '') + ' data-prefill="' + rr.prefill + '"' +
       (rr.ref ? ' data-ref="' + rr.ref + '" data-pct="' + rr.pct + '"' : '') + ' data-seller="' + esc(t.sellerId || '') + '"' +
-      ' aria-label="' + esc(phrase(dir === 'down' ? 'Bid down' : 'Bid up')) + '">' +
+      (dir === 'down' && t.onLot ? ' data-offer="1"' : '') +
+      ' aria-label="' + esc(phrase(dir === 'down' ? (t.onLot ? 'Make an offer' : 'Bid down') : 'Bid up')) + '">' +
       // One line, in the same type as Buy now: the action and its amount are one
       // phrase, not a label over a figure (Ramon, 16 Oct 2026).
       // The word over the price, like a trading app's Sell and Buy (Ramon, 16 Oct
       // 2026). The price is where the bid starts: the lowest for Bid down, the
       // suggested one for Bid up. No "from" or "to".
-      '<span class="tr-k">' + esc(phrase('Bid')) + '</span>' + (dir === 'down' ? TR_DOWN : TR_UP) + '</button>';
+      // On the lot page bidding low is Make an offer, with no arrow (Ramon, 31 Oct 2026).
+      ((dir === 'down' && t.onLot) ? '<span class="tr-k">' + esc(phrase('Make an offer')) + '</span>' : '<span class="tr-k">' + esc(phrase('Bid')) + '</span>' + (dir === 'down' ? TR_DOWN : TR_UP)) + '</button>';
     // The estimate lives in the photo again (estStickerHtml), not in this row.
     const est = false
       ? '<div class="tr-est" tabindex="0" data-tip="' + esc(phrase('Estimate {low} – {high}', { low: m(t.estLow), high: m(t.estHigh) })) + '"><span class="tr-est-v">~' + m(estMid(t.estLow, t.estHigh)).replace('\u00a0', '') + '</span><span class="tr-est-k">' + esc(phrase('Estimate')) + '</span></div>'
@@ -8002,7 +8018,10 @@
     // Bid down | the price | Bid up, one outlined block (Ramon's frames, 16 Oct
     // 2026). The price in the middle is where the lot stands now.
     const now = t.top != null ? t.top : (Number(t.start) || 0);
-    const row = (R.down || R.up)
+    // A direct sale: Make an offer on its own line above Buy now, no price cell,
+    // because Buy now already carries the price (Ramon, 31 Oct 2026).
+    const offerOnly = t.fixed && R.down && !R.up;
+    const row = offerOnly ? '<div class="tr-row offer">' + btn('down', R.down) + '</div>' : (R.down || R.up)
       ? '<div class="tr-row' + (R.down ? '' : ' one') + '">' + (R.down ? btn('down', R.down) : '') +
           '<div class="tr-px">' + esc(m(now)) + '</div>' + (R.up ? btn('up', R.up) : '') + '</div>'
       : '';
@@ -8630,9 +8649,11 @@
         '<div class="rc-spec">' + condRow + row('Completeness', c.completeness) +
           // The badges, said in words, with the reason beside Very Rare and the
           // box graded on its own line.
-          row('Badges', (c.badges || []).length
-                ? (c.badges || []).map(badgeLabel).filter(Boolean).map(l => phrase(l)).join(' · ') + ((c.badges || []).includes('rare') && c.rareReason ? '. ' + c.rareReason : '')
-                : phrase('None. Edit to add Original box, Complete or Very Rare.')) +
+          // Tappable here, so a seller sets them while creating the lot and not
+          // only afterwards in Edit (Ramon, 31 Oct 2026).
+          '<div class="row col"><span class="k">' + esc(phrase('Badges')) + '</span><span class="v"><span class="rc-badges">' +
+            BADGES.map(b => { const on = (c.badges || []).includes(b.id); return '<button type="button" class="rc-badge' + (on ? ' on' : '') + '" data-rbadge="' + b.id + '" aria-pressed="' + on + '" title="' + esc(phrase(b.hint)) + '">' + (BADGE_ICONS[b.id] || '') + esc(phrase(b.label)) + '</button>'; }).join('') +
+            '</span>' + ((c.badges || []).includes('rare') && c.rareReason ? '<span class="rc-rare">' + esc(c.rareReason) + '</span>' : '') + '</span></div>' +
           ((c.badges || []).includes('box') ? row('Box', [c.boxCondition, c.boxNotes].filter(Boolean).join('. ') || phrase('Not graded yet')) : '') +
           // Shown even when unset, and then it says so. A blank line here would let
           // a seller publish without ever having been asked the question.
@@ -8710,6 +8731,23 @@
         fetchComps(curationSeq, true);
       });
       card.querySelectorAll('.sale-toggle button').forEach(b => b.addEventListener('click', () => { const st = b.dataset.sale; if (st === (current.saleType || 'auction')) return; if (st === 'fixed' && !current.buyNow) current.buyNow = current.startingBid; current.saleType = st; viewMode(); }));
+      card.querySelectorAll('[data-rbadge]').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.rbadge, list = new Set(current.badges || []);
+        if (list.has(id)) list.delete(id);
+        else {
+          list.add(id);
+          const other = { separate: 'included', included: 'separate' }[id];
+          if (other) list.delete(other);
+        }
+        current.badges = [...list];
+        // Very Rare needs its reason, which lives in Edit: go there to give it.
+        if (id === 'rare' && list.has('rare') && !(current.rareReason || '').trim()){
+          editMode();
+          const r = document.getElementById('e_rare'); if (r) { r.scrollIntoView({ block: 'center' }); r.focus(); }
+          return;
+        }
+        viewMode();
+      }));
       card.querySelectorAll('.v-opt').forEach(b => b.addEventListener('click', () => { if (b.classList.contains('on')) return; recurate(b.dataset.axis + ' = ' + b.dataset.opt); }));
       const dBtn = document.getElementById('draftLot');
       if (dBtn) dBtn.addEventListener('click', async () => {
@@ -12111,7 +12149,7 @@
             '</div>' :
             (isPreview ?
               '<div class="won-box"><div class="won-h">Preview</div><div class="won-sub">' + (isFixed ? 'This item is not on sale yet.' : 'Bidding has not opened yet.') + ' Watch it to be notified the moment it goes live.</div><button class="btn accent" type="button" id="lotWatch">' + (watchedIds.has(lot.id) ? 'Watching &check;' : 'Watch this lot') + '</button></div>' :
-              tradeHtml({ id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, floor: FLOORS[lot.id], top: bids.length ? cur : null,
+              tradeHtml({ onLot: true, id: lot.id, name: lot.toy, buyNow: Number(lot.buy_now) || 0, downPct: Number(lot.down_pct) || 0, floor: FLOORS[lot.id], top: bids.length ? cur : null,
                           start: Number(lot.starting_bid) || 0, fixed: isFixed, sellerId: lot.seller_id,
                           estChecked: lot.estimate_checked === true, estLow: lot.estimate_low, estHigh: lot.estimate_high }, e) +
               (collectible ? '<div id="collBox" class="coll-lot"></div>' : '') +

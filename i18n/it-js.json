@@ -725,5 +725,12 @@
   "Figures sold separately.": "Personaggi venduti separatamente.",
   "The photos show other figures for scale or company. Only what the title names is for sale.": "Le foto mostrano altri personaggi per le proporzioni o la compagnia. In vendita c'è solo ciò che indica il titolo.",
   "All figures included.": "Tutti i personaggi inclusi.",
-  "Every figure in the photos comes with this lot.": "Ogni personaggio nelle foto è compreso in questo lotto."
+  "Every figure in the photos comes with this lot.": "Ogni personaggio nelle foto è compreso in questo lotto.",
+  "Make an offer": "Fai una proposta",
+  "Your offer (€)": "La tua proposta (€)",
+  "Send offer": "Invia proposta",
+  "Binding offer · the seller decides whether to accept it.": "Proposta vincolante · il venditore decide se accettarla.",
+  "Your bid (€)": "La tua offerta (€)",
+  "Place bid": "Fai un'offerta",
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Proponi tra {min} e {max}. Al prezzo Compralo subito, compralo direttamente."
 }

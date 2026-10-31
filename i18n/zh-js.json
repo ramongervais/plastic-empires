@@ -725,5 +725,12 @@
   "Figures sold separately.": "人偶需另行購買。",
   "The photos show other figures for scale or company. Only what the title names is for sale.": "照片中的其他人偶僅作比例參考或陪襯。出售的只有標題所列的物品。",
   "All figures included.": "所有人偶皆包含在內。",
-  "Every figure in the photos comes with this lot.": "照片中的每一個人偶都隨此拍品附上。"
+  "Every figure in the photos comes with this lot.": "照片中的每一個人偶都隨此拍品附上。",
+  "Make an offer": "提出報價",
+  "Your offer (€)": "你的報價（€）",
+  "Send offer": "送出報價",
+  "Binding offer · the seller decides whether to accept it.": "具約束力的報價 · 由賣家決定是否接受。",
+  "Your bid (€)": "你的出價（€）",
+  "Place bid": "出價",
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "請在 {min} 至 {max} 之間報價。以直購價可直接購買。"
 }

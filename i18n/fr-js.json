@@ -725,5 +725,12 @@
   "Figures sold separately.": "Figurines vendues séparément.",
   "The photos show other figures for scale or company. Only what the title names is for sale.": "Les photos montrent d'autres figurines pour l'échelle ou la compagnie. Seul ce que nomme le titre est à vendre.",
   "All figures included.": "Toutes les figurines incluses.",
-  "Every figure in the photos comes with this lot.": "Chaque figurine visible sur les photos fait partie de ce lot."
+  "Every figure in the photos comes with this lot.": "Chaque figurine visible sur les photos fait partie de ce lot.",
+  "Make an offer": "Faire une offre",
+  "Your offer (€)": "Votre offre (€)",
+  "Send offer": "Envoyer l'offre",
+  "Binding offer · the seller decides whether to accept it.": "Offre ferme · le vendeur décide s'il l'accepte.",
+  "Your bid (€)": "Votre enchère (€)",
+  "Place bid": "Enchérir",
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Proposez entre {min} et {max}. Au prix d'achat immédiat, achetez-le directement."
 }
