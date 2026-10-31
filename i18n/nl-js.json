@@ -735,5 +735,15 @@
   "Binding offer · the seller decides whether to accept it.": "Bindend aanbod · de verkoper beslist of hij het accepteert.",
   "Your bid (€)": "Jouw bod (€)",
   "Place bid": "Bod uitbrengen",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Doe een aanbod tussen {min} en {max}. Voor de Buy now-prijs koop je hem meteen."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Doe een aanbod tussen {min} en {max}. Voor de Buy now-prijs koop je hem meteen.",
+  "An offer, waiting for your decision": "Een aanbod, wacht op je beslissing",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "Bindend aanbod · de verkoper heeft 48 uur om te accepteren. Er wordt niets afgeschreven tenzij hij dat doet.",
+  "Offer sent": "Aanbod verstuurd",
+  "The buyer has been told. The piece is for sale again.": "De koper is op de hoogte. Het stuk staat weer te koop.",
+  "The buyer is told, and the piece is for sale again straight away.": "De koper krijgt bericht en het stuk staat meteen weer te koop.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "De verkoper heeft 48 uur om te accepteren of te weigeren, en tot dan is het stuk voor jou gereserveerd. Je hoort het hoe dan ook, en er wordt niets afgeschreven tenzij hij accepteert.",
+  "Your offer is with the seller.": "Je aanbod ligt bij de verkoper.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "Een koper biedt {amount}. Accepteer of weiger het in je account vóór {date}.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "Je aanbod van {amount} ligt bij de verkoper, die vóór {date} beslist. Er wordt niets afgeschreven tenzij hij accepteert.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "Een andere koper heeft een aanbod gedaan en de verkoper beslist vóór {date}. Wordt het geweigerd, dan staat dit stuk weer te koop."
 }

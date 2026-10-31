@@ -732,5 +732,15 @@
   "Binding offer · the seller decides whether to accept it.": "Proposta vincolante · il venditore decide se accettarla.",
   "Your bid (€)": "La tua offerta (€)",
   "Place bid": "Fai un'offerta",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Proponi tra {min} e {max}. Al prezzo Compralo subito, compralo direttamente."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Proponi tra {min} e {max}. Al prezzo Compralo subito, compralo direttamente.",
+  "An offer, waiting for your decision": "Una proposta attende la tua decisione",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "Proposta vincolante · il venditore ha 48 ore per accettarla. Non viene addebitato nulla se non lo fa.",
+  "Offer sent": "Proposta inviata",
+  "The buyer has been told. The piece is for sale again.": "L'acquirente è stato avvisato. Il pezzo è di nuovo in vendita.",
+  "The buyer is told, and the piece is for sale again straight away.": "L'acquirente viene avvisato e il pezzo torna subito in vendita.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "Il venditore ha 48 ore per accettare o rifiutare, e fino ad allora il pezzo è riservato a te. Riceverai notizie in ogni caso, e non viene addebitato nulla se non accetta.",
+  "Your offer is with the seller.": "La tua proposta è al venditore.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "Un acquirente propone {amount}. Accettala o rifiutala nel tuo account entro il {date}.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "La tua proposta di {amount} è al venditore, che decide entro il {date}. Non viene addebitato nulla se non accetta.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "Un altro acquirente ha fatto una proposta e il venditore decide entro il {date}. Se la rifiuta, questo pezzo torna in vendita."
 }

@@ -732,5 +732,15 @@
   "Binding offer · the seller decides whether to accept it.": "عرض ملزم · البائع يقرّر ما إذا كان سيقبله.",
   "Your bid (€)": "مزايدتك (€)",
   "Place bid": "ضع مزايدة",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "قدّم عرضًا بين {min} و{max}. بسعر الشراء الفوري، اشترِه مباشرة."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "قدّم عرضًا بين {min} و{max}. بسعر الشراء الفوري، اشترِه مباشرة.",
+  "An offer, waiting for your decision": "عرض بانتظار قرارك",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "عرض ملزم · أمام البائع 48 ساعة لقبوله. لا يُخصم أي مبلغ ما لم يقبله.",
+  "Offer sent": "أُرسل العرض",
+  "The buyer has been told. The piece is for sale again.": "أُبلغ المشتري. القطعة معروضة للبيع من جديد.",
+  "The buyer is told, and the piece is for sale again straight away.": "يُبلَّغ المشتري، وتعود القطعة للبيع فورًا.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "أمام البائع 48 ساعة للقبول أو الرفض، والقطعة محجوزة لك حتى ذلك الحين. سنبلغك في كل الأحوال، ولا يُخصم أي مبلغ ما لم يقبل.",
+  "Your offer is with the seller.": "عرضك لدى البائع.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "يعرض أحد المشترين {amount}. اقبله أو ارفضه من حسابك قبل {date}.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "عرضك البالغ {amount} لدى البائع، وسيقرّر قبل {date}. لا يُخصم أي مبلغ ما لم يقبل.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "قدّم مشترٍ آخر عرضًا، والبائع يقرّر قبل {date}. إن رُفض، تعود هذه القطعة للبيع."
 }

@@ -7746,7 +7746,7 @@
     const isOffer = !both && !!(range && range.dir === 'down' && range.offer);
     if (lblEl) lblEl.textContent = phrase(isOffer ? 'Your offer (€)' : 'Your bid (€)');
     document.getElementById('bidConfirm').textContent = phrase(isOffer ? 'Send offer' : 'Place bid');
-    if (isOffer) document.getElementById('bidHint').textContent = phrase('Binding offer · the seller decides whether to accept it.');
+    if (isOffer) document.getElementById('bidHint').textContent = phrase('Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.');
     document.getElementById('bidConfirm').onclick = async () => {
       const v = range ? Math.round(parseFloat(String(input.value).replace(',', '.')) * 100) / 100 : parseInt(input.value, 10);
       if (!v || v < minNext) { document.getElementById('bidHint').textContent = phrase('Enter at least {min}.', { min: eurC(minNext) }); input.focus(); return; }
@@ -7792,6 +7792,16 @@
       // private now, so the question goes back to the database: one call, on an
       // action the person just took deliberately, and it answers met or not
       // without ever naming the number.
+      if (isOffer) {
+        document.getElementById('modalEy').textContent = phrase('Offer sent');
+        document.getElementById('modalTitle').textContent = phrase('Your offer is with the seller.');
+        document.getElementById('modalBody').textContent = phrase('{amount} on {lot}.', { amount: eur(v), lot: name }) + ' ' +
+          (live ? phrase('The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.')
+                : phrase('Layout preview, so no real bid was placed.'));
+        // The lot page behind the popup now shows the offer as waiting.
+        if (live && lotId && document.getElementById('lotMain')) setTimeout(() => { try { openLot(lotId, { keepScroll: true }); } catch (e) {} }, 0);
+        return;
+      }
       let underReserve = false;
       if (live && lotId) {
         try {
@@ -10122,7 +10132,7 @@
     const uid = authUser.id, now = Date.now();
     const isEnded = l => l.status === 'ended' || l.status === 'sold' || (l.ends_at && new Date(l.ends_at) <= now);
     try {
-    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no,decide_by,down_pct';
+    const sel = 'id,toy,maker,line,year,status,starting_bid,buy_now,ends_at,image_urls,closed_at,created_at,seller_id,withdrawn_at,delivered_at,invoice_no,decide_by,down_pct,sale_type';
     const [myLotsRes, myBidsRes, prefRes, watchRes, buysRes, myRevRes, draftsRes] = await Promise.all([
       SB.from('lots').select(sel).eq('seller_id', uid).order('created_at', { ascending: false }),
       // Was a filter on bidder_id, which is private now: anyone with the public
@@ -10243,10 +10253,10 @@
         return row(l, '<div style="text-align:end;display:grid;gap:6px;justify-items:end">' +
           '<div style="display:flex;gap:6px">' +
             '<button class="acct-pay" data-offer="accept" data-lotid="' + e(l.id) + '" data-label="' + e(l.toy) + '" data-amt="' + e(amt) + '">' + phrase('Accept {amount}', { amount: amt }) + '</button>' +
-            '<button class="acct-signout" data-offer="decline" data-lotid="' + e(l.id) + '" data-label="' + e(l.toy) + '" data-amt="' + e(amt) + '">' + phrase('Decline') + '</button>' +
+            '<button class="acct-signout" data-offer="decline" data-lotid="' + e(l.id) + '" data-label="' + e(l.toy) + '" data-amt="' + e(amt) + '"' + (l.sale_type === 'fixed' ? ' data-fixed="1"' : '') + '>' + phrase('Decline') + '</button>' +
           '</div>' +
           (due ? '<div class="st">' + phrase('Decide by {date}', { date: e(due) }) + '</div>' : '') +
-        '</div>', phrase('Highest bid, waiting for your decision'));
+        '</div>', phrase(l.sale_type === 'fixed' ? 'An offer, waiting for your decision' : 'Highest bid, waiting for your decision'));
       }
       const right = l.status === 'unsold'
         ? '<div style="text-align:end"><button class="acct-pay" data-relist="' + e(l.id) + '" data-label="' + e(l.toy) + '">Relist</button><div class="st" style="margin-top:6px">Not sold &middot; uses 1 listing</div></div>'
@@ -10408,7 +10418,7 @@
       const name = b.dataset.label || phrase('this lot');
       const ask = accept
         ? phrase('Accept {amount} for {lot}?', { amount: b.dataset.amt, lot: name }) + '\n\n' + phrase('The bidder is asked to pay straight away. This cannot be undone.')
-        : phrase('Decline {amount} for {lot}?', { amount: b.dataset.amt, lot: name }) + '\n\n' + phrase('The lot comes back to you unsold, and you can relist it.');
+        : phrase('Decline {amount} for {lot}?', { amount: b.dataset.amt, lot: name }) + '\n\n' + (b.dataset.fixed ? phrase('The buyer is told, and the piece is for sale again straight away.') : phrase('The lot comes back to you unsold, and you can relist it.'));
       if (!confirm(ask)) return;
       body.querySelectorAll('[data-offer]').forEach(x => { if (x.dataset.lotid === b.dataset.lotid) x.disabled = true; });
       const { error } = await SB.rpc('decide_offer', { target: b.dataset.lotid, accept: accept });
@@ -10429,7 +10439,7 @@
       } catch (err) {}
       openModal(accept ? phrase('Accepted') : phrase('Declined'), name,
         accept ? phrase('The bidder has been asked to pay. You hear from us as soon as the payment is in.')
-               : phrase('The bidder has been told. The lot is in your listings as not sold.'));
+               : (b.dataset.fixed ? phrase('The buyer has been told. The piece is for sale again.') : phrase('The bidder has been told. The lot is in your listings as not sold.')));
       renderAccount();
     }));
 
@@ -11941,7 +11951,8 @@
     if (lot.seller_id){ const { data: sp } = await SB.from('seller_public').select('display_name,type,location').eq('id', lot.seller_id).single(); seller = sp; }
     const bids = bidRows || [];
     const cur = bids.length ? Number(bids[0].amount) : Number(lot.starting_bid || 0);
-    const ended = lot.status === 'ended' || lot.status === 'sold' || lot.status === 'unsold' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
+    // 'offer' too: an offer on a direct sale has no end time (since 31 Oct 2026).
+    const ended = lot.status === 'ended' || lot.status === 'sold' || lot.status === 'unsold' || lot.status === 'offer' || (lot.ends_at && new Date(lot.ends_at) <= Date.now());
     const topBid = bids.length ? bids[0] : null;
     // Two booleans, never the figure. One round trip, and the page still draws
     // if it fails: no note rather than a wrong one.
@@ -12139,7 +12150,13 @@
           (ended ?
             '<div class="won-box' + (iWon ? ' win' : '') + '">' +
               (isOffer ? '<div class="won-h">' + e(phrase('With the seller.')) + '</div><div class="won-sub">' +
-                  e(iSell ? phrase('The highest bid is {amount}. Accept or decline it in your account before {date}.', { amount: money(cur), date: decideDate })
+                  e(isFixed
+                    // Make an offer on a direct sale: one offer at a time, and a
+                    // no puts the piece back on sale (Ramon, 31 Oct 2026).
+                    ? (iSell ? phrase('A buyer offers {amount}. Accept or decline it in your account before {date}.', { amount: money(cur), date: decideDate })
+                      : iAmLeading ? phrase('Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.', { amount: money(cur), date: decideDate })
+                      : phrase('Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.', { date: decideDate }))
+                    : iSell ? phrase('The highest bid is {amount}. Accept or decline it in your account before {date}.', { amount: money(cur), date: decideDate })
                     : iAmLeading ? phrase('Your bid of {amount} is the highest. The seller decides before {date}, and nothing is charged unless they accept.', { amount: money(cur), date: decideDate })
                     : phrase('Bidding has closed at {amount}. The seller decides before {date}.', { amount: money(cur), date: decideDate })) + '</div>' +
                   (iSell ? '<button class="btn accent" type="button" data-nav="account">' + e(phrase('Decide now')) + '</button>' : '') :

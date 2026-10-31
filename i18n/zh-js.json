@@ -732,5 +732,15 @@
   "Binding offer · the seller decides whether to accept it.": "具約束力的報價 · 由賣家決定是否接受。",
   "Your bid (€)": "你的出價（€）",
   "Place bid": "出價",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "請在 {min} 至 {max} 之間報價。以直購價可直接購買。"
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "請在 {min} 至 {max} 之間報價。以直購價可直接購買。",
+  "An offer, waiting for your decision": "一筆報價等待你決定",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "具約束力的報價 · 賣家有 48 小時可以接受。未接受前不會扣款。",
+  "Offer sent": "報價已送出",
+  "The buyer has been told. The piece is for sale again.": "已通知買家。物品重新開放購買。",
+  "The buyer is told, and the piece is for sale again straight away.": "會通知買家，物品立即重新開放購買。",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "賣家有 48 小時接受或拒絕，在此之前物品為你保留。無論結果如何都會通知你，未接受前不會扣款。",
+  "Your offer is with the seller.": "你的報價已送達賣家。",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "一位買家報價 {amount}。請在 {date} 之前於帳戶中接受或拒絕。",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "你 {amount} 的報價已送達賣家，賣家會在 {date} 之前決定。未接受前不會扣款。",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "另一位買家已提出報價，賣家會在 {date} 之前決定。若被拒絕，這件物品將重新開放購買。"
 }

@@ -732,5 +732,15 @@
   "Binding offer · the seller decides whether to accept it.": "拘束力のあるオファー · 受け入れるかは出品者が決めます。",
   "Your bid (€)": "あなたの入札額（€）",
   "Place bid": "入札する",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "{min}から{max}の間でオファーしてください。即決価格なら、そのまま購入できます。"
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "{min}から{max}の間でオファーしてください。即決価格なら、そのまま購入できます。",
+  "An offer, waiting for your decision": "オファーがあなたの判断を待っています",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "拘束力のあるオファー · 出品者には承諾まで48時間あります。承諾されない限り請求はありません。",
+  "Offer sent": "オファーを送りました",
+  "The buyer has been told. The piece is for sale again.": "購入希望者に通知しました。品は再び販売中です。",
+  "The buyer is told, and the piece is for sale again straight away.": "購入希望者に通知され、品はすぐに再び販売中になります。",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "出品者は48時間以内に承諾か辞退を決め、それまで品はあなたのために確保されます。結果はどちらでもお知らせし、承諾されない限り請求はありません。",
+  "Your offer is with the seller.": "オファーは出品者に届いています。",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "購入希望者が{amount}をオファーしています。{date}までにアカウントで承諾するか辞退してください。",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "{amount}のオファーは出品者に届いており、{date}までに決まります。承諾されない限り請求はありません。",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "別の購入希望者がオファーしており、出品者は{date}までに決めます。辞退された場合、この品は再び販売中になります。"
 }

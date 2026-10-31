@@ -732,5 +732,15 @@
   "Binding offer · the seller decides whether to accept it.": "Offre ferme · le vendeur décide s'il l'accepte.",
   "Your bid (€)": "Votre enchère (€)",
   "Place bid": "Enchérir",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Proposez entre {min} et {max}. Au prix d'achat immédiat, achetez-le directement."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Proposez entre {min} et {max}. Au prix d'achat immédiat, achetez-le directement.",
+  "An offer, waiting for your decision": "Une offre attend votre décision",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "Offre ferme · le vendeur a 48 heures pour l'accepter. Rien n'est débité s'il ne le fait pas.",
+  "Offer sent": "Offre envoyée",
+  "The buyer has been told. The piece is for sale again.": "L'acheteur a été informé. La pièce est de nouveau en vente.",
+  "The buyer is told, and the piece is for sale again straight away.": "L'acheteur est informé, et la pièce est aussitôt de nouveau en vente.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "Le vendeur a 48 heures pour accepter ou refuser, et la pièce vous est réservée jusque-là. Vous serez informé dans tous les cas, et rien n'est débité s'il n'accepte pas.",
+  "Your offer is with the seller.": "Votre offre est chez le vendeur.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "Un acheteur propose {amount}. Acceptez ou refusez dans votre compte avant le {date}.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "Votre offre de {amount} est chez le vendeur, qui décide avant le {date}. Rien n'est débité s'il n'accepte pas.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "Un autre acheteur a fait une offre, et le vendeur décide avant le {date}. Si elle est refusée, cette pièce est de nouveau en vente."
 }

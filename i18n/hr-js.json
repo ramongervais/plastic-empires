@@ -735,5 +735,15 @@
   "Binding offer · the seller decides whether to accept it.": "Obvezujuća ponuda · prodavač odlučuje hoće li je prihvatiti.",
   "Your bid (€)": "Tvoja ponuda (€)",
   "Place bid": "Daj ponudu",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Ponudite između {min} i {max}. Po cijeni Kupi odmah kupite ga odmah."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Ponudite između {min} i {max}. Po cijeni Kupi odmah kupite ga odmah.",
+  "An offer, waiting for your decision": "Ponuda čeka tvoju odluku",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "Obvezujuća ponuda · prodavatelj ima 48 sati da je prihvati. Ništa se ne naplaćuje ako to ne učini.",
+  "Offer sent": "Ponuda poslana",
+  "The buyer has been told. The piece is for sale again.": "Kupac je obaviješten. Predmet je ponovno na prodaju.",
+  "The buyer is told, and the piece is for sale again straight away.": "Kupac dobiva obavijest, a predmet je odmah ponovno na prodaju.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "Prodavatelj ima 48 sati da prihvati ili odbije, a do tada je predmet rezerviran za tebe. Javit ćemo ti se u svakom slučaju, a ništa se ne naplaćuje ako ne prihvati.",
+  "Your offer is with the seller.": "Tvoja ponuda je kod prodavatelja.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "Kupac nudi {amount}. Prihvati je ili odbij u svom računu do {date}.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "Tvoja ponuda od {amount} je kod prodavatelja, koji odlučuje do {date}. Ništa se ne naplaćuje ako ne prihvati.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "Drugi kupac poslao je ponudu, a prodavatelj odlučuje do {date}. Ako je odbije, ovaj je predmet ponovno na prodaju."
 }

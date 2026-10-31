@@ -740,5 +740,15 @@
   "Binding offer · the seller decides whether to accept it.": "Verbindliches Angebot · der Verkäufer entscheidet, ob er es annimmt.",
   "Your bid (€)": "Dein Gebot (€)",
   "Place bid": "Gebot abgeben",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Biete zwischen {min} und {max}. Zum Sofortkauf-Preis kaufst du ihn direkt."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Biete zwischen {min} und {max}. Zum Sofortkauf-Preis kaufst du ihn direkt.",
+  "An offer, waiting for your decision": "Ein Angebot wartet auf deine Entscheidung",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "Verbindliches Angebot · der Verkäufer hat 48 Stunden, um es anzunehmen. Abgebucht wird nur, wenn er das tut.",
+  "Offer sent": "Angebot gesendet",
+  "The buyer has been told. The piece is for sale again.": "Der Käufer ist informiert. Das Stück steht wieder zum Verkauf.",
+  "The buyer is told, and the piece is for sale again straight away.": "Der Käufer wird informiert, und das Stück steht sofort wieder zum Verkauf.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "Der Verkäufer hat 48 Stunden, um anzunehmen oder abzulehnen, und bis dahin ist das Stück für dich reserviert. Du hörst in jedem Fall von uns, und abgebucht wird nur, wenn er annimmt.",
+  "Your offer is with the seller.": "Dein Angebot liegt beim Verkäufer.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "Ein Käufer bietet {amount}. Nimm es bis {date} in deinem Konto an oder lehne es ab.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "Dein Angebot von {amount} liegt beim Verkäufer, der bis {date} entscheidet. Abgebucht wird nur, wenn er annimmt.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "Ein anderer Käufer hat ein Angebot gemacht, und der Verkäufer entscheidet bis {date}. Wird es abgelehnt, steht dieses Stück wieder zum Verkauf."
 }

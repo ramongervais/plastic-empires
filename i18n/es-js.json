@@ -732,5 +732,15 @@
   "Binding offer · the seller decides whether to accept it.": "Oferta vinculante · el vendedor decide si la acepta.",
   "Your bid (€)": "Tu puja (€)",
   "Place bid": "Pujar",
-  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Ofrece entre {min} y {max}. Al precio de compra inmediata, cómpralo directamente."
+  "Offer between {min} and {max}. At the Buy now price, buy it now instead.": "Ofrece entre {min} y {max}. Al precio de compra inmediata, cómpralo directamente.",
+  "An offer, waiting for your decision": "Una oferta espera tu decisión",
+  "Binding offer · the seller has 48 hours to accept. Nothing is charged unless they do.": "Oferta vinculante · el vendedor tiene 48 horas para aceptarla. No se cobra nada salvo que lo haga.",
+  "Offer sent": "Oferta enviada",
+  "The buyer has been told. The piece is for sale again.": "El comprador ya lo sabe. La pieza vuelve a estar a la venta.",
+  "The buyer is told, and the piece is for sale again straight away.": "Se avisa al comprador y la pieza vuelve a estar a la venta enseguida.",
+  "The seller has 48 hours to accept or decline, and the piece is reserved for you until then. You hear either way, and nothing is charged unless they accept.": "El vendedor tiene 48 horas para aceptar o rechazar, y hasta entonces la pieza está reservada para ti. Te avisaremos en cualquier caso, y no se cobra nada salvo que acepte.",
+  "Your offer is with the seller.": "Tu oferta está con el vendedor.",
+  "A buyer offers {amount}. Accept or decline it in your account before {date}.": "Un comprador ofrece {amount}. Acéptala o recházala en tu cuenta antes del {date}.",
+  "Your offer of {amount} is with the seller, who decides before {date}. Nothing is charged unless they accept.": "Tu oferta de {amount} está con el vendedor, que decide antes del {date}. No se cobra nada salvo que acepte.",
+  "Another buyer has made an offer, and the seller decides before {date}. If it is declined, this piece is for sale again.": "Otro comprador ha hecho una oferta y el vendedor decide antes del {date}. Si la rechaza, esta pieza vuelve a estar a la venta."
 }
