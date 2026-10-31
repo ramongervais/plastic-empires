@@ -448,6 +448,8 @@
               <label class="tgl"><input type="checkbox" id="le_b_complete"><span>Complete</span></label>
               <label class="tgl"><input type="checkbox" id="le_b_instructions"><span>Instructions</span></label>
               <label class="tgl"><input type="checkbox" id="le_b_rare"><span>Very Rare</span></label>
+              <label class="tgl"><input type="checkbox" id="le_b_separate"><span>Figures sold separately.</span></label>
+              <label class="tgl"><input type="checkbox" id="le_b_included"><span>All figures included.</span></label>
             </div>
             <div id="le_rareWrap" class="cms-sub" hidden>
               <label class="f" for="le_rare">Why it is very rare</label><input class="f" id="le_rare" maxlength="200">
@@ -1352,7 +1354,7 @@
     // previous lot's value showing in the box.
     v('le_care', l.care_level || ''); v('le_carenote', l.care_note || '');
     const bs = Array.isArray(l.badges) ? l.badges : [];
-    ['box', 'complete', 'rare', 'instructions'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
+    ['box', 'complete', 'rare', 'instructions', 'separate', 'included'].forEach(k => { const el = $('le_b_' + k); if (el) el.checked = bs.includes(k); });
     v('le_rare', l.rare_reason || ''); v('le_boxcond', l.box_condition || ''); v('le_boxnotes', l.box_notes || '');
     v('le_downpct', String(Math.round(Number(l.down_pct) || 0)));
     v('le_estlow', l.estimate_low == null ? '' : l.estimate_low); v('le_esthigh', l.estimate_high == null ? '' : l.estimate_high);
@@ -1525,6 +1527,8 @@
     if (b) b.hidden = !($('le_b_box') && $('le_b_box').checked);
   }
   ['le_b_rare', 'le_b_box'].forEach(id => { const el = $(id); if (el) el.addEventListener('change', syncBadgeFields); });
+  // Sold separately and all included contradict each other: ticking one clears the other.
+  [['le_b_separate', 'le_b_included'], ['le_b_included', 'le_b_separate']].forEach(([a, b]) => { const el = $(a); if (el) el.addEventListener('change', () => { if (el.checked && $(b)) $(b).checked = false; }); });
 
   $('lotSave').addEventListener('click', async () => {
     if (!editingLot) return;
@@ -1544,7 +1548,7 @@
       // rejected, which is the constraint doing its job.
       care_level: g('le_care') || null,
       care_note: g('le_carenote') || null,
-      badges: ['box', 'complete', 'rare', 'instructions'].filter(k => $('le_b_' + k) && $('le_b_' + k).checked),
+      badges: ['box', 'complete', 'rare', 'instructions', 'separate', 'included'].filter(k => $('le_b_' + k) && $('le_b_' + k).checked),
       rare_reason: g('le_rare') || null,
       box_condition: g('le_boxcond') || null,
       box_notes: g('le_boxnotes') || null,

@@ -724,5 +724,9 @@
   "Block": "Blokkeren",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} blokkeren? Jullie kunnen in dit gesprek allebei geen berichten meer sturen. Je kunt dit ongedaan maken.",
   "New chat messages I have not read": "Nieuwe chatberichten die ik niet gelezen heb",
-  "Inbox": "Inbox"
+  "Inbox": "Inbox",
+  "Figures sold separately.": "Figuren apart verkrijgbaar.",
+  "The photos show other figures for scale or company. Only what the title names is for sale.": "De foto's tonen andere figuren voor schaal of gezelschap. Alleen wat in de titel staat, is te koop.",
+  "All figures included.": "Alle figuren inbegrepen.",
+  "Every figure in the photos comes with this lot.": "Elk figuur op de foto's hoort bij dit lot."
 }

@@ -721,5 +721,9 @@
   "Block": "ブロック",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "{name} をブロックしますか？この会話ではお互いにメッセージを送れなくなります。元に戻せます。",
   "New chat messages I have not read": "未読の新しいチャットメッセージ",
-  "Inbox": "受信箱"
+  "Inbox": "受信箱",
+  "Figures sold separately.": "フィギュアは別売りです。",
+  "The photos show other figures for scale or company. Only what the title names is for sale.": "写真には大きさの比較や演出のために他のフィギュアも写っています。販売するのはタイトルに記載のものだけです。",
+  "All figures included.": "フィギュアはすべて付属します。",
+  "Every figure in the photos comes with this lot.": "写真に写っているフィギュアはすべてこのロットに含まれます。"
 }

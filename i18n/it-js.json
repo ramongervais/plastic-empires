@@ -721,5 +721,9 @@
   "Block": "Blocca",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "Bloccare {name}? Nessuno dei due potrà più inviare messaggi in questa conversazione. Puoi annullarlo.",
   "New chat messages I have not read": "Nuovi messaggi in chat non letti",
-  "Inbox": "Posta in arrivo"
+  "Inbox": "Posta in arrivo",
+  "Figures sold separately.": "Personaggi venduti separatamente.",
+  "The photos show other figures for scale or company. Only what the title names is for sale.": "Le foto mostrano altri personaggi per le proporzioni o la compagnia. In vendita c'è solo ciò che indica il titolo.",
+  "All figures included.": "Tutti i personaggi inclusi.",
+  "Every figure in the photos comes with this lot.": "Ogni personaggio nelle foto è compreso in questo lotto."
 }

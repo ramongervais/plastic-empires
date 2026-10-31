@@ -6662,6 +6662,8 @@
      page is the whole point of the photograph. Matching the card also means
      the image a buyer clicked is the image they land on. */
   .lot-main{ position:relative; aspect-ratio:4/5; background:var(--panel); border:1px solid var(--line); border-radius:4px; overflow:hidden; display:flex; align-items:center; justify-content:center; touch-action:none; }
+  .lot-main .lot-sep{ position:absolute; inset-inline-start:12px; inset-inline-end:12px; bottom:12px; z-index:2; pointer-events:none; }
+  .lot-main .lot-badge{ color:#111; background:rgba(255,255,255,.58); -webkit-backdrop-filter:blur(10px) saturate(1.4); backdrop-filter:blur(10px) saturate(1.4); box-shadow:0 1px 2px rgba(0,0,0,.12); }
   .lot-main .lot-img{ width:100%; height:100%; object-fit:cover; display:block; user-select:none; -webkit-user-drag:none; }
   .lot-nav{ position:absolute; top:50%; transform:translateY(-50%); z-index:4; width:40px; height:40px; border-radius:50%; border:1px solid var(--line); background:rgba(255,255,255,.9); color:#131313; font-size:22px; line-height:0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.1); transition:background .15s; }
   .lot-nav.prev{ inset-inline-start:12px; } .lot-nav.next{ inset-inline-end:12px; }
@@ -7890,6 +7892,11 @@
     { id: 'complete', label: 'Complete',     hint: 'Everything it originally came with is here: weapons, cape, belt.' },
     { id: 'rare',     label: 'Very Rare',    hint: 'Genuinely hard to find. Say why below.' },
     { id: 'instructions', label: 'Instructions', hint: 'The original instruction sheet, inserts or paperwork are included.' },
+    // A disclaimer rather than a fact about the toy (Ramon, 31 Oct 2026): for a
+    // photograph with more characters in it than the one for sale.
+    { id: 'separate', label: 'Figures sold separately.', hint: 'The photos show other figures for scale or company. Only what the title names is for sale.' },
+    // Its opposite, so a group shot can say the reverse. Never both on one lot.
+    { id: 'included', label: 'All figures included.', hint: 'Every figure in the photos comes with this lot.' },
   ];
   // Its own constant: glued inside a markup literal it would never reach the
   // runtime dictionary (the jsLiterals blind spot, see the 'All' chip).
@@ -8956,6 +8963,10 @@
           const b = e.target.closest('.sizebtn'); if (!b) return;
           const on = !b.classList.contains('on');
           b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          // Sold separately and all included contradict each other: one turns the other off.
+          const other = { separate: 'included', included: 'separate' }[b.dataset.badge];
+          const ob = on && other && badgeBox.querySelector('[data-badge="' + other + '"]');
+          if (ob) { ob.classList.remove('on'); ob.setAttribute('aria-pressed', 'false'); }
         });
         const careBox = document.getElementById('e_care');
         if (careBox) careBox.addEventListener('click', e => {
@@ -12008,6 +12019,8 @@
           '<span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>' +
           (mainImg ? '<img class="lot-img" id="lotImg" src="' + e(mainImg) + '" alt="' + e(lot.toy) + '" draggable="false">' : '<div class="vlabel"><div class="k">' + e([lot.maker, lot.year].filter(Boolean).join(' · ')) + '</div><div class="n">' + e(lot.toy) + '</div></div>') +
           // No estimate in the photo: the lot page states it in the text beside it.
+          // The disclaimer does belong in it, on every photo (Ramon, 31 Oct 2026).
+          (['separate', 'included'].filter(k => (lot.badges || []).includes(k)).slice(0, 1).map(k => '<div class="lot-badges lot-sep"><span class="lot-badge">' + e(phrase(badgeLabel(k))) + '</span></div>').join('')) +
           '<div class="zoom-lens" id="zoomLens" hidden></div>' +
         '</div>' +
         (imgs.length > 1 ? '<div class="lot-thumbs">' + imgs.map((u, i) => '<button class="lot-th' + (i === 0 ? ' active' : '') + '" type="button" data-img="' + e(u) + '" style="background-image:url(' + e(u) + ')"></button>').join('') + '</div>' : '') +

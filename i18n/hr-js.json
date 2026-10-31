@@ -724,5 +724,9 @@
   "Block": "Blokiraj",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "Blokirati {name}? Nitko od vas više ne može slati poruke u ovom razgovoru. Možeš to poništiti.",
   "New chat messages I have not read": "Nove poruke u chatu koje nisam pročitao",
-  "Inbox": "Pristigla pošta"
+  "Inbox": "Pristigla pošta",
+  "Figures sold separately.": "Figure se prodaju zasebno.",
+  "The photos show other figures for scale or company. Only what the title names is for sale.": "Fotografije prikazuju druge figure radi mjerila ili društva. Prodaje se samo ono što navodi naslov.",
+  "All figures included.": "Sve figure su uključene.",
+  "Every figure in the photos comes with this lot.": "Svaka figura na fotografijama dolazi uz ovaj lot."
 }

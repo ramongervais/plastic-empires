@@ -688,6 +688,9 @@ function staticCard(l) {
       (img ? '<img class="cardimg" src="' + esc(card) + '" data-full="' + esc(img) + '" alt="' + esc(clean(l.toy)) +
         '" loading="lazy" decoding="async" onerror="this.onerror=null;this.src=this.dataset.full">' : "") +
       (badge ? '<span class="card-badge">' + badge + "</span>" : "") +
+      // The two badges that are words, not icons: the figures line, bottom left.
+      (Array.isArray(l.badges) && l.badges.includes("separate") ? '<div class="lot-badges"><span class="lot-badge">Figures sold separately.</span></div>' : "") +
+      (Array.isArray(l.badges) && l.badges.includes("included") ? '<div class="lot-badges"><span class="lot-badge">All figures included.</span></div>' : "") +
       // Same markup and order as lotCardHtml(), so the swap to the live card
       // does not move anything: all three badges as icons, bottom left.
       (Array.isArray(l.badges) && (l.badges.includes("complete") || l.badges.includes("rare") || l.badges.includes("box") || l.badges.includes("instructions"))

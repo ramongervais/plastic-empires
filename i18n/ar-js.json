@@ -721,5 +721,9 @@
   "Block": "حظر",
   "Block {name}? Neither of you can send messages in this conversation any more. You can undo this.": "حظر {name}؟ لن يتمكن أي منكما من إرسال رسائل في هذه المحادثة بعد الآن. يمكنك التراجع عن ذلك.",
   "New chat messages I have not read": "رسائل محادثة جديدة لم أقرأها",
-  "Inbox": "صندوق الوارد"
+  "Inbox": "صندوق الوارد",
+  "Figures sold separately.": "تُباع المجسّمات بشكل منفصل.",
+  "The photos show other figures for scale or company. Only what the title names is for sale.": "تُظهر الصور مجسّمات أخرى للمقارنة أو الرفقة. المعروض للبيع هو فقط ما يذكره العنوان.",
+  "All figures included.": "جميع المجسّمات مشمولة.",
+  "Every figure in the photos comes with this lot.": "كل مجسّم يظهر في الصور يأتي مع هذه القطعة."
 }
