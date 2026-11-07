@@ -18,3 +18,11 @@ cropped to 1600x1200 with the location data stripped.
   before-gb-a  front half open, screen board in      after-gb-a  both halves open
   before-gb-b  back half open, main board in         after-gb-b  back, closed, batteries in
   before-gb-c  close-up of the grip ribs, inside     after-gb-c  front, upright crop
+
+Kenner Wampa, treated November 2026. Phone shots, kept upright and cropped to
+1200x1600 (the piece sits in a 3:4 frame, class "tall"), location data stripped.
+
+  before-wa-a  front                                 after-wa-a  front
+  before-wa-b  back                                  after-wa-b  back
+  before-wa-c  close-up of shoulder and arm seam     after-wa-c  close-up of shoulder and arm
+                                                     after-wa-d  head and chest
