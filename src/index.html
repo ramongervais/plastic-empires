@@ -901,6 +901,8 @@
   .slide { min-width:100%; margin:0; }
   .slide-img { position:relative; aspect-ratio:4/5; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--panel-2), var(--panel)); overflow:hidden; }
   .slide-img img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+  /* Landscape photographs, such as a whole ring, would lose their sides in 4:5. */
+  .carousel.wide .slide-img { aspect-ratio:4/3; }
 
   /* Scale comparison visual */
   .scale-visual { position:sticky; top:88px; }
@@ -1830,6 +1832,9 @@
     input, select, textarea { font-size:16px; }
     /* comfortable, thumb-sized tap targets */
     .btn, button, .navtoggle, .sale-toggle button, .bid-btn, .buy-btn { min-height:44px; }
+    /* Except the carousel dots, which the 44px turned into tall ovals. The
+       arrows beside them are the tap targets. */
+    .carousel-dots .cdot { min-height:0; }
     /* The bid block follows the 44px tap size as a whole, or the price cell
        (not a button) stays 38px and leaves a gap under it. Same 16px line box,
        so the baseline stays shared. */
@@ -3544,10 +3549,28 @@
         <div><div class="ey">The ring</div><h2>A ring of their own</h2></div>
         <p>A wrestler needs somewhere to wrestle. Hasbro sold the ring from the start.</p>
       </div>
+      <div class="origins-grid">
       <div class="story">
         <p>The Official Wrestling Ring, item 7030, appeared in Hasbro's 1990 Toy Fair catalogue with ropes, turnbuckles, corner posts, an American flag and a championship belt, built to take the body slams. It was moulded in hard blue plastic.</p>
         <p>Variations followed: a JCPenney exclusive packed with Hogan and Macho Man, a version with a sound module, and in 1993 the King of the Ring playset, a yellow ring with spring-action ropes.</p>
         <p><b>Original or reissue?</b> In 2016 Mattel released a retro ring modelled on the Hasbro design. It is easy to tell apart once you know where to look: the reissue has three steps and two small televisions, the original two steps and one television.</p>
+      </div>
+          <div class="carousel wide">
+            <div class="carousel-viewport">
+              <div class="carousel-track">
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/ring-01.jpg" alt="The blue Hasbro wrestling ring on a wooden floor, the American flag on the corner post, with wrestling figures crowded inside the ropes and lined up along the front." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/ring-02.jpg" alt="The ring from the front corner, figures standing on the apron and along the ring skirt, the flag behind them." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/ring-03.jpg" alt="The ring from a lower angle, the front row of figures standing on the floor in front of the blue ring skirt." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/ring-04.jpg" alt="The ring from above the corner, the ring steps in front and the figures packed inside the ropes." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/ring-05.jpg" alt="Looking down into the ring: Hulk Hogan in the middle, a black championship belt lying on the apron in the foreground." loading="lazy" onerror="this.remove()"></div></figure>
+              </div>
+            </div>
+            <div class="carousel-ui">
+              <button class="carousel-arrow" data-dir="-1" aria-label="Previous photo">&larr;</button>
+              <div class="carousel-dots"></div>
+              <button class="carousel-arrow" data-dir="1" aria-label="Next photo">&rarr;</button>
+            </div>
+          </div>
       </div>
     </div>
   </section>
@@ -3580,7 +3603,38 @@
     </div>
   </section>
 
-  <!-- "One we have handled": the ring, once Ramon has photographed it. -->
+  <section class="band">
+    <div class="wrap">
+      <div class="band-head">
+        <div><div class="ey">One we have handled</div><h2>A full card</h2></div>
+        <p>Our own ring, with as much of the roster as would fit inside the ropes.</p>
+      </div>
+      <div class="origins-grid">
+      <div class="story">
+        <p><b>The faces are the point.</b> Hulk Hogan in his yellow shirt, the Ultimate Warrior, Bret Hart in pink and black, Demolition in their face paint, the Big Boss Man in police blue and Roddy Piper in his kilt. At four inches, Hasbro still gave every one of them a face you can name from across the room.</p>
+        <p><b>So are the poses.</b> Most of them stand with an arm raised or the body turned. That is the action feature at rest: an arm that swings, a waist that twists back.</p>
+        <p>The ring holds them all. The flag stands on its corner post, the ropes run red, white and blue, and the black belt lies on the apron where somebody dropped it.</p>
+      </div>
+          <div class="carousel wide">
+            <div class="carousel-viewport">
+              <div class="carousel-track">
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/roster-01.jpg" alt="Close-up at the ropes: the Ultimate Warrior in front, Bret Hart in pink and black, Demolition in face paint behind him." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/roster-02.jpg" alt="Over the corner post into the ring, Hulk Hogan in his yellow shirt among the figures, the Big Boss Man and Roddy Piper on the apron." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/roster-03.jpg" alt="Inside the ring at mat level, the Ultimate Warrior and Hulk Hogan in the middle, the Big Boss Man in the foreground." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/roster-04.jpg" alt="The ring packed with figures, Hulk Hogan, Bret Hart and Demolition at the front ropes." loading="lazy" onerror="this.remove()"></div></figure>
+                <figure class="slide"><div class="slide-img"><img src="/Empires/Hasbro/roster-05.jpg" alt="Close in on the front row: the Ultimate Warrior, Hulk Hogan, Bret Hart and Demolition at the ropes." loading="lazy" onerror="this.remove()"></div></figure>
+              </div>
+            </div>
+            <div class="carousel-ui">
+              <button class="carousel-arrow" data-dir="-1" aria-label="Previous photo">&larr;</button>
+              <div class="carousel-dots"></div>
+              <button class="carousel-arrow" data-dir="1" aria-label="Next photo">&rarr;</button>
+            </div>
+          </div>
+      </div>
+    </div>
+  </section>
+
 
   <section class="band">
     <div class="wrap">
